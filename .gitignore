@@ -4,3 +4,4 @@ writable/claude/*
 writable/session/*
 writable/uploads/*
 writable/debugbar/*
+app/CLAUDE.md

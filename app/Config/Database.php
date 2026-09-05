@@ -6,6 +6,17 @@ use CodeIgniter\Database\Config;
 
 /**
  * Database Configuration
+ *
+ * ATENCAO: este sistema NAO utiliza a conexao "default".
+ * Cada modulo do sistema possui o seu proprio grupo de conexao, dedicado a um
+ * database especifico neste servidor MySQL. Todo acesso a banco DEVE nomear o
+ * grupo explicitamente (db_connect('mapa'), $model->DBGroup = 'agenda', etc.).
+ *
+ * Para adicionar um novo modulo/conexao (ver src/app/CLAUDE.md):
+ *   1. Acrescente uma linha em $modules: 'novo_modulo' => 'projeto54900_novo'.
+ *   2. Declare a propriedade publica: public array $novo_modulo = [];
+ *   3. Crie o database no servidor (docker/mysql/init.sql em desenvolvimento).
+ * O construtor preenche o grupo automaticamente a partir de $modules.
  */
 class Database extends Config
 {
@@ -15,147 +26,35 @@ class Database extends Config
     public string $filesPath = APPPATH . 'Database' . DIRECTORY_SEPARATOR;
 
     /**
-     * Lets you choose which connection group to use if no other is specified.
+     * O framework exige um defaultGroup valido. Apontamos para o primeiro
+     * modulo apenas por formalidade; nenhum codigo deve conectar sem informar
+     * o grupo. Em ambiente de testes o construtor troca para 'tests'.
      */
-    public string $defaultGroup = 'default';
+    public string $defaultGroup = 'mapa';
 
     /**
-     * The default database connection.
+     * Mapa dos modulos do sistema => nome do database no servidor MySQL.
+     * Todos os grupos compartilham host/porta/usuario/senha (via .env / env());
+     * o que muda entre eles e o database.
      *
-     * @var array<string, mixed>
+     * @var array<string, string>
      */
-    public array $default = [
-        'DSN'          => '',
-        'hostname'     => 'localhost',
-        'username'     => '',
-        'password'     => '',
-        'database'     => '',
-        'DBDriver'     => 'MySQLi',
-        'DBPrefix'     => '',
-        'pConnect'     => false,
-        'DBDebug'      => true,
-        'charset'      => 'utf8mb4',
-        'DBCollat'     => 'utf8mb4_general_ci',
-        'swapPre'      => '',
-        'encrypt'      => false,
-        'compress'     => false,
-        'strictOn'     => false,
-        'failover'     => [],
-        'port'         => 3306,
-        'numberNative' => false,
-        'foundRows'    => false,
-        'dateFormat'   => [
-            'date'     => 'Y-m-d',
-            'datetime' => 'Y-m-d H:i:s',
-            'time'     => 'H:i:s',
-        ],
+    private array $modules = [
+        'mapa'   => 'projeto54900_mapa',
+        'agenda' => 'projeto54900_agenda',
+        'chat'   => 'projeto54900_chat',
     ];
 
-    //    /**
-    //     * Sample database connection for SQLite3.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'database'    => 'database.db',
-    //        'DBDriver'    => 'SQLite3',
-    //        'DBPrefix'    => '',
-    //        'DBDebug'     => true,
-    //        'swapPre'     => '',
-    //        'failover'    => [],
-    //        'foreignKeys' => true,
-    //        'busyTimeout' => 1000,
-    //        'synchronous' => null,
-    //        'dateFormat'  => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
+    // --- Grupos por modulo (preenchidos no construtor a partir de $modules) ---
 
-    //    /**
-    //     * Sample database connection for Postgre.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'database'   => 'ci4',
-    //        'schema'     => 'public',
-    //        'DBDriver'   => 'Postgre',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'utf8',
-    //        'swapPre'    => '',
-    //        'failover'   => [],
-    //        'port'       => 5432,
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
+    /** @var array<string, mixed> */
+    public array $mapa = [];
 
-    //    /**
-    //     * Sample database connection for SQLSRV.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'database'   => 'ci4',
-    //        'schema'     => 'dbo',
-    //        'DBDriver'   => 'SQLSRV',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'utf8',
-    //        'swapPre'    => '',
-    //        'encrypt'    => false,
-    //        'failover'   => [],
-    //        'port'       => 1433,
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
+    /** @var array<string, mixed> */
+    public array $agenda = [];
 
-    //    /**
-    //     * Sample database connection for OCI8.
-    //     *
-    //     * You may need the following environment variables:
-    //     *   NLS_LANG                = 'AMERICAN_AMERICA.UTF8'
-    //     *   NLS_DATE_FORMAT         = 'YYYY-MM-DD HH24:MI:SS'
-    //     *   NLS_TIMESTAMP_FORMAT    = 'YYYY-MM-DD HH24:MI:SS'
-    //     *   NLS_TIMESTAMP_TZ_FORMAT = 'YYYY-MM-DD HH24:MI:SS'
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => 'localhost:1521/FREEPDB1',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'DBDriver'   => 'OCI8',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'AL32UTF8',
-    //        'swapPre'    => '',
-    //        'failover'   => [],
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
+    /** @var array<string, mixed> */
+    public array $chat = [];
 
     /**
      * This database connection is used when running PHPUnit database tests.
@@ -194,11 +93,60 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Preenche um grupo de conexao para cada modulo registrado.
+        foreach ($this->modules as $group => $database) {
+            $this->{$group} = $this->buildGroup($database);
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+    }
+
+    // --- Credenciais compartilhadas por todos os grupos/modulos ---
+    // Explicitas aqui por decisao do projeto. Somente o "database" varia por modulo.
+    private const DB_HOSTNAME = 'mysql';
+    private const DB_PORT     = 3306;
+    private const DB_USERNAME = 'codeigniter54900_user';
+    private const DB_PASSWORD = 'codeigniter54900_P@ssw0rd_2024';
+    private const DB_DRIVER   = 'MySQLi';
+
+    /**
+     * Monta a configuracao de um grupo de conexao. Host/porta/usuario/senha sao
+     * os mesmos para todos os modulos; muda apenas o "database".
+     *
+     * @return array<string, mixed>
+     */
+    private function buildGroup(string $database): array
+    {
+        return [
+            'DSN'          => '',
+            'hostname'     => self::DB_HOSTNAME,
+            'username'     => self::DB_USERNAME,
+            'password'     => self::DB_PASSWORD,
+            'database'     => $database,
+            'DBDriver'     => self::DB_DRIVER,
+            'DBPrefix'     => '',
+            'pConnect'     => false,
+            'DBDebug'      => (ENVIRONMENT !== 'production'),
+            'charset'      => 'utf8mb4',
+            'DBCollat'     => 'utf8mb4_general_ci',
+            'swapPre'      => '',
+            'encrypt'      => false,
+            'compress'     => false,
+            'strictOn'     => false,
+            'failover'     => [],
+            'port'         => self::DB_PORT,
+            'numberNative' => false,
+            'foundRows'    => false,
+            'dateFormat'   => [
+                'date'     => 'Y-m-d',
+                'datetime' => 'Y-m-d H:i:s',
+                'time'     => 'H:i:s',
+            ],
+        ];
     }
 }
