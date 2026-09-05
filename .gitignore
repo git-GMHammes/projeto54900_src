@@ -1,0 +1,6 @@
+writable/logs/*
+writable/cache/*
+writable/claude/*
+writable/session/*
+writable/uploads/*
+writable/debugbar/*
