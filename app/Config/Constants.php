@@ -26,6 +26,20 @@ defined('APP_NAMESPACE') || define('APP_NAMESPACE', 'App');
 defined('COMPOSER_PATH') || define('COMPOSER_PATH', ROOTPATH . 'vendor/autoload.php');
 
 /*
+ | --------------------------------------------------------------------------
+ | Grupos de conexao de banco por modulo (API V1)
+ | --------------------------------------------------------------------------
+ |
+ | Cada banco do sistema recebe um grupo numerado. Os models da API V1
+ | declaram apenas `protected $DBGroup = DB_GROUP_001;` — de onde vem a
+ | credencial e qual e o database fica em Config/Database.php.
+ |
+ | Para adicionar um novo banco: defina DB_GROUP_002 aqui e declare o
+ | array publico homonimo em Config/Database.php. Nada mais muda.
+ */
+defined('DB_GROUP_001') || define('DB_GROUP_001', 'codeigniter54900_mysql');
+
+/*
  |--------------------------------------------------------------------------
  | Timing Constants
  |--------------------------------------------------------------------------

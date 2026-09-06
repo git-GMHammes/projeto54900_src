@@ -6,21 +6,26 @@
 
 Como o `projeto54900` conecta aos bancos MySQL. Regras fixas:
 
-- **Não existe conexão `default`.** Todo acesso nomeia o grupo.
-- **Um grupo por módulo**, cada um apontando para um database próprio no mesmo
-  servidor MySQL.
-- **Sem `.env` / `env()`.** As credenciais são explícitas e ficam em **dois**
-  arquivos que precisam bater entre si.
+- **Conexão `default`** → banco `codeigniter54900_db`. Credenciais via `env()`,
+  lendo as chaves `DB_*` do `docker-compose.yml`. É o grupo de `spark migrate`
+  sem `--group` e de `db_connect()` sem argumento.
+- **Um grupo nomeado por módulo** (`mapa`, `agenda`, `chat`, …), cada um
+  apontando para um database próprio no mesmo servidor MySQL. Para acessar um
+  módulo, sempre nomear o grupo.
+- **Sem arquivo `.env`.** `env()` só na conexão `default` (variáveis vindas do
+  `environment:` do container). Os grupos de módulo usam credenciais fixas
+  (constantes `DB_*` da classe).
 
 ## Onde ficam as credenciais
 
 | Arquivo                                | O que define                                                                                                                                     |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `docker-compose.yml` → serviço `mysql` | `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`                                                                          |
-| `docker-compose.yml` → serviço `php`   | `DB_HOST` (`mysql`), `DB_PORT` (`3306`), `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`                                                             |
-| `src/app/Config/Database.php`          | constantes `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER` (usadas por `buildGroup()`)                                       |
+| `docker-compose.yml` → serviço `php`   | `DB_HOST` (`mysql`), `DB_PORT` (`3306`), `DB_DATABASE` (`codeigniter54900_db`), `DB_USERNAME`, `DB_PASSWORD` — a conexão `default`, via `env()`  |
+| `src/app/Config/Database.php`          | constantes `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DRIVER` — os grupos de módulo (usadas por `buildGroup()`)                 |
 
-Ao trocar usuário ou senha do MySQL, atualizar os três pontos acima.
+Ao trocar usuário ou senha do MySQL, atualizar os três pontos acima (mais o
+`MYSQL_*` do serviço `mysql`).
 
 ## Grupos por módulo
 
@@ -34,8 +39,9 @@ Fonte da verdade: o array `$modules` em `src/app/Config/Database.php`
 | `chat`   | `projeto54900_chat`   | CHAT                   |
 
 O construtor de `Database` percorre `$modules` e monta cada grupo com
-`buildGroup()`; só o `database` muda entre eles. `$defaultGroup = 'mapa'` existe
-apenas por exigência do framework — nenhum código conecta sem informar o grupo.
+`buildGroup()`; só o `database` muda entre eles. `$defaultGroup = 'default'`
+(conexão `codeigniter54900_db`) — para acessar um módulo é obrigatório nomear o
+grupo.
 
 ## Uso no código
 
@@ -50,8 +56,8 @@ class CompromissoModel extends Model
 // Query Builder avulso
 $db = db_connect('chat');
 
-// Migration / Seed
-protected $DBGroup = 'mapa';   // + php spark migrate --group=mapa
+// Migration / Seed  (sem grupo => default = codeigniter54900_db)
+protected $DBGroup = 'mapa';   // módulo: + php spark migrate --group=mapa
 ```
 
 Testes (PHPUnit) usam o grupo `tests` (SQLite em memória) — nunca os bancos de
