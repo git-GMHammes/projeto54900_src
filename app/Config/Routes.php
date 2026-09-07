@@ -19,6 +19,10 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/User/UserManager/EndPointView.php';
     });
 
+    $routes->group('user-roles', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/User/UserRoles/EndpointTable.php';
+    });
+
     // =========================================================================
     // /Upload — Modulo de uploads (anexos polimorficos de outros modulos)
     // =========================================================================

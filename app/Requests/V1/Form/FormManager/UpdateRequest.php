@@ -14,10 +14,8 @@ class UpdateRequest
     public function rules(): array
     {
         return [
-            'name'            => 'permit_empty|string|max_length[255]',
             'slug'            => 'permit_empty|string|max_length[255]|regex_match[/^[a-z0-9]+(?:-[a-z0-9]+)*$/]',
             'title'           => 'permit_empty|string|max_length[255]',
-            'subtitle'        => 'permit_empty|string|max_length[255]',
             'description'     => 'permit_empty|string',
             'profile_group'   => 'permit_empty|string|max_length[255]',
             'react_route'     => 'permit_empty|string|max_length[255]',
@@ -25,7 +23,6 @@ class UpdateRequest
             'http_method'     => 'permit_empty|in_list[GET,POST,PUT,PATCH,DELETE]',
             'status'          => 'permit_empty|in_list[draft,active,inactive]',
             'version'         => 'permit_empty|is_natural_no_zero',
-            'settings_json'   => 'permit_empty',
         ];
     }
 

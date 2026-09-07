@@ -5,38 +5,69 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * View view_form_manager — leitura consolidada da arvore de um formulario.
+ * Remove as colunas name e subtitle de form_manager.
  *
- * Grao: 1 linha por campo. A view achata os 4 niveis
- *   form_manager -> form_groups -> form_rows -> form_campos
- * para que o front (React) baixe um formulario inteiro em uma consulta e
- * remonte a arvore em memoria.
+ * Motivo: o construtor (FormBuilderPage, rota v1/form-constructor) gera um
+ * formulario 1:1 com uma tabela do banco. Nesse cenario `name` e redundante com
+ * `slug` (identificador unico e obrigatorio) e com a propria tabela vinculada;
+ * `subtitle` e apenas cosmetico (title + description cobrem). A identidade do
+ * formulario passa a ser somente `slug`.
  *
- * Prefixos por origem:
- *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
- *
- * id (PK da view) = form_campos.id  — pode vir NULL quando um grupo/linha
- * ainda nao tem campos (LEFT JOIN). O consumo real e por
- *   POST /api/v1/form-manager-view/find        { "fm_id": "<id>" }
- *   POST /api/v1/form-manager-view/get-grouped { "fm_id": ["<id>"] }
- *
- * created_at/updated_at/deleted_at expostos sao os de form_manager (padrao do
- * ROADMAP). Cada LEFT JOIN filtra deleted_at IS NULL do lado dependente.
+ * up():   dropColumn(['name','subtitle']) + recria view_form_manager sem
+ *         fm_name / fm_subtitle.
+ * down(): recria as colunas e a view com elas. ATENCAO: `name` volta como NULL
+ *         (a DDL original era NOT NULL) para nao exigir default em tabela
+ *         populada — divergencia intencional do estado pre-correcao.
  */
-class CreateViewFormManagerMigration extends Migration
+class RemoveNameSubtitleFromFormManagerMigration extends Migration
 {
     public function up()
     {
+        $this->forge->dropColumn('form_manager', ['name', 'subtitle']);
+        $this->recreateView(false);
+    }
+
+    public function down()
+    {
+        $this->forge->addColumn('form_manager', [
+            'name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
+                'after'      => 'id',
+            ],
+            'subtitle' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
+                'after'      => 'title',
+            ],
+        ]);
+        $this->recreateView(true);
+    }
+
+    /**
+     * Recria view_form_manager. Com $withNameSubtitle = true inclui as colunas
+     * fm_name / fm_subtitle (estado anterior a esta migration).
+     */
+    private function recreateView(bool $withNameSubtitle): void
+    {
         $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
 
-        $this->db->query(<<<'SQL'
+        $nameSubtitle = $withNameSubtitle
+            ? "fm.name                 AS fm_name,\n"
+            . "                fm.subtitle             AS fm_subtitle,\n"
+            . '                '
+            : '';
+
+        $template = <<<'SQL'
             CREATE VIEW `view_form_manager` AS
             SELECT
                 fc.id                   AS id,
 
                 fm.id                   AS fm_id,
                 fm.slug                 AS fm_slug,
-                fm.title                AS fm_title,
+                %sfm.title                AS fm_title,
                 fm.description          AS fm_description,
                 fm.profile_group        AS fm_profile_group,
                 fm.react_route          AS fm_react_route,
@@ -44,6 +75,7 @@ class CreateViewFormManagerMigration extends Migration
                 fm.http_method          AS fm_http_method,
                 fm.status               AS fm_status,
                 fm.version              AS fm_version,
+                fm.settings_json        AS fm_settings_json,
 
                 fg.id                   AS fg_id,
                 fg.title                AS fg_title,
@@ -111,11 +143,8 @@ class CreateViewFormManagerMigration extends Migration
                 ON fc.form_row_id = fr.id
                AND fc.deleted_at IS NULL
             WHERE fm.deleted_at IS NULL
-            SQL);
-    }
+            SQL;
 
-    public function down()
-    {
-        $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
+        $this->db->query(\sprintf($template, $nameSubtitle));
     }
 }

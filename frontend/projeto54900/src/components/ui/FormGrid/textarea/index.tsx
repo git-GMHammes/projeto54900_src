@@ -22,7 +22,12 @@ export interface TextareaFieldSchema {
   cols?: number
   maxLength?: number
   minLength?: number
-  /** Exibe contador de caracteres (padrão: true quando maxLength definido) */
+  /**
+   * Exibe contador de caracteres abaixo do campo. Padrão: `true` quando
+   * `maxLength` está definido (mostra `n / máx` + barra de progresso).
+   * `showCounter: true` explícito também exibe sem `maxLength`, como
+   * contagem simples (`N caracteres`).
+   */
   showCounter?: boolean
   /** Bloqueia caracteres especiais */
   noSpecialChars?: boolean
@@ -82,7 +87,8 @@ export function TextareaField({ field }: TextareaFieldProps) {
   const [erro, setErro] = useState<string | null>(null)
 
   const valor = isControlled ? (field.value ?? '') : internalValue
-  const showCounter = field.showCounter !== false && !!field.maxLength
+  const temMax = !!field.maxLength
+  const showCounter = field.showCounter === true || (field.showCounter !== false && temMax)
   const pct = field.maxLength ? Math.min((valor.length / field.maxLength) * 100, 100) : 0
 
   function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
@@ -137,19 +143,27 @@ export function TextareaField({ field }: TextareaFieldProps) {
       />
       {showCounter && (
         <div className="d-flex align-items-center gap-2 mt-1" style={{ fontSize: '0.85rem' }}>
-          <span>
-            <span>{valor.length}</span> / <span>{field.maxLength}</span>
-          </span>
-          <div className="progress flex-grow-1" style={{ height: '4px' }}>
-            <div
-              className={`progress-bar ${progressClass(pct)}`}
-              role="progressbar"
-              style={{ width: `${pct}%` }}
-              aria-valuenow={valor.length}
-              aria-valuemin={0}
-              aria-valuemax={field.maxLength}
-            />
-          </div>
+          {temMax ? (
+            <>
+              <span>
+                <span>{valor.length}</span> / <span>{field.maxLength}</span>
+              </span>
+              <div className="progress flex-grow-1" style={{ height: '4px' }}>
+                <div
+                  className={`progress-bar ${progressClass(pct)}`}
+                  role="progressbar"
+                  style={{ width: `${pct}%` }}
+                  aria-valuenow={valor.length}
+                  aria-valuemin={0}
+                  aria-valuemax={field.maxLength}
+                />
+              </div>
+            </>
+          ) : (
+            <span className="text-muted">
+              {valor.length} {valor.length === 1 ? 'caractere' : 'caracteres'}
+            </span>
+          )}
         </div>
       )}
       <div className="text-danger small mt-1" style={{ minHeight: '1.25rem' }}>{erro}</div>

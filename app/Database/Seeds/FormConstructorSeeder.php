@@ -49,21 +49,14 @@ class FormConstructorSeeder extends Seeder
         $this->limparExistente('form-constructor');
 
         $managerId = $this->criar($this->managerProc, [
-            'name' => 'Construtor de Formularios',
             'slug' => 'form-constructor',
             'title' => 'Construtor de Formularios',
-            'subtitle' => 'Cria formularios dinamicos gravando na propria API do modulo Form',
             'description' => 'Meta-formulario: cada grupo abaixo define os campos de uma das quatro tabelas do modulo Form. Preencha de cima para baixo — o formulario alimenta o grupo, o grupo alimenta a linha, a linha alimenta o campo.',
             'profile_group' => 'admin',
             'react_route' => '/v1/form-constructor',
             'submit_endpoint' => self::API . '/form-manager/create',
             'http_method' => 'POST',
             'version' => 1,
-            'settings_json' => [
-                'renderer' => 'FormGrid',
-                'reference' => 'src/public/form_test.html',
-                'columns' => '1/2/3',
-            ],
         ], 'form_manager (form-constructor)');
 
         // status nasce 'draft'; deixa ativo para o front listar.
@@ -292,18 +285,12 @@ class FormConstructorSeeder extends Seeder
                 'slug' => 'formulario',
                 'title' => 'Formulario (form_manager)',
                 'icon' => 'ui-checks-grid',
-                'description' => 'Dados do formulario: nome, slug, rota React, grupo de perfil, status.',
+                'description' => 'Dados do formulario: slug, rota React, grupo de perfil, status.',
                 'rows' => [
                     [
                         'campos' => [
-                            ['col' => 6, 'label' => 'Nome', 'field_name' => 'name', 'required' => 1, 'placeholder' => 'Nome interno do formulario', 'help_text' => 'Identificacao humana do formulario.'],
                             ['col' => 6, 'label' => 'Slug', 'field_name' => 'slug', 'required' => 1, 'placeholder' => 'kebab-case', 'pattern' => '^[a-z0-9]+(?:-[a-z0-9]+)*$', 'help_text' => 'Identificador estavel, unico. Ex: cadastro-funcionario.'],
-                        ]
-                    ],
-                    [
-                        'campos' => [
                             ['col' => 6, 'label' => 'Titulo exibido', 'field_name' => 'title', 'placeholder' => 'Cabecalho no topo do formulario'],
-                            ['col' => 6, 'label' => 'Subtitulo', 'field_name' => 'subtitle'],
                         ]
                     ],
                     [
@@ -325,11 +312,6 @@ class FormConstructorSeeder extends Seeder
                             ['col' => 3, 'label' => 'Versao', 'field_name' => 'version', 'input_mode' => 'numeric', 'placeholder' => '1'],
                         ]
                     ],
-                    [
-                        'campos' => [
-                            ['field_type' => 'textarea', 'col' => 12, 'label' => 'settings_json', 'field_name' => 'settings_json', 'rows_qty' => 3, 'placeholder' => '{ "layout": "cards" }', 'help_text' => 'JSON livre de configuracao de layout.'],
-                        ]
-                    ],
                 ],
             ],
 
@@ -344,7 +326,7 @@ class FormConstructorSeeder extends Seeder
                 'rows' => [
                     [
                         'campos' => [
-                            ['field_type' => 'select', 'col' => 6, 'label' => 'Formulario', 'field_name' => 'form_manager_id', 'required' => 1, 'select_config_json' => $this->optSelect('/form-manager/get-no-pagination', '{name} ({slug}) #{id}'), 'help_text' => 'A qual formulario este grupo pertence.'],
+                            ['field_type' => 'select', 'col' => 6, 'label' => 'Formulario', 'field_name' => 'form_manager_id', 'required' => 1, 'select_config_json' => $this->optSelect('/form-manager/get-no-pagination', '{title} ({slug}) #{id}'), 'help_text' => 'A qual formulario este grupo pertence.'],
                             ['col' => 6, 'label' => 'Titulo da secao', 'field_name' => 'title', 'required' => 1, 'placeholder' => 'Ex: Dados Pessoais'],
                         ]
                     ],

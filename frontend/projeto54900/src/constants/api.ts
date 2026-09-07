@@ -14,6 +14,7 @@ export const DEFAULT_API_VERSION: string = env.apiVersion;
 export const API_GROUPS = {
   userManager: 'user-manager',
   userManagerView: 'user-manager-view',
+  userRoles: 'user-roles',
   uploadManager: 'upload-manager',
   uploadManagerView: 'upload-manager-view',
   formManager: 'form-manager',

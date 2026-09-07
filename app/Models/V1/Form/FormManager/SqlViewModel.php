@@ -26,7 +26,6 @@ class SqlViewModel extends BaseViewModel
 
     /** Campos de texto que usam LIKE %valor% no findPaginatedView. */
     protected array $likeFields = [
-        'fm_name',
         'fm_slug',
         'fm_title',
         'fm_profile_group',
@@ -44,7 +43,6 @@ class SqlViewModel extends BaseViewModel
     protected array $sortableFields = [
         'id',
         'fm_id',
-        'fm_name',
         'fm_slug',
         'fm_status',
         'fg_id',
@@ -60,7 +58,6 @@ class SqlViewModel extends BaseViewModel
 
     /** Campos varridos pelo GET /search. */
     public array $searchFields = [
-        'fm_name',
         'fm_slug',
         'fm_title',
         'fm_profile_group',
