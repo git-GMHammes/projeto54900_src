@@ -17,18 +17,6 @@ Complementa o [`CLAUDE.md`](../../../CLAUDE.md) do frontend — não o substitui
 
 ## 1. Comando principal
 
-O frontend **não usa `.env`** e **não roda em container**. As chaves `VITE_*`
-têm defaults em `src/config/env.ts` (`base` `/`, API `/api`, versão `v1`,
-WS `/ws`) — não é preciso exportar nada para o dia a dia.
-
-### Pré-requisitos
-
-| Requisito | Observação |
-| --- | --- |
-| Node >= 20.19 no host | roda o `npm` (dev, build, lint) |
-| Backend no ar | containers do `docker-compose.yml` (`mysql`, `php`, `nginx`, `node`) publicados no host em `:54900` — alvo do proxy `/api` e `/ws` |
-
-Primeira vez: `npm install` dentro de `C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900//`.
 
 ### Subir o app (dia a dia)
 
@@ -45,6 +33,19 @@ npm run dev
   - `/ws`  -> mesmo alvo, com upgrade WebSocket.
 - HMR ativo (polling, para editar os arquivos no Windows).
 - Depende do backend (`docker compose up -d`) no ar para `/api` responder.
+
+O frontend **não usa `.env`** e **não roda em container**. As chaves `VITE_*`
+têm defaults em `src/config/env.ts` (`base` `/`, API `/api`, versão `v1`,
+WS `/ws`) — não é preciso exportar nada para o dia a dia.
+
+### Pré-requisitos
+
+| Requisito | Observação |
+| --- | --- |
+| Node >= 20.19 no host | roda o `npm` (dev, build, lint) |
+| Backend no ar | containers do `docker-compose.yml` (`mysql`, `php`, `nginx`, `node`) publicados no host em `:54900` — alvo do proxy `/api` e `/ws` |
+
+Primeira vez: `npm install` dentro de `C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900//`.
 
 ### Todos os scripts (`package.json`)
 
