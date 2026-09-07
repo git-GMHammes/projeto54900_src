@@ -9,7 +9,7 @@ use App\Models\V1\BaseTableModel;
  *
  * Tabela: form_rows
  * DDL: id (BIGINT PK auto), form_group_id (FK -> form_groups, CASCADE),
- *      sort_order (default 0), label, gutter (default 'g-3'), note,
+ *      sort_order (default 0), gutter (default 'g-3'), note,
  *      created_at, updated_at, deleted_at.
  *
  * A regra "1 a 12 campos por linha" (contagem e soma dos `col`) e verificada
@@ -28,13 +28,11 @@ class SqlTableModel extends BaseTableModel
     protected $allowedFields = [
         'form_group_id',
         'sort_order',
-        'label',
         'gutter',
         'note',
     ];
 
     protected array $likeFields = [
-        'label',
         'note',
     ];
 
@@ -42,13 +40,11 @@ class SqlTableModel extends BaseTableModel
         'id',
         'form_group_id',
         'sort_order',
-        'label',
         'created_at',
         'updated_at',
     ];
 
     public array $searchFields = [
-        'label',
         'note',
     ];
 
@@ -58,7 +54,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function sumCampoCols(int $formRowId, ?int $excludeCampoId = null): int
     {
-        $builder = $this->db->table('form_campos')
+        $builder = $this->db->table('form_fields')
             ->selectSum('col', 'total')
             ->where('form_row_id', $formRowId)
             ->where('deleted_at IS NULL', null, false);
@@ -77,7 +73,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function countCampos(int $formRowId, ?int $excludeCampoId = null): int
     {
-        $builder = $this->db->table('form_campos')
+        $builder = $this->db->table('form_fields')
             ->where('form_row_id', $formRowId)
             ->where('deleted_at IS NULL', null, false);
 

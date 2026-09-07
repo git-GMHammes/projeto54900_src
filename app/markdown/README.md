@@ -67,7 +67,7 @@ dinâmicos (como o `src/public/form_test.html`) e a expõe por APIs REST
 **públicas** (sem JWT). Quatro tabelas encadeadas — `form_manager` (o
 formulário: slug, título, grupo de perfil, rota React, status),
 `form_groups` (subgrupos de contexto), `form_rows` (linhas de 1 a 12 campos) e
-`form_campos` (atributos de qualquer componente do `FormGrid`, em colunas
+`form_fields` (atributos de qualquer componente do `FormGrid`, em colunas
 explícitas + flags + colunas JSON) — mais a view `view_form_manager` que
 achata os quatro níveis (1 linha por campo) para o front baixar o formulário
 inteiro numa consulta. Segue o padrão de módulo; cada tabela tem as 18 rotas

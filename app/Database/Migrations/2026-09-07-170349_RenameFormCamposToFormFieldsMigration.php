@@ -5,31 +5,41 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * View view_form_manager — leitura consolidada da arvore de um formulario.
+ * Renomeia a tabela form_campos -> form_fields.
  *
- * Grao: 1 linha por campo. A view achata os 4 niveis
- *   form_manager -> form_groups -> form_rows -> form_campos
- * para que o front (React) baixe um formulario inteiro em uma consulta e
- * remonte a arvore em memoria.
+ * form_campos era a unica tabela do modulo Form em portugues; as irmas sao
+ * form_manager, form_groups e form_rows. Escopo A: so a tabela. O modulo PHP
+ * (FormCampos), a rota /api/v1/form-campos e o prefixo `fc_` da view seguem
+ * como estao — padronizacao completa e Escopo B, a parte.
  *
- * Prefixos por origem:
- *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
+ * As migrations historicas (012303 cria form_campos; 012304/151717/161309/164602
+ * recriam a view com LEFT JOIN form_campos) NAO sao editadas — registram
+ * fielmente o estado da epoca. Esta migration faz o RENAME e recria a view com
+ * form_fields; no rollback (ordem reversa) o down() renomeia de volta antes de
+ * qualquer down() antigo rodar.
  *
- * id (PK da view) = form_campos.id  — pode vir NULL quando um grupo/linha
- * ainda nao tem campos (LEFT JOIN). O consumo real e por
- *   POST /api/v1/form-manager-view/find        { "fm_id": "<id>" }
- *   POST /api/v1/form-manager-view/get-grouped { "fm_id": ["<id>"] }
- *
- * created_at/updated_at/deleted_at expostos sao os de form_manager (padrao do
- * ROADMAP). Cada LEFT JOIN filtra deleted_at IS NULL do lado dependente.
+ * A FK form_row_id -> form_rows.id o MySQL preserva no RENAME TABLE.
  */
-class CreateViewFormManagerMigration extends Migration
+class RenameFormCamposToFormFieldsMigration extends Migration
 {
     public function up()
     {
+        $this->forge->renameTable('form_campos', 'form_fields');
+        $this->recreateView('form_fields');
+    }
+
+    public function down()
+    {
+        $this->forge->renameTable('form_fields', 'form_campos');
+        $this->recreateView('form_campos');
+    }
+
+    /** Recria view_form_manager fazendo LEFT JOIN na tabela de campos informada. */
+    private function recreateView(string $camposTable): void
+    {
         $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
 
-        $this->db->query(<<<'SQL'
+        $template = <<<'SQL'
             CREATE VIEW `view_form_manager` AS
             SELECT
                 fc.id                   AS id,
@@ -44,7 +54,6 @@ class CreateViewFormManagerMigration extends Migration
                 fm.http_method          AS fm_http_method,
                 fm.status               AS fm_status,
                 fm.version              AS fm_version,
-
                 fg.id                   AS fg_id,
                 fg.title                AS fg_title,
                 fg.slug                 AS fg_slug,
@@ -106,15 +115,12 @@ class CreateViewFormManagerMigration extends Migration
             LEFT JOIN `form_rows` fr
                 ON fr.form_group_id = fg.id
                AND fr.deleted_at IS NULL
-            LEFT JOIN `form_campos` fc
+            LEFT JOIN `%s` fc
                 ON fc.form_row_id = fr.id
                AND fc.deleted_at IS NULL
             WHERE fm.deleted_at IS NULL
-            SQL);
-    }
+            SQL;
 
-    public function down()
-    {
-        $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
+        $this->db->query(\sprintf($template, $camposTable));
     }
 }

@@ -8,7 +8,6 @@ namespace App\Requests\V1\Form\FormRows;
  * DDL de referencia:
  *   form_group_id BIGINT       NOT NULL  FK -> form_groups.id
  *   sort_order    INT          NOT NULL DEFAULT 0
- *   label         VARCHAR(255) NULL
  *   gutter        VARCHAR(8)   NULL DEFAULT 'g-3'
  *   note          VARCHAR(255) NULL
  *
@@ -23,7 +22,6 @@ class CreateRequest
         return [
             'form_group_id' => 'required|is_natural_no_zero',
             'sort_order'    => 'permit_empty|is_natural',
-            'label'         => 'permit_empty|string|max_length[255]',
             'gutter'        => 'permit_empty|string|max_length[8]',
             'note'          => 'permit_empty|string|max_length[255]',
         ];

@@ -20,7 +20,7 @@ use RuntimeException;
  *   grupo 'formulario' -> campos de form_manager  (POST /api/v1/form-manager/create)
  *   grupo 'grupos'     -> campos de form_groups   (POST /api/v1/form-groups/create)
  *   grupo 'linhas'     -> campos de form_rows     (POST /api/v1/form-rows/create)
- *   grupo 'campos'     -> campos de form_campos   (POST /api/v1/form-campos/create)
+ *   grupo 'campos'     -> campos de form_fields   (POST /api/v1/form-campos/create)
  *
  * O frontend le a view view_form_manager e renderiza com <FormGrid>, com
  * aparencia equivalente a src/public/form_test.html.
@@ -78,14 +78,13 @@ class FormConstructorSeeder extends Seeder
                     'form_group_id' => $groupId,
                     'sort_order' => $rOrder + 1,
                     'gutter' => $row['gutter'] ?? 'g-3',
-                    'label' => $row['label'] ?? null,
                 ], "form_rows ({$group['slug']} #" . ($rOrder + 1) . ')');
 
                 foreach ($row['campos'] as $cOrder => $campo) {
                     $this->criar(
                         $this->camposProc,
                         $this->normalizarCampo($campo, $rowId, $cOrder + 1, $group['slug']),
-                        "form_campos ({$group['slug']}.{$campo['field_name']})"
+                        "form_fields ({$group['slug']}.{$campo['field_name']})"
                     );
                 }
             }
@@ -368,19 +367,18 @@ class FormConstructorSeeder extends Seeder
                     ],
                     [
                         'campos' => [
-                            ['col' => 6, 'label' => 'Rotulo da linha', 'field_name' => 'label'],
-                            ['col' => 6, 'label' => 'Nota', 'field_name' => 'note'],
+                            ['col' => 12, 'label' => 'Nota', 'field_name' => 'note'],
                         ]
                     ],
                 ],
             ],
 
             // ================================================================
-            // Grupo 4 — Campos (form_campos)
+            // Grupo 4 — Campos (form_fields)
             // ================================================================
             [
                 'slug' => 'campos',
-                'title' => 'Campos (form_campos)',
+                'title' => 'Campos (form_fields)',
                 'icon' => 'input-cursor-text',
                 'description' => 'Um campo de uma linha. Reproduz os atributos de qualquer componente do FormGrid.',
                 'rows' => [

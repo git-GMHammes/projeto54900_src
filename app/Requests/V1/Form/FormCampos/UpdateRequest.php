@@ -3,7 +3,7 @@
 namespace App\Requests\V1\Form\FormCampos;
 
 /**
- * Regras de validacao para PUT /update/{id} (tabela form_campos).
+ * Regras de validacao para PUT /update/{id} (tabela form_fields).
  *
  * Atualizacao parcial: todos os campos permit_empty (inclusive field_type e
  * form_row_id). Se field_type ou os atributos JSON mudarem, o Processor
