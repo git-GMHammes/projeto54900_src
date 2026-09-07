@@ -63,12 +63,12 @@ Dockerfile, que é versionado) — `docker/php/Dockerfile` e
 `docker/node/Dockerfile` só leem os `ARG`:
 
 ```yaml
-  php: # (mesmo padrão em node:)
-    build:
-      args:
-        USE_INTERNAL_PROXY: "false"   # "true" liga o proxy no build
-        PROXY_HOST: "10.200.188.17" # IP real só no docker-compose.yml (fora do git)
-        PROXY_PORT: "80"
+php: # (mesmo padrão em node:)
+  build:
+    args:
+      USE_INTERNAL_PROXY: "false" # "true" liga o proxy no build
+      PROXY_HOST: "10.200.188.17" # IP real só no docker-compose.yml (fora do git)
+      PROXY_PORT: "80"
 ```
 
 - `USE_INTERNAL_PROXY: "true"` → build usa `http_proxy`/`https_proxy` com
