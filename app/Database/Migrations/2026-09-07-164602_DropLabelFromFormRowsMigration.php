@@ -5,31 +5,50 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * View view_form_manager — leitura consolidada da arvore de um formulario.
+ * Remove a coluna label de form_rows.
  *
- * Grao: 1 linha por campo. A view achata os 4 niveis
- *   form_manager -> form_groups -> form_rows -> form_campos
- * para que o front (React) baixe um formulario inteiro em uma consulta e
- * remonte a arvore em memoria.
+ * Motivo: label (VARCHAR(255) NULL, "rotulo opcional da linha") nao tem alvo de
+ * render — o cabecalho de secao e do grupo (form_groups.title -> sectionTitle do
+ * FormGrid) e a linha e apenas uma faixa do grid de 12 colunas. `note` (nota
+ * interna do construtor) permanece.
  *
- * Prefixos por origem:
- *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
- *
- * id (PK da view) = form_campos.id  — pode vir NULL quando um grupo/linha
- * ainda nao tem campos (LEFT JOIN). O consumo real e por
- *   POST /api/v1/form-manager-view/find        { "fm_id": "<id>" }
- *   POST /api/v1/form-manager-view/get-grouped { "fm_id": ["<id>"] }
- *
- * created_at/updated_at/deleted_at expostos sao os de form_manager (padrao do
- * ROADMAP). Cada LEFT JOIN filtra deleted_at IS NULL do lado dependente.
+ * up():   dropColumn(label) + recria view_form_manager sem fr_label.
+ * down(): readiciona a coluna (VARCHAR(255) NULL) e a view com ela.
  */
-class CreateViewFormManagerMigration extends Migration
+class DropLabelFromFormRowsMigration extends Migration
 {
     public function up()
     {
+        $this->forge->dropColumn('form_rows', 'label');
+        $this->recreateView(false);
+    }
+
+    public function down()
+    {
+        $this->forge->addColumn('form_rows', [
+            'label' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
+                'after'      => 'sort_order',
+            ],
+        ]);
+        $this->recreateView(true);
+    }
+
+    /**
+     * Recria view_form_manager. Com $withLabel = true inclui a coluna fr_label
+     * (estado anterior a esta migration).
+     */
+    private function recreateView(bool $withLabel): void
+    {
         $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
 
-        $this->db->query(<<<'SQL'
+        $label = $withLabel
+            ? "fr.label                AS fr_label,\n                "
+            : '';
+
+        $template = <<<'SQL'
             CREATE VIEW `view_form_manager` AS
             SELECT
                 fc.id                   AS id,
@@ -44,7 +63,6 @@ class CreateViewFormManagerMigration extends Migration
                 fm.http_method          AS fm_http_method,
                 fm.status               AS fm_status,
                 fm.version              AS fm_version,
-
                 fg.id                   AS fg_id,
                 fg.title                AS fg_title,
                 fg.slug                 AS fg_slug,
@@ -55,7 +73,7 @@ class CreateViewFormManagerMigration extends Migration
 
                 fr.id                   AS fr_id,
                 fr.sort_order           AS fr_sort_order,
-                fr.gutter               AS fr_gutter,
+                %sfr.gutter               AS fr_gutter,
                 fr.note                 AS fr_note,
 
                 fc.id                   AS fc_id,
@@ -110,11 +128,8 @@ class CreateViewFormManagerMigration extends Migration
                 ON fc.form_row_id = fr.id
                AND fc.deleted_at IS NULL
             WHERE fm.deleted_at IS NULL
-            SQL);
-    }
+            SQL;
 
-    public function down()
-    {
-        $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
+        $this->db->query(\sprintf($template, $label));
     }
 }

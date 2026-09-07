@@ -15,7 +15,6 @@ class UpdateRequest
         return [
             'form_group_id' => 'permit_empty|is_natural_no_zero',
             'sort_order'    => 'permit_empty|is_natural',
-            'label'         => 'permit_empty|string|max_length[255]',
             'gutter'        => 'permit_empty|string|max_length[8]',
             'note'          => 'permit_empty|string|max_length[255]',
         ];

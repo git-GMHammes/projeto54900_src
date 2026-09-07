@@ -28,15 +28,18 @@ import {
   type GrupoLocal,
   type ManagerLocal,
   type ManagerStatus,
+  type RowLocal,
   type TabelaInfo,
   grupoInicial,
   managerInicial,
+  rowInicial,
   toColuna,
   toTabela,
 } from './formBuilder.model';
 
 type ManagerPatch = (tabela: string, patch: Partial<ManagerLocal>) => void;
 type GrupoPatch = (tabela: string, id: string, patch: Partial<GrupoLocal>) => void;
+type RowPatch = (grupoId: string, id: string, patch: Partial<RowLocal>) => void;
 
 const STATUS_OPCOES = [
   { value: 'draft', label: 'draft' },
@@ -47,6 +50,11 @@ const STATUS_OPCOES = [
 const HTTP_OPCOES = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((m) => ({
   value: m,
   label: m,
+}));
+
+const GUTTER_OPCOES = ['g-0', 'g-1', 'g-2', 'g-3', 'g-4', 'g-5'].map((g) => ({
+  value: g,
+  label: g,
 }));
 
 const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
@@ -275,6 +283,53 @@ function grupoSchema(
   };
 }
 
+// ─── Schema do subcard LINHAS (form_rows) ───────────────────────────────────
+
+function rowSchema(grupoId: string, r: RowLocal, patch: RowPatch): FormGridSchema {
+  return {
+    rows: [
+      {
+        fields: [
+          {
+            col: 6,
+            label: 'Ordem',
+            name: 'sort_order',
+            inputMode: 'numeric',
+            value: String(r.sort_order),
+            onChange: (e) =>
+              patch(grupoId, r.id, {
+                sort_order: Number.parseInt(e.target.value, 10) || 0,
+              }),
+          },
+          {
+            type: 'select',
+            col: 6,
+            label: 'Gutter (espaço)',
+            options: GUTTER_OPCOES,
+            valueKey: 'value',
+            labelKey: 'label',
+            value: r.gutter,
+            onChange: (value) => patch(grupoId, r.id, { gutter: value }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            col: 12,
+            label: 'Nota',
+            name: 'note',
+            maxLength: 255,
+            placeholder: 'Nota interna',
+            value: r.note,
+            onChange: (e) => patch(grupoId, r.id, { note: e.target.value }),
+          },
+        ],
+      },
+    ],
+  };
+}
+
 // ─── Página ────────────────────────────────────────────────────────────────
 
 export default function FormBuilderPage() {
@@ -287,6 +342,8 @@ export default function FormBuilderPage() {
   // Cache das colunas por tabela (2a API). Ainda não renderizado — reservado.
   const [, setColunas] = useState<Record<string, ColunasState>>({});
   const [grupos, setGrupos] = useState<Record<string, GrupoLocal[]>>({});
+  // Linhas (form_rows) por grupo — chave = grupo.id (uuid).
+  const [linhas, setLinhas] = useState<Record<string, RowLocal[]>>({});
 
   // 1a API — todas as tabelas do banco, sem paginação.
   useEffect(() => {
@@ -388,6 +445,20 @@ export default function FormBuilderPage() {
     }));
   }, []);
 
+  const adicionarLinha = useCallback((grupoId: string) => {
+    setLinhas((prev) => ({
+      ...prev,
+      [grupoId]: [...(prev[grupoId] ?? []), rowInicial()],
+    }));
+  }, []);
+
+  const atualizarLinha = useCallback<RowPatch>((grupoId, id, patch) => {
+    setLinhas((prev) => ({
+      ...prev,
+      [grupoId]: (prev[grupoId] ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    }));
+  }, []);
+
   // Card seletor de tabelas — já era FormGrid.
   const schema: FormGridSchema = {
     rows: [
@@ -474,6 +545,30 @@ export default function FormBuilderPage() {
                         />
                       </div>
                     </div>
+
+                    <div className="d-flex align-items-center justify-content-between mt-3 mb-2">
+                      <span className="fw-semibold small text-uppercase text-muted">
+                        Linhas
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        title="Adicionar linha"
+                        onClick={() => adicionarLinha(grupo.id)}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {(linhas[grupo.id] ?? []).map((linha) => (
+                      <div className="card border mb-2" key={linha.id}>
+                        <div className="card-body py-2">
+                          <FormGrid
+                            schema={rowSchema(grupo.id, linha, atualizarLinha)}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

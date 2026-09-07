@@ -1,7 +1,7 @@
 // Adapter: linhas achatadas da view view_form_manager -> FormGridSchema por grupo.
 //
 // A view devolve 1 linha por campo, com prefixos:
-//   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
+//   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_fields
 //
 // buildConstructorSchemas() agrupa por fg_slug, ordena por sort_order e converte
 // cada coluna fc_* na prop equivalente do AnyFieldSchema do FormGrid. Colunas

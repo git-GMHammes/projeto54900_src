@@ -1,5 +1,5 @@
 <?php
-// Rotas REST para manipulacao da tabela form_campos
+// Rotas REST para manipulacao da tabela form_fields (slug de rota: form-campos)
 // POST {{www}}/index.php/api/v1/form-campos/find?page=1&limit=20&sort=id&order=ASC
 $routes->post('find', 'Api\V1\Form\FormCampos\ResourceTableController::find');
 // POST {{www}}/index.php/api/v1/form-campos/get-grouped?page=1&limit=20&sort=id&order=ASC
