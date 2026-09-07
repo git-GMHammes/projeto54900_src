@@ -21,7 +21,7 @@ módulo Form** (mesmo caminho das rotas REST), um `form_manager` de slug
 | `formulario`      | `form_manager`        | `POST /api/v1/form-manager/create` |
 | `grupos`          | `form_groups`         | `POST /api/v1/form-groups/create`  |
 | `linhas`          | `form_rows`           | `POST /api/v1/form-rows/create`    |
-| `campos`          | `form_campos`         | `POST /api/v1/form-campos/create`  |
+| `campos`          | `form_fields`         | `POST /api/v1/form-campos/create`  |
 
 Os campos `*_id` são `select` com `select_config_json.src` apontando para
 `/api/v1/form-<x>/get-no-pagination` (o `FormGrid select` faz `fetch` próprio;

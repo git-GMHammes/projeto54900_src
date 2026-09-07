@@ -103,3 +103,22 @@ export function grupoInicial(): GrupoLocal {
     slugAuto: true,
   };
 }
+
+// ─── form_rows (N por grupo) ───────────────────────────────────────────────
+
+export interface RowLocal {
+  id: string;
+  sort_order: number;
+  /** Classe de gap do Bootstrap na `row` (g-0 … g-5). */
+  gutter: string;
+  note: string;
+}
+
+export function rowInicial(): RowLocal {
+  return {
+    id: crypto.randomUUID(),
+    sort_order: 0,
+    gutter: 'g-3',
+    note: '',
+  };
+}

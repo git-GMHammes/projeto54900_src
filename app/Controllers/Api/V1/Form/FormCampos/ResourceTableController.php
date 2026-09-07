@@ -11,7 +11,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Controller de recurso para operacoes diretas na tabela form_campos.
+ * Controller de recurso para operacoes diretas na tabela form_fields.
  *
  * Todos os endpoints REST estao em BaseResourceTableController. Este controller
  * declara apenas o Processor e as regras de validacao do modulo.

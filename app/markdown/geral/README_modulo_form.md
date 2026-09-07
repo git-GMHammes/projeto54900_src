@@ -30,7 +30,7 @@ Segue o [`ROADMAP_padrao_modulo.md`](ROADMAP_padrao_modulo.md); espelha
 form_manager  (o formulário)
    └─ form_groups   (subgrupos de contexto — "Dados Pessoais", "Contato", ...)
         └─ form_rows   (linhas; de 1 a 12 campos, soma dos `col` ≤ 12)
-             └─ form_campos  (um campo; atributos de qualquer componente do FormGrid)
+             └─ form_fields  (um campo; atributos de qualquer componente do FormGrid)
 ```
 
 Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
@@ -58,11 +58,11 @@ Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
 
 ### 2.3 `form_rows`
 
-`form_group_id` (FK), `sort_order`, `label`, `gutter` (DEFAULT `g-3`), `note`.
+`form_group_id` (FK), `sort_order`, `gutter` (DEFAULT `g-3`), `note`.
 A regra **1 a 12 campos por linha** (contagem **e** soma dos `col` ≤ 12) é
 aplicada pelo `Form/FormCampos/Processor` quando o campo é vinculado.
 
-### 2.4 `form_campos` (atributos do FormGrid — híbrido)
+### 2.4 `form_fields` (atributos do FormGrid — híbrido)
 
 - **Colunas explícitas:** `form_row_id` (FK), `sort_order`, `field_type` (ENUM
   com os 22 tipos), `col` (1–12), `label`, `field_name`, `field_key`,
@@ -90,7 +90,7 @@ array/objeto (`json_encode`).
 ### 2.5 `view_form_manager`
 
 Achata os 4 níveis — **1 linha por campo**. Colunas com prefixo de origem
-(`fm_`, `fg_`, `fr_`, `fc_`); `id` = `form_campos.id` (pode ser NULL em ramo
+(`fm_`, `fg_`, `fr_`, `fc_`); `id` = `form_fields.id` (pode ser NULL em ramo
 sem campos); `created_at`/`updated_at`/`deleted_at` = os de `form_manager`.
 Cada LEFT JOIN filtra `deleted_at IS NULL` do lado dependente.
 
@@ -162,7 +162,7 @@ aponta para o mesmo banco.
 ## 7. Ordem de criação de dados
 
 `form_manager` → `form_groups` (com `form_manager_id`) → `form_rows` (com
-`form_group_id`) → `form_campos` (com `form_row_id`). Excluir um `form_manager`
+`form_group_id`) → `form_fields` (com `form_row_id`). Excluir um `form_manager`
 (hard delete) leva junto grupos, linhas e campos (CASCADE); o `delete-soft`
 marca apenas o registro-alvo.
 

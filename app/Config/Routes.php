@@ -38,7 +38,7 @@ $routes->group('api/v1', static function ($routes) {
 
     // =========================================================================
     // /Form — Modulo de formularios dinamicos (form_manager > form_groups >
-    //         form_rows > form_campos) + view de ligacao view_form_manager.
+    //         form_rows > form_fields) + view de ligacao view_form_manager.
     //         APIs publicas (sem JWT).
     // =========================================================================
 

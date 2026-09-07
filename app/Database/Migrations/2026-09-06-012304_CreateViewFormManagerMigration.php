@@ -55,7 +55,6 @@ class CreateViewFormManagerMigration extends Migration
 
                 fr.id                   AS fr_id,
                 fr.sort_order           AS fr_sort_order,
-                fr.label                AS fr_label,
                 fr.gutter               AS fr_gutter,
                 fr.note                 AS fr_note,
 

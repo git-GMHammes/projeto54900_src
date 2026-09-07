@@ -18,7 +18,6 @@ use CodeIgniter\Database\RawSql;
  * DDL:
  *   form_group_id BIGINT       NOT NULL  FK -> form_groups.id (CASCADE)
  *   sort_order    INT          NOT NULL DEFAULT 0  ordem da linha dentro do grupo
- *   label         VARCHAR(255) NULL                rotulo opcional da linha
  *   gutter        VARCHAR(8)   NULL DEFAULT 'g-3'  classe de gap do Bootstrap (row g-3)
  *   note          VARCHAR(255) NULL
  *   created_at / updated_at / deleted_at DATETIME (padrao + soft delete)
@@ -39,11 +38,6 @@ class CreateFormRowsTableMigration extends Migration
                 'type'       => 'INT',
                 'constraint' => 11,
                 'default'    => 0,
-            ],
-            'label' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-                'null'       => true,
             ],
             'gutter' => [
                 'type'       => 'VARCHAR',

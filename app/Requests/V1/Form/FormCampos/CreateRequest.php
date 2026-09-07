@@ -3,7 +3,7 @@
 namespace App\Requests\V1\Form\FormCampos;
 
 /**
- * Regras de validacao para POST /create (tabela form_campos).
+ * Regras de validacao para POST /create (tabela form_fields).
  *
  * Reproduz os atributos de qualquer componente do FormGrid. DDL de referencia:
  *   form_row_id  BIGINT NOT NULL  FK -> form_rows.id

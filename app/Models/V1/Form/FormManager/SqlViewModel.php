@@ -7,13 +7,13 @@ use App\Models\V1\BaseViewModel;
 /**
  * Model de leitura para a view view_form_manager.
  *
- * A view achata form_manager -> form_groups -> form_rows -> form_campos
+ * A view achata form_manager -> form_groups -> form_rows -> form_fields
  * (1 linha por campo).
  *
  * Prefixos na view:
- *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
+ *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_fields
  *
- * id (PK da view) = form_campos.id (pode ser NULL em ramo sem campos).
+ * id (PK da view) = form_fields.id (pode ser NULL em ramo sem campos).
  * created_at/updated_at/deleted_at refletem form_manager.
  *
  * Todos os metodos genericos de leitura vem de BaseViewModel.
@@ -32,7 +32,6 @@ class SqlViewModel extends BaseViewModel
         'fm_react_route',
         'fg_title',
         'fg_slug',
-        'fr_label',
         'fc_label',
         'fc_field_name',
         'fc_field_key',
@@ -62,7 +61,6 @@ class SqlViewModel extends BaseViewModel
         'fm_title',
         'fm_profile_group',
         'fg_title',
-        'fr_label',
         'fc_label',
         'fc_field_name',
         'fc_placeholder',
