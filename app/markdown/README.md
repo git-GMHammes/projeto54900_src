@@ -65,7 +65,7 @@ novo módulo/banco.
 Domínio `Form` da API V1: guarda no banco a definição estrutural de formulários
 dinâmicos (como o `src/public/form_test.html`) e a expõe por APIs REST
 **públicas** (sem JWT). Quatro tabelas encadeadas — `form_manager` (o
-formulário: nome, slug, grupo de perfil, rota React, status),
+formulário: slug, título, grupo de perfil, rota React, status),
 `form_groups` (subgrupos de contexto), `form_rows` (linhas de 1 a 12 campos) e
 `form_campos` (atributos de qualquer componente do `FormGrid`, em colunas
 explícitas + flags + colunas JSON) — mais a view `view_form_manager` que

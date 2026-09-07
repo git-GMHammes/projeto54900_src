@@ -5,31 +5,49 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * View view_form_manager — leitura consolidada da arvore de um formulario.
+ * Remove a coluna settings_json de form_manager.
  *
- * Grao: 1 linha por campo. A view achata os 4 niveis
- *   form_manager -> form_groups -> form_rows -> form_campos
- * para que o front (React) baixe um formulario inteiro em uma consulta e
- * remonte a arvore em memoria.
+ * Motivo: settings_json (JSON NULL, "catch-all de layout") nunca ganhou
+ * contrato nem consumidor — nenhum codigo le a coluna. form_campos ja carrega
+ * config JSON por campo; config no nivel do formulario nao tem feature que
+ * precise dela. Readicionar depois e uma migration de uma linha.
  *
- * Prefixos por origem:
- *   fm_ = form_manager   fg_ = form_groups   fr_ = form_rows   fc_ = form_campos
- *
- * id (PK da view) = form_campos.id  — pode vir NULL quando um grupo/linha
- * ainda nao tem campos (LEFT JOIN). O consumo real e por
- *   POST /api/v1/form-manager-view/find        { "fm_id": "<id>" }
- *   POST /api/v1/form-manager-view/get-grouped { "fm_id": ["<id>"] }
- *
- * created_at/updated_at/deleted_at expostos sao os de form_manager (padrao do
- * ROADMAP). Cada LEFT JOIN filtra deleted_at IS NULL do lado dependente.
+ * up():   dropColumn(settings_json) + recria view_form_manager sem fm_settings_json.
+ * down(): readiciona a coluna (JSON NULL) e a view com ela.
  */
-class CreateViewFormManagerMigration extends Migration
+class DropSettingsJsonFromFormManagerMigration extends Migration
 {
     public function up()
     {
+        $this->forge->dropColumn('form_manager', 'settings_json');
+        $this->recreateView(false);
+    }
+
+    public function down()
+    {
+        $this->forge->addColumn('form_manager', [
+            'settings_json' => [
+                'type'  => 'JSON',
+                'null'  => true,
+                'after' => 'version',
+            ],
+        ]);
+        $this->recreateView(true);
+    }
+
+    /**
+     * Recria view_form_manager. Com $withSettingsJson = true inclui a coluna
+     * fm_settings_json (estado anterior a esta migration).
+     */
+    private function recreateView(bool $withSettingsJson): void
+    {
         $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
 
-        $this->db->query(<<<'SQL'
+        $settingsJson = $withSettingsJson
+            ? "fm.settings_json        AS fm_settings_json,\n\n                "
+            : '';
+
+        $template = <<<'SQL'
             CREATE VIEW `view_form_manager` AS
             SELECT
                 fc.id                   AS id,
@@ -44,8 +62,7 @@ class CreateViewFormManagerMigration extends Migration
                 fm.http_method          AS fm_http_method,
                 fm.status               AS fm_status,
                 fm.version              AS fm_version,
-
-                fg.id                   AS fg_id,
+                %sfg.id                   AS fg_id,
                 fg.title                AS fg_title,
                 fg.slug                 AS fg_slug,
                 fg.description          AS fg_description,
@@ -111,11 +128,8 @@ class CreateViewFormManagerMigration extends Migration
                 ON fc.form_row_id = fr.id
                AND fc.deleted_at IS NULL
             WHERE fm.deleted_at IS NULL
-            SQL);
-    }
+            SQL;
 
-    public function down()
-    {
-        $this->db->query('DROP VIEW IF EXISTS `view_form_manager`');
+        $this->db->query(\sprintf($template, $settingsJson));
     }
 }

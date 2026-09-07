@@ -6,10 +6,8 @@ namespace App\Requests\V1\Form\FormManager;
  * Regras de validacao para POST /create (tabela form_manager).
  *
  * DDL de referencia:
- *   name            VARCHAR(255) NOT NULL
  *   slug            VARCHAR(255) NOT NULL UNIQUE
  *   title           VARCHAR(255) NULL
- *   subtitle        VARCHAR(255) NULL
  *   description     TEXT         NULL
  *   profile_group   VARCHAR(255) NULL
  *   react_route     VARCHAR(255) NULL
@@ -17,7 +15,6 @@ namespace App\Requests\V1\Form\FormManager;
  *   http_method     VARCHAR(10)  NULL DEFAULT 'POST'
  *   status          ENUM('draft','active','inactive') NOT NULL DEFAULT 'draft'
  *   version         INT          NOT NULL DEFAULT 1
- *   settings_json   JSON         NULL
  *
  * status NAO entra no create — todo formulario nasce com o DEFAULT da coluna
  * ('draft'); ver Services\V1\Form\FormManager\Processor::prepareData.
@@ -28,27 +25,20 @@ class CreateRequest
     public function rules(): array
     {
         return [
-            'name'            => 'required|string|max_length[255]',
             'slug'            => 'required|string|max_length[255]|regex_match[/^[a-z0-9]+(?:-[a-z0-9]+)*$/]',
             'title'           => 'permit_empty|string|max_length[255]',
-            'subtitle'        => 'permit_empty|string|max_length[255]',
             'description'     => 'permit_empty|string',
             'profile_group'   => 'permit_empty|string|max_length[255]',
             'react_route'     => 'permit_empty|string|max_length[255]',
             'submit_endpoint' => 'permit_empty|string|max_length[255]',
             'http_method'     => 'permit_empty|in_list[GET,POST,PUT,PATCH,DELETE]',
             'version'         => 'permit_empty|is_natural_no_zero',
-            'settings_json'   => 'permit_empty',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name' => [
-                'required'   => 'O campo name e obrigatorio',
-                'max_length' => 'O campo name nao pode exceder 255 caracteres',
-            ],
             'slug' => [
                 'required'    => 'O campo slug e obrigatorio',
                 'max_length'  => 'O campo slug nao pode exceder 255 caracteres',

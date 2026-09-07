@@ -1,13 +1,17 @@
-// Rota do construtor — o usuario escolhe tabelas (TODAS vindas da API de
-// introspeccao do banco) e cada tabela escolhida vira um card com o nome da
-// tabela e um Alias (nome do formulario) no cabecalho. O corpo do card fica
-// EM BRANCO por ora — nao renderiza nada da tabela ainda.
+// Construtor — o usuário escolhe tabelas (todas vindas da API de introspecção do
+// banco) e cada tabela vira um card com um subcard FORMULÁRIO (campos de
+// form_manager) e N subcards GRUPOS (campos de form_groups). Estado só local:
+// nada é persistido ainda.
 //
-// Fonte dos dados — SEM lista estatica:
+// Campos: renderizados por <FormGrid> a partir de um FormGridSchema. Nenhum
+// <input>/<select>/<textarea> escrito à mão aqui — ver
+// src/markdown/geral/README_render_via_formgrid.md.
+//
+// Fonte dos dados — sem lista estática:
 //   - tabelas : dbSchema.tables()        -> GET api/v1/db-schema/tables
 //   - colunas : dbSchema.columns(tabela) -> GET api/v1/db-schema/columns/{tabela}
-//               (disparada ao selecionar a tabela e guardada em cache; ainda
-//                nao e exibida na tela)
+//   - perfis  : o próprio campo select "Grupo de perfil" carrega via `src`
+//               -> GET {apiBaseUrl}/v1/user-roles/get-no-pagination
 
 import { useCallback, useEffect, useState } from 'react';
 import FormGrid from '@/components/ui/FormGrid/Input';
@@ -16,109 +20,262 @@ import IconSelect from '@/components/ui/IconSelect';
 import { dbSchema } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { ApiError } from '@/services/http';
+import { slugify } from '@/utils/slug';
+import { parseStringList, toStringList } from '@/utils/jsonList';
+import { env } from '@/config/env';
+import {
+  type ColunasState,
+  type GrupoLocal,
+  type ManagerLocal,
+  type ManagerStatus,
+  type TabelaInfo,
+  grupoInicial,
+  managerInicial,
+  toColuna,
+  toTabela,
+} from './formBuilder.model';
 
-interface TabelaInfo {
-  name: string;
-  type: string;
-}
+type ManagerPatch = (tabela: string, patch: Partial<ManagerLocal>) => void;
+type GrupoPatch = (tabela: string, id: string, patch: Partial<GrupoLocal>) => void;
 
-interface ColunaInfo {
-  name: string;
-  data_type: string;
-  column_type: string;
-  nullable: boolean;
-  key: string | null;
-}
+const STATUS_OPCOES = [
+  { value: 'draft', label: 'draft' },
+  { value: 'active', label: 'active' },
+  { value: 'inactive', label: 'inactive' },
+];
 
-interface ColunasState {
-  loading: boolean;
-  error: string | null;
-  items: ColunaInfo[];
-}
+const HTTP_OPCOES = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((m) => ({
+  value: m,
+  label: m,
+}));
 
-// Grupo de um formulario (subcard) — campos editaveis de form_groups.
-// id/form_manager_id/timestamps ficam de fora. Somente na tela — nada persistido.
-// `slugAuto` e so controle de UI (nao existe em form_groups): enquanto true, o
-// slug acompanha o title; vira false quando o slug e editado a mao.
-interface GrupoLocal {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  icon: string;
-  sort_order: number;
-  collapsed: boolean;
-  slugAuto: boolean;
-}
+const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
 
-// Dados do formulario (form_manager) — um por tabela escolhida (1:1). Campos
-// editaveis de form_manager; id/version.auto e timestamps ficam de fora.
-// `slugAuto` e so controle de UI (nao existe em form_manager): enquanto true, o
-// slug acompanha o name; vira false quando o slug e editado a mao.
-type ManagerStatus = 'draft' | 'active' | 'inactive';
+// ─── Schema do subcard FORMULÁRIO (form_manager) ────────────────────────────
 
-interface ManagerLocal {
-  name: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  profile_group: string;
-  react_route: string;
-  submit_endpoint: string;
-  http_method: string;
-  status: ManagerStatus;
-  version: number;
-  settings_json: string;
-  slugAuto: boolean;
-}
-
-function managerInicial(): ManagerLocal {
+function managerSchema(
+  tabela: string,
+  m: ManagerLocal,
+  patch: ManagerPatch,
+): FormGridSchema {
   return {
-    name: '',
-    slug: '',
-    title: '',
-    subtitle: '',
-    description: '',
-    profile_group: '',
-    react_route: '',
-    submit_endpoint: '',
-    http_method: 'POST',
-    status: 'draft',
-    version: 1,
-    settings_json: '',
-    slugAuto: true,
+    rows: [
+      {
+        fields: [
+          {
+            col: 12,
+            label: 'Título',
+            name: 'title',
+            required: true,
+            maxLength: 255,
+            placeholder: 'Cabeçalho exibido no topo do formulário',
+            value: m.title,
+            onChange: (e) =>
+              patch(
+                tabela,
+                m.slugAuto
+                  ? { title: e.target.value, slug: slugify(e.target.value) }
+                  : { title: e.target.value },
+              ),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            type: 'select',
+            col: 12,
+            label: 'Grupo de perfil',
+            required: true,
+            multiple: true,
+            src: USER_ROLES_SRC,
+            valueKey: 'slug',
+            labelKey: 'name',
+            values: parseStringList(m.profile_group),
+            onChangeMultiple: (values) =>
+              patch(tabela, { profile_group: toStringList(values) }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            col: 6,
+            label: 'Slug',
+            name: 'slug',
+            required: true,
+            maxLength: 255,
+            placeholder: 'identificador-do-formulario',
+            value: m.slug,
+            onChange: (e) => patch(tabela, { slug: e.target.value, slugAuto: false }),
+          },
+          {
+            type: 'select',
+            col: 6,
+            label: 'Status',
+            required: true,
+            options: STATUS_OPCOES,
+            valueKey: 'value',
+            labelKey: 'label',
+            value: m.status,
+            onChange: (value) => patch(tabela, { status: value as ManagerStatus }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            col: 12,
+            label: 'Rota React',
+            name: 'react_route',
+            required: true,
+            maxLength: 255,
+            placeholder: '/v1/meu-form',
+            value: m.react_route,
+            onChange: (e) => patch(tabela, { react_route: e.target.value }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            col: 4,
+            label: 'Endpoint de envio',
+            name: 'submit_endpoint',
+            required: true,
+            maxLength: 255,
+            placeholder: '/api/v1/...',
+            value: m.submit_endpoint,
+            onChange: (e) => patch(tabela, { submit_endpoint: e.target.value }),
+          },
+          {
+            type: 'select',
+            col: 4,
+            label: 'Método HTTP',
+            required: true,
+            options: HTTP_OPCOES,
+            valueKey: 'value',
+            labelKey: 'label',
+            value: m.http_method,
+            onChange: (value) => patch(tabela, { http_method: value }),
+          },
+          {
+            col: 4,
+            label: 'Versão',
+            name: 'version',
+            required: true,
+            inputMode: 'numeric',
+            value: String(m.version),
+            onChange: (e) =>
+              patch(tabela, {
+                version: Number.parseInt(e.target.value, 10) || 1,
+              }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            type: 'textarea',
+            col: 12,
+            label: 'Descrição',
+            rows: 2,
+            showCounter: true,
+            value: m.description,
+            onChange: (e) => patch(tabela, { description: e.target.value }),
+          },
+        ],
+      },
+    ],
   };
 }
 
-function slugify(texto: string): string {
-  return texto
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '') // remove diacriticos
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+// ─── Schema do subcard GRUPOS (form_groups) — o ícone fica fora (IconSelect) ──
 
-function asString(v: unknown): string {
-  if (typeof v === 'string') return v;
-  if (typeof v === 'number') return String(v);
-  return '';
-}
-
-function toTabela(row: Record<string, unknown>): TabelaInfo {
-  return { name: asString(row.name), type: asString(row.type) || 'table' };
-}
-
-function toColuna(row: Record<string, unknown>): ColunaInfo {
+function grupoSchema(
+  tabela: string,
+  g: GrupoLocal,
+  patch: GrupoPatch,
+): FormGridSchema {
   return {
-    name: asString(row.name),
-    data_type: asString(row.data_type),
-    column_type: asString(row.column_type),
-    nullable: row.nullable === true,
-    key: typeof row.key === 'string' && row.key !== '' ? row.key : null,
+    rows: [
+      {
+        fields: [
+          {
+            col: 12,
+            label: 'Título',
+            name: 'title',
+            required: true,
+            maxLength: 255,
+            placeholder: 'Nome do grupo',
+            value: g.title,
+            onChange: (e) =>
+              patch(
+                tabela,
+                g.id,
+                g.slugAuto
+                  ? { title: e.target.value, slug: slugify(e.target.value) }
+                  : { title: e.target.value },
+              ),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            col: 6,
+            label: 'Slug',
+            name: 'slug',
+            maxLength: 255,
+            value: g.slug,
+            onChange: (e) =>
+              patch(tabela, g.id, { slug: e.target.value, slugAuto: false }),
+          },
+          {
+            col: 6,
+            label: 'Ordem',
+            name: 'sort_order',
+            inputMode: 'numeric',
+            value: String(g.sort_order),
+            onChange: (e) =>
+              patch(tabela, g.id, {
+                sort_order: Number.parseInt(e.target.value, 10) || 0,
+              }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            type: 'checkbox',
+            col: 12,
+            name: `collapsed-${g.id}`,
+            inline: true,
+            options: [{ id: `collapsed-${g.id}`, value: '1', label: 'Recolhido' }],
+            value: g.collapsed ? ['1'] : [],
+            onChange: (values) =>
+              patch(tabela, g.id, { collapsed: values.includes('1') }),
+          },
+        ],
+      },
+      {
+        fields: [
+          {
+            type: 'textarea',
+            col: 12,
+            label: 'Descrição',
+            rows: 2,
+            showCounter: true,
+            value: g.description,
+            onChange: (e) => patch(tabela, g.id, { description: e.target.value }),
+          },
+        ],
+      },
+    ],
   };
 }
+
+// ─── Página ────────────────────────────────────────────────────────────────
 
 export default function FormBuilderPage() {
   const [tabelasDisponiveis, setTabelasDisponiveis] = useState<TabelaInfo[]>([]);
@@ -126,15 +283,12 @@ export default function FormBuilderPage() {
   const [tabelasErro, setTabelasErro] = useState<string | null>(null);
 
   const [tabelas, setTabelas] = useState<string[]>([]);
-  // Dados do form_manager por tabela — somente estado local, nada no banco.
   const [managers, setManagers] = useState<Record<string, ManagerLocal>>({});
-  // Cache das colunas por tabela (2a API). Ainda nao renderizado — fica pronto
-  // para quando o corpo do subcard for definido.
+  // Cache das colunas por tabela (2a API). Ainda não renderizado — reservado.
   const [, setColunas] = useState<Record<string, ColunasState>>({});
-  // Grupos (subcards) por tabela — somente estado local, nada no banco.
   const [grupos, setGrupos] = useState<Record<string, GrupoLocal[]>>({});
 
-  // 1a API — todas as tabelas do banco, sem paginacao.
+  // 1a API — todas as tabelas do banco, sem paginação.
   useEffect(() => {
     const ctrl = new AbortController();
     setTabelasLoading(true);
@@ -213,45 +367,28 @@ export default function FormBuilderPage() {
     [carregarColunas],
   );
 
-  const atualizarManager = useCallback(
-    (tabela: string, patch: Partial<ManagerLocal>) => {
-      setManagers((prev) => ({
-        ...prev,
-        [tabela]: { ...(prev[tabela] ?? managerInicial()), ...patch },
-      }));
-    },
-    [],
-  );
-
-  const adicionarGrupo = useCallback((tabela: string) => {
-    const novo: GrupoLocal = {
-      id: crypto.randomUUID(),
-      title: '',
-      slug: '',
-      description: '',
-      icon: '',
-      sort_order: 0,
-      collapsed: false,
-      slugAuto: true,
-    };
-    setGrupos((prev) => ({
+  const atualizarManager = useCallback<ManagerPatch>((tabela, patch) => {
+    setManagers((prev) => ({
       ...prev,
-      [tabela]: [...(prev[tabela] ?? []), novo],
+      [tabela]: { ...(prev[tabela] ?? managerInicial()), ...patch },
     }));
   }, []);
 
-  const atualizarGrupo = useCallback(
-    (tabela: string, id: string, patch: Partial<GrupoLocal>) => {
-      setGrupos((prev) => ({
-        ...prev,
-        [tabela]: (prev[tabela] ?? []).map((g) => (g.id === id ? { ...g, ...patch } : g)),
-      }));
-    },
-    [],
-  );
+  const adicionarGrupo = useCallback((tabela: string) => {
+    setGrupos((prev) => ({
+      ...prev,
+      [tabela]: [...(prev[tabela] ?? []), grupoInicial()],
+    }));
+  }, []);
 
-  // O SelectField le `options` so no mount (inicializador de estado). Por isso o
-  // FormGrid so e montado depois que a lista de tabelas chegou.
+  const atualizarGrupo = useCallback<GrupoPatch>((tabela, id, patch) => {
+    setGrupos((prev) => ({
+      ...prev,
+      [tabela]: (prev[tabela] ?? []).map((g) => (g.id === id ? { ...g, ...patch } : g)),
+    }));
+  }, []);
+
+  // Card seletor de tabelas — já era FormGrid.
   const schema: FormGridSchema = {
     rows: [
       {
@@ -292,303 +429,56 @@ export default function FormBuilderPage() {
       {tabelas.map((tabela) => {
         const manager = managers[tabela] ?? managerInicial();
         return (
-        <div className="card shadow-sm mt-3" key={tabela}>
-          <div className="card-header">
-            <span className="fw-semibold text-nowrap">{tabela}</span>
-          </div>
-          <div className="card-body">
-            <div className="mb-2">
-              <span className="fw-semibold small text-uppercase text-muted">
-                Formulário
-              </span>
+          <div className="card shadow-sm mt-3" key={tabela}>
+            <div className="card-header">
+              <span className="fw-semibold text-nowrap">{tabela}</span>
             </div>
-            <div className="card bg-body-tertiary mb-3">
-              <div className="card-body py-2">
-                <div className="row g-2">
-                  <div className="col-12">
-                    <label className="form-label form-label-sm mb-1 small">
-                      Nome
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      placeholder="Nome do formulário"
-                      value={manager.name}
-                      onChange={(e) =>
-                        atualizarManager(
-                          tabela,
-                          manager.slugAuto
-                            ? { name: e.target.value, slug: slugify(e.target.value) }
-                            : { name: e.target.value },
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Slug</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.slug}
-                      onChange={(e) =>
-                        atualizarManager(tabela, {
-                          slug: e.target.value,
-                          slugAuto: false,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Status</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={manager.status}
-                      onChange={(e) =>
-                        atualizarManager(tabela, {
-                          status: e.target.value as ManagerStatus,
-                        })
-                      }
-                    >
-                      <option value="draft">draft</option>
-                      <option value="active">active</option>
-                      <option value="inactive">inactive</option>
-                    </select>
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Título</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.title}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { title: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Subtítulo</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.subtitle}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { subtitle: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Grupo de perfil</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.profile_group}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { profile_group: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <label className="form-label mb-1 small">Rota React</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.react_route}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { react_route: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12 col-sm-8">
-                    <label className="form-label mb-1 small">Endpoint de envio</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      maxLength={255}
-                      value={manager.submit_endpoint}
-                      onChange={(e) =>
-                        atualizarManager(tabela, {
-                          submit_endpoint: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-6 col-sm-4">
-                    <label className="form-label mb-1 small">Método HTTP</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={manager.http_method}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { http_method: e.target.value })
-                      }
-                    >
-                      <option value="GET">GET</option>
-                      <option value="POST">POST</option>
-                      <option value="PUT">PUT</option>
-                      <option value="PATCH">PATCH</option>
-                      <option value="DELETE">DELETE</option>
-                    </select>
-                  </div>
-                  <div className="col-6 col-sm-4">
-                    <label className="form-label mb-1 small">Versão</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      min={1}
-                      value={manager.version}
-                      onChange={(e) =>
-                        atualizarManager(tabela, {
-                          version: Number.parseInt(e.target.value, 10) || 1,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label mb-1 small">Descrição</label>
-                    <textarea
-                      className="form-control form-control-sm"
-                      rows={2}
-                      value={manager.description}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { description: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label mb-1 small">settings_json</label>
-                    <textarea
-                      className="form-control form-control-sm font-monospace"
-                      rows={3}
-                      placeholder="{ }"
-                      value={manager.settings_json}
-                      onChange={(e) =>
-                        atualizarManager(tabela, { settings_json: e.target.value })
-                      }
-                    />
-                  </div>
+            <div className="card-body">
+              <div className="mb-2">
+                <span className="fw-semibold small text-uppercase text-muted">
+                  Formulário
+                </span>
+              </div>
+              <div className="card bg-body-tertiary mb-3">
+                <div className="card-body py-2">
+                  <FormGrid schema={managerSchema(tabela, manager, atualizarManager)} />
                 </div>
               </div>
-            </div>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <span className="fw-semibold small text-uppercase text-muted">
-                Grupos
-              </span>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary"
-                title="Adicionar grupo"
-                onClick={() => adicionarGrupo(tabela)}
-              >
-                +
-              </button>
-            </div>
-            {(grupos[tabela] ?? []).map((grupo) => (
-              <div className="card bg-body-tertiary mb-2" key={grupo.id}>
-                <div className="card-body py-2">
-                  <div className="row g-2">
-                    <div className="col-12">
-                      <label className="form-label form-label-sm mb-1 small">
-                        Título
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        maxLength={255}
-                        placeholder="Nome do grupo"
-                        value={grupo.title}
-                        onChange={(e) =>
-                          atualizarGrupo(
-                            tabela,
-                            grupo.id,
-                            grupo.slugAuto
-                              ? { title: e.target.value, slug: slugify(e.target.value) }
-                              : { title: e.target.value },
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="col-12 col-sm-6">
-                      <label className="form-label mb-1 small">Slug</label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        maxLength={255}
-                        value={grupo.slug}
-                        onChange={(e) =>
-                          atualizarGrupo(tabela, grupo.id, {
-                            slug: e.target.value,
-                            slugAuto: false,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-12 col-sm-6">
-                      <label className="form-label mb-1 small">Ícone</label>
-                      <IconSelect
-                        value={grupo.icon}
-                        onChange={(nome) =>
-                          atualizarGrupo(tabela, grupo.id, { icon: nome })
-                        }
-                      />
-                    </div>
-                    <div className="col-6 col-sm-4">
-                      <label className="form-label mb-1 small">Ordem</label>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm"
-                        value={grupo.sort_order}
-                        onChange={(e) =>
-                          atualizarGrupo(tabela, grupo.id, {
-                            sort_order: Number.parseInt(e.target.value, 10) || 0,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="col-6 col-sm-8 d-flex align-items-end">
-                      <div className="form-check form-switch">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id={`collapsed-${grupo.id}`}
-                          checked={grupo.collapsed}
-                          onChange={(e) =>
-                            atualizarGrupo(tabela, grupo.id, {
-                              collapsed: e.target.checked,
-                            })
+
+              <div className="d-flex align-items-center justify-content-between mb-2">
+                <span className="fw-semibold small text-uppercase text-muted">
+                  Grupos
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-primary"
+                  title="Adicionar grupo"
+                  onClick={() => adicionarGrupo(tabela)}
+                >
+                  +
+                </button>
+              </div>
+
+              {(grupos[tabela] ?? []).map((grupo) => (
+                <div className="card bg-body-tertiary mb-2" key={grupo.id}>
+                  <div className="card-body py-2">
+                    <FormGrid schema={grupoSchema(tabela, grupo, atualizarGrupo)} />
+                    <div className="row g-3">
+                      <div className="col-md-6 mb-1">
+                        <label className="form-label">Ícone</label>
+                        <IconSelect
+                          value={grupo.icon}
+                          onChange={(nome) =>
+                            atualizarGrupo(tabela, grupo.id, { icon: nome })
                           }
                         />
-                        <label
-                          className="form-check-label small"
-                          htmlFor={`collapsed-${grupo.id}`}
-                        >
-                          Recolhido
-                        </label>
                       </div>
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label mb-1 small">Descrição</label>
-                      <textarea
-                        className="form-control form-control-sm"
-                        rows={2}
-                        value={grupo.description}
-                        onChange={(e) =>
-                          atualizarGrupo(tabela, grupo.id, {
-                            description: e.target.value,
-                          })
-                        }
-                      />
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
         );
       })}
     </div>

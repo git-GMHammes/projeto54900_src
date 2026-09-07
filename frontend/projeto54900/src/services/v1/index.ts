@@ -2,6 +2,7 @@
 
 export { userManagerTable } from './userManager.table';
 export { userManagerView } from './userManager.view';
+export { userRolesTable } from './userRoles.table';
 export { uploadManagerTable } from './uploadManager.table';
 export { uploadManagerView } from './uploadManager.view';
 export { uploadManagerUpload } from './uploadManager.upload';

@@ -21,7 +21,9 @@ cada resumo termina com o link para o conteúdo completo.
 | [`builder`](#builder)         | Construtor novo: tabela vira formulário  |
 | [`construtor`](#construtor)   | Página cria formulários via API          |
 | [`formgrid`](#formgrid)       | Fábrica de campos dirigida por JSON      |
+| [`json`](#json)               | Campo monta JSON sem digitação           |
 | [`node`](#node)               | Comandos do Node e módulos               |
+| [`render`](#render)           | Renderizar formulário só via FormGrid    |
 
 ---
 
@@ -46,8 +48,9 @@ montando do zero — não confundir com o [`construtor`](#construtor) anterior
 local: nada persiste ainda**. Ao escolher tabelas no `select multiple`, cada
 tabela vira um card: `card-header` só com o nome da tabela, `card-body` com um
 subcard `FORMULÁRIO` (campos de `form_manager`, 1:1) e N subcards `GRUPOS`
-(campos de `form_groups`). Decisões já tomadas: slug automático a partir de
-`name`/`title` (flag `slugAuto` só de UI), página em `.container`, grids dos
+(campos de `form_groups`). Decisões já tomadas: `form_manager` identificado só
+por `slug` (nasce vazio e acompanha o Título enquanto `slugAuto`; obrigatório),
+página em `.container`, grids dos
 subcards responsivos (`col-12` no celular, proporção original a partir de `sm`),
 casca comum `card bg-body-tertiary` + `row g-2` + `form-control-sm`. Próximos
 passos: `form_rows` (ordem e colunas por linha) e `form_campos` (os campos) —
@@ -90,6 +93,21 @@ páginas (`UserFormPage` etc.).
 
 [`geral/README_FormGrid.md`](geral/README_FormGrid.md) — fábrica de campos `FormGrid` dirigida por JSON.
 
+### `json`
+
+Padrão para campos cujo **valor persistido é JSON** (lista, objeto de config)
+mas que **não podem exigir o usuário digitando JSON**. A UI oferece um controle
+comum (multi select, tags, switches) e o código faz o par `montar` (estado →
+string JSON) / `parse` (string → estado), com o `parse` tolerante (valor legado,
+JSON inválido ou formato inesperado → vazio). Vazio grava `''`. Opções sempre de
+API, não lista fixa. A coluna do banco não muda por isto. Exceção: campo de
+configuração livre de desenvolvedor pode ser `<textarea>` de JSON cru (não há
+nenhum no módulo Form — `settings_json` foi removido). Caso de referência:
+`profile_group` (campo "Grupo de perfil" do `FormBuilderPage`), `<select
+multiple>` de `user_roles` gravando `["admin","user"]`.
+
+[`geral/README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo grava JSON, a UI monta.
+
 ### `node`
 
 Comandos do Node/Vite e mapa dos módulos de `src/`. O frontend **não usa
@@ -105,6 +123,22 @@ estático com fallback de SPA para `index.html` — app na raiz ou em subpasta
 
 [`geral/README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node, build/deploy e módulos do frontend.
 
+### `render`
+
+Regra: **campo de formulário no frontend passa pelo `<FormGrid>`** (schema JSON),
+não `<input>`/`<label>`/coluna Bootstrap/validação escritos à mão. A fábrica
+(`components/ui/FormGrid/Input`, `default FormGrid`, `FormGridSchema = { rows:
+[{ sectionTitle?, fields: [] }] }`, 22 tipos) já resolve grade, máscara,
+validação e serialização. O tipo `select` cobre opções remotas (`src`) e
+múltiplas (`multiple` + `values` + `onChangeMultiple`). Exceção: chrome que não
+é campo (cabeçalhos, botões) — o seletor de tabelas do `FormBuilderPage` já usa
+`<FormGrid>` e é o modelo. Débito registrado: o subcard FORMULÁRIO/GRUPOS do
+`FormBuilderPage` (commit `0050e27`) é markup manual e deve virar
+`FormGridSchema` — "Grupo de perfil" é o primeiro alvo. API completa em
+[`formgrid`](#formgrid).
+
+[`geral/README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — regra de uso do `FormGrid` e o débito do `FormBuilderPage`.
+
 ---
 
 ## Conteúdo
@@ -112,7 +146,9 @@ estático com fallback de SPA para `index.html` — app na raiz ou em subpasta
 ### `geral/`
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
+- [`README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo cujo valor é JSON montado pela UI (o usuário não digita JSON).
 - [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), estado atual e roadmap.
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
+- [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.
