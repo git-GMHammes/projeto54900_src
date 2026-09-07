@@ -47,17 +47,17 @@ montando do zero — não confundir com o [`construtor`](#construtor) anterior
 (`dbSchema.tables()` / `dbSchema.columns(tabela)`) e mantém **tudo só em estado
 local: nada persiste ainda**. Ao escolher tabelas no `select multiple`, cada
 tabela vira um card: `card-header` só com o nome da tabela, `card-body` com um
-subcard `FORMULÁRIO` (campos de `form_manager`, 1:1) e N subcards `GRUPOS`
-(campos de `form_groups`). Decisões já tomadas: `form_manager` identificado só
-por `slug` (nasce vazio e acompanha o Título enquanto `slugAuto`; obrigatório),
-página em `.container`, grids dos
+subcard `FORMULÁRIO` (campos de `form_manager`, 1:1), N subcards `GRUPOS`
+(campos de `form_groups`, botão `[+]`) e, dentro de cada grupo, N subcards
+`LINHAS` (campos de `form_rows`, botão `[+]`; estado por `grupo.id`). Decisões já
+tomadas: `form_manager` identificado só por `slug` (nasce vazio e acompanha o
+Título enquanto `slugAuto`; obrigatório), página em `.container`, grids dos
 subcards responsivos (`col-12` no celular, proporção original a partir de `sm`),
-casca comum `card bg-body-tertiary` + `row g-2` + `form-control-sm`. Próximos
-passos: `form_rows` (ordem e colunas por linha) e `form_campos` (os campos) —
-este com observação de nomenclatura (tabela em português; enum `field_type`
-misturando pt/en/documentos BR).
+casca comum `card bg-body-tertiary` + `row g-2` + `form-control-sm`. Próximo
+passo: `form_fields` (os campos) — com observação de nomenclatura (enum
+`field_type` misturando pt/en/documentos BR).
 
-[`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` e o roadmap (rows, campos).
+[`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` e o roadmap (campos).
 
 ### `construtor`
 
@@ -68,7 +68,7 @@ converte com `buildConstructorSchemas` (`src/services/formSchema.ts`) para
 `FormGridSchema` por grupo e renderiza com `<FormGrid>` — visual equivalente ao
 `src/public/form_test.html`. Os 4 grupos (`formulario`, `grupos`, `linhas`,
 `campos`) descrevem os campos de `form_manager`/`form_groups`/`form_rows`/
-`form_campos`; cada submit chama `form-<x>/create`. A definição vem do
+`form_fields`; cada submit chama `form-<x>/create`. A definição vem do
 `FormConstructorSeeder` (backend), que popula tudo via os Processors do módulo.
 Services em `src/services/v1/form*.ts`, rota lazy em `routes/v1/form.routes.tsx`.
 

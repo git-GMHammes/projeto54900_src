@@ -5,9 +5,9 @@ namespace App\Models\V1\Form\FormCampos;
 use App\Models\V1\BaseTableModel;
 
 /**
- * Model de escrita/leitura da tabela form_campos.
+ * Model de escrita/leitura da tabela form_fields.
  *
- * Tabela: form_campos (FK form_row_id -> form_rows, CASCADE).
+ * Tabela: form_fields (FK form_row_id -> form_rows, CASCADE).
  * Reproduz os atributos de qualquer componente do FormGrid: colunas explicitas
  * para o essencial, flags TINYINT(1) por tipo e colunas JSON para arrays /
  * cauda longa (options_json, datalist_json, allowed_domains_json,
@@ -20,7 +20,7 @@ use App\Models\V1\BaseTableModel;
 class SqlTableModel extends BaseTableModel
 {
     protected $DBGroup        = DB_GROUP_001;
-    protected $table          = 'form_campos';
+    protected $table          = 'form_fields';
     protected $primaryKey     = 'id';
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
