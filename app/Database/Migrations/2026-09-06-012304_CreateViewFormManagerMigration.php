@@ -35,10 +35,8 @@ class CreateViewFormManagerMigration extends Migration
                 fc.id                   AS id,
 
                 fm.id                   AS fm_id,
-                fm.name                 AS fm_name,
                 fm.slug                 AS fm_slug,
                 fm.title                AS fm_title,
-                fm.subtitle             AS fm_subtitle,
                 fm.description          AS fm_description,
                 fm.profile_group        AS fm_profile_group,
                 fm.react_route          AS fm_react_route,
@@ -46,7 +44,6 @@ class CreateViewFormManagerMigration extends Migration
                 fm.http_method          AS fm_http_method,
                 fm.status               AS fm_status,
                 fm.version              AS fm_version,
-                fm.settings_json        AS fm_settings_json,
 
                 fg.id                   AS fg_id,
                 fg.title                AS fg_title,

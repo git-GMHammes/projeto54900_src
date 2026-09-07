@@ -40,9 +40,8 @@ Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
 
 | Coluna | Tipo | Nota |
 | --- | --- | --- |
-| `name` | VARCHAR(255) NOT NULL | nome interno |
-| `slug` | VARCHAR(255) NOT NULL **UNIQUE** | identificador estável |
-| `title` / `subtitle` | VARCHAR(255) NULL | cabeçalho exibido |
+| `slug` | VARCHAR(255) NOT NULL **UNIQUE** | identidade do formulário (única) |
+| `title` | VARCHAR(255) NULL | cabeçalho exibido no topo (vazio → sem cabeçalho) |
 | `description` | TEXT NULL | |
 | `profile_group` | VARCHAR(255) NULL | grupo de perfil dono do formulário |
 | `react_route` | VARCHAR(255) NULL | rota do React onde o form fica ativo |
@@ -50,7 +49,6 @@ Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
 | `http_method` | VARCHAR(10) NULL DEFAULT `POST` | |
 | `status` | ENUM(`draft`,`active`,`inactive`) DEFAULT `draft` | selado no create |
 | `version` | INT NOT NULL DEFAULT 1 | |
-| `settings_json` | JSON NULL | catch-all de layout |
 
 ### 2.2 `form_groups`
 

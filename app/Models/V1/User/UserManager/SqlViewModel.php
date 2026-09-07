@@ -7,11 +7,12 @@ use App\Models\V1\BaseViewModel;
 /**
  * Model de leitura para a view view_user_manager.
  *
- * A view une user_manager (um) com user_profiles (uc).
+ * A view une user_manager (um) com user_profiles (uc) e user_roles (ur).
  *
  * Prefixos na view:
- *   um_ = user_manager  (username, status, last_login_at)
+ *   um_ = user_manager  (username, status, user_role_id, last_login_at)
  *   uc_ = user_profiles (name, email, phone, whatsapp, cpf, cep, address, uuid)
+ *   ur_ = user_roles    (role_slug, role_name — perfil 1:1 ligado por user_role_id)
  *
  * O campo deleted_at reflete user_manager.deleted_at.
  *
@@ -35,6 +36,8 @@ class SqlViewModel extends BaseViewModel
         'uc_whatsapp',
         'uc_cep',
         'uc_address',
+        'ur_role_slug',
+        'ur_role_name',
     ];
 
     /** Campos válidos para ordenação */
@@ -42,10 +45,12 @@ class SqlViewModel extends BaseViewModel
         'id',
         'um_username',
         'um_status',
+        'um_user_role_id',
         'um_last_login_at',
         'uc_name',
         'uc_email',
         'uc_cpf',
+        'ur_role_slug',
         'created_at',
         'updated_at',
     ];
@@ -59,5 +64,7 @@ class SqlViewModel extends BaseViewModel
         'uc_phone',
         'uc_whatsapp',
         'uc_address',
+        'ur_role_slug',
+        'ur_role_name',
     ];
 }

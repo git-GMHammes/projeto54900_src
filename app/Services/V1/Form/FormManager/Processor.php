@@ -13,7 +13,6 @@ use App\Services\V1\BaseTableService;
  * de BaseTableService / BaseViewService. Este Processor:
  *  - garante unicidade de slug (validateOnCreate / validateOnUpdate)
  *  - sela o status no create (nasce 'draft', DEFAULT da coluna)
- *  - serializa settings_json quando chega como objeto/array
  *
  * Metodos herdados: find, getGrouped, search, get, getAll, getNoPagination,
  *   getDeleted, getWithDeleted, getDeletedAll, getAllWithDeleted, create,
@@ -24,9 +23,6 @@ class Processor extends BaseTableService
 {
     protected SqlTableModel $tableModel;
     protected SqlViewModel  $viewModel;
-
-    /** Colunas JSON desta tabela. */
-    private const JSON_COLUMNS = ['settings_json'];
 
     public function __construct()
     {
@@ -65,31 +61,12 @@ class Processor extends BaseTableService
         // status nunca vem do cliente no create — usa o DEFAULT da coluna ('draft').
         unset($data['status']);
 
-        return $this->encodeJsonColumns($data);
+        return $data;
     }
 
     protected function prepareUpdateData(int $id, array $data): array
     {
-        // status E mutavel via update — mantido.
-        return $this->encodeJsonColumns($data);
-    }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Converte para string JSON as colunas JSON recebidas como array/objeto.
-     * Strings sao mantidas como vieram (assume-se JSON ja valido).
-     */
-    private function encodeJsonColumns(array $data): array
-    {
-        foreach (self::JSON_COLUMNS as $col) {
-            if (isset($data[$col]) && \is_array($data[$col])) {
-                $data[$col] = json_encode($data[$col], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            }
-        }
-
+        // status E mutavel via update — nao delega para prepareData (que o remove).
         return $data;
     }
 }

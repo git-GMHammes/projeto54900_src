@@ -11,8 +11,9 @@ use App\Models\V1\BaseTableModel;
  *
  * Tabela: user_manager
  * DDL: id (BIGINT PK auto), username (unique), password_hash, token (nullable),
- *      status (enum active/inactive/blocked, default active), last_login_at,
- *      created_at, updated_at, deleted_at
+ *      status (enum active/inactive/blocked, default active),
+ *      user_role_id (BIGINT NULL, FK -> user_roles.id, ON DELETE SET NULL),
+ *      last_login_at, created_at, updated_at, deleted_at
  */
 class SqlTableModel extends BaseTableModel
 {
@@ -40,6 +41,7 @@ class SqlTableModel extends BaseTableModel
         'password_hash',
         'token',
         'status',
+        'user_role_id',
         'last_login_at',
     ];
 
@@ -55,6 +57,7 @@ class SqlTableModel extends BaseTableModel
         'id',
         'username',
         'status',
+        'user_role_id',
         'last_login_at',
         'created_at',
         'updated_at',
