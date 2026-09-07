@@ -42,6 +42,22 @@ trazer. Não reimplementar DataTable/FormField/Pagination — religar via fábri
 As páginas de detalhe (`UserViewPage`, `UploadViewPage`) e o envio de arquivo do
 `UploadListPage` continuam ativos e tipados.
 
+**Regra:** campo de formulário renderiza por schema JSON + `<FormGrid>`, não
+`<input>`/`<select>`/`<label>` à mão — inclui select remoto/múltiplo. Débito
+aberto: o subcard do `FormBuilderPage` ainda é markup manual. Detalhe em
+[`src/markdown/geral/README_render_via_formgrid.md`](src/markdown/geral/README_render_via_formgrid.md).
+
+## Campo com valor JSON — a UI monta, o usuário não digita
+
+Campo cujo valor persistido é JSON (lista, objeto de config) **nunca** é editado
+como JSON cru pelo usuário final: a UI oferece um controle comum (multi select,
+tags, switches) e o código faz o par `montar` (estado → string JSON) / `parse`
+(string → estado, tolerante — valor legado/JSON inválido/formato inesperado →
+vazio). Vazio grava `''`. Opções sempre de API. Exceção: `settings_json`
+(`<textarea>` de JSON de dev). Caso de referência: `profile_group` no
+`FormBuilderPage`. Detalhe e regras em
+[`src/markdown/geral/README_campo_json_montado.md`](src/markdown/geral/README_campo_json_montado.md).
+
 ## Regra de ouro — Bootstrap primeiro
 
 - A UI é **99,9% Bootstrap**. Antes de escrever qualquer CSS, procure a classe

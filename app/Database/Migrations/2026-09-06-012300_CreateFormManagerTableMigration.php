@@ -23,7 +23,6 @@ use CodeIgniter\Database\RawSql;
  *   http_method     VARCHAR(10)   NULL DEFAULT 'POST'
  *   status          ENUM('draft','active','inactive') NOT NULL DEFAULT 'draft'
  *   version         INT           NOT NULL DEFAULT 1
- *   settings_json   JSON          NULL                  catch-all de layout/estilo
  *   created_at / updated_at / deleted_at DATETIME (padrao + soft delete)
  */
 class CreateFormManagerTableMigration extends Migration
@@ -87,10 +86,6 @@ class CreateFormManagerTableMigration extends Migration
                 'type'       => 'INT',
                 'constraint' => 11,
                 'default'    => 1,
-            ],
-            'settings_json' => [
-                'type' => 'JSON',
-                'null' => true,
             ],
             'created_at' => [
                 'type'    => 'DATETIME',

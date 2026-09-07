@@ -15,10 +15,11 @@ local: nada é persistido**.
 
 ## Fonte dos dados — sem lista estática
 
-| Dado    | Chamada                    | Endpoint                                |
-| ------- | -------------------------- | --------------------------------------- |
-| Tabelas | `dbSchema.tables()`        | `GET api/v1/db-schema/tables`           |
-| Colunas | `dbSchema.columns(tabela)` | `GET api/v1/db-schema/columns/{tabela}` |
+| Dado    | Chamada                    | Endpoint                                     |
+| ------- | -------------------------- | -------------------------------------------- |
+| Tabelas | `dbSchema.tables()`        | `GET api/v1/db-schema/tables`                |
+| Colunas | `dbSchema.columns(tabela)` | `GET api/v1/db-schema/columns/{tabela}`      |
+| Perfis  | `src` do campo `select`    | `GET {apiBaseUrl}/v1/user-roles/get-no-pagination` — o próprio `<FormGrid>` carrega |
 
 `dbSchema` vem de `@/services/v1`. As colunas são buscadas ao selecionar a
 tabela e ficam em cache no estado (`ainda não exibidas na tela` — reservadas
@@ -38,51 +39,68 @@ para quando o corpo dos campos existir).
 
 ### Subcard FORMULÁRIO — `form_manager`
 
-Estado local `managers: Record<string, ManagerLocal>` (chave = nome da tabela),
-inicializado em `handleTabelas`; editado por `atualizarManager`. Campos (fora
-`id`, `created_at`, `updated_at`, `deleted_at`):
+Renderizado por
+**`<FormGrid schema={managerSchema(tabela, manager, atualizarManager)} />`**.
+`managerSchema` (função pura, fora do componente) devolve um `FormGridSchema`.
+Estado local `managers: Record<string, ManagerLocal>`; editado por
+`atualizarManager`. Campos (fora `id`, timestamps):
 
-| Campo             | Coluna (`col-*` responsivo) | Controle                                         |
-| ----------------- | --------------------------- | ------------------------------------------------ |
-| `name`            | `col-12`                    | input — **slug acompanha** (slugAuto)            |
-| `slug`            | `col-12 col-sm-6`           | input (UNIQUE no banco)                          |
-| `status`          | `col-12 col-sm-6`           | select `draft` / `active` / `inactive`           |
-| `title`           | `col-12 col-sm-6`           | input                                            |
-| `subtitle`        | `col-12 col-sm-6`           | input                                            |
-| `profile_group`   | `col-12 col-sm-6`           | input                                            |
-| `react_route`     | `col-12 col-sm-6`           | input                                            |
-| `submit_endpoint` | `col-12 col-sm-8`           | input                                            |
-| `http_method`     | `col-6 col-sm-4`            | select GET/POST/PUT/PATCH/DELETE (def. POST)     |
-| `version`         | `col-6 col-sm-4`            | number (def. 1)                                  |
-| `description`     | `col-12`                    | textarea                                         |
-| `settings_json`   | `col-12`                    | textarea monospace — JSON livre de layout/estilo |
+| Campo             | `col` | `required` UI | Banco / `CreateRequest` | Tipo no schema |
+| ----------------- | ----- | ------------- | ----------------------- | -------------- |
+| `title`           | 12    | sim | `NULL` / `permit_empty` | `text` — cabeçalho no topo. **slug acompanha** enquanto `slugAuto` (`slugify` no `onChange`) |
+| `profile_group`   | 12    | sim | `NULL` / `permit_empty` | `select` **`multiple`**, `src` = `${apiBaseUrl}/v1/user-roles/get-no-pagination`, `valueKey: 'slug'`, `labelKey: 'name'`. `values` = `parseStringList(m.profile_group)`; `onChangeMultiple` grava `toStringList(values)`; vazio → `''`. Ver [`README_campo_json_montado.md`](README_campo_json_montado.md). |
+| `slug`            | 6     | sim | `NOT NULL` UNIQUE / `required` | `text` — identidade do formulário. Nasce vazio; acompanha o Título enquanto `slugAuto`; ao editar à mão zera `slugAuto` |
+| `status`          | 6     | sim | `NOT NULL` DEFAULT `draft` / não enviado no create | `select` estático `draft`/`active`/`inactive` — sempre nasce `draft`; `required` só barra o botão `×` |
+| `react_route`     | 12    | sim | `NULL` / `permit_empty` | `text` |
+| `submit_endpoint` | 4     | sim | `NULL` / `permit_empty` | `text` |
+| `http_method`     | 4     | sim | `NULL` DEFAULT `POST` / `permit_empty\|in_list` | `select` estático GET/POST/PUT/PATCH/DELETE — sempre nasce `POST`; `required` só barra o botão `×` |
+| `version`         | 4     | sim (decorativo) | `NOT NULL` DEFAULT 1 / `permit_empty\|is_natural_no_zero` | `text` `inputMode: 'numeric'`; `onChange` faz `parseInt \|\| 1` → estado nunca fica vazio, `required` nunca dispara |
+| `description`     | 12    | não | `NULL` / `permit_empty` | `textarea` (`rows: 2`, `showCounter: true` — contagem simples, sem `maxLength`) |
 
 ### Subcard GRUPOS — `form_groups`
 
-Estado local `grupos: Record<string, GrupoLocal[]>`; `adicionarGrupo` /
-`atualizarGrupo`. Campos (fora `id`, `form_manager_id`, timestamps):
+Renderizado por
+**`<FormGrid schema={grupoSchema(tabela, grupo, atualizarGrupo)} />`** mais um
+`<IconSelect>` ao lado (o FormGrid não tem seletor de ícone). Estado local
+`grupos: Record<string, GrupoLocal[]>`.
 
-| Campo         | Coluna (`col-*` responsivo) | Controle                              |
-| ------------- | --------------------------- | ------------------------------------- |
-| `title`       | `col-12`                    | input — **slug acompanha** (slugAuto) |
-| `slug`        | `col-12 col-sm-6`           | input                                 |
-| `icon`        | `col-12 col-sm-6`           | `<IconSelect>`                        |
-| `sort_order`  | `col-6 col-sm-4`            | number                                |
-| `collapsed`   | `col-6 col-sm-8`            | switch                                |
-| `description` | `col-12`                    | textarea                              |
+| Campo         | `col` | Tipo no schema                                            |
+| ------------- | ----- | -------------------------------------------------------- |
+| `title`       | 12    | `text` **`required`** (`NOT NULL` no banco) — **slug acompanha** (slugAuto) |
+| `slug`        | 6     | `text`                                                  |
+| `sort_order`  | 6     | `text` `inputMode: 'numeric'`                           |
+| `collapsed`   | 12    | `checkbox` de 1 opção (`Recolhido`), controlado por array |
+| `description` | 12    | `textarea` (`rows: 2`, `showCounter: true` — contagem simples) |
+| `icon`        | —     | `<IconSelect>` fora do `<FormGrid>` (componente próprio) |
 
 ## Decisões de UI já tomadas
 
-- **Slug automático**: enquanto não editado à mão, `slug` = `slugify(name/title)`.
-  Flag `slugAuto` só de UI (não existe nas tabelas); vira `false` ao editar o slug.
+- **Campos via `<FormGrid>`**, não markup à mão — ver
+  [`README_render_via_formgrid.md`](README_render_via_formgrid.md). A página só
+  monta o schema; a fábrica renderiza grade, validação e serialização.
+- **Slug automático**: `slug` nasce **vazio** (`managerInicial()`). Enquanto
+  `slugAuto` for `true`, digitar o **Título** reescreve o `slug`
+  (`slugify(title)` de [`@/utils/slug`](../../utils/slug.ts) no `onChange` —
+  igual ao subcard GRUPOS com o `title` do grupo). Flag `slugAuto` só de UI;
+  vira `false` ao editar o `slug` à mão. `slug` é obrigatório (`NOT NULL` +
+  `required` no `CreateRequest`); a validação de envio entra quando o construtor
+  ganhar `submit`.
+- **Campos obrigatórios**: `required: true` no schema do `<FormGrid>` (todos os
+  tipos aceitam) — pinta `*` no label e valida no `blur` (`"<label> é
+  obrigatório"` + `is-invalid`). É **regra de produto do construtor**, mais
+  estrita que o banco: hoje só `form_manager.slug` e `form_groups.title` são
+  `NOT NULL` sem default; os demais marcados (`title`, `profile_group`,
+  `react_route`, `submit_endpoint`, `http_method`, `status`, `version`) são
+  `NULL` ou têm default no banco e `permit_empty` no `CreateRequest`. Enquanto o
+  backend não for endurecido, a API ainda aceita esses campos vazios. Bloqueio
+  de envio real só quando o construtor ganhar `submit`.
+- **`profile_group`**: par `parseStringList` / `toStringList` de
+  [`@/utils/jsonList`](../../utils/jsonList.ts).
+- **Tipos e defaults**: `src/pages/v1/form/formBuilder.model.ts` (`ManagerLocal`,
+  `managerInicial`, `GrupoLocal`, `grupoInicial`, `toTabela`, `toColuna`).
 - **Sem persistência**: nenhum `submit`/`create` ainda. Só `useState`.
-- **Layout**: página em `.container` (largura de container, não coluna fixa).
-  Grids dos subcards responsivos — `col-12` no celular, proporção original a
-  partir de `sm` (576px). Regra de ouro do frontend: só classes Bootstrap.
-- **`slugify`**: `NFD` → remove diacríticos → lowercase → `[^a-z0-9]+` vira `-`.
-- Subcards de `form_manager` e `form_groups` usam a mesma casca:
-  `card bg-body-tertiary` + `card-body py-2` + `row g-2` + `form-control-sm`
-  - `form-label mb-1 small`. Manter esse padrão nos próximos subcards.
+- **Layout**: página em `.container`; `col` do schema vira `col-md-N` (padrão do
+  FormGrid).
 
 ## Próximos passos (a fazer)
 
@@ -126,12 +144,24 @@ Mesma casca de subcard dos itens acima.
 ## Arquivos
 
 ```
-src/pages/v1/form/FormBuilderPage.tsx     a página
+src/pages/v1/form/FormBuilderPage.tsx     a página — estado + montagem de schema
+src/pages/v1/form/formBuilder.model.ts    tipos, defaults, mappers (toTabela/toColuna)
+src/utils/slug.ts                         slugify() (slug automático)
+src/utils/jsonList.ts                     parseStringList()/toStringList() (profile_group)
 src/services/v1/dbSchema.ts               tables() / columns(tabela)
+src/components/ui/FormGrid/Input.tsx      a fábrica <FormGrid> (todos os campos)
 src/components/ui/IconSelect.tsx          seletor de ícone dos grupos
-src/components/ui/FormGrid/Input.tsx      o select do card seletor
 src/routes/v1/form.routes.tsx             rota lazy
 ```
+
+O campo "Grupo de perfil" não usa `services/v1/userRoles.table.ts` — o
+`<FormGrid>` (`select` com `src`) faz o GET direto. O service continua
+disponível para outros consumos.
+
+Backend do `user-roles` (módulo read-only, espelha `User/UserManager`):
+`app/Models/V1/User/UserRoles/`, `app/Services/V1/User/UserRoles/`,
+`app/Controllers/Api/V1/User/UserRoles/`,
+`app/Config/Routes/Api/v1/User/UserRoles/EndpointTable.php` (só rotas de leitura).
 
 ---
 
