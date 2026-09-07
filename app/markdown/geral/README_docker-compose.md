@@ -51,6 +51,37 @@ projeto54900/
 
 Todas essas pastas/arquivos são referenciados diretamente pelo `docker-compose.yml` (contexto de build ou volume) — se algum faltar, o build ou o `up` falha.
 
+## Proxy de rede interna/corporativa (build de php e node)
+
+Os serviços `php` e `node` foram construídos originalmente numa VM de rede
+corporativa isolada, que exige proxy HTTP/HTTPS para `apt-get`/`npm install`
+(sem resolução de DNS interno, por isso o proxy é referenciado por IP). Fora
+dessa rede, o proxy não deve ser usado.
+
+O controle é feito por `build.args` no `docker-compose.yml` (nunca no
+Dockerfile, que é versionado) — `docker/php/Dockerfile` e
+`docker/node/Dockerfile` só leem os `ARG`:
+
+```yaml
+  php: # (mesmo padrão em node:)
+    build:
+      args:
+        USE_INTERNAL_PROXY: "false"   # "true" liga o proxy no build
+        PROXY_HOST: "10.200.188.17" # IP real só no docker-compose.yml (fora do git)
+        PROXY_PORT: "80"
+```
+
+- `USE_INTERNAL_PROXY: "true"` → build usa `http_proxy`/`https_proxy` com
+  `PROXY_HOST:PROXY_PORT` durante `apt-get`/`npm install`.
+- `USE_INTERNAL_PROXY: "false"` (default) → build roda sem proxy, como no
+  ambiente atual.
+
+Para aplicar uma mudança nesses `args`, rebuild é obrigatório:
+
+```
+podman compose build php node
+```
+
 ## Bancos de dados
 
 - `codeigniter54900_db` — banco padrão (conexão `default` do CI4), criado automaticamente pela imagem MySQL via `MYSQL_DATABASE`, migrations sem `--group`.
