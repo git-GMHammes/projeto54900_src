@@ -40,6 +40,19 @@ defined('COMPOSER_PATH') || define('COMPOSER_PATH', ROOTPATH . 'vendor/autoload.
 defined('DB_GROUP_001') || define('DB_GROUP_001', 'codeigniter54900_mysql');
 
 /*
+ | --------------------------------------------------------------------------
+ | Raiz fisica dos uploads (modulo Upload/UploadManager)
+ | --------------------------------------------------------------------------
+ |
+ | Pasta onde o modulo Upload grava os arquivos. NAO tem versao (a tabela
+ | uploads tambem nao tem). A identificacao e por subpastas:
+ |   <UPLOAD_DISK>/<module>/<reference_id>/<file_key><AAAAMMDDHHMMSS>.<ext>
+ |
+ | Fica sob writable/ (ja ignorado pelo Git em writable/uploads/*).
+ */
+defined('UPLOAD_DISK') || define('UPLOAD_DISK', WRITEPATH . 'uploads');
+
+/*
  |--------------------------------------------------------------------------
  | Timing Constants
  |--------------------------------------------------------------------------

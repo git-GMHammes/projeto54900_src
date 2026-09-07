@@ -1,0 +1,13 @@
+// O 0,01%: apenas o que o Bootstrap nao resolve com classe utilitaria.
+// Se der para fazer com classe do Bootstrap, NAO escreva CSS aqui.
+
+// Ex.: cursor de coluna ordenavel na DataTable (nao ha utilitario nativo).
+.table thead th[role='button'] {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+// Ex.: quebra de palavra longa em <dd> de detalhes (evita overflow horizontal).
+dl .text-break {
+  overflow-wrap: anywhere;
+}
