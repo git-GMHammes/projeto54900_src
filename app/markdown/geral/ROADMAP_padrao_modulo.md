@@ -37,6 +37,7 @@ Banco `codeigniter54900_db` (conexão `default`; ver
 | `User`   | `user_roles`                                                                                                                                               | `permissions` JSON; `slug` unique — **sem módulo ainda**                    |
 | `User`   | `view_user_manager`                                                                                                                                        | view: `user_manager` (um*) LEFT JOIN `user_profiles` (uc*)                  |
 | `Agenda` | `calendars`, `calendar_events`, `calendar_event_attendees`, `calendar_event_reminders`, `calendar_event_attachments`, `calendar_event_extended_properties` | migrations existem; **sem módulo ainda**                                    |
+| `Upload` | `uploads`, `view_upload_manager`                                                                                                                            | módulo `Upload/UploadManager`; anexos polimórficos (ver desvio abaixo)      |
 
 ## 2. As 6 camadas
 
@@ -338,6 +339,22 @@ Exemplo: domínio `Agenda`, módulo `Calendar`, tabela `calendars`, slug
 
 **Não** copiar lógica das classes base para o módulo. Se algo genérico faltar,
 o lugar é a classe base — com revisão.
+
+### 10.1 Desvio sancionado — módulo `Upload/UploadManager`
+
+O módulo de anexos foge do padrão em **dois pontos**, documentados em
+[`README_modulo_upload.md`](README_modulo_upload.md):
+
+1. **Tabela `uploads` sem foreign key** — é polimórfica (serve N módulos via
+   `module` + `reference_id`), então não há FK nem `CASCADE`. Trade-off:
+   possibilidade de arquivos órfãos ao excluir o dono.
+2. **3 rotas além das 18/10** — `POST upload` (multipart), `GET serve/(:num)`
+   e `GET download/(:num)`, em `EndpointUpload.php`. O padrão não cobre
+   `multipart` nem streaming de binário. As 18/10 canônicas seguem intactas
+   para os metadados; `update` só altera metadados (campos físicos imutáveis).
+
+Novos módulos **não** devem tomar isto como licença para inventar rotas ou
+abrir mão de FK — o desvio vale só para o caso de anexo polimórfico.
 
 ## 11. Checklist de conformidade (revisão de PR)
 

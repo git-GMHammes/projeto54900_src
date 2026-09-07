@@ -16,9 +16,13 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | Palavra-chave                 | Assunto (5 palavras)                    |
 | ----------------------------- | -------------------------------------- |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
+| [`compose`](#compose)         | Setup do ambiente Docker e example public |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
+| [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
+| [`schema`](#schema)           | Introspecção do banco por API            |
+| [`upload`](#upload)           | Módulo de anexos para outros módulos     |
 
 ---
 
@@ -34,6 +38,18 @@ link para este `README.md`.
 
 [`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
 
+### `compose`
+
+Como levantar o ambiente Docker/Podman do zero: serviços (`mysql`, `adminer`,
+`php`, `node` WebSocket, `nginx`), pastas exigidas pelo build (`docker/php`,
+`docker/mysql`, `docker/node`, `docker/nginx`) e portas expostas no host
+(`54900` app, `54901` mysql, `54902` adminer). `docker-compose.yml` real
+contém credenciais e não deve ser exposto publicamente; usar
+`docker-compose-example.yml` (versionado, só placeholders) como base,
+renomeando e preenchendo credenciais próprias antes de subir a stack.
+
+[`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
+
 ### `conexao`
 
 Como o sistema conecta aos bancos usando podman e o `docker-compose.yml`. Há a
@@ -43,6 +59,22 @@ classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
 novo módulo/banco.
 
 [`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
+
+### `formulario`
+
+Domínio `Form` da API V1: guarda no banco a definição estrutural de formulários
+dinâmicos (como o `src/public/form_test.html`) e a expõe por APIs REST
+**públicas** (sem JWT). Quatro tabelas encadeadas — `form_manager` (o
+formulário: nome, slug, grupo de perfil, rota React, status),
+`form_groups` (subgrupos de contexto), `form_rows` (linhas de 1 a 12 campos) e
+`form_campos` (atributos de qualquer componente do `FormGrid`, em colunas
+explícitas + flags + colunas JSON) — mais a view `view_form_manager` que
+achata os quatro níveis (1 linha por campo) para o front baixar o formulário
+inteiro numa consulta. Segue o padrão de módulo; cada tabela tem as 18 rotas
+canônicas e a view as 9 de leitura (81 no total). Regras de negócio (unicidade
+de slug, FK ativa, teto de 12 do grid, serialização de JSON) nos Processors.
+
+[`geral/README_modulo_form.md`](geral/README_modulo_form.md) — módulo de formulários dinâmicos da API V1.
 
 ### `migracao`
 
@@ -65,3 +97,32 @@ checklist para criar um módulo do zero e as pendências em aberto (ex.:
 `DB_GROUP_001` aponta para grupo inexistente).
 
 [`geral/ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1.
+
+### `schema`
+
+Utilitário REST **read-only** `api/v1/db-schema` que introspecta o banco da API
+V1 via `INFORMATION_SCHEMA`: `GET db-schema/tables` (tabelas + views com engine,
+linhas estimadas, comentário), `GET db-schema/columns/{tabela}` (colunas com
+tipo, `nullable`, `default`, `key`, `extra`, `enum_values`) e
+`GET db-schema/describe/{tabela}` (colunas + PK + FKs). Alimenta os `select` do
+construtor de formulários para não referenciar coluna inexistente. Desvio
+sancionado (3 rotas próprias, não as 18/9); `SchemaController` estende
+`BaseResourceViewController` só pelo envelope. Segurança: nome de tabela sempre
+validado contra `$db->listTables()` antes de qualquer query e consultas com
+bind; schema exposto sem JWT — ok em homolog/dev.
+
+[`geral/README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — introspecção do banco pela API (`db-schema`).
+
+### `upload`
+
+Módulo `Upload/UploadManager` da API V1: recurso REST polimórfico que armazena
+e serve arquivos (Office, imagem, áudio, vídeo, PDF, compactados) como anexos
+de qualquer outro módulo, identificados por `module` + `reference_id`
+(+ `collection`). Tabela `uploads` sem FK; arquivos em
+`writable/uploads/<module>/<reference_id>/<file_key><AAAAMMDDHHMMSS>.<ext>`
+(sem versão na pasta). Segue o padrão de módulo com dois desvios sancionados:
+tabela sem foreign key e 3 rotas extras (`upload` multipart, `serve`,
+`download`). Traz o contrato das rotas, a política de `Config/Upload.php` e
+como outro módulo anexa/lista/exibe arquivos.
+
+[`geral/README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo de upload/anexos da API V1.
