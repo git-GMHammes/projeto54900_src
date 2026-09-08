@@ -115,7 +115,7 @@ mantém um mapa de erros apenas para os campos de texto genéricos.
 | `senha`                           | Senha                     | texto                    | `strongPassword`, `doubleField` (2º campo de confirmação), `equalFields`, `noNumbers/noLetters/noSpecialChars`; botão mostrar/ocultar                                                                           |
 | `radio`                           | Grupo de opção única      | `string`                 | `options: {id,value,label,checked?}[]`, `inline`; `onChange(value)`                                                                                                                                             |
 | `checkbox`                        | Grupo de múltipla escolha | `string[]`               | `options: {...}[]`, `inline`, `required` (≥1); submete `name[]`; `onChange(values[])`                                                                                                                           |
-| `select`                          | Combobox com busca        | `string`                 | `options` inline **ou** `src` (GET), `valueKey`, `labelKey`/`labelTemplate`, `maxVisible`, `rows`, `findSrc`+`findColumn` (POST de busca), `getSrc` (GET por id), `authToken` (Bearer); `onChange(value, item)` |
+| `select`                          | Combobox com busca        | `string`                 | `options` inline **ou** `src` (GET), `valueKey`, `labelKey`/`labelTemplate`, `maxVisible`, `rows`, `findSrc`+`findColumn` (POST de busca), `getSrc` (GET por id), `authToken` (Bearer); `multiple`+`values`+`onChangeMultiple` (listbox multi); `disabledValues: string[]` (values como `<option disabled>`, cinza e não selecionáveis); `onChange(value, item)` |
 
 ### Notas por tipo
 
