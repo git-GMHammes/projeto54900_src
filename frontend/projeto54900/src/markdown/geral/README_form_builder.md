@@ -22,8 +22,8 @@ local: nada é persistido**.
 | Perfis  | `src` do campo `select`    | `GET {apiBaseUrl}/v1/user-roles/get-no-pagination` — o próprio `<FormGrid>` carrega |
 
 `dbSchema` vem de `@/services/v1`. As colunas são buscadas ao selecionar a
-tabela e ficam em cache no estado (`ainda não exibidas na tela` — reservadas
-para quando o corpo dos campos existir).
+tabela e ficam em cache no estado (`colunas: Record<string, ColunasState>`) —
+consumidas pelo select **Colunas** de cada LINHA (ver subcard LINHAS).
 
 ## Estrutura da tela (estado atual)
 
@@ -82,7 +82,8 @@ Botão `[+]` "Adicionar grupo" no cabeçalho da seção (`adicionarGrupo(tabela)
 
 ### Subcard LINHAS — `form_rows` (dentro de cada GRUPO)
 
-Renderizado por **`<FormGrid schema={rowSchema(grupoId, linha, atualizarLinha)} />`**.
+Renderizado por
+**`<FormGrid schema={rowSchema(grupoId, linha, atualizarLinha, todasColunas, colunasUsadas, onAddColunas)} />`**.
 Estado local `linhas: Record<string, RowLocal[]>` com **chave = `grupo.id`** (uuid).
 Cabeçalho "Linhas" com botão `[+]` "Adicionar linha" (`adicionarLinha(grupo.id)`),
 igual ao de Grupos. Cada linha é um `card border`. `form_group_id` fica implícito
@@ -93,6 +94,84 @@ igual ao de Grupos. Cada linha é um `card border`. `form_group_id` fica implíc
 | `sort_order` | 6     | `text` `inputMode: 'numeric'` (`parseInt \|\| 0`)                                                                 |
 | `gutter`     | 6     | `select` estático `g-0`…`g-5` (default `g-3`); label "Gutter (espaço)" — classe de gap entre colunas do Bootstrap |
 | `note`       | 12    | `text` — nota interna                                                                                             |
+| `columns`    | 12    | **Último campo da linha** (abaixo de `note`). Ver "Distribuição das colunas" abaixo. **Estado só de UI** — `form_rows` não tem essa coluna no banco; dirige os subcards CAMPO. Acima da lista de linhas, hint `Carregando colunas…` / `alert` de erro por `colunas[tabela]` |
+
+#### Distribuição das colunas entre as linhas
+
+Cada coluna da tabela vai para **no máximo uma linha** (de qualquer grupo).
+
+- **Select `Colunas`** (`type: 'select'` **`multiple`**, `rows: 10` — listbox
+  alto sempre aberto, `valueKey/labelKey = name`): `options` = **lista completa**
+  das colunas da tabela (`colunas[tabela].items`); `values` fica **fixo em `[]`**
+  — a seleção não "gruda", cada escolha só dispara `onAddColunas(values)`.
+- **`disabledValues: colunasUsadas`** — as colunas já usadas por qualquer linha
+  (de qualquer grupo) da tabela entram como `<option disabled>` (cinza, não
+  selecionáveis) em **todos** os selects daquela tabela. `colunasUsadas` é
+  derivado a cada render: `[...new Set(<todas as r.columns de todas as linhas de
+  todos os grupos>)]`.
+- **Limite `MAX_COLUNAS_POR_LINHA = 12`** (`formBuilder.model.ts`): aplicado em
+  `adicionarColunas` (dedupe + teto); o label mostra `Colunas (n/12)`.
+- `disabledValues` é prop opt-in do `<FormGrid>` select — ver
+  [`README_FormGrid.md`](README_FormGrid.md).
+
+### Subcard CAMPO — `form_fields` (1 por coluna selecionada)
+
+Ao escolher uma coluna no listbox da LINHA, aparece **um `card border` "Campo —
+{coluna}"** logo abaixo, dentro do `card-body` da linha. **Não há `[+]` manual** —
+um subcard por item de `r.columns`. O header traz `×` (`btn-close`) que chama
+`removerColunaLinha(grupoId, linhaId, coluna)`: tira a coluna de `r.columns`,
+apaga o `CampoLocal` e a coluna volta a ficar selecionável no listbox.
+
+- **Estado**: `campos: Record<string, Record<string, CampoLocal>>` — chave
+  `linha.id` → `coluna.name`. `CampoLocal` guarda **o que alguém preenche ao
+  criar um field**: as colunas de conteúdo/validação de `form_fields` + a config
+  que cada `<Tipo>FieldSchema` do `<FormGrid>` declara. Atributos DOM soltos
+  (`title`, `className`, `tabIndex`, `size`, `cols`, `dir`, `lang`, `spellCheck`,
+  `autoFocus`, `list`) e `style_json` **ficam de fora** — renderer/submit
+  cuidam. Nulláveis `INT`/data como `string` (`''` = não definido).
+- **`campoInicial(coluna, sortOrder)`** (`formBuilder.model.ts`) — seed pela
+  metadata: `field_name` = `field_key` = `coluna.name`; `label` = `coluna.name`;
+  `field_type` = `inferirFieldType(coluna.data_type)` (`text*`→`textarea`,
+  `date`→`data`, `time`→`hora`, `datetime`/`timestamp`→`data`, `enum`/`set`→
+  `select`, resto→`text`); `required` = `!coluna.nullable`; `col: 12`; demais
+  flags `false`, textos `''`.
+- **`campoSchema(keyBase, campo, set)`** — devolve `FormGridSchema` com
+  `sectionTitle` por bloco:
+  - **Estrutura** (sempre): `field_type` (select do enum da migration,
+    `FIELD_TYPE_OPCOES`), `col` (select 1–12), `sort_order`, `label`,
+    `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`.
+  - **Estado e validação** (sempre): `checkbox` inline
+    `required`/`disabled`/`read_only`/`is_hidden`; `min_length`, `max_length`
+    (numérico), `pattern`, `input_mode` (select `INPUT_MODE_OPCOES`),
+    `autocomplete`.
+  - **Específico — {tipo}** (condicional): montado de **`CAMPOS_POR_TIPO`** — só
+    o que o `<Tipo>FieldSchema` daquele `field_type` declara como opção de
+    produto. `colunaField(nome, …)` traduz cada item no campo `<FormGrid>`
+    adequado (flag→`checkbox`, array `*_json`→`textarea` cru, `min_date`/
+    `max_date`→`data`, `rows_qty`→`text` numérico, `sel_*`→`text`).
+- **`CAMPOS_POR_TIPO`** (em `FormBuilderPage.tsx`):
+  - `text` → `datalist_json`, `no_*`
+  - `password` → `no_*`
+  - `senha` → `no_*`, `strong_password`, `double_field`, `equal_fields`
+  - `email` → `allowed_domains_json`
+  - `textarea` → `rows_qty`, `show_counter`, `no_*`
+  - `select` → `sel_multiple`, `options_json` + grupo `sel_*` (`sel_src`,
+    `sel_value_key`, `sel_label_key`, `sel_label_template`, `sel_max_visible`,
+    `sel_rows`, `sel_auth_token`, `sel_find_src`, `sel_find_column`,
+    `sel_get_src`)
+  - `radio`/`checkbox` → `options_json`, `inline`
+  - `data` → `min_date`, `max_date`
+  - `hora` → `with_seconds`
+  - `moeda` e mascarados (`cpf`…`sei`) → nada (só os blocos comuns)
+- **`camposParaPayload(c)`** (`formBuilder.model.ts`) — serializa `sel_*` →
+  `select_config_json` (chaves vazias/`false` omitidas; objeto vazio → `''`).
+  Usado no `submit` futuro. `attributes_json` / `style_json` ficam sem UI.
+- `adicionarColunasLinha` cria o `CampoLocal` de cada coluna nova; entradas de
+  `campos` sem coluna correspondente em `r.columns` (excedente do teto) ficam
+  ociosas e nunca são renderizadas.
+- **Ainda cru**: `options_json`, `datalist_json`, `allowed_domains_json` são
+  `<textarea>` — o editor estruturado (montar/parse) é a próxima etapa, ver
+  [`README_campo_json_montado.md`](README_campo_json_montado.md).
 
 ## Decisões de UI já tomadas
 
@@ -119,54 +198,47 @@ obrigatório"` + `is-invalid`). É **regra de produto do construtor**, mais
   [`@/utils/jsonList`](../../utils/jsonList.ts).
 - **Tipos e defaults**: `src/pages/v1/form/formBuilder.model.ts` (`ManagerLocal`,
   `managerInicial`, `GrupoLocal`, `grupoInicial`, `RowLocal`, `rowInicial`,
-  `toTabela`, `toColuna`).
+  `CampoLocal`, `campoInicial`, `inferirFieldType`, `camposParaPayload`,
+  `adicionarColunas`, `removerColuna`, `toTabela`, `toColuna`).
 - **Sem persistência**: nenhum `submit`/`create` ainda. Só `useState`.
 - **Layout**: página em `.container`; `col` do schema vira `col-md-N` (padrão do
   FormGrid).
 
 ## Próximos passos (a fazer)
 
-### LACUNA ATUAL — Subcard CAMPOS — `form_fields` (dentro de cada LINHA)
+### Subcard CAMPO — só a config que alguém preenche
 
-É o 4º e último nível da árvore. Nada disso existe ainda. Deve ser o **espelho**
-de GRUPOS/LINHAS:
+O 4º nível da árvore está montado — **um subcard por coluna selecionada**, dirigido
+por `r.columns` (ver "Subcard CAMPO" acima), não pelo `[+]` manual espelho de
+GRUPOS/LINHAS. `campoSchema` tem **3 blocos** (Estrutura / Estado e validação /
+Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 
-- **Estado**: `campos: Record<string, CampoLocal[]>` com **chave = `linha.id`**
-  (uuid), como `linhas` usa `grupo.id`.
-- **Model** (`formBuilder.model.ts`): `CampoLocal` + `campoInicial()`. Defaults:
-  `field_type: 'text'`, `col: 12`, `sort_order: 0`, todas as flags `false`,
-  campos de texto e `*_json` como `''`. `id` = `crypto.randomUUID()`.
-- **Schema**: `campoSchema(linhaId, campo, atualizarCampo)` — função pura, fora
-  do componente, devolve `FormGridSchema`.
-- **Callbacks**: `adicionarCampo(linhaId)` / `atualizarCampo(linhaId, id, patch)`.
-- **Render**: dentro do `card-body` de cada LINHA, cabeçalho "Campos" + botão
-  `[+]` (`adicionarCampo(linha.id)`) e a lista de subcards, mais um nível de
-  aninhamento visual. `form_row_id` fica implícito.
+| Bloco               | Cobre                                                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Estrutura ✅         | `field_type`, `col`, `sort_order`, `label`, `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`                                                               |
+| Estado / validação ✅ | `required`, `disabled`, `read_only`, `is_hidden`, `min_length`, `max_length`, `pattern`, `input_mode`, `autocomplete`                                                             |
+| Específico ✅        | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`/`equal_fields`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*` |
 
-Colunas de `form_fields` (migration `2026-09-06-012303`, ~40) — agrupar numa UI
-legível seguindo o blueprint do grupo `campos` do `FormConstructorSeeder`
-(referência já pronta de como distribuir):
+**Fora da UI (auto):** atributos DOM soltos (`title`, `className`, `tabIndex`,
+`size`, `cols`, `dir`, `lang`, `spellCheck`, `autoFocus`, `list`) e `style_json`
+— renderer/submit definem default/null. `sel_*` → `select_config_json` via
+`camposParaPayload(c)`.
 
-| Bloco              | Colunas                                                                                                                                                                                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Estrutura          | `sort_order`, `field_type` (ENUM 22 tipos, default `text`), `col` (TINYINT 1–12, default 12), `label`, `field_name` (→ atributo `name`), `field_key` (→ atributo `id`), `placeholder`, `default_value` (TEXT), `help_text`                                                           |
-| Estado / validação | `required`, `disabled`, `read_only`, `is_hidden` (flags), `max_length`, `min_length` (INT), `pattern`, `input_mode`, `autocomplete`                                                                                                                                                  |
-| Flags por tipo     | `no_numbers`, `no_letters`, `no_special_chars`, `strong_password`, `double_field`, `equal_fields`, `with_seconds`, `show_counter` (`NULL`, sem default — difere das outras), `inline`; `rows_qty` (INT); `min_date`, `max_date` (VARCHAR(10) ISO)                                    |
-| JSON               | `options_json` (radio/checkbox/select), `datalist_json` (text), `allowed_domains_json` (email), `select_config_json` (`src`,`valueKey`,`labelKey`,`labelTemplate`,`maxVisible`,`findSrc`,`findColumn`,`getSrc`,`authToken`), `style_json` (CSSProperties), `attributes_json` (resto) |
+**Falta** (próximas etapas):
 
-Decisões abertas antes de construir:
-
+- **Editor estruturado dos arrays** — `options_json`, `datalist_json`,
+  `allowed_domains_json` ainda são `<textarea>` de conteúdo cru; montar/parse
+  fica para depois, ver
+  [`README_campo_json_montado.md`](README_campo_json_montado.md).
 - **Regra do grid**: 1 a 12 campos por linha **e** soma dos `col` ≤ 12 — hoje
   validada no `Form/FormCampos/Processor` ao vincular o campo, **não** no DDL. O
   construtor deveria somar os `col` da linha e avisar antes de qualquer envio.
-- **`*_json`**: `options_json` e `select_config_json` pedem UI montada
-  (montar/parse) no futuro; por ora `<textarea>` de JSON cru é aceitável como
-  config de dev — ver [`README_campo_json_montado.md`](README_campo_json_montado.md).
 - **`field_type`**: o ENUM mistura inglês/português e duplica `password`/`senha`
   (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 21 tipos
   do `<FormGrid>` ([`README_FormGrid.md`](README_FormGrid.md)).
 - **Persistência**: continua fora de escopo — o `submit`/`create` de toda a
-  árvore (`form_manager` → `form_fields`) é um passo à parte.
+  árvore (`form_manager` → `form_fields`) é um passo à parte. Os nulláveis
+  `INT`/data guardados como `string` (`''`) serão convertidos no envio.
 
 ### Observação de nomenclatura (decidir ao religar)
 

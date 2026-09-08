@@ -55,6 +55,9 @@ export interface SelectFieldSchema {
   defaultValues?: string[]
   /** Disparado quando a seleção múltipla muda */
   onChangeMultiple?: (values: string[], items: SelectOptionItem[]) => void
+
+  /** Values renderizados como `<option disabled>` — cinza e não selecionáveis */
+  disabledValues?: string[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -144,6 +147,8 @@ export function SelectField({ field }: SelectFieldProps) {
   const hasAnyValue = field.multiple ? effectiveValues.length > 0 : Boolean(effectiveValue)
   const isSelected = (val: string): boolean =>
     field.multiple ? effectiveValues.includes(val) : val === effectiveValue
+  const isOptionDisabled = (val: string): boolean =>
+    field.disabledValues?.includes(val) ?? false
 
   // Carrega dados do src na montagem
   useEffect(() => {
@@ -419,6 +424,7 @@ export function SelectField({ field }: SelectFieldProps) {
             return
           }
           const val = e.target.value
+          if (isOptionDisabled(val)) return
           const found = allData.find(item => getValue(item, field) === val)
           if (found) selectItem(found)
         }}
@@ -427,11 +433,19 @@ export function SelectField({ field }: SelectFieldProps) {
           const val = getValue(item, field)
           const lbl = getLabel(item, field)
           const sel = isSelected(val)
+          const dis = isOptionDisabled(val)
           return (
             <option
               key={idx}
               value={val}
-              style={sel ? { background: '#dbeafe', fontWeight: 600 } : undefined}
+              disabled={dis}
+              style={
+                dis
+                  ? { color: '#adb5bd', cursor: 'not-allowed' }
+                  : sel
+                    ? { background: '#dbeafe', fontWeight: 600 }
+                    : undefined
+              }
             >
               {sel && !field.multiple ? `✓ ${lbl}` : lbl}
             </option>
