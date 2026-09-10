@@ -52,7 +52,9 @@ podman compose up -d --build
 **2. Aplicar as migrations — comando real, digitado no host:**
 
 ```
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark migrate
+ 
 ```
 
 Roda na conexão `default` (`codeigniter54900_db`). Para um módulo, acrescente
