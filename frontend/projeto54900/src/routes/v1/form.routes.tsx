@@ -1,21 +1,32 @@
 // Subrotas do modulo Form (v1). Paths relativos ao pai "v1".
 // Espelha api/v1/form-manager (+ -view), form-groups, form-rows, form-campos.
 //
-// - /v1/form-constructor        -> FormBuilderPage: pagina em branco que estamos
-//                                  montando juntos (o novo construtor).
-// - /v1/form-constructor-claude -> FormConstructorPage: construtor atual, que
-//                                  consome a view_form_manager e grava nas 4
-//                                  tabelas. NAO mexer.
+// Padrao REST espelhando api/v1/form-manager:
+// - /v1/form-constructor            -> FormConstructorListPage: lista os form_manager.
+// - /v1/form-constructor/create     -> FormBuilderPage: novo formulario (arvore
+//                                      form_manager -> form_groups -> form_rows -> form_fields).
+// - /v1/form-constructor/update/:id -> FormBuilderPage em modo edicao: mesma tela,
+//                                      hidratada com o registro existente.
+// - /v1/form-constructor-claude     -> FormConstructorPage: construtor legado que
+//                                      consome a view_form_manager. NAO mexer.
+// - /v1/form/:slug                  -> FormRendererPage: renderiza UM formulario real
+//                                      a partir da definicao gravada e submete para o
+//                                      submit_endpoint do registro.
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
+const FormConstructorListPage = lazy(() => import('@/pages/v1/form/FormConstructorListPage'));
 const FormBuilderPage = lazy(() => import('@/pages/v1/form/FormBuilderPage'));
 const FormConstructorPage = lazy(() => import('@/pages/v1/form/FormConstructorPage'));
+const FormRendererPage = lazy(() => import('@/pages/v1/form/FormRendererPage'));
 
 export const formRoutes: RouteObject[] = [
-  { path: 'form-constructor', element: <FormBuilderPage /> },
+  { path: 'form-constructor', element: <FormConstructorListPage /> },
+  { path: 'form-constructor/create', element: <FormBuilderPage /> },
+  { path: 'form-constructor/update/:id', element: <FormBuilderPage /> },
   { path: 'form-constructor-claude', element: <FormConstructorPage /> },
+  { path: 'form/:slug', element: <FormRendererPage /> },
 ];
 
 export default formRoutes;

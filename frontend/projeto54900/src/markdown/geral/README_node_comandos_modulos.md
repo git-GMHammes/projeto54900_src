@@ -4,10 +4,10 @@
 
 # Node — comandos do frontend e mapa dos módulos
 
-Frontend **React 19 + Vite 6 + TypeScript** (`C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900//`).
+Frontend **React 19 + Vite 6 + TypeScript** (`C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900`).
 Este documento cobre, nesta ordem:
 
-1. o **comando principal** para subir o app em desenvolvimento;
+1. como **instalar o Node e as dependências** (primeira vez) e **subir o app** em desenvolvimento;
 2. como gerar o **BUILD** (`dist/`) e publicá-lo num servidor estático;
 3. **para que serve cada módulo** de `src/`.
 
@@ -15,13 +15,66 @@ Complementa o [`CLAUDE.md`](../../../CLAUDE.md) do frontend — não o substitui
 
 ---
 
-## 1. Comando principal
+## 1. Primeira vez — instalar o Node e subir o app
 
+Frontend **React 19 + Vite 6 + TypeScript** exige **Node >= 20.19** no host.
+Siga os passos em ordem; o `npm run dev` só funciona depois do `npm install`.
 
-### Subir o app (dia a dia)
+### 1.1 Checar o Node instalado
+
+Abra um terminal (PowerShell ou Bash) e rode:
 
 ```bash
-cd C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900/
+node -v
+npm -v
+```
+
+O `node -v` precisa retornar **20.19.0 ou maior** (ex.: `v20.19.x`, `v22.x`).
+Se retornar uma versão **menor** (ex.: `v20.18.1`) ou erro de comando não
+encontrado, instale/atualize o Node no passo 1.2.
+
+### 1.2 Atualizar o Node (opcional)
+
+O requisito **`>= 20.19`** do `package.json` **não bloqueia** a instalação:
+não há `engine-strict`, então o `npm install` emite só um **aviso** — e o Vite 6
+aceita Node 20.x. Com o Node atual (ex.: `v20.18.1`) **já dá para ir direto ao
+1.3** sem atualizar nada.
+
+Se mesmo assim quiser deixar o Node na versão exigida:
+
+1. Baixar o instalador **.msi** da versão **LTS** em `https://nodejs.org`.
+2. Executar e instalar **por cima** da versão atual (o instalador substitui e
+   mantém o `PATH`; marcar "Add to PATH" se perguntar).
+3. Reabrir o terminal e conferir:
+
+```bash
+node -v
+```
+
+> Este PC instalou o Node pelo instalador oficial (`C:\Program Files\nodejs`)
+> e **não usa `nvm`**. Quem usa `nvm-windows` faria `nvm install 22` +
+> `nvm use 22`.
+
+### 1.3 Instalar as dependências (primeira vez)
+
+Cria a pasta `node_modules/` a partir do `package.json`:
+
+```bash
+cd C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900
+npm install
+ 
+```
+
+> Repita o `npm install` apenas quando o `package.json` mudar ou a pasta
+> `node_modules/` for apagada.
+>
+> Se aparecer o aviso **`EBADENGINE`** sobre a versão do Node, pode ignorar —
+> é só aviso, não erro (o projeto não usa `engine-strict`).
+
+### 1.4 Subir o app (dia a dia)
+
+```bash
+cd C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900
 npm run dev
  
 ```
@@ -38,16 +91,14 @@ O frontend **não usa `.env`** e **não roda em container**. As chaves `VITE_*`
 têm defaults em `src/config/env.ts` (`base` `/`, API `/api`, versão `v1`,
 WS `/ws`) — não é preciso exportar nada para o dia a dia.
 
-### Pré-requisitos
+### 1.5 Pré-requisitos
 
 | Requisito | Observação |
 | --- | --- |
 | Node >= 20.19 no host | roda o `npm` (dev, build, lint) |
 | Backend no ar | containers do `docker-compose.yml` (`mysql`, `php`, `nginx`, `node`) publicados no host em `:54900` — alvo do proxy `/api` e `/ws` |
 
-Primeira vez: `npm install` dentro de `C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900//`.
-
-### Todos os scripts (`package.json`)
+### 1.6 Todos os scripts (`package.json`)
 
 | Script | Comando real | Para que serve |
 | --- | --- | --- |
@@ -68,7 +119,7 @@ Primeira vez: `npm install` dentro de `C:/laragon/www/php/habilidade/projeto5490
 para:
 
 ```
-C:/laragon/www/php/habilidade/projeto54900/src/frontend/projeto54900//dist/
+C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900/dist/
 ```
 
 `dist/` é `.gitignore` — é artefato, gerado a cada build.

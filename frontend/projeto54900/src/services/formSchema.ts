@@ -235,4 +235,43 @@ export function buildConstructorSchemas(rows: readonly ApiRow[]): ConstructorGro
     });
 }
 
+// --- renderizador (formulario real) --------------------------------------
+// Mesma materia-prima do construtor, alvo diferente: em vez de 4 formularios
+// (um por camada), devolve UM formulario so — as linhas de todos os grupos
+// concatenadas num unico FormGridSchema — mais a metadata de form_manager
+// (para onde / como enviar). Consumido por FormRendererPage (/v1/form/:slug).
+
+export interface RenderFormMeta {
+  slug: string;
+  title: string;
+  description?: string | undefined;
+  submitEndpoint?: string | undefined;
+  httpMethod: string;
+  status?: string | undefined;
+}
+
+export interface RenderForm {
+  meta: RenderFormMeta;
+  schema: FormGridSchema;
+}
+
+export function buildRenderSchema(rows: readonly ApiRow[]): RenderForm | null {
+  const groups = buildConstructorSchemas(rows);
+  if (groups.length === 0) return null;
+
+  const head = rows.find((r) => str(r.fm_slug) !== undefined) ?? rows[0];
+  const meta: RenderFormMeta = {
+    slug: str(head?.fm_slug) ?? '',
+    title: str(head?.fm_title) ?? str(head?.fm_slug) ?? 'Formulario',
+    description: str(head?.fm_description),
+    submitEndpoint: str(head?.fm_submit_endpoint),
+    httpMethod: (str(head?.fm_http_method) ?? 'POST').toUpperCase(),
+    status: str(head?.fm_status),
+  };
+
+  const schema: FormGridSchema = { rows: groups.flatMap((g) => g.schema.rows) };
+
+  return { meta, schema };
+}
+
 export default buildConstructorSchemas;
