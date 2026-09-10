@@ -14,6 +14,8 @@ const NAV: NavItem[] = [
   { to: paths.home, label: 'Inicio', end: true },
   { to: paths.v1.user.list, label: 'Usuarios', end: false },
   { to: paths.v1.upload.list, label: 'Uploads', end: false },
+  { to: paths.v1.form.list, label: 'Formularios', end: false },
+  { to: paths.v1.form.render('calendario'), label: 'Google Calendars', end: false },
 ];
 
 export default function Navbar() {

@@ -63,6 +63,36 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Agenda — Modulo de calendario (espelho do Google Agenda): calendars >
+    //           calendar_events > {attendees, reminders, attachments,
+    //           extended_properties}. APIs REST, contrato canonico (18 rotas).
+    // =========================================================================
+
+    $routes->group('calendars', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/Calendars/EndpointTable.php';
+    });
+
+    $routes->group('calendar-events', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEvents/EndpointTable.php';
+    });
+
+    $routes->group('calendar-event-attendees', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttendees/EndpointTable.php';
+    });
+
+    $routes->group('calendar-event-reminders', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventReminders/EndpointTable.php';
+    });
+
+    $routes->group('calendar-event-attachments', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttachments/EndpointTable.php';
+    });
+
+    $routes->group('calendar-event-extended-properties', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventExtendedProperties/EndpointTable.php';
+    });
+
+    // =========================================================================
     // /Meta — utilitarios read-only. db-schema: introspeccao do banco
     //         (lista tabelas e colunas). Desvio sancionado: 3 rotas proprias.
     // =========================================================================

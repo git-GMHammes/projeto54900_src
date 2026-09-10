@@ -11,3 +11,61 @@
 dl .text-break {
   overflow-wrap: anywhere;
 }
+
+// Árvore de hierarquia do FormBuilderPage (pages/v1/form/FormBuilderTree.tsx),
+// espelha doc/html/estrutura.html. Bootstrap não tem componente de árvore; aqui
+// só o que utilitário não cobre: giro do chevron, realce da linha, guia
+// tracejada e o "pisca" do nó recém-criado. Cores por var(--bs-*) (dark nativo).
+.form-tree {
+  .tree-row {
+    transition: background-color 0.12s ease;
+  }
+
+  .tree-row:hover {
+    background: var(--bs-tertiary-bg);
+  }
+
+  .tree-toggle {
+    min-width: 0; // permite o text-truncate do nome
+  }
+
+  .tree-toggle[role='button'] {
+    cursor: pointer;
+  }
+
+  .tree-toggle:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 1px;
+    border-radius: 0.375rem;
+  }
+
+  .tree-chevron {
+    flex: 0 0 auto;
+    transition: transform 0.15s ease;
+  }
+
+  .tree-toggle[aria-expanded='true'] .tree-chevron {
+    transform: rotate(90deg);
+  }
+
+  .tree-children {
+    margin-left: 0.8rem;
+    padding-left: 0.9rem;
+    border-left: 1px dashed var(--bs-border-color);
+  }
+
+  .tree-flash {
+    animation: tree-flash 1.5s ease-out 1;
+  }
+}
+
+@keyframes tree-flash {
+  0%,
+  25% {
+    background-color: var(--bs-warning-bg-subtle);
+  }
+
+  100% {
+    background-color: transparent;
+  }
+}

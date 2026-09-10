@@ -44,20 +44,25 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 Construtor **novo** (`FormBuilderPage`, rota `/v1/form-constructor`) que estamos
 montando do zero — não confundir com o [`construtor`](#construtor) anterior
 (seed + `view_form_manager`). Lê o schema real do banco por introspecção
-(`dbSchema.tables()` / `dbSchema.columns(tabela)`) e mantém **tudo só em estado
-local: nada persiste ainda**. Ao escolher tabelas no `select multiple`, cada
-tabela vira um card: `card-header` só com o nome da tabela, `card-body` com um
-subcard `FORMULÁRIO` (campos de `form_manager`, 1:1), N subcards `GRUPOS`
-(campos de `form_groups`, botão `[+]`) e, dentro de cada grupo, N subcards
-`LINHAS` (campos de `form_rows`, botão `[+]`; estado por `grupo.id`). Decisões já
-tomadas: `form_manager` identificado só por `slug` (nasce vazio e acompanha o
-Título enquanto `slugAuto`; obrigatório), página em `.container`, grids dos
-subcards responsivos (`col-12` no celular, proporção original a partir de `sm`),
-casca comum `card bg-body-tertiary` + `row g-2` + `form-control-sm`. Próximo
-passo: `form_fields` (os campos) — com observação de nomenclatura (enum
-`field_type` misturando pt/en/documentos BR).
+(`dbSchema.tables()` / `dbSchema.columns(tabela)`) e **persiste nó a nó**: o
+botão **Salvar** de cada modal grava pelo service `form*` correspondente
+(`create`/`update`), o `id` retornado liga a camada filha e o `[+]` de um nível
+fica **desabilitado enquanto o pai não estiver salvo** (`deleteSoft` na remoção
+de nó já gravado). Ao escolher tabelas no `select multiple`, cada
+tabela vira um card cujo `card-body` é uma **árvore de hierarquia**
+(`form_manager → form_groups → form_rows → form_fields`) no visual de
+`doc/html/estrutura.html`: cada nível é uma **linha compacta colapsável**
+(chevron + `[+]` para adicionar nó, que aparece na árvore com scroll + "pisca");
+o **formulário de cada nó abre num modal** (`<FormGrid>`, botão ✏️). Colapso e
+modal são **estado React**, não os plugins JS do Bootstrap. Decisões: `form_manager`
+identificado só por `slug` (nasce vazio, acompanha o Título enquanto `slugAuto`).
 
-[`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` e o roadmap (campos).
+**⭐ Padrão reutilizável** — os componentes `FormBuilderTree.tsx` (`<FormTree>` /
+`<TreeNode>`) + `FormModal.tsx` são **genéricos**: servem para qualquer tela de
+estrutura pai→filho de N níveis com formulário por nó. Ver a seção destacada no
+markdown antes de reinventar.
+
+[`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage`, o **padrão árvore+modal reutilizável** e o roadmap.
 
 ### `construtor`
 
@@ -147,7 +152,7 @@ múltiplas (`multiple` + `values` + `onChangeMultiple`). Exceção: chrome que n
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo cujo valor é JSON montado pela UI (o usuário não digita JSON).
-- [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), estado atual e roadmap.
+- [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), o padrão reutilizável árvore+modal, estado atual e roadmap.
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
