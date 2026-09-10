@@ -6,8 +6,11 @@
 
 Construtor que estamos montando juntos, do zero. **Não** é a página anterior
 (`FormConstructorPage`, dirigida por seed + `view_form_manager`) — esta lê o
-schema real do banco por introspecção e, por ora, mantém **tudo só em estado
-local: nada é persistido**.
+schema real do banco por introspecção e **persiste nó a nó**: cada nível é
+gravado pelo botão **Salvar** do seu modal (services `form*`), o `id` retornado
+liga a camada filha e **um filho só pode ser criado depois do pai salvo**.
+Recarregar do banco uma árvore já persistida para reedição ainda **não** existe
+(a tela sempre parte de estado novo).
 
 - Rota: `routes/v1/form.routes.tsx` → `form-constructor` → `FormBuilderPage` (lazy).
 - Arquivo: [`src/pages/v1/form/FormBuilderPage.tsx`](../../pages/v1/form/FormBuilderPage.tsx).
@@ -32,15 +35,118 @@ consumidas pelo select **Colunas** de cada LINHA (ver subcard LINHAS).
    → `handleTabelas`.
 2. **Um card por tabela escolhida** (`tabelas.map`):
    - **`card-header`**: só o nome da tabela (`fw-semibold text-nowrap`). Sem mais nada.
-   - **`card-body`**:
-     - **Subcard `FORMULÁRIO`** — campos de `form_manager` (1:1 com a tabela).
-     - **Subcard(s) `GRUPOS`** — campos de `form_groups` + `<IconSelect>`, N por
-       tabela, com botão `[+]` (`adicionarGrupo`).
-       - **Subcard(s) `LINHAS`** — campos de `form_rows`, N por grupo, com botão
-         `[+]` (`adicionarLinha`), dentro do `card-body` de cada GRUPO.
+   - **`card-body`**: uma **árvore de hierarquia** (`<FormTree>` + `<TreeNode>`,
+     [`FormBuilderTree.tsx`](../../pages/v1/form/FormBuilderTree.tsx)) no visual de
+     [`doc/html/estrutura.html`](../../../../../doc/html/estrutura.html). Cada
+     nível é uma **linha compacta** (chevron + ícone + `form_<tabela>` + `·
+     {nome}` + pill de contagem); clicar expande/recolhe **só a estrutura
+     abaixo** (nunca despeja formulário). O formulário de cada nó abre num
+     **modal** ([`FormModal.tsx`](../../pages/v1/form/FormModal.tsx)), botão ✏️.
+     - **`manager`** (1, `id = manager:{tabela}`) — `name = {tabela}`; ✏️ abre
+       `managerSchema`; `[+] form_groups` (`adicionarGrupo`).
+       - **`group`** (N, `grupos[tabela]`) — `name = grupo.title`; ✏️ abre
+         `grupoSchema` + `<IconSelect>`; `[+] form_rows` (`adicionarLinha`); 🗑
+         (`removerGrupo`).
+         - **`row`** (N, `linhas[grupo.id]`) — `name = linha.note` ou
+           `linha {sort_order}`; ✏️ / `[+] form_fields` abrem `rowSchema` (com o
+           multiselect **Colunas** + hints de carregamento/erro); 🗑
+           (`removerLinha`).
+           - **`field`** (folha, 1 por `linha.columns`) — `name` = nome da
+             coluna; sem chevron; ✏️ abre `campoSchema`; 🗑 (`removerColunaLinha`).
 
-A árvore renderizada acompanha a do banco: `form_manager` → `form_groups` →
-`form_rows` → (a fazer: `form_fields`).
+A árvore acompanha a do banco: `form_manager` → `form_groups` → `form_rows` →
+`form_fields`.
+
+### Colapso e modal — estado React, não os plugins JS do Bootstrap
+
+`<FormTree>` guarda `Set<string>` de ids expandidos + o conjunto de todos os ids
+montados (para "Expandir tudo" / "Recolher tudo"). Um `<TreeNode>` montado
+**depois** da carga inicial é tratado como novo: abre a si e a toda a cadeia de
+pais (`parents`), rola até a linha (`scrollIntoView`) e pisca (`tree-flash`) —
+o `[+]` insere o nó **visível** na hierarquia. `<FormModal>` renderiza as
+classes `.modal`/`.modal-backdrop` num portal para `<body>`, fecha em Esc /
+clique fora / ×, e trava o scroll (`.modal-open`). Nada de `data-bs-toggle`:
+o React é dono dessas subárvores e o bundle JS movendo/limpando os nós conflita
+com o render. O 0,01% de CSS (giro do chevron, hover, guia tracejada, `tree-flash`)
+fica em [`styles/_custom.scss`](../../styles/_custom.scss); o resto é utilitário.
+
+### Persistência por nó — "Salvar" no modal
+
+Cada nó grava sozinho, pela API do módulo Form (endpoint-set REST padrão):
+
+| Nível         | Service (`@/services/v1`) | Rota                     | FK do pai enviada |
+| ------------- | ------------------------- | ------------------------ | ----------------- |
+| `form_manager`| `formManagerTable`        | `POST /v1/form-manager`  | —                 |
+| `form_groups` | `formGroupsTable`         | `POST /v1/form-groups`   | `form_manager_id` |
+| `form_rows`   | `formRowsTable`           | `POST /v1/form-rows`     | `form_group_id`   |
+| `form_fields` | `formCamposTable`         | `POST /v1/form-campos`   | `form_row_id`     |
+
+- **`dbId: number | null`** entra em `ManagerLocal` / `GrupoLocal` / `RowLocal` /
+  `CampoLocal` (`formBuilder.model.ts`). `null` = ainda não persistido; o `id` da
+  resposta (`respondCreated`) é gravado nele via `atualizar*`.
+- **`<FormModal>` ganhou `onSave` / `saving` / `saveError`.** Com `onSave` o
+  rodapé vira **Salvar** + **Fechar**; sem ele mantém o **Concluir** de antes.
+  `renderModal()` passa `onSave={() => salvar<Nível>(…)}` nos 4 tipos.
+- **`salvar<Nível>`** (na página): monta o payload com
+  `managerPayload` / `grupoPayload` / `rowPayload` / `campoPayload`
+  (`formBuilder.model.ts` — booleano→`0/1`, vazios omitidos, `select_config_json`
+  via `camposParaPayload`), chama **`create`** (sem `dbId`) ou **`update`**
+  (com `dbId`), grava `Number(rec.id)` no estado, mostra toast (`useToast`) e
+  fecha o modal. Erro de API → `ApiError.message` no `.alert` do modal, sem
+  quebrar o estado.
+- **Gating pai→filho.** `<TreeNode addDisabled>` desabilita o `[+]` enquanto o
+  nível acima não tem `dbId`: manager sem `dbId` trava `+ form_groups`, grupo sem
+  `dbId` trava `+ form_rows`, linha sem `dbId` trava `+ form_fields` **e** o
+  `<select>` **Colunas** do modal da linha. O nome do nó na árvore mostra
+  ` · #<id>` quando salvo e ` · não salvo` quando não.
+- **Remoção.** `removerGrupo` / `removerLinha` / `removerColunaLinha`: se o nó
+  tem `dbId`, `deleteSoft(dbId)` **antes** de limpar o estado local (o `CASCADE`
+  das FKs cuida dos filhos no banco); falha da API → toast de erro e o nó
+  **permanece**. Nó sem `dbId` → só limpa local, como antes.
+
+---
+
+## ⭐ Padrão reutilizável — "árvore de hierarquia + formulário em modal"
+
+> **Guardar como referência.** Este par de componentes resolve bem **qualquer
+> tela de estrutura pai→filho com N níveis** onde cada nó tem um formulário
+> próprio (menus, categorias, permissões, workflow, campos de relatório,
+> capítulos/seções, BOM de produto, etc.). É genérico: não sabe nada de
+> `form_manager` — a página é que mapeia o seu estado para `<TreeNode>`
+> aninhados. Reaproveitar antes de inventar outra coisa.
+
+**Componentes** (`src/pages/v1/form/`, mover para `components/ui/` se um 2º
+consumidor aparecer):
+
+| Arquivo | Papel | É genérico? |
+| ------- | ----- | ----------- |
+| [`FormBuilderTree.tsx`](../../pages/v1/form/FormBuilderTree.tsx) | `<FormTree>` (contexto de expansão + "Expandir/Recolher tudo") e `<TreeNode>` (linha compacta: chevron, ícone por `level`, `name`, pill de contagem, slots `onEdit`/`onAdd`/`onRemove`) | **Sim** — só `TreeLevel` (`manager`/`group`/`row`/`field`) e os ícones são específicos; trocar num fork |
+| [`FormModal.tsx`](../../pages/v1/form/FormModal.tsx) | `<FormModal>` — modal 100% controlado por React: portal para `<body>`, `.modal`/`.modal-backdrop`, fecha em Esc / clique fora / ×, trava scroll (`.modal-open`) | **Sim, totalmente** — nada de específico do construtor |
+| [`styles/_custom.scss`](../../styles/_custom.scss) `.form-tree` | giro do chevron, hover, guia tracejada, `@keyframes tree-flash` | **Sim** |
+
+**Por que funciona (decisões a manter num reuso):**
+
+1. **Linha de árvore = só estrutura.** O nó nunca renderiza o formulário inline
+   — colapsar um nó cheio de campos não organiza nada (foi o erro da 1ª versão).
+   Editar é ação explícita (✏️) que abre o **modal**.
+2. **Colapso e modal por estado React, nunca `data-bs-toggle` / `bootstrap.Modal`.**
+   O React é dono da subárvore; o bundle JS do Bootstrap movendo/limpando esses
+   nós briga com o ciclo de render.
+3. **`[+]` dá feedback imediato.** Nó novo (montado após a carga inicial): abre
+   a si + a cadeia de `parents`, `scrollIntoView` e pisca (`tree-flash`). O item
+   aparece **visível** na hierarquia, não "em algum lugar lá embaixo".
+4. **Um modal por vez.** A página guarda um `ModalAlvo` discriminado
+   (`{ kind: 'manager' | 'group' | 'row' | 'field'; …ids }`) e um `renderModal()`
+   escolhe qual `<FormGrid>` montar. Guarda `if (!nó) return null` cobre o nó
+   apagado com o modal aberto.
+5. **Formulários continuam via `<FormGrid>`** (schema JSON), só que dentro do
+   modal — zero `<input>` à mão.
+
+**Para reusar noutra tela:** copiar os 2 componentes + o bloco `.form-tree`,
+ajustar `TreeLevel`/ícones, e na página nova: estado → `<TreeNode>` aninhados
+(passar `parents` com os ids ancestrais) + `ModalAlvo` + `renderModal()`.
+
+---
 
 ### Subcard FORMULÁRIO — `form_manager`
 
@@ -89,11 +195,11 @@ Cabeçalho "Linhas" com botão `[+]` "Adicionar linha" (`adicionarLinha(grupo.id
 igual ao de Grupos. Cada linha é um `card border`. `form_group_id` fica implícito
 (a linha pertence ao grupo renderizado); `id`/timestamps de fora.
 
-| Campo        | `col` | Tipo no schema                                                                                                    |
-| ------------ | ----- | ----------------------------------------------------------------------------------------------------------------- |
-| `sort_order` | 6     | `text` `inputMode: 'numeric'` (`parseInt \|\| 0`)                                                                 |
-| `gutter`     | 6     | `select` estático `g-0`…`g-5` (default `g-3`); label "Gutter (espaço)" — classe de gap entre colunas do Bootstrap |
-| `note`       | 12    | `text` — nota interna                                                                                             |
+| Campo        | `col` | Tipo no schema                                                                                                                                                                                                                                                              |
+| ------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sort_order` | 6     | `text` `inputMode: 'numeric'` (`parseInt \|\| 0`)                                                                                                                                                                                                                           |
+| `gutter`     | 6     | `select` estático `g-0`…`g-5` (default `g-3`); label "Gutter (espaço)" — classe de gap entre colunas do Bootstrap                                                                                                                                                           |
+| `note`       | 12    | `text` — nota interna                                                                                                                                                                                                                                                       |
 | `columns`    | 12    | **Último campo da linha** (abaixo de `note`). Ver "Distribuição das colunas" abaixo. **Estado só de UI** — `form_rows` não tem essa coluna no banco; dirige os subcards CAMPO. Acima da lista de linhas, hint `Carregando colunas…` / `alert` de erro por `colunas[tabela]` |
 
 #### Distribuição das colunas entre as linhas
@@ -200,7 +306,11 @@ obrigatório"` + `is-invalid`). É **regra de produto do construtor**, mais
   `managerInicial`, `GrupoLocal`, `grupoInicial`, `RowLocal`, `rowInicial`,
   `CampoLocal`, `campoInicial`, `inferirFieldType`, `camposParaPayload`,
   `adicionarColunas`, `removerColuna`, `toTabela`, `toColuna`).
-- **Sem persistência**: nenhum `submit`/`create` ainda. Só `useState`.
+- **Persistência por nó**: botão **Salvar** no modal de cada nível
+  (`create`/`update` pelos services `form*`) + `deleteSoft` na remoção de nó já
+  gravado. `dbId` no estado liga a camada filha; `[+]` fica desabilitado sem o
+  pai salvo. Recarregar árvore existente do banco para reedição continua fora
+  (ver "Próximos passos").
 - **Layout**: página em `.container`; `col` do schema vira `col-md-N` (padrão do
   FormGrid).
 
@@ -213,11 +323,11 @@ por `r.columns` (ver "Subcard CAMPO" acima), não pelo `[+]` manual espelho de
 GRUPOS/LINHAS. `campoSchema` tem **3 blocos** (Estrutura / Estado e validação /
 Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 
-| Bloco               | Cobre                                                                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Estrutura ✅         | `field_type`, `col`, `sort_order`, `label`, `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`                                                               |
-| Estado / validação ✅ | `required`, `disabled`, `read_only`, `is_hidden`, `min_length`, `max_length`, `pattern`, `input_mode`, `autocomplete`                                                             |
-| Específico ✅        | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`/`equal_fields`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*` |
+| Bloco                | Cobre                                                                                                                                                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Estrutura ✅          | `field_type`, `col`, `sort_order`, `label`, `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`                                                                                                                                                                                           |
+| Estado / validação ✅ | `required`, `disabled`, `read_only`, `is_hidden`, `min_length`, `max_length`, `pattern`, `input_mode`, `autocomplete`                                                                                                                                                                                        |
+| Específico ✅         | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`/`equal_fields`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*` |
 
 **Fora da UI (auto):** atributos DOM soltos (`title`, `className`, `tabIndex`,
 `size`, `cols`, `dir`, `lang`, `spellCheck`, `autoFocus`, `list`) e `style_json`
@@ -236,9 +346,10 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 - **`field_type`**: o ENUM mistura inglês/português e duplica `password`/`senha`
   (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 21 tipos
   do `<FormGrid>` ([`README_FormGrid.md`](README_FormGrid.md)).
-- **Persistência**: continua fora de escopo — o `submit`/`create` de toda a
-  árvore (`form_manager` → `form_fields`) é um passo à parte. Os nulláveis
-  `INT`/data guardados como `string` (`''`) serão convertidos no envio.
+- **Persistência por nó**: ✅ feita (ver "Persistência por nó — Salvar no
+  modal"). **Falta**: recarregar do banco uma árvore já persistida para
+  reedição — hoje a tela sempre parte de estado novo, e reabrir um nó salvo
+  reenvia o formulário como `update`.
 
 ### Observação de nomenclatura (decidir ao religar)
 
@@ -256,11 +367,18 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 ## Arquivos
 
 ```
-src/pages/v1/form/FormBuilderPage.tsx     a página — estado + montagem de schema
+src/pages/v1/form/FormBuilderPage.tsx     a página — estado + árvore + montagem de schema
+src/pages/v1/form/FormBuilderTree.tsx     <FormTree>/<TreeNode> — árvore de hierarquia (só UI)
+src/pages/v1/form/FormModal.tsx           <FormModal> — modal controlado (portal), abre o form do nó
 src/pages/v1/form/formBuilder.model.ts    tipos, defaults, mappers (toTabela/toColuna)
 src/utils/slug.ts                         slugify() (slug automático)
 src/utils/jsonList.ts                     parseStringList()/toStringList() (profile_group)
 src/services/v1/dbSchema.ts               tables() / columns(tabela)
+src/services/v1/formManager.table.ts      create/update/deleteSoft de form_manager (Salvar no modal)
+src/services/v1/formGroups.table.ts       idem form_groups
+src/services/v1/formRows.table.ts         idem form_rows
+src/services/v1/formCampos.table.ts       idem form_fields
+src/hooks/useToast.ts                     toast de sucesso/erro do Salvar/Remover
 src/components/ui/FormGrid/Input.tsx      a fábrica <FormGrid> (todos os campos)
 src/components/ui/IconSelect.tsx          seletor de ícone dos grupos
 src/routes/v1/form.routes.tsx             rota lazy

@@ -20,10 +20,14 @@ export const paths = {
       view: (id: RouteId) => `/v1/upload-manager/${id}`,
     },
     form: {
-      // pagina em branco (ponto de partida do novo construtor)
-      blank: '/v1/form-constructor',
-      // Construtor de Formularios atual (view_form_manager -> FormGrid -> API)
+      // Modulo form-constructor no padrao REST do backend:
+      list: '/v1/form-constructor',
+      create: '/v1/form-constructor/create',
+      edit: (id: RouteId) => `/v1/form-constructor/update/${id}`,
+      // Construtor legado (view_form_manager -> FormGrid -> API), nao mexer
       constructor: '/v1/form-constructor-claude',
+      // Renderiza UM formulario real a partir da definicao gravada (por slug)
+      render: (slug: string) => `/v1/form/${slug}`,
     },
   },
 

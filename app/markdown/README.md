@@ -22,6 +22,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
 | [`schema`](#schema)           | Introspecção do banco por API            |
+| [`seed`](#seed)               | Popular tabelas com dados iniciais      |
 | [`upload`](#upload)           | Módulo de anexos para outros módulos     |
 
 ---
@@ -112,6 +113,23 @@ validado contra `$db->listTables()` antes de qualquer query e consultas com
 bind; schema exposto sem JWT — ok em homolog/dev.
 
 [`geral/README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — introspecção do banco pela API (`db-schema`).
+
+### `seed`
+
+Comandos diretos do `spark` para popular tabelas com dados iniciais, digitados
+no host com `podman compose exec php php spark db:seed <Classe>` (mesmo prefixo
+das migrations). Três seeders, todos na conexão `default` (`codeigniter54900_db`)
+e idempotentes: `UserRolesSeeder` (perfis `admin`/`user`/`guest` em
+`user_roles`), `BootstrapIconsSeeder` (catálogo Bootstrap Icons em
+`bootstrap_icons`, preserva favoritos) e `FormConstructorSeeder` (árvore do
+construtor de formulários em `form_manager`/`form_groups`/`form_rows`/`form_fields`).
+Não há `DatabaseSeeder` agregador — `db:seed` sem argumento falha; roda-se um a
+um, ou cria-se o agregador (exemplo no doc). Cobre também `make:seed`, variante
+`-T` sem TTY, tabelas sem seeder (`user_manager`, `user_profiles`,
+`upload_manager`, `calendars`/`calendar_*`) e conferência via `spark db:table`
+ou Adminer.
+
+[`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.
 
 ### `upload`
 
