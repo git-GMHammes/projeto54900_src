@@ -52,7 +52,7 @@ podman compose up -d --build
 **2. Aplicar as migrations — comando real, digitado no host:**
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark migrate
  
 ```
