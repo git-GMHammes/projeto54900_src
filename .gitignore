@@ -1,10 +1,15 @@
 writable/logs/*
+!writable/logs/index.html
 writable/cache/*
+!writable/cache/index.html
 writable/claude/*
+!writable/claude/index.html
 writable/session/*
+!writable/session/index.html
 writable/uploads/*
+!writable/uploads/index.html
 writable/debugbar/*
-app/CLAUDE.md
+!writable/debugbar/index.html
 
 # Frontend React (src/frontend/projeto54900)
 frontend/projeto54900/node_modules/
@@ -14,3 +19,7 @@ frontend/projeto54900/.env.local
 frontend/projeto54900/.env.*.local
 frontend/projeto54900/.vite/
 frontend/projeto54900/.eslintcache
+
+# Regras de IA Claude
+CLAUDE.md
+app/CLAUDE.md
