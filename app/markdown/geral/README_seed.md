@@ -9,10 +9,15 @@ digitado no host (PowerShell, na raiz do projeto):
 
 ```
 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed <NomeDaClasse>
+
+cd C:\xampp\htdocs\php\projeto54900
+podman compose exec php php spark db:seed UserRolesSeeder
+podman compose exec php php spark db:seed BootstrapIconsSeeder
+podman compose exec php php spark db:seed FormConstructorSeeder
  
-```
+``` 
 
 Item a item:
 
@@ -81,7 +86,7 @@ PowerShell:
 
 ```
 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
  
 ```
@@ -89,7 +94,7 @@ podman compose exec php php spark db:seed UserRolesSeeder
 `BootstrapIconsSeeder` — catálogo Bootstrap Icons em `bootstrap_icons`:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
  
 ```
@@ -98,7 +103,7 @@ podman compose exec php php spark db:seed BootstrapIconsSeeder
 `form_manager`/`form_groups`/`form_rows`/`form_fields`:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed FormConstructorSeeder
  
 ```
@@ -112,7 +117,7 @@ eles hoje, mas o construtor usa o módulo Form já migrado). Bloco único, colar
 host:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
 podman compose exec php php spark db:seed BootstrapIconsSeeder
 podman compose exec php php spark db:seed FormConstructorSeeder
@@ -121,7 +126,7 @@ podman compose exec php php spark db:seed FormConstructorSeeder
 Sem TTY (CI):
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec -T php php spark db:seed UserRolesSeeder
 podman compose exec -T php php spark db:seed BootstrapIconsSeeder
 podman compose exec -T php php spark db:seed FormConstructorSeeder
