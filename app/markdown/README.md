@@ -21,6 +21,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
+| [`navmenu`](#navmenu)         | Config do app e árvore de navegação     |
 | [`schema`](#schema)           | Introspecção do banco por API            |
 | [`seed`](#seed)               | Popular tabelas com dados iniciais      |
 | [`upload`](#upload)           | Módulo de anexos para outros módulos     |
@@ -99,6 +100,22 @@ checklist para criar um módulo do zero e as pendências em aberto (ex.:
 
 [`geral/ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1.
 
+### `navmenu`
+
+Dois recursos ligados por FK: `nav_manager` (config/branding do app — nome,
+imagem, versão) e `menu_manager` (árvore de itens navegáveis de um nav, FK
+`nav_manager_id` + auto-relacionamento `parent_id`). `menu_manager` guarda
+**todas** as rotas do site na mesma tabela; a distinção "aparece no navbar" é
+feita por faixa de `sort_order` (`<100` = navbar real, `>=1000` = catálogo
+extra, `>=2000` = árvore administrativa exibida só na tela de gestão). O
+Navbar real (`Navbar.tsx` + `useSiteMenu.ts`) lê só a faixa `<100` com
+`parent_id` nulo, com fallback estático se a API falhar. Documenta também um
+bug conhecido (charset `utf8` em vez de `utf8mb4` na conexão `default` —
+título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
+`MenuManagerSeeder`.
+
+[`geral/README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu, convenção de sort_order, bug de charset e seeders.
+
 ### `schema`
 
 Utilitário REST **read-only** `api/v1/db-schema` que introspecta o banco da API
@@ -118,16 +135,18 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 
 Comandos diretos do `spark` para popular tabelas com dados iniciais, digitados
 no host com `podman compose exec php php spark db:seed <Classe>` (mesmo prefixo
-das migrations). Três seeders, todos na conexão `default` (`codeigniter54900_db`)
+das migrations). Cinco seeders, todos na conexão `default` (`codeigniter54900_db`)
 e idempotentes: `UserRolesSeeder` (perfis `admin`/`user`/`guest` em
 `user_roles`), `BootstrapIconsSeeder` (catálogo Bootstrap Icons em
-`bootstrap_icons`, preserva favoritos) e `FormConstructorSeeder` (árvore do
-construtor de formulários em `form_manager`/`form_groups`/`form_rows`/`form_fields`).
-Não há `DatabaseSeeder` agregador — `db:seed` sem argumento falha; roda-se um a
-um, ou cria-se o agregador (exemplo no doc). Cobre também `make:seed`, variante
-`-T` sem TTY, tabelas sem seeder (`user_manager`, `user_profiles`,
-`upload_manager`, `calendars`/`calendar_*`) e conferência via `spark db:table`
-ou Adminer.
+`bootstrap_icons`, preserva favoritos), `FormConstructorSeeder` (árvore do
+construtor de formulários em `form_manager`/`form_groups`/`form_rows`/`form_fields`),
+`NavManagerSeeder` (nav de referência em `nav_manager`) e `MenuManagerSeeder`
+(árvore completa de itens em `menu_manager`, chama `NavManagerSeeder` sozinho —
+ver [`navmenu`](#navmenu)). Não há `DatabaseSeeder` agregador — `db:seed` sem
+argumento falha; roda-se um a um, ou cria-se o agregador (exemplo no doc).
+Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
+(`user_manager`, `user_profiles`, `upload_manager`, `calendars`/`calendar_*`) e
+conferência via `spark db:table` ou Adminer.
 
 [`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.
 

@@ -31,7 +31,8 @@ Tipos compartilhados da camada de API em `src/types/api.ts`.
 
 `components/global/DataTable.tsx`, `FormField.tsx` e `Pagination.tsx` são **stubs**
 tipados que só renderizam um placeholder. As páginas de listagem
-(`UserListPage`, `UploadListPage`) e o formulário (`UserFormPage`) mantêm a casca
+(`pages/v1/user/user-manager/GetAllPage.tsx`, `UploadListPage`) e os formulários
+(`pages/v1/user/user-manager/{CreatePage,UpdatePage}.tsx`) mantêm a casca
 (PageHeader, ações, rota) e um `<EmptyState>` no lugar da tabela/formulário; o
 wiring anterior (endpoints, colunas, validação) está preservado em comentário
 `// TODO(fábrica…)` no topo de cada arquivo.
@@ -39,8 +40,8 @@ wiring anterior (endpoints, colunas, validação) está preservado em comentári
 Motivo: serão substituídos pela **fábrica de formulários** (FormGrid — ver
 `src/markdown/geral/README_FormGrid.md`) e por uma **fábrica de listas**, ainda a
 trazer. Não reimplementar DataTable/FormField/Pagination — religar via fábrica.
-As páginas de detalhe (`UserViewPage`, `UploadViewPage`) e o envio de arquivo do
-`UploadListPage` continuam ativos e tipados.
+As páginas de detalhe (`pages/v1/user/user-manager/GetPage.tsx`, `UploadViewPage`)
+e o envio de arquivo do `UploadListPage` continuam ativos e tipados.
 
 **Regra:** campo de formulário renderiza por schema JSON + `<FormGrid>`, não
 `<input>`/`<select>`/`<label>` à mão — inclui select remoto/múltiplo. Débito
@@ -93,6 +94,13 @@ src/routes/
 - Path de rota sempre via `paths.ts`, nunca string solta.
 - Nova versão de API → nova pasta `routes/vX/` + `services/vX/` + chave em `paths.ts`,
   no mesmo formato da `v1`.
+- **Páginas por módulo/recurso/ação:** `pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`
+  (`CreatePage`/`UpdatePage`/`GetAllPage`/`GetPage`, nomeados pelo verbo do
+  endpoint). Fluxo composto (grava em mais de 1 tabela do módulo, ligadas por FK)
+  ganha pasta própria na raiz do módulo (ex.: `pages/v1/user/register/`). Rota,
+  arquivo, pasta e variável sempre em inglês; comentário e texto visível ao
+  usuário continuam em português. Detalhe em
+  [`src/markdown/geral/README_paginas_modulo.md`](src/markdown/geral/README_paginas_modulo.md).
 
 ## Camada de serviços — espelho 1:1 dos endpoints
 
