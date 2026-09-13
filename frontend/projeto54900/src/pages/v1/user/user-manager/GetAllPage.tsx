@@ -14,13 +14,13 @@ import { paths } from '@/routes/paths';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 
-export default function UserListPage() {
+export default function GetAllPage() {
   const navigate = useNavigate();
 
   return (
     <>
       <PageHeader title="Usuarios" subtitle="api/v1/user-manager">
-        <button className="btn btn-primary" onClick={() => void navigate(paths.v1.user.new)}>
+        <button className="btn btn-primary" onClick={() => void navigate(paths.v1.user.create)}>
           Novo usuario
         </button>
       </PageHeader>

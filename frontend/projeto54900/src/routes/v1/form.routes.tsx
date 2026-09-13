@@ -12,6 +12,10 @@
 // - /v1/form/:slug                  -> FormRendererPage: renderiza UM formulario real
 //                                      a partir da definicao gravada e submete para o
 //                                      submit_endpoint do registro.
+//
+// O wizard de cadastro (login + perfil) mudou de modulo: agora e
+// pages/v1/user/register/RegisterPage.tsx, rota /v1/register (ver user.routes.tsx)
+// — e um fluxo composto do modulo user, nao do modulo form.
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';

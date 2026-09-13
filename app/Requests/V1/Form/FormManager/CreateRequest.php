@@ -7,9 +7,11 @@ namespace App\Requests\V1\Form\FormManager;
  *
  * DDL de referencia:
  *   slug            VARCHAR(255) NOT NULL UNIQUE
+ *   table_name      VARCHAR(255) NULL — tabela real do banco (validada contra
+ *                   o schema em Processor::validateOnCreate)
  *   title           VARCHAR(255) NULL
  *   description     TEXT         NULL
- *   profile_group   VARCHAR(255) NULL
+ *   roles           VARCHAR(255) NULL — lista JSON de slugs de user_roles
  *   react_route     VARCHAR(255) NULL
  *   submit_endpoint VARCHAR(255) NULL
  *   http_method     VARCHAR(10)  NULL DEFAULT 'POST'
@@ -26,9 +28,10 @@ class CreateRequest
     {
         return [
             'slug'            => 'required|string|max_length[255]|regex_match[/^[a-z0-9]+(?:-[a-z0-9]+)*$/]',
+            'table_name'      => 'required|string|max_length[255]|regex_match[/^[a-z][a-z0-9_]*$/]',
             'title'           => 'permit_empty|string|max_length[255]',
             'description'     => 'permit_empty|string',
-            'profile_group'   => 'permit_empty|string|max_length[255]',
+            'roles'           => 'permit_empty|string|max_length[255]',
             'react_route'     => 'permit_empty|string|max_length[255]',
             'submit_endpoint' => 'permit_empty|string|max_length[255]',
             'http_method'     => 'permit_empty|in_list[GET,POST,PUT,PATCH,DELETE]',
@@ -43,6 +46,11 @@ class CreateRequest
                 'required'    => 'O campo slug e obrigatorio',
                 'max_length'  => 'O campo slug nao pode exceder 255 caracteres',
                 'regex_match' => 'O campo slug deve ser kebab-case (a-z, 0-9 e hifen)',
+            ],
+            'table_name' => [
+                'required'    => 'O campo table_name e obrigatorio',
+                'max_length'  => 'O campo table_name nao pode exceder 255 caracteres',
+                'regex_match' => 'O campo table_name deve ser snake_case (a-z, 0-9 e underscore, iniciando com letra)',
             ],
             'http_method' => [
                 'in_list' => 'O campo http_method deve ser GET, POST, PUT, PATCH ou DELETE',

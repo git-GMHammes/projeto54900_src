@@ -53,10 +53,16 @@ export interface ManagerLocal {
   /** PK de `form_manager` depois do primeiro Salvar. `null` = ainda não persistido. */
   dbId: number | null;
   slug: string;
+  /**
+   * Nome real da tabela do banco escolhida no card seletor — fonte da verdade
+   * para reabrir o formulário em edição. Gravado 1x na criação (`handleTabelas`),
+   * nunca adivinhado a partir de `submit_endpoint`.
+   */
+  tableName: string;
   title: string;
   description: string;
   /** Lista JSON de slugs de user_roles — ver utils/jsonList. */
-  profile_group: string;
+  roles: string;
   react_route: string;
   submit_endpoint: string;
   http_method: string;
@@ -66,13 +72,14 @@ export interface ManagerLocal {
   slugAuto: boolean;
 }
 
-export function managerInicial(): ManagerLocal {
+export function managerInicial(tableName = ''): ManagerLocal {
   return {
     dbId: null,
     slug: '',
+    tableName,
     title: '',
     description: '',
-    profile_group: '',
+    roles: '',
     react_route: '',
     submit_endpoint: '',
     http_method: 'POST',
@@ -366,9 +373,10 @@ function intOuUndef(s: string): number | undefined {
 export function managerPayload(m: ManagerLocal): Payload {
   return stripVazios({
     slug: m.slug,
+    table_name: m.tableName,
     title: m.title,
     description: m.description,
-    profile_group: m.profile_group,
+    roles: m.roles,
     react_route: m.react_route,
     submit_endpoint: m.submit_endpoint,
     http_method: m.http_method,
@@ -494,14 +502,20 @@ function viewJsonStr(v: unknown): string {
   }
 }
 
-/** `/api/v1/calendars/create` → `calendars`. Sem match → slug. */
+/**
+ * `/api/v1/calendars/create` → `calendars`. Sem match → slug.
+ * Rotas da API são kebab-case (`API_GROUPS`), mas as tabelas reais do banco
+ * são snake_case (ex.: `user-manager` → `user_manager`) — converte antes de
+ * devolver, senão a introspecção do schema falha para qualquer tabela cujo
+ * nome tenha underscore.
+ */
 export function tabelaDoEndpoint(submitEndpoint: string, slug: string): string {
   const m = /\/v1a?\/([^/?#]+)/.exec(submitEndpoint);
-  return m?.[1] ?? slug;
+  return (m?.[1] ?? slug).replace(/-/g, '_');
 }
 
-/** `fm_profile_group` (lista JSON ou string simples) → string de lista JSON. */
-function normalizeProfileGroup(raw: unknown): string {
+/** `fm_roles` (lista JSON ou string simples) → string de lista JSON. */
+function normalizeRoles(raw: unknown): string {
   const s = viewStr(raw).trim();
   if (!s) return '';
   if (s.startsWith('[')) return s;
@@ -590,6 +604,7 @@ export function viewRowsToBuilderState(
   if (!head) return null;
 
   const slug = viewStr(head.fm_slug);
+  const tableName = viewStr(head.fm_table_name);
   const submitEndpoint = viewStr(head.fm_submit_endpoint);
   const statusRaw = viewStr(head.fm_status);
   const status: ManagerStatus = (['draft', 'active', 'inactive'] as const).includes(
@@ -601,9 +616,10 @@ export function viewRowsToBuilderState(
   const manager: ManagerLocal = {
     dbId: viewNum(head.fm_id),
     slug,
+    tableName,
     title: viewStr(head.fm_title),
     description: viewStr(head.fm_description),
-    profile_group: normalizeProfileGroup(head.fm_profile_group),
+    roles: normalizeRoles(head.fm_roles),
     react_route: viewStr(head.fm_react_route),
     submit_endpoint: submitEndpoint,
     http_method: viewStr(head.fm_http_method) || 'POST',
@@ -671,6 +687,8 @@ export function viewRowsToBuilderState(
   grupos.sort((a, b) => a.sort_order - b.sort_order);
   for (const arr of Object.values(linhas)) arr.sort((a, b) => a.sort_order - b.sort_order);
 
-  const tabela = tabelaDoEndpoint(submitEndpoint, slug) || slug || 'tabela';
+  // fm_table_name e a fonte da verdade (gravada na criacao). O heuristico por
+  // submit_endpoint fica so como fallback para registros legados sem o campo.
+  const tabela = tableName || tabelaDoEndpoint(submitEndpoint, slug) || slug || 'tabela';
   return { tabela, manager, grupos, linhas, campos };
 }

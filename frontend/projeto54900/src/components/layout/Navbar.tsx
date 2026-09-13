@@ -3,6 +3,7 @@
 import { NavLink } from 'react-router-dom';
 import { paths } from '@/routes/paths';
 import { useAppConfig } from '@/context/AppConfigContext';
+import { useSiteMenu } from '@/hooks/useSiteMenu';
 
 interface NavItem {
   to: string;
@@ -10,16 +11,22 @@ interface NavItem {
   end: boolean;
 }
 
-const NAV: NavItem[] = [
+// Fallback usado enquanto o menu carrega e sempre que nav-manager/menu-manager
+// falhar ou vier vazio — garante que a navegacao nunca fica sem itens.
+const FALLBACK_NAV: NavItem[] = [
   { to: paths.home, label: 'Inicio', end: true },
   { to: paths.v1.user.list, label: 'Usuarios', end: false },
   { to: paths.v1.upload.list, label: 'Uploads', end: false },
   { to: paths.v1.form.list, label: 'Formularios', end: false },
+  { to: paths.v1.nav.list, label: 'Nav', end: false },
+  { to: paths.v1.menu.list, label: 'Menus', end: false },
   { to: paths.v1.form.render('calendario'), label: 'Google Calendars', end: false },
 ];
 
 export default function Navbar() {
   const { appName, apiVersion } = useAppConfig();
+  const { items } = useSiteMenu();
+  const nav: NavItem[] = items && items.length > 0 ? items : FALLBACK_NAV;
 
   return (
     <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
@@ -43,7 +50,7 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="mainNav">
           <ul className="navbar-nav ms-auto">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <li className="nav-item" key={item.to}>
                 <NavLink className="nav-link" to={item.to} end={item.end}>
                   {item.label}

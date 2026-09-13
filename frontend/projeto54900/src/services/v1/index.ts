@@ -11,4 +11,6 @@ export { formManagerView } from './formManager.view';
 export { formGroupsTable } from './formGroups.table';
 export { formRowsTable } from './formRows.table';
 export { formCamposTable } from './formCampos.table';
+export { navManagerTable } from './navManager.table';
+export { menuManagerTable } from './menuManager.table';
 export { dbSchema } from './dbSchema';

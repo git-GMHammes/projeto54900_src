@@ -7,6 +7,8 @@ import { paths } from '@/routes/paths';
 import { userRoutes } from './user.routes';
 import { uploadRoutes } from './upload.routes';
 import { formRoutes } from './form.routes';
+import { navRoutes } from './nav.routes';
+import { menuRoutes } from './menu.routes';
 
 export const v1Routes: RouteObject = {
   path: 'v1',
@@ -16,6 +18,8 @@ export const v1Routes: RouteObject = {
     ...userRoutes,
     ...uploadRoutes,
     ...formRoutes,
+    ...navRoutes,
+    ...menuRoutes,
   ],
 };
 
