@@ -28,7 +28,7 @@ class SqlViewModel extends BaseViewModel
     protected array $likeFields = [
         'fm_slug',
         'fm_title',
-        'fm_profile_group',
+        'fm_roles',
         'fm_react_route',
         'fg_title',
         'fg_slug',
@@ -59,7 +59,7 @@ class SqlViewModel extends BaseViewModel
     public array $searchFields = [
         'fm_slug',
         'fm_title',
-        'fm_profile_group',
+        'fm_roles',
         'fg_title',
         'fc_label',
         'fc_field_name',

@@ -1,5 +1,5 @@
 // Par montar/parse para campos cujo valor persistido é uma LISTA JSON de strings
-// (ex.: form_manager.profile_group = ["admin","user"]), mas cuja edição é um
+// (ex.: form_manager.roles = ["admin","user"]), mas cuja edição é um
 // controle comum (select múltiplo). O usuário nunca digita JSON.
 // Ver src/markdown/geral/README_campo_json_montado.md.
 

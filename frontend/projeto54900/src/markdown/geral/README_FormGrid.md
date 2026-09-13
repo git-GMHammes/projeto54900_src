@@ -262,8 +262,8 @@ O componente veio do `projeto55100` com adaptações para o padrão deste fronte
    (Bearer) segue opcional.
 6. **Bootstrap 5.3.** As classes (`form-control`, `is-invalid`, `input-group`,
    `form-check`) já batem. As páginas ainda **não** consomem o `FormGrid`:
-   `pages/v1/user/UserFormPage.tsx` mantém o `<EmptyState>` e o wiring em
-   `// TODO(fábrica…)`.
+   `pages/v1/user/user-manager/{CreatePage,UpdatePage}.tsx` mantêm o `<EmptyState>`
+   e o wiring em `// TODO(fábrica…)`.
 
 ### Pendências menores (não bloqueiam o uso)
 

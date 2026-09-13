@@ -8,10 +8,11 @@ use App\Models\V1\BaseTableModel;
  * Model de escrita/leitura da tabela form_manager.
  *
  * Tabela: form_manager
- * DDL: id (BIGINT PK auto), slug (unique), title, description,
- *      profile_group, react_route, submit_endpoint, http_method (default 'POST'),
- *      status (enum draft/active/inactive, default draft), version (default 1),
- *      created_at, updated_at, deleted_at.
+ * DDL: id (BIGINT PK auto), slug (unique), table_name (tabela real do banco
+ *      escolhida no construtor — validada contra o schema no Processor), title,
+ *      description, roles, react_route, submit_endpoint,
+ *      http_method (default 'POST'), status (enum draft/active/inactive,
+ *      default draft), version (default 1), created_at, updated_at, deleted_at.
  */
 class SqlTableModel extends BaseTableModel
 {
@@ -29,9 +30,10 @@ class SqlTableModel extends BaseTableModel
      */
     protected $allowedFields = [
         'slug',
+        'table_name',
         'title',
         'description',
-        'profile_group',
+        'roles',
         'react_route',
         'submit_endpoint',
         'http_method',
@@ -42,8 +44,9 @@ class SqlTableModel extends BaseTableModel
     /** Campos de texto que usam LIKE %valor% no find. */
     protected array $likeFields = [
         'slug',
+        'table_name',
         'title',
-        'profile_group',
+        'roles',
         'react_route',
     ];
 
@@ -51,7 +54,8 @@ class SqlTableModel extends BaseTableModel
     protected array $sortableFields = [
         'id',
         'slug',
-        'profile_group',
+        'table_name',
+        'roles',
         'status',
         'version',
         'created_at',
@@ -61,9 +65,10 @@ class SqlTableModel extends BaseTableModel
     /** Campos varridos pelo GET /search. */
     public array $searchFields = [
         'slug',
+        'table_name',
         'title',
         'description',
-        'profile_group',
+        'roles',
         'react_route',
     ];
 

@@ -185,9 +185,9 @@ function managerSchema(
             src: USER_ROLES_SRC,
             valueKey: 'slug',
             labelKey: 'name',
-            values: parseStringList(m.profile_group),
+            values: parseStringList(m.roles),
             onChangeMultiple: (values) =>
-              patch(tabela, { profile_group: toStringList(values) }),
+              patch(tabela, { roles: toStringList(values) }),
           },
         ],
       },
@@ -906,7 +906,7 @@ export default function FormBuilderPage() {
       setManagers((prev) => {
         const next = { ...prev };
         values.forEach((t) => {
-          if (!next[t]) next[t] = managerInicial();
+          if (!next[t]) next[t] = managerInicial(t);
         });
         return next;
       });
@@ -962,7 +962,7 @@ export default function FormBuilderPage() {
   const atualizarManager = useCallback<ManagerPatch>((tabela, patch) => {
     setManagers((prev) => ({
       ...prev,
-      [tabela]: { ...(prev[tabela] ?? managerInicial()), ...patch },
+      [tabela]: { ...(prev[tabela] ?? managerInicial(tabela)), ...patch },
     }));
   }, []);
 
@@ -1283,7 +1283,7 @@ export default function FormBuilderPage() {
     if (!modal) return null;
 
     if (modal.kind === 'manager') {
-      const m = managers[modal.tabela] ?? managerInicial();
+      const m = managers[modal.tabela] ?? managerInicial(modal.tabela);
       const tabela = modal.tabela;
       return (
         <FormModal

@@ -23,7 +23,9 @@ cada resumo termina com o link para o conteúdo completo.
 | [`formgrid`](#formgrid)       | Fábrica de campos dirigida por JSON      |
 | [`json`](#json)               | Campo monta JSON sem digitação           |
 | [`node`](#node)               | Comandos do Node e módulos               |
+| [`paginas`](#paginas)         | Página por módulo, recurso e ação        |
 | [`render`](#render)           | Renderizar formulário só via FormGrid    |
+| [`rotas`](#rotas)             | Mapa de todas as rotas React             |
 
 ---
 
@@ -94,7 +96,7 @@ deps do 55100 (o `cep` consulta a ViaCEP internamente), `select` com `fetch`
 próprio (não acopla ao `http.ts`), helper `emitValue.ts` para os campos
 mascarados. É a **fábrica de formulários** que substitui o stub
 `components/global/FormField.tsx` (ainda no repo, sem uso). Falta religar nas
-páginas (`UserFormPage` etc.).
+páginas (`pages/v1/user/user-manager/CreatePage.tsx` etc.).
 
 [`geral/README_FormGrid.md`](geral/README_FormGrid.md) — fábrica de campos `FormGrid` dirigida por JSON.
 
@@ -107,9 +109,10 @@ string JSON) / `parse` (string → estado), com o `parse` tolerante (valor legad
 JSON inválido ou formato inesperado → vazio). Vazio grava `''`. Opções sempre de
 API, não lista fixa. A coluna do banco não muda por isto. Exceção: campo de
 configuração livre de desenvolvedor pode ser `<textarea>` de JSON cru (não há
-nenhum no módulo Form — `settings_json` foi removido). Caso de referência:
-`profile_group` (campo "Grupo de perfil" do `FormBuilderPage`), `<select
-multiple>` de `user_roles` gravando `["admin","user"]`.
+nenhum no módulo Form — `settings_json` foi removido). Padrão de nomenclatura:
+campo de grupo de perfil = coluna `roles` (nunca `permissions`/`profile_group`).
+Caso de referência: `roles` (campo "Grupo de perfil" do `FormBuilderPage`),
+`<select multiple>` de `user_roles` gravando `["admin","user"]`.
 
 [`geral/README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo grava JSON, a UI monta.
 
@@ -128,6 +131,21 @@ estático com fallback de SPA para `index.html` — app na raiz ou em subpasta
 
 [`geral/README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node, build/deploy e módulos do frontend.
 
+### `paginas`
+
+Convenção `pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`, espelhando como a API
+agrupa módulo → recurso/tabela → ação (`README_rotas_swagger.md` do backend).
+1 arquivo por ação, nomeado pelo verbo do endpoint (`CreatePage`, `UpdatePage`,
+`GetAllPage`, `GetPage`); módulo de 1 recurso só dispensa a subpasta (ex.
+hipotético `pages/v1/plane/CreatePage.tsx`). Fluxo composto (grava em mais de 1
+tabela do módulo, ligadas por FK) ganha **pasta própria na raiz do módulo**,
+nomeada pelo que faz — caso de referência: `pages/v1/user/register/RegisterPage.tsx`
+(login em `user-manager`, depois perfil em `user-profiles`). Regra de idioma:
+rota/arquivo/pasta/variável **sempre em inglês**; comentário e texto visível ao
+usuário **continuam em português**.
+
+[`geral/README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação e onde entram fluxos compostos.
+
 ### `render`
 
 Regra: **campo de formulário no frontend passa pelo `<FormGrid>`** (schema JSON),
@@ -144,6 +162,19 @@ múltiplas (`multiple` + `values` + `onChangeMultiple`). Exceção: chrome que n
 
 [`geral/README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — regra de uso do `FormGrid` e o débito do `FormBuilderPage`.
 
+### `rotas`
+
+Mapa textual de todas as rotas React registradas no data router
+(`react-router-dom`), espelhando o `README_rotas_swagger.md` do backend mas com
+o eixo **Path → Página**. Cobre a raiz (`/`, `*`, `RouteErrorPage`), o grupo
+`v1` (`user-manager` por ação — `create`/`update`/`get-all`/`get` —, o wizard
+`/v1/register`, `upload-manager`, `form` — incluindo o renderizador genérico
+`/v1/form/:slug`), o stub `v1a` e os links da navbar. Registra também lacunas
+encontradas (ex.: `paths.v1.upload.new` sem rota registrada). Ver [`paginas`](#paginas)
+para a convenção de pastas por trás dessas rotas.
+
+[`geral/README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend.
+
 ---
 
 ## Conteúdo
@@ -156,4 +187,6 @@ múltiplas (`multiple` + `values` + `onChangeMultiple`). Exceção: chrome que n
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
+- [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.
 - [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.
+- [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
