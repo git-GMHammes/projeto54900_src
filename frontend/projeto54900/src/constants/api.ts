@@ -22,6 +22,8 @@ export const API_GROUPS = {
   formGroups: 'form-groups',
   formRows: 'form-rows',
   formCampos: 'form-campos',
+  navManager: 'nav-manager',
+  menuManager: 'menu-manager',
   dbSchema: 'db-schema',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];

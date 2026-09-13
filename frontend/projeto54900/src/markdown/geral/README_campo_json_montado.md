@@ -24,12 +24,34 @@ final) pode ser um `<textarea>` monoespaçado de JSON cru, sem o par
 `form_manager.settings_json`, que era esse caso, foi removida por não ter
 contrato nem consumidor. Todo o resto segue o padrão acima.
 
-## Caso de referência — "Grupo de perfil"
+## Padrão de nomenclatura — campo de grupo de perfil: `roles`
 
-Campo `profile_group` de `form_manager`, no
-[`FormBuilderPage`](README_form_builder.md) (`/v1/form-constructor`).
+Todo campo que responde "quais perfis podem ver/usar este recurso" usa o
+nome de coluna **`roles`** — nunca `permissions` (em `user_roles.permissions`
+essa palavra já significa outra coisa: uma lista de ações granulares tipo
+`"forms.read"`, não perfis) nem `profile_group` (nome antigo, descontinuado).
+`roles` é sempre uma **lista JSON de slugs de `user_roles`**
+(`["admin","user"]`), qualquer que seja o tipo real da coluna no banco
+(`VARCHAR` guardando a string JSON, ou `JSON` nativo — ver regra 6 abaixo).
 
-- **Persistência:** `form_manager.profile_group` (`VARCHAR(255)`), guardando uma
+Casos existentes:
+
+| Tabela        | Coluna  | Tipo SQL         | Módulo/UI                                                |
+| ------------- | ------- | ---------------- | --------------------------------------------------------- |
+| `form_manager`| `roles` | `VARCHAR(255)`   | [`FormBuilderPage`](README_form_builder.md) (`/v1/form-constructor`) |
+| `menu_items`  | `roles` | `JSON`           | Backend pronto (`api/v1/menu-items`); frontend ainda não construído |
+
+Novo módulo que precisar disso: reaproveitar o nome `roles` e o mecanismo
+abaixo, não inventar um nome novo.
+
+## Caso de referência — "Grupo de perfil" (`form_manager.roles`)
+
+Campo `roles` de `form_manager`, no
+[`FormBuilderPage`](README_form_builder.md) (`/v1/form-constructor`). O rótulo
+exibido ao usuário continua "Grupo de perfil" — só o nome da coluna/campo é
+`roles`.
+
+- **Persistência:** `form_manager.roles` (`VARCHAR(255)`), guardando uma
   lista JSON de slugs de perfis: `["admin","user"]`. Nada selecionado grava `''`
   (string vazia), **não** `'[]'`.
 - **Opções:** vêm da API, sem lista estática — o campo `select` do `<FormGrid>`
@@ -65,8 +87,8 @@ export function parseStringList(raw: string): string[] {
   type: 'select', col: 6, label: 'Grupo de perfil', multiple: true,
   src: `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`,
   valueKey: 'slug', labelKey: 'name',
-  values: parseStringList(m.profile_group),
-  onChangeMultiple: (values) => patch(tabela, { profile_group: toStringList(values) }),
+  values: parseStringList(m.roles),
+  onChangeMultiple: (values) => patch(tabela, { roles: toStringList(values) }),
 }
 ```
 
@@ -86,6 +108,10 @@ entrega `string[]`, serializado por `toStringList`.
 5. O **nome/tipo da coluna no banco não muda** por causa disto. Se a estrutura
    puder crescer muito (lista longa, objeto grande), migrar a coluna para
    `TEXT`/`JSON` é decisão separada, feita por migration.
+6. Exceção à regra 5: campo de **grupo de perfil com acesso ao recurso** usa
+   sempre o nome `roles` (não `permissions`, não `profile_group`) — ver
+   "Padrão de nomenclatura" acima. O tipo da coluna (`VARCHAR` ou `JSON`) fica
+   a critério do módulo, mas o nome é fixo.
 
 ## Onde está no código
 

@@ -23,6 +23,10 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/User/UserRoles/EndpointTable.php';
     });
 
+    $routes->group('user-profiles', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/User/UserProfiles/EndpointTable.php';
+    });
+
     // =========================================================================
     // /Upload — Modulo de uploads (anexos polimorficos de outros modulos)
     // =========================================================================
@@ -90,6 +94,24 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('calendar-event-extended-properties', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventExtendedProperties/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
+    //        versao do sistema.
+    // =========================================================================
+
+    $routes->group('nav-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Nav/NavManager/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Menu — arvore de itens navegaveis (submenus via parent_id), ligada a
+    //         um nav_manager.
+    // =========================================================================
+
+    $routes->group('menu-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Menu/MenuManager/EndpointTable.php';
     });
 
     // =========================================================================

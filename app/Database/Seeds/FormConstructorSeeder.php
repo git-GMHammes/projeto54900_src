@@ -52,7 +52,7 @@ class FormConstructorSeeder extends Seeder
             'slug' => 'form-constructor',
             'title' => 'Construtor de Formularios',
             'description' => 'Meta-formulario: cada grupo abaixo define os campos de uma das quatro tabelas do modulo Form. Preencha de cima para baixo — o formulario alimenta o grupo, o grupo alimenta a linha, a linha alimenta o campo.',
-            'profile_group' => 'admin',
+            'roles' => 'admin',
             'react_route' => '/v1/form-constructor',
             'submit_endpoint' => self::API . '/form-manager/create',
             'http_method' => 'POST',
@@ -299,7 +299,7 @@ class FormConstructorSeeder extends Seeder
                     ],
                     [
                         'campos' => [
-                            ['col' => 4, 'label' => 'Grupo de perfil', 'field_name' => 'profile_group', 'datalist_json' => ['admin', 'editor', 'viewer', 'rh', 'financeiro'], 'help_text' => 'Grupo de perfil dono do formulario.'],
+                            ['col' => 4, 'label' => 'Grupo de perfil', 'field_name' => 'roles', 'datalist_json' => ['admin', 'editor', 'viewer', 'rh', 'financeiro'], 'help_text' => 'Grupo de perfil dono do formulario.'],
                             ['col' => 4, 'label' => 'Rota no React', 'field_name' => 'react_route', 'placeholder' => '/v1/meu-form'],
                             ['col' => 4, 'label' => 'Endpoint de envio', 'field_name' => 'submit_endpoint', 'placeholder' => '/api/v1/...'],
                         ]

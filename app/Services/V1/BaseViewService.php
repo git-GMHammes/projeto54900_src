@@ -22,18 +22,20 @@ abstract class BaseViewService
 {
     /**
      * Campos que possuem máscara e devem ser armazenados/consultados apenas com dígitos.
-     * Cobre tanto a tabela (cpf, whatsapp, phone, zip_code)
-     * quanto a view com prefixo uc_ (uc_cpf, uc_whatsapp, uc_phone, uc_zip_code).
+     * Cobre tanto a tabela (cpf, whatsapp, phone, cep/zip_code)
+     * quanto a view com prefixo uc_ (uc_cpf, uc_whatsapp, uc_phone, uc_cep/uc_zip_code).
      */
     private const MASKED_FIELDS = [
         'cpf',
         'whatsapp',
         'phone',
         'zip_code',
+        'cep',
         'uc_cpf',
         'uc_whatsapp',
         'uc_phone',
         'uc_zip_code',
+        'uc_cep',
     ];
 
     // -------------------------------------------------------------------------

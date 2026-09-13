@@ -158,8 +158,9 @@ Estado local `managers: Record<string, ManagerLocal>`; editado por
 
 | Campo             | `col` | `required` UI    | Banco / `CreateRequest`                                   | Tipo no schema                                                                                                                                                                                                                                                                                              |
 | ----------------- | ----- | ---------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `table_name`      | —     | —                | `NULL` / `required`, validada contra o schema (422)        | **Sem campo no `<FormGrid>`** — gravado automaticamente com a tabela escolhida no card seletor (`handleTabelas` → `managerInicial(tabela)`); nunca editado à mão                                                                                                                                          |
 | `title`           | 12    | sim              | `NULL` / `permit_empty`                                   | `text` — cabeçalho no topo. **slug acompanha** enquanto `slugAuto` (`slugify` no `onChange`)                                                                                                                                                                                                                |
-| `profile_group`   | 12    | sim              | `NULL` / `permit_empty`                                   | `select` **`multiple`**, `src` = `${apiBaseUrl}/v1/user-roles/get-no-pagination`, `valueKey: 'slug'`, `labelKey: 'name'`. `values` = `parseStringList(m.profile_group)`; `onChangeMultiple` grava `toStringList(values)`; vazio → `''`. Ver [`README_campo_json_montado.md`](README_campo_json_montado.md). |
+| `roles`           | 12    | sim              | `NULL` / `permit_empty`                                   | `select` **`multiple`**, `src` = `${apiBaseUrl}/v1/user-roles/get-no-pagination`, `valueKey: 'slug'`, `labelKey: 'name'`. `values` = `parseStringList(m.roles)`; `onChangeMultiple` grava `toStringList(values)`; vazio → `''`. Ver [`README_campo_json_montado.md`](README_campo_json_montado.md). |
 | `slug`            | 6     | sim              | `NOT NULL` UNIQUE / `required`                            | `text` — identidade do formulário. Nasce vazio; acompanha o Título enquanto `slugAuto`; ao editar à mão zera `slugAuto`                                                                                                                                                                                     |
 | `status`          | 6     | sim              | `NOT NULL` DEFAULT `draft` / não enviado no create        | `select` estático `draft`/`active`/`inactive` — sempre nasce `draft`; `required` só barra o botão `×`                                                                                                                                                                                                       |
 | `react_route`     | 12    | sim              | `NULL` / `permit_empty`                                   | `text`                                                                                                                                                                                                                                                                                                      |
@@ -295,12 +296,12 @@ apaga o `CampoLocal` e a coluna volta a ficar selecionável no listbox.
   tipos aceitam) — pinta `*` no label e valida no `blur` (`"<label> é
 obrigatório"` + `is-invalid`). É **regra de produto do construtor**, mais
   estrita que o banco: hoje só `form_manager.slug` e `form_groups.title` são
-  `NOT NULL` sem default; os demais marcados (`title`, `profile_group`,
+  `NOT NULL` sem default; os demais marcados (`title`, `roles`,
   `react_route`, `submit_endpoint`, `http_method`, `status`, `version`) são
   `NULL` ou têm default no banco e `permit_empty` no `CreateRequest`. Enquanto o
   backend não for endurecido, a API ainda aceita esses campos vazios. Bloqueio
   de envio real só quando o construtor ganhar `submit`.
-- **`profile_group`**: par `parseStringList` / `toStringList` de
+- **`roles`**: par `parseStringList` / `toStringList` de
   [`@/utils/jsonList`](../../utils/jsonList.ts).
 - **Tipos e defaults**: `src/pages/v1/form/formBuilder.model.ts` (`ManagerLocal`,
   `managerInicial`, `GrupoLocal`, `grupoInicial`, `RowLocal`, `rowInicial`,
@@ -372,7 +373,7 @@ src/pages/v1/form/FormBuilderTree.tsx     <FormTree>/<TreeNode> — árvore de h
 src/pages/v1/form/FormModal.tsx           <FormModal> — modal controlado (portal), abre o form do nó
 src/pages/v1/form/formBuilder.model.ts    tipos, defaults, mappers (toTabela/toColuna)
 src/utils/slug.ts                         slugify() (slug automático)
-src/utils/jsonList.ts                     parseStringList()/toStringList() (profile_group)
+src/utils/jsonList.ts                     parseStringList()/toStringList() (roles)
 src/services/v1/dbSchema.ts               tables() / columns(tabela)
 src/services/v1/formManager.table.ts      create/update/deleteSoft de form_manager (Salvar no modal)
 src/services/v1/formGroups.table.ts       idem form_groups
