@@ -1,13 +1,16 @@
-// Busca o nav_manager ativo e sua arvore de itens (menu_manager) para popular
-// o Navbar dinamicamente. menu_manager guarda SO o que aparece no Navbar real,
-// espelhando 1:1 os grupos de modulo do backend (ver
-// src/app/Database/Seeds/MenuManagerSeeder.php) — grupo com filho nao tem
-// react_route (so agrupa, vira dropdown), item sem filho e link direto.
-// Enforcement de roles fica fora desta fase — ver
+// Busca o nav_manager ativo e seus itens do navbar principal para popular o
+// Navbar dinamicamente. menu_manager guarda TODAS as rotas do site (inclusive
+// sub-rotas de CRUD como /v1/user-manager/create) na mesma tabela, sem campo
+// dedicado para "aparece no navbar" — a convencao adotada e sort_order: itens
+// do navbar principal ficam abaixo de NAVBAR_SORT_ORDER_LIMIT, o restante do
+// catalogo de rotas fica em sort_order >= 1000. Hierarquia (submenu) e
+// enforcement de roles ficam fora desta fase — ver
 // src/frontend/projeto54900/CLAUDE.md.
 //
 // Em erro ou lista vazia, `items` volta null: o Navbar decide usar o fallback
 // estatico (FALLBACK_NAV).
+
+const NAVBAR_SORT_ORDER_LIMIT = 100;
 
 import { useApi } from '@/hooks/useApi';
 import type { UseApiResult } from '@/hooks/useApi';
@@ -20,41 +23,6 @@ export interface SiteMenuLink {
   to: string;
   label: string;
   end: boolean;
-  children?: SiteMenuLink[];
-}
-
-function toLink(item: MenuManagerItem): SiteMenuLink | null {
-  if (!item.react_route) return null;
-  return { to: item.react_route, label: item.title, end: item.react_route === '/' };
-}
-
-function buildTree(rows: MenuManagerItem[]): SiteMenuLink[] {
-  const byParent = new Map<string, MenuManagerItem[]>();
-  for (const item of rows) {
-    const key = item.parent_id === null ? '' : String(item.parent_id);
-    const siblings = byParent.get(key) ?? [];
-    siblings.push(item);
-    byParent.set(key, siblings);
-  }
-  for (const siblings of byParent.values()) {
-    siblings.sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
-  }
-
-  const top = byParent.get('') ?? [];
-  const links: SiteMenuLink[] = [];
-  for (const item of top) {
-    const childRows = byParent.get(String(item.id)) ?? [];
-    if (childRows.length > 0) {
-      const children = childRows.map(toLink).filter((l): l is SiteMenuLink => l !== null);
-      if (children.length > 0) {
-        links.push({ to: '#', label: item.title, end: false, children });
-        continue;
-      }
-    }
-    const link = toLink(item);
-    if (link) links.push(link);
-  }
-  return links;
 }
 
 async function fetchSiteMenu(signal: AbortSignal): Promise<SiteMenuLink[]> {
@@ -70,7 +38,15 @@ async function fetchSiteMenu(signal: AbortSignal): Promise<SiteMenuLink[]> {
   );
   const { rows: menuRows } = normalizeList<MenuManagerItem>(menuPayload);
 
-  return buildTree(menuRows);
+  return menuRows
+    .filter((item) => item.parent_id === null && Number(item.sort_order) < NAVBAR_SORT_ORDER_LIMIT)
+    .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
+    .filter((item): item is MenuManagerItem & { react_route: string } => Boolean(item.react_route))
+    .map((item) => ({
+      to: item.react_route,
+      label: item.title,
+      end: item.react_route === '/',
+    }));
 }
 
 export interface UseSiteMenuResult {

@@ -6,17 +6,7 @@
 
 import { env } from '@/config/env';
 import { toQueryString } from '@/utils/querystring';
-import { record as recordApiDebug } from '@/services/apiDebugLog';
 import type { ApiErrorInit, HttpMethod, QueryParams, RequestOptions } from '@/types/api';
-
-// Getter registrado pelo AuthContext (evita import circular services <-> context).
-// Sem provider montado (ou usuario deslogado), getAccessToken() e null — chamadas
-// continuam exatamente como hoje, sem header Authorization.
-let getAccessToken: (() => string | null) | null = null;
-
-export function setAccessTokenGetter(getter: (() => string | null) | null): void {
-  getAccessToken = getter;
-}
 
 export class ApiError extends Error {
   readonly status: number;
@@ -68,7 +58,6 @@ export async function request<T = unknown>(
 ): Promise<T> {
   const url = buildUrl(path, params);
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
-  const token = getAccessToken?.() ?? null;
 
   const init: RequestInit = {
     method,
@@ -76,7 +65,6 @@ export async function request<T = unknown>(
       Accept: 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
       ...(isForm ? {} : body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
   };
@@ -94,14 +82,6 @@ export async function request<T = unknown>(
   }
 
   const payload = await parseBody(response);
-
-  recordApiDebug({
-    method,
-    path: url,
-    status: response.status,
-    ok: response.ok,
-    payload,
-  });
 
   if (!response.ok) {
     throw new ApiError(pickErrorMessage(payload, response.status), {

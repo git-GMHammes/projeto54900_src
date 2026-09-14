@@ -17,7 +17,6 @@ cada resumo termina com o link para o conteúdo completo.
 
 | Palavra-chave                 | Assunto (5 palavras)                     |
 | ----------------------------- | --------------------------------------- |
-| [`alerta`](#alerta)           | Checklist de UI antes de criar           |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice     |
 | [`builder`](#builder)         | Construtor novo: tabela vira formulário  |
 | [`construtor`](#construtor)   | Página cria formulários via API          |
@@ -31,20 +30,6 @@ cada resumo termina com o link para o conteúdo completo.
 ---
 
 ## Resumos
-
-### `alerta`
-
-⚠️ Checklist obrigatório antes de criar qualquer elemento novo de UI (item de
-navbar, campo de formulário, página, rota, campo JSON): passar pelos padrões
-já documentados (nav/menu via `nav-manager`/`menu-manager`, `FormGrid`,
-`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`, `paths.ts`, campo JSON
-montado/parseado). Nasceu de um erro real: o bloco "Entrar/Sair" da sessão de
-login foi hardcoded em `Navbar.tsx`, ignorando `useSiteMenu()`
-(`nav-manager`/`menu-manager`) — sem nenhuma base que justificasse a exceção.
-Registra também o caso em aberto (onde deveria morar esse estado de sessão),
-com 3 caminhos possíveis, nenhum decidido ainda.
-
-[`geral/README_alerta_padroes_ui.md`](geral/README_alerta_padroes_ui.md) — checklist de padrões de UI + o caso aberto da sessão de login na navbar.
 
 ### `atualizacao`
 
@@ -196,7 +181,6 @@ para a convenção de pastas por trás dessas rotas.
 
 ### `geral/`
 
-- [`README_alerta_padroes_ui.md`](geral/README_alerta_padroes_ui.md) — ⚠️ checklist de padrões de UI a checar antes de criar/editar, e o caso aberto da sessão de login na navbar.
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo cujo valor é JSON montado pela UI (o usuário não digita JSON).
 - [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), o padrão reutilizável árvore+modal, estado atual e roadmap.

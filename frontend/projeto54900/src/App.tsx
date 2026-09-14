@@ -6,20 +6,17 @@ import { RouterProvider } from 'react-router-dom';
 
 import { router } from '@/routes';
 import { AppConfigProvider } from '@/context/AppConfigContext';
-import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 
 export default function App() {
   return (
     <AppConfigProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <Suspense fallback={<LoadingOverlay />}>
-            <RouterProvider router={router} />
-          </Suspense>
-        </ToastProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <Suspense fallback={<LoadingOverlay />}>
+          <RouterProvider router={router} />
+        </Suspense>
+      </ToastProvider>
     </AppConfigProvider>
   );
 }

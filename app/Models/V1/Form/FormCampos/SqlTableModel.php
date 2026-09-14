@@ -52,6 +52,7 @@ class SqlTableModel extends BaseTableModel
         'no_special_chars',
         'strong_password',
         'double_field',
+        'equal_fields',
         'with_seconds',
         'show_counter',
         'inline',
