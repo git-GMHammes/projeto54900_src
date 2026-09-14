@@ -14,6 +14,10 @@ exceção registrada para `projeto54900` até o momento.
 - Se uma tarefa parecer exigir Composer/vendor, PARAR e avisar o usuário
   **antes mesmo de propor um plano** — nunca instalar "para funcionar" e
   avisar depois.
+- TEXTO FIXO DO ALERTA — usar literalmente, sem parafrasear:
+  > ⛔ ALERTA — esta tarefa parece exigir PHP Composer / pasta `vendor/`.
+  > Não vou prosseguir (nem propor plano) sem sua autorização explícita
+  > para este projeto.
 - Preferir sempre a alternativa nativa do PHP quando existir. Exemplo real:
   `app/Libraries/Auth/JwtService.php` gera/valida JWT HS256 só com
   `hash_hmac` nativo, sem nenhuma biblioteca externa.
