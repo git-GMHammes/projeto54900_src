@@ -17,6 +17,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | ----------------------------- | -------------------------------------- |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
+| [`composer`](#composer)       | Composer/vendor proibido sem autorização explícita |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
@@ -51,6 +52,18 @@ contém credenciais e não deve ser exposto publicamente; usar
 renomeando e preenchendo credenciais próprias antes de subir a stack.
 
 [`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
+
+### `composer`
+
+O usuário nunca autorizou PHP Composer neste projeto: proibido rodar
+`composer install/require/update` ou criar/recriar `vendor/` sem autorização
+explícita, mesmo que a tarefa pareça exigir uma lib externa — PARAR e avisar
+antes de propor plano, nunca instalar e avisar depois. Preferir sempre
+alternativa nativa do PHP (ex.: JWT HS256 via `hash_hmac`, usado hoje em
+`JwtService.php`). Origem: incidente real em 2026-09-14 (`composer install`
+não autorizado, revertido e refeito nativamente).
+
+[`geral/README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — regra crítica: Composer/vendor proibido sem autorização.
 
 ### `conexao`
 
