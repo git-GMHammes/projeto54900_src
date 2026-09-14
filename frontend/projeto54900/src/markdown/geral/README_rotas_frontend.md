@@ -150,5 +150,6 @@ string solta.
 | Nav              | `paths.v1.nav.list` (`/v1/nav-manager`)                       |
 | Menus            | `paths.v1.menu.list` (`/v1/menu-manager`)                     |
 | Google Calendars | `paths.v1.form.render('calendario')` (`/v1/form/calendario`) |
+| Entrar           | `paths.v1.auth.login` (`/v1/login`)                           |
 
 [`README.md`](../README.md)

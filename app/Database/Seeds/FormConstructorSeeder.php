@@ -171,7 +171,6 @@ class FormConstructorSeeder extends Seeder
             'no_special_chars',
             'strong_password',
             'double_field',
-            'equal_fields',
             'with_seconds',
             'show_counter',
             'inline',
@@ -441,7 +440,6 @@ class FormConstructorSeeder extends Seeder
                     [
                         'campos' => [
                             $this->flag('double_field', 'Campo duplo'),
-                            $this->flag('equal_fields', 'Exigir igualdade'),
                             $this->flag('with_seconds', 'Com segundos'),
                             $this->flag('inline', 'Opcoes inline'),
                         ]

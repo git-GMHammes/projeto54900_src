@@ -131,7 +131,6 @@ function buildField(row: ApiRow): AnyFieldSchema {
     set('maxLength', int(row.fc_max_length));
     if (bool(row.fc_strong_password)) set('strongPassword', true);
     if (bool(row.fc_double_field)) set('doubleField', true);
-    if (bool(row.fc_equal_fields)) set('equalFields', true);
   } else if (type === 'select') {
     const cfg = json(row.fc_select_config_json);
     if (cfg && typeof cfg === 'object') {
