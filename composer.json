@@ -13,6 +13,7 @@
         "php": "^8.2",
         "ext-intl": "*",
         "ext-mbstring": "*",
+        "firebase/php-jwt": "^7.1",
         "laminas/laminas-escaper": "^2.18",
         "psr/log": "^3.0"
     },

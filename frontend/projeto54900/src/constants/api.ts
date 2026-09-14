@@ -12,6 +12,7 @@ export const DEFAULT_API_VERSION: string = env.apiVersion;
 
 // Grupos de rota da API (prefixos de path). O sufixo "-view" consulta a view read-only.
 export const API_GROUPS = {
+  auth: 'auth',
   userManager: 'user-manager',
   userManagerView: 'user-manager-view',
   userRoles: 'user-roles',

@@ -259,7 +259,7 @@ apaga o `CampoLocal` e a coluna volta a ficar selecionável no listbox.
 - **`CAMPOS_POR_TIPO`** (em `FormBuilderPage.tsx`):
   - `text` → `datalist_json`, `no_*`
   - `password` → `no_*`
-  - `senha` → `no_*`, `strong_password`, `double_field`, `equal_fields`
+  - `senha` → `no_*`, `strong_password`, `double_field` (exige igualdade sozinho)
   - `email` → `allowed_domains_json`
   - `textarea` → `rows_qty`, `show_counter`, `no_*`
   - `select` → `sel_multiple`, `options_json` + grupo `sel_*` (`sel_src`,
@@ -328,7 +328,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Estrutura ✅          | `field_type`, `col`, `sort_order`, `label`, `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`                                                                                                                                                                                           |
 | Estado / validação ✅ | `required`, `disabled`, `read_only`, `is_hidden`, `min_length`, `max_length`, `pattern`, `input_mode`, `autocomplete`                                                                                                                                                                                        |
-| Específico ✅         | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`/`equal_fields`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*` |
+| Específico ✅         | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*`                |
 
 **Fora da UI (auto):** atributos DOM soltos (`title`, `className`, `tabIndex`,
 `size`, `cols`, `dir`, `lang`, `spellCheck`, `autoFocus`, `list`) e `style_json`
