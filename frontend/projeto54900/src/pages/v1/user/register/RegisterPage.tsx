@@ -1,9 +1,11 @@
 // Novo Cadastro — wizard em 2 cards (nao abas), um card por TABELA, ligados por
-// chave estrangeira:
-//   1. Login    -> build "seguranca-novo" (tabela user_manager, INTEIRO: username
-//                  + password_hash juntos, como configurado no FormBuilderPage).
+// chave estrangeira. Cada card usa o form_manager ATIVO cuja fm_table_name seja
+// a tabela da etapa — nunca um slug/ID fixo, para nao depender de quem montou o
+// build nem de qual banco/maquina (ver loadFormByTable() abaixo):
+//   1. Login    -> form ativo da tabela user_manager, INTEIRO: username +
+//                  password_hash juntos, como configurado no FormBuilderPage.
 //                  Grava de verdade (POST) e guarda o id retornado.
-//   2. Cadastro -> build "cadastro" (tabela user_profiles, INTEIRO). So aparece
+//   2. Cadastro -> form ativo da tabela user_profiles, INTEIRO. So aparece
 //                  depois do login confirmado. O campo user_manager_id (FK) vem
 //                  pre-preenchido com o id do passo 1 e read-only NESTA TELA
 //                  (o build em si continua exatamente como configurado — visivel,
@@ -36,17 +38,57 @@ import type { ApiRow } from '@/types/api';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 
-const SLUG_MANAGER = 'seguranca-novo';
-const SLUG_PROFILE = 'cadastro';
+// Resolucao por TABELA (fm_table_name, fonte de verdade gravada na criacao do
+// form_manager) + status ativo — nao por slug/ID de quem construiu o formulario.
+// Assim a tela funciona em qualquer maquina/banco, desde que exista 1 form
+// ativo publicado para cada tabela do modulo (ver README_form_constructor.md).
+const TABLE_MANAGER = 'user_manager';
+const TABLE_PROFILE = 'user_profiles';
 const FK_FIELD = 'user_manager_id';
 
-async function loadForm(slug: string): Promise<RenderForm | null> {
+interface LoadFormResult {
+  form: RenderForm | null;
+  /** null = ok; string = motivo (indisponivel ou duplicidade). */
+  error: string | null;
+}
+
+function distinctManagerIds(rows: readonly ApiRow[]): number[] {
+  const ids = new Set<number>();
+  for (const row of rows) {
+    const v = row.fm_id;
+    const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : NaN;
+    if (Number.isFinite(n)) ids.add(n);
+  }
+  return [...ids];
+}
+
+async function loadFormByTable(tableName: string, label: string): Promise<LoadFormResult> {
   const raw = await formManagerView.getGrouped(
-    { fm_slug: [slug] },
+    { fm_table_name: [tableName], fm_status: ['active'] },
     { limit: 1000, sort: 'fc_sort_order', order: 'ASC' },
   );
   const { rows } = normalizeList(raw);
-  return buildRenderSchema(rows);
+  const ids = distinctManagerIds(rows);
+
+  if (ids.length === 0) {
+    return { form: null, error: `Nenhum formulario ativo publicado para ${label} (tabela ${tableName}).` };
+  }
+  if (ids.length > 1) {
+    return {
+      form: null,
+      error: `Ha ${ids.length} formularios ativos para ${label} (tabela ${tableName}) — deixe apenas um publicado.`,
+    };
+  }
+  const form = buildRenderSchema(rows);
+  if (!form) {
+    return {
+      form: null,
+      error:
+        `Formulario ativo de ${label} (tabela ${tableName}) nao tem nenhum campo configurado. ` +
+        'Verifique se todos os campos foram adicionados nas linhas do formulario no Construtor (/v1/form-constructor).',
+    };
+  }
+  return { form, error: null };
 }
 
 // Pre-preenche a FK com o id ja criado e trava edicao so na tela do wizard —
@@ -85,15 +127,16 @@ export default function RegisterPage() {
     setError(null);
     try {
       const [manager, profile] = await Promise.all([
-        loadForm(SLUG_MANAGER),
-        loadForm(SLUG_PROFILE),
+        loadFormByTable(TABLE_MANAGER, 'login'),
+        loadFormByTable(TABLE_PROFILE, 'cadastro'),
       ]);
-      if (!manager || !profile) {
-        setError('Um dos formularios (login ou cadastro) nao esta publicado.');
+      const problem = manager.error ?? profile.error;
+      if (problem) {
+        setError(problem);
         return;
       }
-      setFormManager(manager);
-      setFormProfile(profile);
+      setFormManager(manager.form);
+      setFormProfile(profile.form);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Falha ao carregar os formularios.');
     } finally {
@@ -212,9 +255,14 @@ export default function RegisterPage() {
 
       {!loading && !error && done && (
         <EmptyState title="Cadastro criado com sucesso" variant="muted">
-          <button type="button" className="btn btn-primary" onClick={handleReset}>
-            Novo cadastro
-          </button>
+          <div className="d-flex gap-2 justify-content-center flex-wrap">
+            <Link className="btn btn-primary" to={paths.v1.auth.login}>
+              Entrar agora
+            </Link>
+            <button type="button" className="btn btn-outline-secondary" onClick={handleReset}>
+              Novo cadastro
+            </button>
+          </div>
         </EmptyState>
       )}
 

@@ -121,7 +121,7 @@ const CAMPOS_POR_TIPO: Record<string, string[]> = {
   password: ['no_numbers', 'no_letters', 'no_special_chars'],
   senha: [
     'no_numbers', 'no_letters', 'no_special_chars',
-    'strong_password', 'double_field', 'equal_fields',
+    'strong_password', 'double_field',
   ],
   email: ['allowed_domains_json'],
   textarea: [
@@ -468,7 +468,7 @@ function colunaField(
   const flag = (
     campo:
       | 'no_numbers' | 'no_letters' | 'no_special_chars' | 'strong_password'
-      | 'double_field' | 'equal_fields' | 'with_seconds' | 'show_counter'
+      | 'double_field' | 'with_seconds' | 'show_counter'
       | 'inline' | 'sel_multiple',
     label: string,
   ): AnyFieldSchema => ({
@@ -549,9 +549,7 @@ function colunaField(
     case 'strong_password':
       return flag('strong_password', 'Senha forte');
     case 'double_field':
-      return flag('double_field', 'Campo de confirmação');
-    case 'equal_fields':
-      return flag('equal_fields', 'Exige campos iguais');
+      return flag('double_field', 'Campo de confirmação (exige igualdade)');
     case 'with_seconds':
       return flag('with_seconds', 'Com segundos');
     case 'show_counter':

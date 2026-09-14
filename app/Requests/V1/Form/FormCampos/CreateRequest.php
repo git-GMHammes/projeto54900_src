@@ -20,7 +20,7 @@ namespace App\Requests\V1\Form\FormCampos;
  *   input_mode   VARCHAR(20)  NULL (text|numeric|decimal|email|tel|url|search|none)
  *   autocomplete VARCHAR(64)  NULL
  *   no_numbers,no_letters,no_special_chars,strong_password,double_field,
- *   equal_fields,with_seconds,inline  TINYINT(1) DEFAULT 0
+ *   with_seconds,inline  TINYINT(1) DEFAULT 0
  *   show_counter TINYINT(1) NULL
  *   rows_qty     INT NULL
  *   min_date,max_date  VARCHAR(10) NULL (ISO Y-m-d)
@@ -62,7 +62,6 @@ class CreateRequest
             'no_special_chars'     => 'permit_empty|in_list[0,1]',
             'strong_password'      => 'permit_empty|in_list[0,1]',
             'double_field'         => 'permit_empty|in_list[0,1]',
-            'equal_fields'         => 'permit_empty|in_list[0,1]',
             'with_seconds'         => 'permit_empty|in_list[0,1]',
             'show_counter'         => 'permit_empty|in_list[0,1]',
             'inline'               => 'permit_empty|in_list[0,1]',
