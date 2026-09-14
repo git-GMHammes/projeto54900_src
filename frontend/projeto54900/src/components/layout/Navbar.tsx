@@ -1,26 +1,41 @@
 // Barra de navegacao principal. Links via NavLink (marca .active automaticamente).
+// Item com children vira dropdown Bootstrap nativo (data-bs-toggle, sem JS proprio).
 
 import { NavLink } from 'react-router-dom';
 import { paths } from '@/routes/paths';
 import { useAppConfig } from '@/context/AppConfigContext';
 import { useSiteMenu } from '@/hooks/useSiteMenu';
+import type { SiteMenuLink } from '@/hooks/useSiteMenu';
 
-interface NavItem {
-  to: string;
-  label: string;
-  end: boolean;
-}
+type NavItem = SiteMenuLink;
 
 // Fallback usado enquanto o menu carrega e sempre que nav-manager/menu-manager
-// falhar ou vier vazio — garante que a navegacao nunca fica sem itens.
+// falhar ou vier vazio — garante que a navegacao nunca fica sem itens. Espelha
+// a arvore do MenuManagerSeeder (grupos User/Form com dropdown).
 const FALLBACK_NAV: NavItem[] = [
   { to: paths.home, label: 'Inicio', end: true },
-  { to: paths.v1.user.list, label: 'Usuarios', end: false },
-  { to: paths.v1.upload.list, label: 'Uploads', end: false },
-  { to: paths.v1.form.list, label: 'Formularios', end: false },
+  {
+    to: '#',
+    label: 'User',
+    end: false,
+    children: [
+      { to: paths.v1.user.list, label: 'Usuarios', end: false },
+      { to: paths.v1.user.register, label: 'Cadastro', end: false },
+    ],
+  },
+  { to: paths.v1.upload.list, label: 'Upload', end: false },
+  {
+    to: '#',
+    label: 'Form',
+    end: false,
+    children: [
+      { to: paths.v1.form.list, label: 'Formularios', end: false },
+      { to: paths.v1.form.render('calendario'), label: 'Google Calendars', end: false },
+    ],
+  },
   { to: paths.v1.nav.list, label: 'Nav', end: false },
-  { to: paths.v1.menu.list, label: 'Menus', end: false },
-  { to: paths.v1.form.render('calendario'), label: 'Google Calendars', end: false },
+  { to: paths.v1.menu.list, label: 'Menu', end: false },
+  { to: paths.v1.auth.login, label: 'Entrar', end: false },
 ];
 
 export default function Navbar() {
@@ -50,13 +65,36 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="mainNav">
           <ul className="navbar-nav ms-auto">
-            {nav.map((item) => (
-              <li className="nav-item" key={item.to}>
-                <NavLink className="nav-link" to={item.to} end={item.end}>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
+            {nav.map((item) =>
+              item.children && item.children.length > 0 ? (
+                <li className="nav-item dropdown" key={item.label}>
+                  <a
+                    className="nav-link dropdown-toggle"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {item.label}
+                  </a>
+                  <ul className="dropdown-menu">
+                    {item.children.map((child) => (
+                      <li key={child.to}>
+                        <NavLink className="dropdown-item" to={child.to} end={child.end}>
+                          {child.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ) : (
+                <li className="nav-item" key={item.to}>
+                  <NavLink className="nav-link" to={item.to} end={item.end}>
+                    {item.label}
+                  </NavLink>
+                </li>
+              ),
+            )}
           </ul>
         </div>
       </div>

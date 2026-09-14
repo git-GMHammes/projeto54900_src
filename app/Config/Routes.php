@@ -8,6 +8,17 @@ $routes->get('/', 'Home::index');
 $routes->group('api/v1', static function ($routes) {
 
     // =========================================================================
+    // /Auth — Login/refresh/logout/me (emissao/consumo de JWT). login e refresh
+    //         publicos; logout e me exigem filtro 'jwtauth'. Nenhum outro grupo
+    //         desta lista usa 'jwtauth' ainda — decisao explicita, ver
+    //         src/writable/claude/20260914164550_login_cadastro_jwt_plano.json.
+    // =========================================================================
+
+    $routes->group('auth', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Auth/EndpointAuth.php';
+    });
+
+    // =========================================================================
     // /User — Módulo de usuários
     // =========================================================================
 

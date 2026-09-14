@@ -1,5 +1,6 @@
 // Barrel dos services da v1. Import unico:  import { userManagerView } from '@/services/v1';
 
+export { authService } from './auth.service';
 export { userManagerTable } from './userManager.table';
 export { userManagerView } from './userManager.view';
 export { userRolesTable } from './userRoles.table';

@@ -8,6 +8,9 @@ export const paths = {
   home: '/',
 
   v1: {
+    auth: {
+      login: '/v1/login',
+    },
     user: {
       list: '/v1/user-manager',
       create: '/v1/user-manager/create',
