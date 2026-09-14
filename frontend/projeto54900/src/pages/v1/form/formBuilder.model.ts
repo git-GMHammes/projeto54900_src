@@ -227,8 +227,8 @@ export interface CampoLocal {
   no_letters: boolean;
   no_special_chars: boolean;
   strong_password: boolean;
-  /** Sozinho ja exige igualdade entre os 2 campos (ver SenhaField). */
   double_field: boolean;
+  equal_fields: boolean;
   with_seconds: boolean;
   show_counter: boolean;
   inline: boolean;
@@ -296,6 +296,7 @@ export function campoInicial(coluna: ColunaInfo, sortOrder: number): CampoLocal 
     no_special_chars: false,
     strong_password: false,
     double_field: false,
+    equal_fields: false,
     with_seconds: false,
     show_counter: false,
     inline: false,
@@ -434,6 +435,7 @@ export function campoPayload(c: CampoLocal, formRowId: number): Payload {
     no_special_chars: bit(c.no_special_chars),
     strong_password: bit(c.strong_password),
     double_field: bit(c.double_field),
+    equal_fields: bit(c.equal_fields),
     with_seconds: bit(c.with_seconds),
     show_counter: bit(c.show_counter),
     inline: bit(c.inline),
@@ -581,6 +583,7 @@ function viewRowToCampo(row: Record<string, unknown>, fcId: number): CampoLocal 
     no_special_chars: viewBit(row.fc_no_special_chars),
     strong_password: viewBit(row.fc_strong_password),
     double_field: viewBit(row.fc_double_field),
+    equal_fields: viewBit(row.fc_equal_fields),
     with_seconds: viewBit(row.fc_with_seconds),
     show_counter: viewBit(row.fc_show_counter),
     inline: viewBit(row.fc_inline),

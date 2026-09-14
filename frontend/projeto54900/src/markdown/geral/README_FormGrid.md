@@ -112,7 +112,7 @@ mantém um mapa de erros apenas para os campos de texto genéricos.
 | `sei`                             | Nº SEI                    | raw 19 caracteres        | display `SEI-15NNNN/NNNNNN/20NN`                                                                                                                                                                                |
 | `email`                           | E-mail                    | texto                    | `allowedDomains?: string[]`                                                                                                                                                                                     |
 | `textarea`                        | Área de texto             | texto                    | `rows`, `cols`, `maxLength`, `showCounter`, `noNumbers/noLetters/noSpecialChars`                                                                                                                                |
-| `senha`                           | Senha                     | texto                    | `strongPassword`, `doubleField` (2º campo de confirmação, exige igualdade), `noNumbers/noLetters/noSpecialChars`; botão mostrar/ocultar                                                                        |
+| `senha`                           | Senha                     | texto                    | `strongPassword`, `doubleField` (2º campo de confirmação), `equalFields`, `noNumbers/noLetters/noSpecialChars`; botão mostrar/ocultar                                                                           |
 | `radio`                           | Grupo de opção única      | `string`                 | `options: {id,value,label,checked?}[]`, `inline`; `onChange(value)`                                                                                                                                             |
 | `checkbox`                        | Grupo de múltipla escolha | `string[]`               | `options: {...}[]`, `inline`, `required` (≥1); submete `name[]`; `onChange(values[])`                                                                                                                           |
 | `select`                          | Combobox com busca        | `string`                 | `options` inline **ou** `src` (GET), `valueKey`, `labelKey`/`labelTemplate`, `maxVisible`, `rows`, `findSrc`+`findColumn` (POST de busca), `getSrc` (GET por id), `authToken` (Bearer); `multiple`+`values`+`onChangeMultiple` (listbox multi); `disabledValues: string[]` (values como `<option disabled>`, cinza e não selecionáveis); `onChange(value, item)` |
@@ -129,8 +129,7 @@ mantém um mapa de erros apenas para os campos de texto genéricos.
   contexto nem serviço externo; dispara sozinha ao completar os 8 dígitos e
   cancela em caso de desmontagem.
 - **`senha`** — `strongPassword` exige letra + número + especial + `minLength`
-  (default 6). `doubleField` exibe o 2º campo e já exige igualdade entre os dois
-  (sem flag separada).
+  (default 6). `doubleField` + `equalFields` valida a confirmação.
 - **`moeda` / `data` / `hora`** — o valor trafega sempre no formato "de
   máquina" (decimal, ISO, dígitos); a formatação é só de exibição.
 
@@ -205,6 +204,7 @@ const schema: FormGridSchema = {
           type: "senha",
           strongPassword: true,
           doubleField: true,
+          equalFields: true,
           required: true,
         },
         {

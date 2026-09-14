@@ -4,7 +4,6 @@
 import { redirect } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { paths } from '@/routes/paths';
-import { authRoutes } from './auth.routes';
 import { userRoutes } from './user.routes';
 import { uploadRoutes } from './upload.routes';
 import { formRoutes } from './form.routes';
@@ -16,7 +15,6 @@ export const v1Routes: RouteObject = {
   children: [
     // /v1  -> redireciona para a primeira listagem util
     { index: true, loader: () => redirect(paths.v1.user.list) },
-    ...authRoutes,
     ...userRoutes,
     ...uploadRoutes,
     ...formRoutes,

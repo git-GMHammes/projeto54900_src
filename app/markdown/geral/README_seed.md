@@ -9,10 +9,10 @@ digitado no host (PowerShell, na raiz do projeto):
 
 ```
 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed <NomeDaClasse>
 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
 podman compose exec php php spark db:seed BootstrapIconsSeeder
 podman compose exec php php spark db:seed FormConstructorSeeder
@@ -90,7 +90,7 @@ PowerShell:
 
 ```
 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
  
 ```
@@ -98,7 +98,7 @@ podman compose exec php php spark db:seed UserRolesSeeder
 `BootstrapIconsSeeder` — catálogo Bootstrap Icons em `bootstrap_icons`:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
  
 ```
@@ -107,7 +107,7 @@ podman compose exec php php spark db:seed BootstrapIconsSeeder
 `form_manager`/`form_groups`/`form_rows`/`form_fields`:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed FormConstructorSeeder
  
 ```
@@ -115,7 +115,7 @@ podman compose exec php php spark db:seed FormConstructorSeeder
 `NavManagerSeeder` — nav de referência ("Menu Teste") em `nav_manager`:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed NavManagerSeeder
  
 ```
@@ -124,7 +124,7 @@ podman compose exec php php spark db:seed NavManagerSeeder
 `NavManagerSeeder` primeiro):
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed MenuManagerSeeder
  
 ```
@@ -138,19 +138,17 @@ rígida entre a maioria, mas `MenuManagerSeeder` já roda `NavManagerSeeder`
 sozinho — chamar os dois é redundante, não é erro). Bloco único, colar no host:
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
 podman compose exec php php spark db:seed BootstrapIconsSeeder
 podman compose exec php php spark db:seed FormConstructorSeeder
-cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed MenuManagerSeeder
- 
-``` 
+```
 
 Sem TTY (CI):
 
 ```
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\xampp\htdocs\php\projeto54900
 podman compose exec -T php php spark db:seed UserRolesSeeder
 podman compose exec -T php php spark db:seed BootstrapIconsSeeder
 podman compose exec -T php php spark db:seed FormConstructorSeeder
