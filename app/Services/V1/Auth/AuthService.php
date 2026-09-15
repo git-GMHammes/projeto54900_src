@@ -42,7 +42,7 @@ class AuthService
             return ['success' => false, 'message' => 'Usuário inativo ou bloqueado', 'code' => 403];
         }
 
-        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null);
+        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip);
 
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
@@ -59,7 +59,7 @@ class AuthService
     /**
      * @return array{success:bool,message?:string,code?:int,data?:array}
      */
-    public function refresh(string $refreshToken): array
+    public function refresh(string $refreshToken, string $ip): array
     {
         $claims = $this->jwt->decode($refreshToken);
 
@@ -77,7 +77,7 @@ class AuthService
             return ['success' => false, 'message' => 'Refresh token não confere (já usado ou revogado)', 'code' => 401];
         }
 
-        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null);
+        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip);
 
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
@@ -109,15 +109,16 @@ class AuthService
     // Helpers
     // -------------------------------------------------------------------------
 
-    private function issueTokenPair(int $userId, string $username, ?int $roleId): array
+    private function issueTokenPair(int $userId, string $username, ?int $roleId, string $ip): array
     {
         $role = $roleId !== null ? $this->findRole($roleId) : null;
 
         $accessToken = $this->jwt->issueAccessToken([
-            'sub'       => $userId,
-            'username'  => $username,
-            'role_id'   => $roleId,
-            'role_slug' => $role['slug'] ?? null,
+            'sub'         => $userId,
+            'username'    => $username,
+            'role_id'     => $roleId,
+            'role_slug'   => $role['slug'] ?? null,
+            'remote_addr' => $ip,
         ]);
 
         $refreshToken = $this->jwt->issueRefreshToken(['sub' => $userId]);

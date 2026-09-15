@@ -348,10 +348,13 @@ export function camposParaPayload(c: CampoLocal): { select_config_json: string }
 // omitidos (a API é `permit_empty`), booleanos viram 0/1 e a FK do pai entra
 // sempre explícita. `id` / timestamps ficam por conta do backend.
 
-type Payload = Record<string, string | number>;
+export type Payload = Record<string, string | number>;
 
-/** Descarta chaves `''` / `null` / `undefined` (mantém `0` e demais números). */
-function stripVazios(obj: Record<string, unknown>): Payload {
+/**
+ * Descarta chaves `''` / `null` / `undefined` (mantém `0` e demais números).
+ * Exportado: reaproveitado por outros construtores (ver listBuilder.model.ts).
+ */
+export function stripVazios(obj: Record<string, unknown>): Payload {
   const out: Payload = {};
   for (const [k, v] of Object.entries(obj)) {
     if (v === '' || v === null || v === undefined) continue;
@@ -360,10 +363,10 @@ function stripVazios(obj: Record<string, unknown>): Payload {
   return out;
 }
 
-const bit = (b: boolean): number => (b ? 1 : 0);
+export const bit = (b: boolean): number => (b ? 1 : 0);
 
 /** `'12'` → `12`; `''` / inválido → `undefined` (para o `stripVazios` cortar). */
-function intOuUndef(s: string): number | undefined {
+export function intOuUndef(s: string): number | undefined {
   const n = Number.parseInt(s, 10);
   return Number.isFinite(n) ? n : undefined;
 }

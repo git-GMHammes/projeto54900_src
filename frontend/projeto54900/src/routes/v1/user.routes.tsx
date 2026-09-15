@@ -16,7 +16,7 @@ export const userRoutes: RouteObject[] = [
   { path: 'user-manager', element: <GetAllPage /> },
   { path: 'user-manager/create', element: <CreatePage /> },
   { path: 'user-manager/:id', element: <GetPage /> },
-  { path: 'user-manager/:id/update', element: <UpdatePage /> },
+  { path: 'user-manager/update/:id', element: <UpdatePage /> },
   { path: 'register', element: <RegisterPage /> },
 ];
 

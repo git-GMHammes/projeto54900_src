@@ -22,7 +22,9 @@ cada resumo termina com o link para o conteúdo completo.
 | [`builder`](#builder)         | Construtor novo: tabela vira formulário  |
 | [`construtor`](#construtor)   | Página cria formulários via API          |
 | [`formgrid`](#formgrid)       | Fábrica de campos dirigida por JSON      |
+| [`grid`](#grid)               | Renderizar listagem só via motor         |
 | [`json`](#json)               | Campo monta JSON sem digitação           |
+| [`listas`](#listas)           | Construtor de listagens: banco a builder |
 | [`node`](#node)               | Comandos do Node e módulos               |
 | [`paginas`](#paginas)         | Página por módulo, recurso e ação        |
 | [`render`](#render)           | Renderizar formulário só via FormGrid    |
@@ -101,7 +103,7 @@ Services em `src/services/v1/form*.ts`, rota lazy em `routes/v1/form.routes.tsx`
 Fábrica de campos de formulário dirigida por um schema JSON. O componente
 `FormGrid` recebe `{ rows: [{ sectionTitle?, fields: [...] }] }`, faz o switch por
 `field.type` e monta a grade Bootstrap (`col` 1-12), delegando cada tipo a um
-componente especializado. Cobre 21 tipos (CPF, CNPJ, CEP, telefone, moeda, data,
+componente especializado. Cobre 22 tipos (CPF, CNPJ, CEP, telefone, moeda, data,
 hora, PIS, placa, título de eleitor, CNH, processo, RENAVAM, SEI, e-mail,
 textarea, senha, radio, checkbox, select com busca) mais `text`/`password`
 padrão, com validação em digitação e no blur, modo controlado/não-controlado e
@@ -114,6 +116,23 @@ mascarados. É a **fábrica de formulários** que substitui o stub
 páginas (`pages/v1/user/user-manager/CreatePage.tsx` etc.).
 
 [`geral/README_FormGrid.md`](geral/README_FormGrid.md) — fábrica de campos `FormGrid` dirigida por JSON.
+
+### `grid`
+
+Regra espelhando [`render`](#render) mas para **listagens/grids**: página que
+lê dados de uma API renderiza pelo motor puro `src/utils/listConstructor.tsx`
+(`toManager`/`toColumn`/`toAction`, `cellValue`/`renderCell`,
+`evalBusinessRule`, `resolveHrefTemplate`) em vez de `<thead>`/`<tbody>` com
+colunas fixas escritas à mão. A definição (colunas, ordenação, ações,
+paginação) vem de `list_manager`/`list_columns`/`list_actions` — ver
+[`listas`](#listas). Único ponto que cada página decide sozinha: ações em
+modo **preview** (toast, não executa) vs **produção** (`<Link>`/chamada HTTP
+reais) — foi assim que `FormConstructorListPage.tsx` (produção, ações reais)
+e `ListConstructorPage.tsx` (preview) passaram a compartilhar o mesmo motor
+sem duplicar código, inclusive o tratamento especial por coluna (`format`
+`code`/`status-badge`).
+
+[`geral/README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — regra de uso do motor de listagem e a receita de 4 passos pra consumir.
 
 ### `json`
 
@@ -130,6 +149,42 @@ Caso de referência: `roles` (campo "Grupo de perfil" do `FormBuilderPage`),
 `<select multiple>` de `user_roles` gravando `["admin","user"]`.
 
 [`geral/README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo grava JSON, a UI monta.
+
+### `listas`
+
+Banco + backend REST (endpoint-set padrão, igual módulo Form) + preview no
+frontend (`/v1/list-constructor`) para o construtor de listagens:
+`list_manager` 1:N `list_columns`, `list_manager` 1:N `list_actions`
+(coleções irmãs, sem aninhamento — diferente do form). Formaliza em dados o
+que hoje é escrito à mão em cada `get_all.js` de listagens legadas:
+`list_columns` cobre `ROW_BATCH_1` (coluna/label, `field_key` vindo das
+chaves da API, `concat_json` para células compostas, `sortable` +
+`sort_key`/`sort_concat_json` para ordenação aplicada na API) e `list_actions`
+cobre `ROW_BATCH_ACTIONS` + a matriz de permissão por linha (`roles` +
+`business_rule_json`, equivalente a `getXxxPermissions(row)`). `list_manager`
+guarda `default_limit`/`limit_options_json` (registros por página).
+`ListConstructorPage.tsx` renderiza a grid de verdade a partir de 9 listas
+semeadas (`ListConstructorSeeder` + `ListConstructorRealTablesSeeder`, 8 delas
+apontando pra tabelas reais deste projeto, incluindo o módulo novo
+`bootstrap-icons`), escolhidas por um `<select>`; tabela/paginação ficam
+locais na página — `DataTable.tsx`/`Pagination.tsx` globais são stub
+proposital, não mexido. O motor (tipos, célula, `business_rule_json`,
+tratamento especial por `list_columns.format`) foi extraído pra
+`utils/listConstructor.tsx` e já tem um 2º consumidor real:
+`FormConstructorListPage.tsx` (`/v1/form-constructor`) não usa mais colunas
+fixas no código — lê `list_manager`/`list_columns`/`list_actions` de verdade,
+com ações que **executam** (`<Link>`/chamada HTTP reais), diferente do
+preview (que só simula com toast). `ListBuilderPage.tsx`
+(`/v1/list-constructor/create`, nos moldes do `FormBuilderPage`) já deixa
+**criar listagens novas pela UI** — escolhe tabelas (`dbSchema`), árvore
+`list_manager` → `list_columns`/`list_actions` (2 coleções irmãs, folha),
+"Colunas (auto)" gera `list_columns` a partir das colunas reais da tabela.
+`ListBuilderTree.tsx` é fork de `FormBuilderTree.tsx` (só `TreeLevel`/ícones
+mudam, confirmando o padrão reutilizável já documentado em
+[`builder`](#builder)); `FormModal.tsx` é reaproveitado sem fork. Sem modo
+edição ainda.
+
+[`geral/README_list_constructor.md`](geral/README_list_constructor.md) — construtor de listagens: banco, backend REST, preview, produção (`FormConstructorListPage`) e builder de listas novas (`ListBuilderPage`).
 
 ### `node`
 
@@ -202,7 +257,9 @@ para a convenção de pastas por trás dessas rotas.
 - [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), o padrão reutilizável árvore+modal, estado atual e roadmap.
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
+- [`README_list_constructor.md`](geral/README_list_constructor.md) — construtor de listagens (`list_manager`/`list_columns`/`list_actions`): banco, backend REST, preview, produção (`FormConstructorListPage.tsx` migrada) e builder de listas novas (`ListBuilderPage.tsx`).
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
 - [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.
 - [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.
+- [`README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — listagem renderiza via o motor `list_manager`/`list_columns`/`list_actions` (`utils/listConstructor.tsx`), não tabela manual; receita de consumo.
 - [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
