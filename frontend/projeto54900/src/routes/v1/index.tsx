@@ -8,6 +8,7 @@ import { authRoutes } from './auth.routes';
 import { userRoutes } from './user.routes';
 import { uploadRoutes } from './upload.routes';
 import { formRoutes } from './form.routes';
+import { listRoutes } from './list.routes';
 import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
 
@@ -20,6 +21,7 @@ export const v1Routes: RouteObject = {
     ...userRoutes,
     ...uploadRoutes,
     ...formRoutes,
+    ...listRoutes,
     ...navRoutes,
     ...menuRoutes,
   ],

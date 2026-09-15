@@ -74,7 +74,7 @@ class AuthController extends BaseResourceViewController
         }
 
         $body = $this->getRequestBody();
-        $result = $this->service->refresh((string) $body['refresh_token']);
+        $result = $this->service->refresh((string) $body['refresh_token'], $this->request->getIPAddress());
 
         if (!$result['success']) {
             return $this->respondError($result['message'], $result['code'] ?? 401);

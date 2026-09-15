@@ -78,6 +78,34 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /List — Modulo de construtor de listagens (list_manager > list_columns,
+    //         list_manager > list_actions — colecoes irmas, sem aninhamento).
+    //         APIs publicas (sem JWT), mesmo endpoint-set do modulo Form.
+    // =========================================================================
+
+    $routes->group('list-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListManager/EndpointTable.php';
+    });
+
+    $routes->group('list-columns', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListColumns/EndpointTable.php';
+    });
+
+    $routes->group('list-actions', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListActions/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /BootstrapIcons — catalogo de icones do Bootstrap Icons (usado pelo
+    //                    IconSelect do frontend). Populado por
+    //                    Database/Seeds/BootstrapIconsSeeder.php.
+    // =========================================================================
+
+    $routes->group('bootstrap-icons', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/BootstrapIcons/EndpointTable.php';
+    });
+
+    // =========================================================================
     // /Agenda — Modulo de calendario (espelho do Google Agenda): calendars >
     //           calendar_events > {attendees, reminders, attachments,
     //           extended_properties}. APIs REST, contrato canonico (18 rotas).

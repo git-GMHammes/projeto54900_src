@@ -13,7 +13,7 @@ export const menuRoutes: RouteObject[] = [
   { path: 'menu-manager', element: <GetAllPage /> },
   { path: 'menu-manager/create', element: <CreatePage /> },
   { path: 'menu-manager/:id', element: <GetPage /> },
-  { path: 'menu-manager/:id/update', element: <UpdatePage /> },
+  { path: 'menu-manager/update/:id', element: <UpdatePage /> },
 ];
 
 export default menuRoutes;

@@ -345,7 +345,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
   validada no `Form/FormCampos/Processor` ao vincular o campo, **não** no DDL. O
   construtor deveria somar os `col` da linha e avisar antes de qualquer envio.
 - **`field_type`**: o ENUM mistura inglês/português e duplica `password`/`senha`
-  (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 21 tipos
+  (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 22 tipos
   do `<FormGrid>` ([`README_FormGrid.md`](README_FormGrid.md)).
 - **Persistência por nó**: ✅ feita (ver "Persistência por nó — Salvar no
   modal"). **Falta**: recarregar do banco uma árvore já persistida para
@@ -363,7 +363,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
   com `password`/`senha` duplicando o mesmo tipo — e documentos BR (`cpf`,
   `cnpj`, `phone`, `cep`, `pis`, `placa`, `titulo`, `cnh`, `processo`,
   `renavam`, `sei`). Padronizar ao conectar com o `<FormGrid>` (ver
-  [`README_FormGrid.md`](README_FormGrid.md), que cobre 21 tipos).
+  [`README_FormGrid.md`](README_FormGrid.md), que cobre 22 tipos).
 
 ## Arquivos
 

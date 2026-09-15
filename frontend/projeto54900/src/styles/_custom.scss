@@ -59,6 +59,16 @@ dl .text-break {
   }
 }
 
+// Listas de radio/checkbox lado a lado com altura fixa (ListBuilderPage,
+// modal de list_columns: format / cell_class — alinhamento / outras
+// classes). Bootstrap não tem utilitário de altura fixa por "número de
+// itens"; aproxima 10 linhas de `.form-check` pra as 3 listas ficarem com a
+// mesma altura mesmo tendo quantidades diferentes de opções.
+.formgrid-fixed-list {
+  height: 15rem;
+  overflow-y: auto;
+}
+
 @keyframes tree-flash {
   0%,
   25% {

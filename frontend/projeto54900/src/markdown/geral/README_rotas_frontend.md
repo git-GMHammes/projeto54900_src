@@ -56,7 +56,7 @@ Páginas organizadas por ação, seguindo [`README_paginas_modulo.md`](README_pa
 | `/v1/user-manager`            | `pages/v1/user/user-manager/GetAllPage`       | Listagem — **stub em branco**, aguardando a fábrica de listas                        |
 | `/v1/user-manager/create`     | `pages/v1/user/user-manager/CreatePage`       | **Stub em branco** — aguardando a fábrica de formulários (ver CLAUDE.md do frontend) |
 | `/v1/user-manager/:id`        | `pages/v1/user/user-manager/GetPage`          | Detalhe                                                                              |
-| `/v1/user-manager/:id/update` | `pages/v1/user/user-manager/UpdatePage`       | **Stub em branco**, mesmo motivo acima                                               |
+| `/v1/user-manager/update/:id` | `pages/v1/user/user-manager/UpdatePage`       | **Stub em branco**, mesmo motivo acima. Path corrigido de `:id/update` para `update/:id` (2026-09-15) — alinhado com o padrão `form-constructor`/`list-constructor` |
 | `/v1/register`                | `pages/v1/user/register/RegisterPage`         | Fluxo composto (não é ação de 1 tabela só): cria login em `user-manager`, depois perfil em `user-profiles`, ligados por `user_manager_id`. Wizard de 2 cards (não abas) sobre os builds `seguranca-novo` e `cadastro` |
 
 ### upload-manager
@@ -102,7 +102,7 @@ do sistema — a "casca" em volta do Menu, não o menu em si.
 | `/v1/nav-manager`        | `pages/v1/nav/GetAllPage`     | Listagem **real** (tabela própria do módulo, não usa `DataTable`/`Pagination` — stubados)  |
 | `/v1/nav-manager/create` | `pages/v1/nav/CreatePage`     | **Stub em branco** — aguardando a fábrica de formulários                                  |
 | `/v1/nav-manager/:id`    | `pages/v1/nav/GetPage`        | Detalhe real; botão "Ver itens" leva para `/v1/menu-manager?nav_manager_id=:id`             |
-| `/v1/nav-manager/:id/update` | `pages/v1/nav/UpdatePage` | **Stub em branco**, mesmo motivo acima                                                    |
+| `/v1/nav-manager/update/:id` | `pages/v1/nav/UpdatePage` | **Stub em branco**, mesmo motivo acima. Path corrigido (2026-09-15), ver nota em user-manager acima |
 
 ### menu — Árvore de itens navegáveis
 
@@ -117,7 +117,7 @@ foram trocados para refletir que esta é a árvore de menu de verdade.
 | `/v1/menu-manager`             | `pages/v1/menu/GetAllPage`   | Listagem **real**; aceita `?nav_manager_id=` para restringir aos itens de 1 nav      |
 | `/v1/menu-manager/create`      | `pages/v1/menu/CreatePage`   | **Stub em branco**; lê `?nav_manager_id=` para pré-preencher o título quando existir |
 | `/v1/menu-manager/:id`         | `pages/v1/menu/GetPage`      | Detalhe real; "Voltar" religa em `?nav_manager_id=` do próprio item                  |
-| `/v1/menu-manager/:id/update`  | `pages/v1/menu/UpdatePage`   | **Stub em branco**                                                                   |
+| `/v1/menu-manager/update/:id`  | `pages/v1/menu/UpdatePage`   | **Stub em branco**. Path corrigido (2026-09-15), ver nota em user-manager acima      |
 
 ---
 

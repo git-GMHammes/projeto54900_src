@@ -13,7 +13,7 @@ export const navRoutes: RouteObject[] = [
   { path: 'nav-manager', element: <GetAllPage /> },
   { path: 'nav-manager/create', element: <CreatePage /> },
   { path: 'nav-manager/:id', element: <GetPage /> },
-  { path: 'nav-manager/:id/update', element: <UpdatePage /> },
+  { path: 'nav-manager/update/:id', element: <UpdatePage /> },
 ];
 
 export default navRoutes;

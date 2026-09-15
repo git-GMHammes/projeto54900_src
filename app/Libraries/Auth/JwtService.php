@@ -24,22 +24,26 @@ class JwtService
     }
 
     /**
-     * @param array{sub:int,username:string,role_id:?int,role_slug:?string} $claims
+     * @param array{sub:int,username:string,role_id:?int,role_slug:?string,remote_addr:string} $claims
      */
     public function issueAccessToken(array $claims): string
     {
-        $now = time();
+        $now  = time();
+        $role = (string) ($claims['role_slug'] ?? '');
+        $ip   = (string) ($claims['remote_addr'] ?? '');
 
         return $this->encode([
-            'iss'       => $this->config->issuer,
-            'aud'       => $this->config->audience,
-            'iat'       => $now,
-            'exp'       => $now + $this->config->accessTtl,
-            'typ'       => 'access',
-            'sub'       => $claims['sub'],
-            'username'  => $claims['username'],
-            'role_id'   => $claims['role_id'],
-            'role_slug' => $claims['role_slug'],
+            'iss'         => $this->config->issuer,
+            'aud'         => $this->config->audience,
+            'iat'         => $now,
+            'exp'         => $now + $this->config->accessTtl,
+            'typ'         => 'access',
+            'sub'         => $claims['sub'],
+            'username'    => $claims['username'],
+            'role'        => $claims['role_slug'],
+            'remote_addr' => $claims['remote_addr'],
+            // Enigma de ofuscacao (distracao ao curioso), sem uso em validacao.
+            'geheimnis'   => md5($role . $ip . date('d')),
         ]);
     }
 
