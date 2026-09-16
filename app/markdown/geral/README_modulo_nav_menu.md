@@ -47,7 +47,7 @@ Processor + Model + Migration, 18 rotas de tabela cada — ver
 rotas extras nem árvore administrativa separada (isso existiu entre
 2026-09-13 e 2026-09-14 e foi removido: over-engineering, ninguém pediu). A
 árvore espelha 1:1 os grupos de módulo do backend (`Config/Routes.php`: /User,
-/Upload, /Form, /Nav, /Menu — /Agenda e /Meta ficam fora por não terem página
+/Upload, /Form, /Nav, /Menu — /Calendar e /Meta ficam fora por não terem página
 no frontend ainda).
 
 Regra de hierarquia: **grupo com filho nunca tem `react_route`** (fica só como
@@ -68,7 +68,7 @@ User(20)                                   (sem link)
 Upload(30)                              -> /v1/upload-manager
 Form(40)                                    (sem link)
 ├─ Formularios(1)                       -> /v1/form-constructor
-└─ Google Calendars(2)                  -> /v1/form/calendario
+└─ Calendário(2)                        -> /v1/form/calendario
 Nav(50)                                 -> /v1/nav-manager
 Menu(60)                                -> /v1/menu-manager
 ```

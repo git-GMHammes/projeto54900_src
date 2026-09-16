@@ -20,11 +20,14 @@ cada resumo termina com o link para o conteúdo completo.
 | [`alerta`](#alerta)           | Checklist de UI antes de criar           |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice     |
 | [`builder`](#builder)         | Construtor novo: tabela vira formulário  |
+| [`calendar`](#calendar)       | Módulo calendário: estado atual e roadmap |
+| [`comentarios`](#comentarios) | Comentar código em blocos, estilo didático |
 | [`construtor`](#construtor)   | Página cria formulários via API          |
 | [`formgrid`](#formgrid)       | Fábrica de campos dirigida por JSON      |
 | [`grid`](#grid)               | Renderizar listagem só via motor         |
 | [`json`](#json)               | Campo monta JSON sem digitação           |
 | [`listas`](#listas)           | Construtor de listagens: banco a builder |
+| [`modal`](#modal)             | Modal sempre centralizado, estado React  |
 | [`node`](#node)               | Comandos do Node e módulos               |
 | [`paginas`](#paginas)         | Página por módulo, recurso e ação        |
 | [`render`](#render)           | Renderizar formulário só via FormGrid    |
@@ -82,6 +85,39 @@ estrutura pai→filho de N níveis com formulário por nó. Ver a seção destac
 markdown antes de reinventar.
 
 [`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage`, o **padrão árvore+modal reutilizável** e o roadmap.
+
+### `calendar`
+
+Primeiro módulo da pasta nova `geral/modulos/` (cada módulo grande — depois
+`networking`, `map`, `document_manager` — ganha sua própria pasta aqui).
+Backend pronto: 6 recursos (`calendar_manager` + `calendar_events` e seus 4
+sub-recursos — attendees/reminders/attachments/extended-properties), 108 rotas
+`Api\V1\Calendar\*`. Frontend ainda só **exibição**: `/v1/form/calendario`
+mostra `MonthCalendar` (mês atual) + `YearCalendar` (12 meses) calculados só
+por `Date`/`Intl`, sem ler nenhuma tabela — **não existe calendário real
+construído ainda**, nenhum evento é mostrado. Roadmap: criar o primeiro
+`calendar` pelo modal já existente, clonar a tela para uma versão ligada a um
+`calendar_id` real (eventos marcados no grid), CRUD de evento a partir do dia
+clicado, sub-recursos do evento, lista de calendários.
+
+[`geral/modulos/calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — estado atual (só visualização), contrato do backend e roadmap do módulo calendário.
+
+### `comentarios`
+
+Roteiro de como comentar o código deste frontend de forma didática, em
+blocos (nunca linha a linha), para um dev júnior entender o propósito de
+cada arquivo e como replicar o padrão. Adaptado de um roteiro equivalente de
+outro projeto (CakePHP + JS separados) para a arquitetura real daqui, onde
+não existe PHP — o `.tsx` já constrói e renderiza tudo. Cobre 3 blocos:
+**Página** (`pages/v1/.../XPage.tsx` — hooks de estado, carregamento de
+dados, handlers, JSX), **Camada Core** (`services/http.ts`,
+`resourceFactory.ts`, hooks e contexts genéricos, `utils/*`) e **Componente
+de Campo** (`components/ui/FormGrid/*` — contrato do `schema.type`, valor
+"cru" vs visível). Define o formato do bloco de comentário TSDoc
+(`O QUE FAZ`/`DEPENDÊNCIAS`/`CONSUMIDORES`/`COMO REAPROVEITAR`) e um
+checklist de qualidade.
+
+[`geral/README_comenta-codigo-didatico.md`](geral/README_comenta-codigo-didatico.md) — roteiro de comentários didáticos em blocos (Página / Core / Componente de Campo).
 
 ### `construtor`
 
@@ -186,6 +222,19 @@ edição ainda.
 
 [`geral/README_list_constructor.md`](geral/README_list_constructor.md) — construtor de listagens: banco, backend REST, preview, produção (`FormConstructorListPage`) e builder de listas novas (`ListBuilderPage`).
 
+### `modal`
+
+Regra: **todo modal sempre centralizado** (`modal-dialog-centered`) — nunca
+colado no topo da página. Nenhum modal daqui usa a instância JS do Bootstrap
+(`data-bs-toggle`); todos são controlados por estado React (`open` via
+`useState`), renderizando o markup (`.modal.fade.show.d-block` +
+`.modal-backdrop`) na mão. Dois componentes cobrem os casos: `Modal.tsx`
+(genérico, sem footer próprio — caso de referência: `FormRendererPage.tsx`,
+formulário dentro do modal) e `ConfirmModal.tsx` (confirmação, botões fixos
+Confirmar/Cancelar). Checar os dois antes de criar um modal novo.
+
+[`geral/README_modal.md`](geral/README_modal.md) — padrão de modal (sempre centralizado, estado React) e os dois componentes existentes.
+
 ### `node`
 
 Comandos do Node/Vite e mapa dos módulos de `src/`. O frontend **não usa
@@ -254,12 +303,18 @@ para a convenção de pastas por trás dessas rotas.
 - [`README_alerta_padroes_ui.md`](geral/README_alerta_padroes_ui.md) — ⚠️ checklist de padrões de UI a checar antes de criar/editar, e o caso aberto da sessão de login na navbar.
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo cujo valor é JSON montado pela UI (o usuário não digita JSON).
+- [`README_comenta-codigo-didatico.md`](geral/README_comenta-codigo-didatico.md) — roteiro de comentários didáticos em blocos, adaptado para Página/Core/Componente de Campo (React/TSX).
 - [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), o padrão reutilizável árvore+modal, estado atual e roadmap.
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
 - [`README_list_constructor.md`](geral/README_list_constructor.md) — construtor de listagens (`list_manager`/`list_columns`/`list_actions`): banco, backend REST, preview, produção (`FormConstructorListPage.tsx` migrada) e builder de listas novas (`ListBuilderPage.tsx`).
+- [`README_modal.md`](geral/README_modal.md) — padrão de modal: sempre centralizado (`modal-dialog-centered`), estado React, `Modal.tsx` genérico vs `ConfirmModal.tsx` de confirmação.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
 - [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.
 - [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.
 - [`README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — listagem renderiza via o motor `list_manager`/`list_columns`/`list_actions` (`utils/listConstructor.tsx`), não tabela manual; receita de consumo.
 - [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
+
+### `geral/modulos/calendar/`
+
+- [`README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo calendário: estado atual (só visualização), contrato do backend (6 recursos, 108 rotas) e roadmap.

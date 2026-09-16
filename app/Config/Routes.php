@@ -106,33 +106,33 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
-    // /Agenda — Modulo de calendario (espelho do Google Agenda): calendars >
+    // /Calendar — Modulo de calendario (espelho do Google Calendar): calendar_manager >
     //           calendar_events > {attendees, reminders, attachments,
     //           extended_properties}. APIs REST, contrato canonico (18 rotas).
     // =========================================================================
 
-    $routes->group('calendars', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/Calendars/EndpointTable.php';
+    $routes->group('calendar-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php';
     });
 
     $routes->group('calendar-events', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEvents/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEvents/EndpointTable.php';
     });
 
     $routes->group('calendar-event-attendees', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttendees/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventAttendees/EndpointTable.php';
     });
 
     $routes->group('calendar-event-reminders', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventReminders/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventReminders/EndpointTable.php';
     });
 
     $routes->group('calendar-event-attachments', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttachments/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventAttachments/EndpointTable.php';
     });
 
     $routes->group('calendar-event-extended-properties', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventExtendedProperties/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventExtendedProperties/EndpointTable.php';
     });
 
     // =========================================================================
@@ -160,5 +160,15 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('db-schema', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Meta/DbSchema/Endpoint.php';
+    });
+
+    // =========================================================================
+    // /Meta/route-manager — catalogo de rotas da API/frontend (CRUD completo,
+    //        padrao Manager), para selecionar uma rota pre-cadastrada em vez
+    //        de digita-la.
+    // =========================================================================
+
+    $routes->group('route-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Meta/RouteManager/EndpointTable.php';
     });
 });

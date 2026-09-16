@@ -13,6 +13,8 @@
 
 import type { ReactNode } from 'react';
 
+import { parseStringList } from './jsonList';
+
 // -----------------------------------------------------------------------------
 // Tipos + normalizacao das linhas cruas da API
 // -----------------------------------------------------------------------------
@@ -180,6 +182,20 @@ const CUSTOM_CELL_RENDERERS: Record<
   'status-badge': (value) => (
     <span className={`badge ${STATUS_BADGE_CLASS[value] ?? 'text-bg-light'}`}>{value}</span>
   ),
+  // Espelha o <RolesBadges> do menu/GetAllPage.tsx original (campo JSON de strings).
+  'roles-badges': (value) => {
+    const roles = parseStringList(value);
+    if (roles.length === 0) return <span className="text-body-secondary">—</span>;
+    return (
+      <div className="d-flex flex-wrap gap-1">
+        {roles.map((role) => (
+          <span className="badge text-bg-light border" key={role}>
+            {role}
+          </span>
+        ))}
+      </div>
+    );
+  },
 };
 
 export function renderCell(column: ListColumnRow, row: Record<string, unknown>): ReactNode {

@@ -504,7 +504,7 @@ function viewJsonStr(v: unknown): string {
 }
 
 /**
- * `/api/v1/calendars/create` → `calendars`. Sem match → slug.
+ * `/api/v1/calendar-manager/create` → `calendar_manager`. Sem match → slug.
  * Rotas da API são kebab-case (`API_GROUPS`), mas as tabelas reais do banco
  * são snake_case (ex.: `user-manager` → `user_manager`) — converte antes de
  * devolver, senão a introspecção do schema falha para qualquer tabela cujo
