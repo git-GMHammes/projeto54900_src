@@ -237,6 +237,8 @@ export default function GetAllPage() {
 
       {!defsLoading && !error && !dataLoading && rows.length === 0 && (
         <EmptyState
+          variant="warning"
+          eyebrow="Lista vazia"
           title={buscando ? 'Nenhum usuario encontrado' : 'Nenhum usuario'}
           description={buscando ? `Sem resultados para "${termoDebounced}".` : "Crie o primeiro em 'Novo usuario'."}
         />

@@ -158,7 +158,7 @@ construtor de formulários em `form_manager`/`form_groups`/`form_rows`/`form_fie
 ver [`navmenu`](#navmenu)). Não há `DatabaseSeeder` agregador — `db:seed` sem
 argumento falha; roda-se um a um, ou cria-se o agregador (exemplo no doc).
 Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
-(`user_manager`, `user_profiles`, `upload_manager`, `calendars`/`calendar_*`) e
+(`user_manager`, `user_profiles`, `upload_manager`, `calendar_manager`/`calendar_*`) e
 conferência via `spark db:table` ou Adminer.
 
 [`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.

@@ -146,6 +146,7 @@ const CELL_CLASS_OPCOES = [
 ].map((c) => ({ value: c, label: c }));
 
 const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
+const ROUTE_MANAGER_SRC = `${env.apiBaseUrl}/v1/route-manager/get-no-pagination`;
 
 /** Sufixo de status de persistência no `name` do nó da árvore. */
 const sufixoDbId = (dbId: number | null | undefined): string =>
@@ -235,22 +236,24 @@ function managerSchema(
       {
         fields: [
           {
+            type: 'select',
             col: 6,
             label: 'api_get_endpoint',
-            name: 'api_get_endpoint',
-            maxLength: 255,
-            placeholder: '/api/v1/.../get-all',
+            src: ROUTE_MANAGER_SRC,
+            labelTemplate: '{method} - {object} - {action}',
+            valueKey: 'endpoint',
             value: m.apiGetEndpoint,
-            onChange: (e) => patch(tabela, { apiGetEndpoint: e.target.value }),
+            onChange: (value) => patch(tabela, { apiGetEndpoint: value }),
           },
           {
+            type: 'select',
             col: 6,
             label: 'api_search_endpoint',
-            name: 'api_search_endpoint',
-            maxLength: 255,
-            placeholder: '/api/v1/.../search',
+            src: ROUTE_MANAGER_SRC,
+            labelTemplate: '{method} - {object} - {action}',
+            valueKey: 'endpoint',
             value: m.apiSearchEndpoint,
-            onChange: (e) => patch(tabela, { apiSearchEndpoint: e.target.value }),
+            onChange: (value) => patch(tabela, { apiSearchEndpoint: value }),
           },
         ],
       },
@@ -596,26 +599,28 @@ function actionSchema(tabela: string, a: ActionLocal, patch: ActionPatch): FormG
         ? {
           fields: [
             {
+              type: 'select',
               col: 12,
               label: 'href_template — URL pra onde o link leva',
-              name: 'href_template',
-              maxLength: 255,
-              placeholder: 'ex.: /v1/user-manager/update/{id}  ({id}/{slug}... viram o valor real da linha)',
+              src: ROUTE_MANAGER_SRC,
+              labelTemplate: '{method} - {object} - {action}',
+              valueKey: 'endpoint',
               value: a.hrefTemplate,
-              onChange: (e) => patch(tabela, a.id, { hrefTemplate: e.target.value }),
+              onChange: (value) => patch(tabela, a.id, { hrefTemplate: value }),
             },
           ],
         }
         : {
           fields: [
             {
+              type: 'select',
               col: 8,
               label: 'api_endpoint — URL que é chamada direto',
-              name: 'api_endpoint',
-              maxLength: 255,
-              placeholder: 'ex.: /api/v1/user-manager/delete-soft/{id}',
+              src: ROUTE_MANAGER_SRC,
+              labelTemplate: '{method} - {object} - {action}',
+              valueKey: 'endpoint',
               value: a.apiEndpoint,
-              onChange: (e) => patch(tabela, a.id, { apiEndpoint: e.target.value }),
+              onChange: (value) => patch(tabela, a.id, { apiEndpoint: value }),
             },
             {
               type: 'select',

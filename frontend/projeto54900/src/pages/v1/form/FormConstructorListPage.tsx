@@ -208,7 +208,12 @@ export default function FormConstructorListPage() {
       {error && !defsLoading && <EmptyState title="Lista indisponivel" description={error} variant="danger" />}
 
       {!defsLoading && !error && !dataLoading && rows.length === 0 && (
-        <EmptyState title="Nenhum formulario" description="Crie o primeiro em 'Novo formulario'." />
+        <EmptyState
+          variant="warning"
+          eyebrow="Lista vazia"
+          title="Nenhum formulario"
+          description="Crie o primeiro em 'Novo formulario'."
+        />
       )}
 
       {!defsLoading && !error && (dataLoading || rows.length > 0) && (

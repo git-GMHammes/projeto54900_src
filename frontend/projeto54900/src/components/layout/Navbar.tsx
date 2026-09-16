@@ -30,7 +30,7 @@ const FALLBACK_NAV: NavItem[] = [
     end: false,
     children: [
       { to: paths.v1.form.list, label: 'Formularios', end: false },
-      { to: paths.v1.form.render('calendario'), label: 'Google Calendars', end: false },
+      { to: paths.v1.form.render('calendario'), label: 'Calendário', end: false },
     ],
   },
   { to: paths.v1.nav.list, label: 'Nav', end: false },

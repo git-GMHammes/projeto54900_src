@@ -1,184 +1,315 @@
-// Lista de configs de nav — api/v1/nav-manager/get-all
+// Lista de configs de nav (nav_manager) — index do modulo nav-manager.
 //
-// Tabela self-contained (nao usa o DataTable/Pagination compartilhados —
-// ambos estao stubados aguardando a fabrica de listas). Paginacao/ordenacao
-// via usePagination (URL e a fonte da verdade).
+// Fork de GetAllPage.tsx (user-manager), mesmo padrao de producao do motor
+// "Construtor de Listas" — list_manager/list_columns/list_actions -> ver
+// README_list_constructor.md: colunas e acoes NAO estao fixas no codigo, vem
+// da definicao gravada no banco (list_manager de slug 'nav', table_name =
+// nav_manager). Acoes executam de verdade (Link real / chamada HTTP real).
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { paths } from '@/routes/paths';
-import { navManagerTable } from '@/services/v1';
-import { useApi } from '@/hooks/useApi';
-import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
-import { normalizeList } from '@/utils/apiResult';
-import { formatDateTime, toText } from '@/utils/format';
-import type { ApiRow } from '@/types/api';
 
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
-import ConfirmModal from '@/components/global/ConfirmModal';
+import { http, ApiError } from '@/services/http';
+import { listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import { normalizeList } from '@/utils/apiResult';
+import { resolveEndpoint } from '@/utils/formSubmit';
+import { usePagination } from '@/hooks/usePagination';
+import { useToast } from '@/hooks/useToast';
+import { paginationWindow } from '@/utils/pagination';
+import { paths } from '@/routes/paths';
+import type { QueryParams } from '@/types/api';
+import {
+  str,
+  toManager,
+  toColumn,
+  toAction,
+  renderCell,
+  evalBusinessRule,
+  resolveHrefTemplate,
+} from '@/utils/listConstructor';
+import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
 
-const STATUS_BADGE: Record<string, string> = {
-  active: 'text-bg-success',
-  draft: 'text-bg-secondary',
-  inactive: 'text-bg-danger',
-};
+const MANAGER_SLUG = 'nav';
 
-function StatusBadge({ status }: { status: unknown }) {
-  const s = toText(status, '');
-  return <span className={`badge ${STATUS_BADGE[s] ?? 'text-bg-secondary'}`}>{s || '-'}</span>;
-}
+// -----------------------------------------------------------------------------
+// Botao de acao — link real (react-router) ou chamada HTTP real (api_call)
+// -----------------------------------------------------------------------------
 
-function SortableHeader({
-  column,
-  label,
-  sort,
-  order,
-  onToggle,
+function ActionButton({
+  action,
+  row,
+  disabled,
+  onExecuted,
 }: {
-  column: string;
-  label: string;
-  sort: string;
-  order: string;
-  onToggle: (column: string) => void;
+  action: ListActionRow;
+  row: Record<string, unknown>;
+  disabled: boolean;
+  onExecuted: () => void;
 }) {
-  const active = sort === column;
+  const toast = useToast();
+
+  if (action.actionType === 'link') {
+    const href = resolveHrefTemplate(action.hrefTemplate, row);
+    return (
+      <Link
+        className={`btn btn-sm btn-outline-primary ms-2${disabled ? ' disabled' : ''}`}
+        to={href}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : undefined}
+        onClick={(e) => {
+          if (disabled) e.preventDefault();
+        }}
+      >
+        {action.label}
+      </Link>
+    );
+  }
+
+  const execute = async () => {
+    if (action.confirm && !window.confirm(action.confirmMessage || `Confirma ${action.label}?`)) {
+      return;
+    }
+    try {
+      const path = resolveEndpoint(resolveHrefTemplate(action.apiEndpoint, row));
+      const method = action.httpMethod.toUpperCase();
+      if (method === 'DELETE') await http.delete(path);
+      else if (method === 'PUT') await http.put(path);
+      else if (method === 'PATCH') await http.patch(path);
+      else if (method === 'POST') await http.post(path);
+      else await http.get(path);
+      onExecuted();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+    }
+  };
+
   return (
-    <th
-      role="button"
-      className="user-select-none"
-      onClick={() => onToggle(column)}
-      aria-sort={active ? (order === 'ASC' ? 'ascending' : 'descending') : 'none'}
+    <button
+      type="button"
+      className="btn btn-sm btn-outline-danger ms-2"
+      disabled={disabled}
+      onClick={() => void execute()}
     >
-      {label} {active && <span aria-hidden="true">{order === 'ASC' ? '▲' : '▼'}</span>}
-    </th>
+      {action.label}
+    </button>
   );
 }
+
+// -----------------------------------------------------------------------------
+// Pagina
+// -----------------------------------------------------------------------------
 
 export default function GetAllPage() {
   const navigate = useNavigate();
-  const toast = useToast();
-  const { params, setPage, toggleSort } = usePagination();
-  const [pendingDelete, setPendingDelete] = useState<ApiRow | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const { params, setPage, setLimit, toggleSort } = usePagination();
 
-  const { data, error, loading, run } = useApi((signal) =>
-    navManagerTable.getAll({ ...params }, { signal }),
-  );
+  const [manager, setManager] = useState<ListManagerRow | null>(null);
+  const [columns, setColumns] = useState<ListColumnRow[]>([]);
+  const [actions, setActions] = useState<ListActionRow[]>([]);
+  const [defsLoading, setDefsLoading] = useState(true);
+  const [defsError, setDefsError] = useState<string | null>(null);
+
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [total, setTotal] = useState(0);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / params.limit)), [total, params.limit]);
+
+  // 1) Carrega a definicao (list_manager + list_columns + list_actions) do slug nav.
+  const loadDefinition = useCallback(async () => {
+    setDefsLoading(true);
+    setDefsError(null);
+    try {
+      const raw = await listManagerTable.getNoPagination({ sort: 'id', order: 'ASC' });
+      const { rows: managerRows } = normalizeList<Record<string, unknown>>(raw);
+      const found = managerRows.map(toManager).find((m) => m.slug === MANAGER_SLUG) ?? null;
+
+      if (!found) {
+        setManager(null);
+        setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
+        return;
+      }
+      setManager(found);
+
+      const [colsRaw, actsRaw] = await Promise.all([
+        listColumnsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
+        listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
+      ]);
+      setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
+      setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
+    } catch (err) {
+      setManager(null);
+      setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
+    } finally {
+      setDefsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    void run();
-  }, [run, params.page, params.limit, params.sort, params.order]);
+    void loadDefinition();
+  }, [loadDefinition]);
 
-  const { rows, total, limit } = normalizeList(data);
-  const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;
-
-  async function confirmDelete(): Promise<void> {
-    if (!pendingDelete) return;
-    setDeleting(true);
+  // 2) Busca os dados reais (paginacao/sort da URL).
+  const loadData = useCallback(async () => {
+    if (!manager?.apiGetEndpoint) return;
+    setDataLoading(true);
+    setDataError(null);
     try {
-      await navManagerTable.deleteSoft(pendingDelete.id as string | number);
-      const label = pendingDelete.title ? toText(pendingDelete.title) : toText(pendingDelete.id);
-      toast.success(`Nav "${label}" excluido.`);
-      setPendingDelete(null);
-      void run();
+      const path = resolveEndpoint(manager.apiGetEndpoint);
+      const raw = await http.get(path, { params: params as unknown as QueryParams });
+      const { rows: list, total: t } = normalizeList<Record<string, unknown>>(raw);
+      setRows(list);
+      setTotal(t);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao excluir o nav.');
+      setRows([]);
+      setTotal(0);
+      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os navs.');
     } finally {
-      setDeleting(false);
+      setDataLoading(false);
     }
-  }
+  }, [manager, params]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  const error = defsError ?? dataError;
 
   return (
     <>
-      <PageHeader title="Nav" subtitle="api/v1/nav-manager">
+      <PageHeader title={manager?.title || 'Nav'} subtitle={manager?.apiGetEndpoint || 'api/v1/nav-manager'}>
+        <button className="btn btn-outline-secondary me-2" onClick={() => void loadData()} disabled={dataLoading}>
+          Recarregar
+        </button>
         <button className="btn btn-primary" onClick={() => void navigate(paths.v1.nav.create)}>
           Novo nav
         </button>
       </PageHeader>
 
-      {loading && <LoadingOverlay />}
+      {defsLoading && <LoadingOverlay />}
 
-      {!loading && error && (
-        <EmptyState variant="danger" title="Falha ao carregar" description={error.message}>
-          <button className="btn btn-outline-danger btn-sm" onClick={() => void run()}>
-            Tentar novamente
-          </button>
-        </EmptyState>
+      {error && !defsLoading && <EmptyState title="Lista indisponivel" description={error} variant="danger" />}
+
+      {!defsLoading && !error && !dataLoading && rows.length === 0 && (
+        <EmptyState
+          variant="warning"
+          eyebrow="Lista vazia"
+          title="Nenhum nav cadastrado"
+          description="Crie o primeiro nav para comecar."
+        />
       )}
 
-      {!loading && !error && rows.length === 0 && (
-        <EmptyState title="Nenhum nav cadastrado" description="Crie o primeiro nav para comecar." />
-      )}
+      {!defsLoading && !error && (dataLoading || rows.length > 0) && (
+        <div className="card border-0 shadow-sm position-relative">
+          {dataLoading && <LoadingOverlay overlay />}
 
-      {!loading && !error && rows.length > 0 && (
-        <>
           <div className="table-responsive">
-            <table className="table table-hover align-middle">
+            <table className="table table-hover align-middle mb-0">
               <thead>
                 <tr>
-                  <SortableHeader column="id" label="ID" sort={params.sort} order={params.order} onToggle={toggleSort} />
-                  <SortableHeader column="title" label="Titulo" sort={params.sort} order={params.order} onToggle={toggleSort} />
-                  <SortableHeader column="status" label="Status" sort={params.sort} order={params.order} onToggle={toggleSort} />
-                  <th>Versao</th>
-                  <SortableHeader column="created_at" label="Criado em" sort={params.sort} order={params.order} onToggle={toggleSort} />
-                  <th className="text-end">Acoes</th>
+                  {columns.map((c) => (
+                    <th
+                      key={c.id}
+                      role={c.sortable ? 'button' : undefined}
+                      onClick={c.sortable ? () => toggleSort(c.sortKey) : undefined}
+                      className={c.sortable ? 'user-select-none' : undefined}
+                    >
+                      {c.label}
+                      {c.sortable && params.sort === c.sortKey && (
+                        <span className="ms-1">{params.order === 'ASC' ? '▲' : '▼'}</span>
+                      )}
+                    </th>
+                  ))}
+                  {actions.length > 0 && <th className="text-end">Acoes</th>}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={toText(row.id)}>
-                    <td>{toText(row.id)}</td>
-                    <td>{toText(row.title)}</td>
-                    <td><StatusBadge status={row.status} /></td>
-                    <td>{toText(row.system_version)}</td>
-                    <td>{formatDateTime(row.created_at)}</td>
-                    <td className="text-end">
-                      <div className="btn-group btn-group-sm">
-                        <Link className="btn btn-outline-secondary" to={paths.v1.nav.view(row.id as string | number)}>
-                          Ver
-                        </Link>
-                        <Link className="btn btn-outline-primary" to={paths.v1.menu.listByNav(row.id as string | number)}>
-                          Itens
-                        </Link>
-                        <button className="btn btn-outline-danger" onClick={() => setPendingDelete(row)}>
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
+                {rows.map((row, i) => (
+                  <tr key={str(row.id) || i}>
+                    {columns.map((c) => (
+                      <td key={c.id}>{renderCell(c, row)}</td>
+                    ))}
+                    {actions.length > 0 && (
+                      <td className="text-end text-nowrap">
+                        {actions.map((a) => (
+                          <ActionButton
+                            key={a.id}
+                            action={a}
+                            row={row}
+                            disabled={!evalBusinessRule(a.businessRule, row)}
+                            onExecuted={() => void loadData()}
+                          />
+                        ))}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {totalPages > 1 && (
-            <nav className="d-flex justify-content-center">
-              <ul className="pagination">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <li key={p} className={`page-item ${p === params.page ? 'active' : ''}`}>
-                    <button className="page-link" onClick={() => setPage(p)}>
-                      {p}
-                    </button>
-                  </li>
+          <div className="card-footer bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 small text-body-secondary">
+              <span>{total} registro(s) · Por pagina</span>
+              <select
+                className="form-select form-select-sm w-auto"
+                value={params.limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+              >
+                {(manager?.limitOptions.length ? manager.limitOptions : [10, 20, 50, 100]).map((n) => (
+                  <option key={n} value={n}>{n}</option>
                 ))}
+              </select>
+            </div>
+            <nav aria-label="Paginação">
+              <ul className="pagination pagination-sm mb-0">
+                <li className={`page-item${params.page <= 1 ? ' disabled' : ''}`}>
+                  <button
+                    type="button"
+                    className="page-link"
+                    disabled={params.page <= 1}
+                    onClick={() => setPage(params.page - 1)}
+                  >
+                    Anterior
+                  </button>
+                </li>
+                {paginationWindow(params.page, totalPages).map((tok, i) =>
+                  tok === '...' ? (
+                    <li key={`ellipsis-${i}`} className="page-item disabled">
+                      <span className="page-link">…</span>
+                    </li>
+                  ) : (
+                    <li key={tok} className={`page-item${tok === params.page ? ' active' : ''}`}>
+                      <button
+                        type="button"
+                        className="page-link"
+                        aria-current={tok === params.page ? 'page' : undefined}
+                        onClick={() => setPage(tok)}
+                      >
+                        {tok}
+                      </button>
+                    </li>
+                  ),
+                )}
+                <li className={`page-item${params.page >= totalPages ? ' disabled' : ''}`}>
+                  <button
+                    type="button"
+                    className="page-link"
+                    disabled={params.page >= totalPages}
+                    onClick={() => setPage(params.page + 1)}
+                  >
+                    Próxima
+                  </button>
+                </li>
               </ul>
             </nav>
-          )}
-        </>
+          </div>
+        </div>
       )}
-
-      <ConfirmModal
-        open={pendingDelete !== null}
-        title="Excluir nav"
-        message={`Tem certeza que deseja excluir o nav "${toText(pendingDelete?.title, '')}"? (exclusao reversivel — os itens de menu vinculados nao sao afetados)`}
-        busy={deleting}
-        onConfirm={() => void confirmDelete()}
-        onClose={() => setPendingDelete(null)}
-      />
     </>
   );
 }

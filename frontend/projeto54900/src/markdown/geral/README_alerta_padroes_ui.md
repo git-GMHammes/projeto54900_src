@@ -50,6 +50,12 @@ inventar um padrão novo sozinho.
    → Não é permissão para hardcodar. É sinal de que falta uma decisão — ver
    caso aberto abaixo.
 
+7. **É um modal?**
+   → Sempre `modal-dialog-centered` (centralizado no meio da página, nunca
+   colado no topo), controlado por estado React (`open` via `useState`), nunca
+   `data-bs-toggle`/instância JS do Bootstrap. Ver
+   [`README_modal.md`](README_modal.md).
+
 ## Decisão: onde mora o estado de sessão (Entrar/Sair) na navbar
 
 Login/logout não é conteúdo navegável (não tem `href` fixo, muda com quem
