@@ -516,3 +516,14 @@ Fonte: `Config/Routes/Api/v1/Meta/RouteManager/EndpointTable.php` — catálogo 
 | DELETE | `/route-manager/delete-hard/{id}`          | `Api\V1\Meta\RouteManager\ResourceTableController::deleteHard/$1`        |
 | DELETE | `/route-manager/clear-deleted`             | `Api\V1\Meta\RouteManager\ResourceTableController::clearDeleted`         |
 | DELETE | `/route-manager/clear-deleted/{id}`        | `Api\V1\Meta\RouteManager\ResourceTableController::clearDeleted/$1`      |
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

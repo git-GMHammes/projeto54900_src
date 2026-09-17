@@ -84,3 +84,14 @@ registra os `path` — sempre via `paths.ts`, nunca string solta nas páginas qu
 navegam (`Link to={paths.v1.user.create}`, não `Link to="/v1/user-manager/create"`).
 
 [`README.md`](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

@@ -318,3 +318,14 @@ para a convenção de pastas por trás dessas rotas.
 ### `geral/modulos/calendar/`
 
 - [`README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo calendário: estado atual (só visualização), contrato do backend (6 recursos, 108 rotas) e roadmap.
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
