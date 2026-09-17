@@ -49,10 +49,10 @@
  *   independente (um por card de tabela) e o "Expandir tudo" age só no seu.
  *
  * CICLO DE VIDA (a parte mais fácil de quebrar):
- *   1. Montagem inicial: cada nó chama `register` → entra em `ids` e nasce
+ *   1. Montagem inicial: cada nó chama `register` -> entra em `ids` e nasce
  *      ABERTO (a primeira impressão é a estrutura visível).
  *   2. O `ready` (timer de 80 ms) fecha a janela de "carga inicial": depois
- *      disso, todo `register` é NÓ NOVO → abre a si + toda a cadeia de
+ *      disso, todo `register` é NÓ NOVO -> abre a si + toda a cadeia de
  *      `parents`, rola até a linha e pisca (`tree-flash`).
  *   3. Fechar um nó NÃO desmonta os filhos (`.d-none`): o registro roda UMA vez
  *      por nó; reabrir não re-registra nem re-anima.
@@ -69,15 +69,15 @@
  * CONSUMIDORES:
  *   - `src/pages/v1/form/FormBuilderPage.tsx` (Bloco 12): 1 <FormTree> por card
  *     de tabela, com 4 níveis de <TreeNode> aninhados; é de lá que vêm os
- *     textos "Sem grupos —…/Sem linhas —…/Sem campos —…" (via `children`) e o
- *     sufixo ` · #id`/` · não salvo` do `name`.
+ *     textos "Sem grupos .../Sem linhas .../Sem campos ..." (via `children`) e o
+ *     sufixo `#id`/`não salvo` (com um separador antes) do `name`.
  *   - `src/pages/v1/list/ListBuilderTree.tsx` é um FORK deste arquivo
- *     (`<ListTree>`/`<ListTreeNode>`, 3 níveis: manager → column/action).
+ *     (`<ListTree>`/`<ListTreeNode>`, 3 níveis: manager -> column/action).
  *     Correção feita aqui deve ser avaliada lá também — o corpo é o mesmo.
  *   - Documentação do conjunto: `src/markdown/geral/README_form_builder.md`,
  *     seção "Padrão reutilizável — árvore de hierarquia + formulário em modal".
  *
- * COMO REAPROVEITAR EM OUTRA TELA (árvore pai→filho com modal por nó):
+ * COMO REAPROVEITAR EM OUTRA TELA (árvore pai->filho com modal por nó):
  *   1. Copie este arquivo (ou faça um fork como o da lista) e troque só o
  *      `TreeLevel`, o mapa `LEVEL` (ícones/rótulos) e o critério de `canExpand`.
  *   2. Na página, monte `<FormTree>` UMA vez e aninhe os `<TreeNode>` por
@@ -97,7 +97,7 @@
  *      ser desmontados, o passo 3 do ciclo de vida deixa de valer.
  *   3. Trocar o `id` de um nó já montado (ex.: renomear uma coluna em
  *      `field:{linhaId}:{coluna}`) dispara unregister+register com
- *      `ready.current === true` → o nó é tratado como NOVO (abre pais e pisca)
+ *      `ready.current === true` -> o nó é tratado como NOVO (abre pais e pisca)
  *      mesmo não tendo sido criado agora.
  *   4. As ações são IRMÃS da área de toggle (não filhas): por isso clicar em
  *      Editar/Adicionar/Remover não expande/recolhe a linha. Se algum botão for movido para
@@ -146,7 +146,7 @@ import {
  *   detectar "não tem provider" com `!ctx`.
  *
  * COMO REAPROVEITAR: copie o trio sem mudar nada — ele é genérico de qualquer
- *   árvore pai→filho. Ao acrescentar um comportamento novo por nó (ex.: "abrir
+ *   árvore pai->filho. Ao acrescentar um comportamento novo por nó (ex.: "abrir
  *   só um ramo por vez"), o lugar é aqui + no `useMemo` do BLOCO 2.
  * -------------------------------------------------------------------------
  */
@@ -224,7 +224,7 @@ function useTree(): TreeCtx {
  *   tem o PRÓPRIO estado de expansão (um provider por árvore) e o "Expandir
  *   tudo" afeta só aquele card.
  *
- * COMO REAPROVEITAR: copie sem alteração para qualquer árvore pai→filho — o que
+ * COMO REAPROVEITAR: copie sem alteração para qualquer árvore pai->filho — o que
  *   muda é só o lado do <TreeNode> (níveis, ícones, ações).
  * -------------------------------------------------------------------------
  */
@@ -365,7 +365,7 @@ export function FormTree({ children }: { children: ReactNode }) {
  *   Fecha o contrato do nó ANTES de qualquer lógica:
  *     `TreeLevel`     — união dos níveis possíveis (o compilador barra um
  *                       `level="fields"` digitado errado);
- *     `LEVEL`         — mapa nível → `icon` (Bootstrap Icons) e `kind` (rótulo
+ *     `LEVEL`         — mapa nível -> `icon` (Bootstrap Icons) e `kind` (rótulo
  *                       em snake_case exibido na linha, espelhando o nome da
  *                       tabela do banco);
  *     `TreeNodeProps` — tudo o que a página pode passar.
@@ -373,7 +373,7 @@ export function FormTree({ children }: { children: ReactNode }) {
  * POR QUE `kind` É SEPARADO DE `name`:
  *   `kind` vem do NÍVEL (fixo: `form_manager`, `form_groups`...) e `name` vem da
  *   INSTÂNCIA (título do grupo, nota da linha, nome da coluna). A linha mostra
- *   os dois: `form_groups · Financeiro  (3)`.
+ *   os dois: `form_groups` com o nome da instância e a contagem de filhos (3).
  *
  * O QUE MUDA DE UM NÍVEL PARA OUTRO (e só isso):
  *   - `icon`/`kind` no mapa `LEVEL`;
@@ -406,8 +406,8 @@ const LEVEL: Record<TreeLevel, { icon: string; kind: string }> = {
 
 /**
  * Contrato do nó. Todas as props de AÇÃO são opcionais DE PROPÓSITO: a ausência
- * da prop é o que esconde o botão correspondente (`onEdit` → Editar, `onAdd` →
- * Adicionar, `onRemove` → Remover).
+ * da prop é o que esconde o botão correspondente (`onEdit` -> Editar, `onAdd` ->
+ * Adicionar, `onRemove` -> Remover).
  */
 interface TreeNodeProps {
   // -- Identidade / estrutura ---------------------------------------------
@@ -425,12 +425,12 @@ interface TreeNodeProps {
   count?: number;
 
   // -- Ações (sem a prop, o botão não é renderizado) ----------------------
-  /** Texto do botão [+] (nome da tabela-filha). Sem `onAdd` → sem botão. */
+  /** Texto do botão Adicionar (nome da tabela-filha). Sem `onAdd`, não há botão. */
   addLabel?: string;
   onAdd?: () => void;
-  /** Desabilita o [+] enquanto o nível acima não estiver persistido. */
+  /** Desabilita o botão Adicionar enquanto o nível acima não estiver persistido. */
   addDisabled?: boolean;
-  /** Abre o formulário do nó no modal. Sem `onEdit` → sem botão. */
+  /** Abre o formulário do nó no modal. Sem `onEdit`, não há botão. */
   onEdit?: () => void;
   onRemove?: () => void;
 
@@ -452,8 +452,8 @@ interface TreeNodeProps {
  *   que dá identidade ao container de filhos para o `aria-controls`.
  *
  * COMO O NÓ ENTRA E SAI DA ÁRVORE:
- *   Mount → `register(id, parents)`: entra em `ids`, nasce ABERTO e, se for nó
- *   novo, abre a cadeia de pais e ganha o destaque. Unmount →
+ *   Mount -> `register(id, parents)`: entra em `ids`, nasce ABERTO e, se for nó
+ *   novo, abre a cadeia de pais e ganha o destaque. Unmount ->
  *   `unregister(id)`. Como fechar NÃO desmonta os filhos (`.d-none`), esse
  *   efeito roda UMA vez por nó — não a cada expandir/recolher.
  *
@@ -567,7 +567,7 @@ export function TreeNode(props: TreeNodeProps) {
  *
  * O QUE FAZ: desenha a linha em TRÊS faixas, nesta ordem:
  *   1. `.tree-toggle` — área clicável: chevron, ícone e rótulo do nível,
- *      `· {name}` e a pill de `count`. É ela que recebe o `onClick` e o teclado
+ *      o `{name}` e a pill de `count`. É ela que recebe o `onClick` e o teclado
  *      (por isso `role`/`tabIndex`/`aria-*` só existem quando o nível expande).
  *   2. Ações — botão Editar (`onEdit`), botão Adicionar `{addLabel}` (`onAdd`,
  *      com `addDisabled` e `title` explicando o gate) e botão Remover
@@ -580,12 +580,12 @@ export function TreeNode(props: TreeNodeProps) {
  *
  * POR QUE ASSIM: a linha é só ESTRUTURA; o conteúdo do nó (o formulário) abre no
  *   MODAL pela prop `onEdit` — colapsar um nó cheio de campos não organiza nada.
- *   Os textos de árvore vazia ("Sem grupos —…") chegam pela PÁGINA, em
+ *   Os textos de árvore vazia ("Sem grupos ...") chegam pela PÁGINA, em
  *   `children`, porque cada nível tem uma instrução diferente.
  *
  * COMO REAPROVEITAR: para mudar o visual de um nível, mexa no `LEVEL` (BLOCO 3)
  *   em vez de criar `if (level === ...)` no JSX; para uma ação nova, siga sempre
- *   o par prop opcional → botão renderizado só quando presente.
+ *   o par prop opcional -> botão renderizado só quando presente.
  * -------------------------------------------------------------------------
  */
   return (

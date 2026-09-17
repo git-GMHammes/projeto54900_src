@@ -1,3 +1,25 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/processo/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'processo'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> com
+ *     os 20 digitos puros do numero unico CNJ (NNNNNNN+DD+AAAA+J+TT+OOOO)
+ *   - A chave no FormData/payload e: field.name
+ *   - O <input> visivel so exibe a mascara (0000000-00.0000.0.00.0000)
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

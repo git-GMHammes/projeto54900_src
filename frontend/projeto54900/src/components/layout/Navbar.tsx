@@ -1,5 +1,28 @@
-// Barra de navegacao principal. Links via NavLink (marca .active automaticamente).
-// Item com children vira dropdown Bootstrap nativo (data-bs-toggle, sem JS proprio).
+/**
+ * =========================================================================
+ * FILE HEADER — components/layout/Navbar.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: barra de navegacao principal. Links via NavLink (marca
+ * `.active` automaticamente conforme a rota atual). Item com `children`
+ * vira dropdown Bootstrap nativo (`data-bs-toggle`, sem JS proprio). O menu
+ * e DINAMICO: hooks/useSiteMenu.ts busca o nav-manager ativo e sua arvore
+ * de menu-manager; em erro ou lista vazia, cai no FALLBACK_NAV estatico
+ * abaixo (que espelha a arvore semeada pelo MenuManagerSeeder).
+ *
+ * DEPENDENCIAS: routes/paths (todas as URLs, nunca string solta),
+ * context/AppConfigContext (appName/apiVersion exibidos na marca) e
+ * hooks/useSiteMenu (arvore dinamica de navegacao).
+ * CONSUMIDORES: layouts/RootLayout.tsx (montado uma vez, em toda pagina que
+ * usa o layout raiz).
+ *
+ * COMO REAPROVEITAR AO ADICIONAR UM LINK: se o item deve aparecer sempre
+ * (mesmo com menu-manager fora do ar), acrescentar em FALLBACK_NAV; para
+ * aparecer via banco, cadastrar a linha em menu_manager (ligada a um
+ * nav_manager ativo) — nao editar so o fallback esperando que reflita no
+ * menu real.
+ * -------------------------------------------------------------------------
+ */
 
 import { NavLink } from 'react-router-dom';
 import { paths } from '@/routes/paths';

@@ -1,3 +1,29 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/senha/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'senha'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, minLength/maxLength, strongPassword, noSpecialChars/
+ *     noNumbers/noLetters, doubleField (campo de confirmacao)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: o proprio <input type="password" name={field.name}>
+ *     (sem hidden — nao ha mascara, o valor exibido/oculto e o mesmo do submit)
+ *   - Com doubleField, existe um 2o input de confirmacao com
+ *     name={`${field.name}_confirm`} — usado so para validar igualdade
+ *     (setCustomValidity), nao precisa ser lido no payload
+ *   - A chave no FormData/payload e: field.name
+ *
+ * DEPENDENCIAS: nenhuma (nao usa ../emitValue — sem mascara).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import type {
   ChangeEvent,

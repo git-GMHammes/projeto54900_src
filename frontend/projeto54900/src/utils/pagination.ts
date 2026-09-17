@@ -1,11 +1,29 @@
-// Janela de números de página pro footer padrão de listagens (Bootstrap
-// .pagination/.page-item/.page-link, com a página atual destacada). Puro,
-// sem estado React — cada página usa seu próprio JSX (paginação é chrome da
-// página, não do motor list_manager, ver README_render_via_list_constructor.md),
-// só a matemática da janela é compartilhada pra não duplicar esse cálculo.
-//
-//   const totalPages = Math.max(1, Math.ceil(total / params.limit));
-//   paginationWindow(params.page, totalPages) // -> [1, '...', 4, 5, 6, '...', 12]
+/**
+ * =========================================================================
+ * FILE HEADER — utils/pagination.ts
+ * =========================================================================
+ *
+ * PROPOSITO: janela de numeros de pagina pro footer padrao de listagens
+ * (Bootstrap .pagination/.page-item/.page-link, com a pagina atual
+ * destacada). Puro, sem estado React — cada pagina usa seu proprio JSX
+ * (paginacao e chrome da pagina, nao do motor list_manager, ver
+ * README_render_via_list_constructor.md), so a matematica da janela e
+ * compartilhada pra nao duplicar esse calculo.
+ *
+ *   const totalPages = Math.max(1, Math.ceil(total / params.limit));
+ *   paginationWindow(params.page, totalPages) // -> [1, '...', 4, 5, 6, '...', 12]
+ *
+ * DEPENDENCIAS: nenhuma (arquivo autocontido).
+ * CONSUMIDORES: toda pagina com footer de paginacao — as GetAllPage de
+ * user-manager/menu/nav/upload, ListConstructorPage, ListBuilderPage e
+ * FormConstructorListPage.
+ *
+ * COMO REAPROVEITAR EM OUTRA LISTAGEM: calcular totalPages a partir do
+ * total/limit retornados por normalizeList() e passar (page, totalPages)
+ * para paginationWindow(); renderizar cada PageToken (numero -> <button>,
+ * '...' -> reticencia nao clicavel).
+ * -------------------------------------------------------------------------
+ */
 
 export type PageToken = number | '...';
 

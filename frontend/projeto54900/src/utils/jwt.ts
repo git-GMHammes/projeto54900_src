@@ -1,10 +1,28 @@
-// Decodificacao de JWT — funcao global usada pelo apiDebugLog para exibir o
-// conteudo (header + payload/claims) de qualquer access_token capturado.
-//
-// So decodifica header e payload (base64url + JSON.parse). A terceira parte
-// do JWT (assinatura) nao e decodificavel — e um hash, nao carrega campos —
-// por isso nao ha verificacao criptografica aqui. Uso exclusivo de debug,
-// nunca para fins de autorizacao.
+/**
+ * =========================================================================
+ * FILE HEADER — utils/jwt.ts
+ * =========================================================================
+ *
+ * PROPOSITO: decodificacao de JWT (sem verificacao de assinatura) e busca
+ * recursiva de access_token em qualquer envelope de resposta. So decodifica
+ * header e payload (base64url + JSON.parse); a terceira parte do JWT
+ * (assinatura) e um hash, nao carrega campos e nao e decodificavel — por
+ * isso nao ha verificacao criptografica aqui. USO EXCLUSIVO DE DEBUG, nunca
+ * para fins de autorizacao (a validacao real do token e responsabilidade do
+ * backend).
+ *
+ * DEPENDENCIAS: nenhuma (arquivo autocontido; usa atob/decodeURIComponent
+ * nativos do browser).
+ * CONSUMIDORES: services/apiDebugLog.ts (unico consumidor) — usa
+ * findAccessToken() para localizar o token em qualquer resposta de login/
+ * refresh e decodeJwt() para exibir header+claims no console de debug.
+ *
+ * COMO REAPROVEITAR: nao reaproveitar para logica de autorizacao — se um
+ * dia for preciso VALIDAR um token no front (expiracao, claims), criar um
+ * modulo separado que deixe essa responsabilidade explicita, sem reusar
+ * este arquivo de debug.
+ * -------------------------------------------------------------------------
+ */
 
 export interface DecodedJwt {
   header: Record<string, unknown>;
@@ -21,6 +39,11 @@ function base64UrlDecode(segment: string): string {
   );
 }
 
+/**
+ * Decodifica header e payload de um JWT (sem checar assinatura).
+ * @param token JWT completo ("header.payload.assinatura")
+ * @returns { header, payload } ou null se o token estiver malformado
+ */
 export function decodeJwt(token: string): DecodedJwt | null {
   const [headerPart, payloadPart] = token.split('.');
   if (!headerPart || !payloadPart) return null;

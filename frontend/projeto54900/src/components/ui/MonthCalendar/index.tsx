@@ -1,15 +1,32 @@
-// Grade de um mes: cabecalho (mes/ano), linha de dias da semana responsiva
-// (1 letra no celular, abreviado no tablet, nome completo no desktop) e os
-// dias em CSS Grid de 7 colunas. Sem lib de calendario — so Date/Intl nativos.
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/MonthCalendar/index.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: grade de um mes — cabecalho (mes/ano), linha de dias da semana
+ * responsiva (1 letra no celular, abreviado no tablet, nome completo no
+ * desktop) e os dias em CSS Grid de 7 colunas. Sem lib de calendario — so
+ * Date/Intl nativos do browser.
+ *
+ * DEPENDENCIAS: nenhuma (so Date/Intl nativos).
+ * CONSUMIDORES: components/ui/YearCalendar/index.tsx (12 instancias, uma por
+ * mes, em tamanho compacto).
+ *
+ * COMO REAPROVEITAR: passar `year`/`month` (0-11, como Date nativo);
+ * `size="sm"` para versao compacta (usada no YearCalendar).
+ * -------------------------------------------------------------------------
+ */
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
+/** Nome do dia da semana em pt-BR no formato pedido, a partir de uma data-base fixa (2024-01-07 = domingo). */
 function weekdayLabel(weekday: number, format: 'narrow' | 'short' | 'long'): string {
   // Ano/mes fixos: so serve de base para achar o dia da semana informado.
   const base = new Date(2024, 0, 7 + weekday); // 2024-01-07 = domingo
   return new Intl.DateTimeFormat('pt-BR', { weekday: format }).format(base);
 }
 
+/** Monta as celulas do mes (null = dia vazio de preenchimento), completando a ultima semana ate multiplo de 7. */
 function buildDays(year: number, month: number): (number | null)[] {
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();

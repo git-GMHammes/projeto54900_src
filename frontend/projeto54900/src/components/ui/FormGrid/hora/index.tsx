@@ -1,3 +1,25 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/hora/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'hora'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, comSegundos (HH:MM vs HH:MM:SS)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> em
+ *     "HH:MM" ou "HH:MM:SS" quando completo, vazio enquanto incompleto
+ *   - A chave no FormData/payload e: field.name
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,
