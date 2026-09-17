@@ -185,3 +185,14 @@ que espelha a árvore semeada pelo `MenuManagerSeeder`.
 > navbar (nem dinâmico, nem `FALLBACK_NAV`) — acesso só por URL direta.
 
 [`README.md`](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

@@ -1,61 +1,317 @@
-# CodeIgniter 4 Framework
+# projeto54900
 
-## What is CodeIgniter?
+API REST (CodeIgniter 4 / PHP 8.2) + frontend React, pensado para crescer como
+um **multitool de produtividade estilo Office**: um único usuário, uma única
+API, vários módulos de domínio (formulários, listagens, calendário, upload,
+e os módulos futuros de mapas, documentos e mensageria) todos seguindo o
+**mesmo padrão de módulo** — o que faz um módulo novo custar horas, não dias.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+> Base de conhecimento completa (mais profunda que este README):
+> [`app/markdown/README.md`](app/markdown/README.md) (backend) e
+> [`frontend/projeto54900/src/markdown/README.md`](frontend/projeto54900/src/markdown/README.md) (frontend).
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Sumário
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+- [Backend](#backend)
+- [Frontend](#frontend)
+- [Projeto futuro — multitool de Office](#projeto-futuro--multitool-de-office)
+- [Tecnologias envolvidas](#tecnologias-envolvidas)
+- [⚠️ Alerta — ambiente e DevOps não commitados](#️-alerta--ambiente-e-devops-não-commitados)
+- [DevOps — detalhamento dos arquivos](#devops--detalhamento-dos-arquivos)
 
-## Important Change with index.php
+---
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## Backend
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+`app/` — CodeIgniter 4, PHP 8.2. Estrutura por camada, cada uma com o próprio
+namespace PSR-4 espelhando o caminho de pastas:
 
-**Please** read the user guide for a better explanation of how CI4 works!
+```
+App\Controllers\Api\V1\<Domínio>\<Módulo>   → app/Controllers/Api/V1/<Domínio>/<Módulo>/
+App\Requests\V1\<Domínio>\<Módulo>          → app/Requests/V1/<Domínio>/<Módulo>/
+App\Services\V1\<Domínio>\<Módulo>          → app/Services/V1/<Domínio>/<Módulo>/
+App\Models\V1\<Domínio>\<Módulo>            → app/Models/V1/<Domínio>/<Módulo>/
+```
 
-## Repository Management
+### As bases reaproveitáveis
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+Cada módulo é fino — não reimplementa nada — porque toda a lógica genérica
+mora em 6 classes base, herdadas por todos os módulos:
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+| Classe base                                      | Fornece                                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `Controllers\Api\V1\BaseResourceTableController` | 18 endpoints (leitura + escrita + soft/hard delete) + helpers `respondSuccess/Created/Paginated/NotFound/…` |
+| `Controllers\Api\V1\BaseResourceViewController`  | estende a anterior; 10 endpoints de leitura sobre uma `view` (view nunca tem create/update/delete)          |
+| `Services\V1\BaseViewService`                    | sanitização, formatação de data, paginação, leitura genérica de view                                        |
+| `Services\V1\BaseTableService`                   | estende o anterior; Template Method `create()`/`update()`, soft-delete completo                             |
+| `Models\V1\BaseTableModel`                       | `findPaginated`, `searchByTerm`, `safeSort`/`safeOrder` (whitelist anti-SQL-injection), `hideFields`        |
+| `Models\V1\BaseViewModel`                        | leitura de view (`findById`, `findDeletedById`, etc.)                                                       |
 
-## Contributing
+Um módulo novo só **declara configuração** (nome da tabela, campos ocultos,
+regras de validação) e **sobrescreve hooks** de negócio
+(`validateOnCreate`, `prepareData`, …) — nunca reescreve CRUD, paginação ou
+soft-delete.
 
-We welcome contributions from the community.
+### O "MVC turbinado" — Request + Service
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+```
+HTTP → Routes → Controller → Request (valida forma) → Processor/Service (regra de negócio) → Model → tabela/view MySQL
+```
 
-## Server Requirements
+- **Routes** só mapeiam verbo+caminho → método do controller. Zero lógica.
+- **Controller** chama `$this->validate(getCreateRules())`, delega ao
+  `Processor` (o Service do módulo), formata a resposta. Zero regra de negócio.
+- **Request** (`CreateRequest`/`UpdateRequest`) é uma classe simples com
+  `rules()` e `messages()` — só valida forma (tipo, tamanho, `in_list` de
+  ENUM), derivado direto do DDL da migration.
+- **Processor** (`Services\V1\<Domínio>\<Módulo>\Processor`) é o "Service":
+  liga os Models no construtor, e é o **único lugar** onde entram unicidade,
+  FK, transições de status, hash de senha — via hooks do Template Method
+  herdado de `BaseTableService`.
+- **Model** só declara propriedades (`$table`, `$hidden`, `$allowedFields`,
+  `$sortableFields`); as queries genéricas vêm da base.
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+Padrão obrigatório e documentado em detalhe (mapa DDL→regra de validação,
+checklist de PR, passo a passo para criar módulo do zero):
+[`ROADMAP_padrao_modulo.md`](app/markdown/geral/ROADMAP_padrao_modulo.md).
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+### Rotas descentralizadas
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+Nenhuma rota fica solta dentro de um `Config/Routes.php` gigante. Cada módulo
+tem seu **próprio arquivo de rotas**, requerido dentro do grupo `api/v1`:
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+```php
+// Config/Routes.php
+$routes->group('calendar-manager', static function ($routes) {
+    require __DIR__ . '/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php';
+});
+```
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+```
+Config/Routes/Api/v1/<Domínio>/<Módulo>/
+├─ EndpointTable.php   (18 rotas — recurso sobre a tabela)
+└─ EndPointView.php    (10 rotas — leitura sobre a view, só se houver)
+```
+
+Todo módulo replica **exatamente** o mesmo contrato de rotas (`find`,
+`get-grouped`, `search`, `get/{id}`, `get-all`, `get-no-pagination`,
+`get-deleted*`, `create`, `update/{id}`, `delete-soft/update-restore/delete-hard`,
+`clear-deleted`) e o mesmo envelope de resposta JSON
+(`method`, `endpoint`, `statusCode`, `message`, `success`, `data`). Mapa
+textual completo de toda rota já registrada:
+[`README_rotas_swagger.md`](app/markdown/geral/README_rotas_swagger.md).
+
+### Módulos hoje
+
+| Domínio    | Módulo(s)                                                                                                    | Situação                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `Auth`     | login / refresh / logout / me (JWT HS256, nativo via `hash_hmac`, sem lib externa)                           | completo                                                            |
+| `User`     | `user-manager`, `user-profiles`, `user-roles`                                                                | completo                                                            |
+| `Upload`   | `upload-manager` (anexos polimórficos de qualquer outro módulo, `module` + `reference_id`)                   | completo (desvio sancionado: sem FK, +3 rotas de multipart/binário) |
+| `Form`     | `form-manager` → `form-groups` → `form-rows` → `form-campos` (+ view)                                        | completo — motor de formulários dinâmicos                           |
+| `List`     | `list-manager`, `list-columns`, `list-actions`                                                               | completo — motor de listagens dinâmicas                             |
+| `Calendar` | `calendar-manager`, `calendar-events` + 4 sub-recursos (attendees/reminders/attachments/extended-properties) | backend completo (108 rotas); **frontend ainda só visualização**    |
+| `Nav`      | `nav-manager` (branding/config do app)                                                                       | completo                                                            |
+| `Menu`     | `menu-manager` (árvore de itens de navegação)                                                                | completo                                                            |
+| `Meta`     | `db-schema` (introspecção read-only do banco), `route-manager` (catálogo de rotas)                           | completo                                                            |
+
+---
+
+## Frontend
+
+`frontend/projeto54900/` — React 19 + TypeScript + Vite, UI **quase 100%
+Bootstrap 5** (sem outra biblioteca de componentes). Convenção de páginas:
+`pages/v1/<módulo>/<recurso>/<Ação>Page.tsx`, com `services/v1/*.ts`
+espelhando 1:1 os endpoints do backend e `routes/v1/*.routes.tsx` registrando
+as rotas React.
+
+### Os constructors — banco vira UI, sem campo/coluna hardcoded
+
+O frontend não escreve formulário nem tabela na mão: uma definição gravada no
+banco (pelo próprio backend, módulos `Form` e `List`) é lida pela API e
+renderizada por um **motor genérico**.
+
+**FORM:**
+
+- `components/ui/FormGrid/` — fábrica de campos dirigida por schema JSON
+  (`{ rows: [{ fields: [...] }] }`). 22 tipos prontos (CPF, CNPJ, CEP,
+  telefone, moeda, data, hora, PIS, placa, título de eleitor, CNH, processo,
+  RENAVAM, SEI, e-mail, textarea, senha, radio, checkbox, select com busca)
+  além de `text`/`password`, com máscara, validação e grid Bootstrap
+  resolvidos pela própria fábrica.
+- `pages/v1/form/FormConstructorPage.tsx` — lê a árvore
+  `form_manager → form_groups → form_rows → form_fields` (via
+  `view_form_manager`) e renderiza com `<FormGrid>`.
+- `pages/v1/form/FormBuilderPage.tsx` (+ `FormBuilderTree.tsx`,
+  `FormModal.tsx`) — construtor **visual**: escolhe tabelas do banco por
+  introspecção (`db-schema`), monta a árvore em linhas compactas
+  colapsáveis, formulário de cada nó abre em modal, e persiste nó a nó
+  (salvar o pai libera o filho).
+
+**LIST:**
+
+- `utils/listConstructor.tsx` — motor puro (`toManager`/`toColumn`/`toAction`,
+  `cellValue`/`renderCell`, `evalBusinessRule`) que renderiza qualquer grid a
+  partir de `list_manager`/`list_columns`/`list_actions`.
+- `pages/v1/list/ListConstructorPage.tsx` — preview de listagens já
+  cadastradas.
+- `pages/v1/list/ListBuilderPage.tsx` (+ `ListBuilderTree.tsx`, reaproveita
+  `FormModal.tsx`) — cria listagens novas pela UI, com geração automática de
+  colunas a partir do schema real da tabela.
+
+`FormBuilderTree`/`ListBuilderTree` + `FormModal` formam um **padrão
+reutilizável** (árvore + modal por nó) já usado nos dois construtores — base
+para qualquer tela futura de estrutura pai→filho com formulário por nó
+(Documentos, Mapas e Mensageria devem seguir o mesmo padrão em vez de
+inventar um novo).
+
+---
+
+## Projeto futuro — multitool de Office
+
+A visão é ligar quatro módulos de domínio sobre a mesma base de usuários
+(`user-manager`) e o mesmo padrão de módulo/constructor, como um único
+multitool — não quatro apps separados:
+
+| Módulo                                        | Estado hoje                                                                                                                                                                                                                                                                                                    |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Calendário**                                | Backend completo (espelha o Google Calendar: manager + eventos + attendees/reminders/attachments/extended-properties, 108 rotas). Frontend só mostra `MonthCalendar`/`YearCalendar` calculados por `Date`/`Intl`, sem ler nenhuma tabela ainda — falta o CRUD de evento e ligar a tela num `calendar_id` real. |
+| **Documentos**                                | Ainda não iniciado. Deve reaproveitar o módulo `Upload` (anexos polimórficos) como armazenamento, seguindo o mesmo padrão de módulo do backend.                                                                                                                                                                |
+| **Mapas** (rotas e pontos)                    | Ainda não iniciado. O grupo de conexão de banco `mapa` (`projeto54900_mapa`) já está reservado em `Config/Database.php`, sem módulo/API construído.                                                                                                                                                            |
+| **Mensageria** (entre usuários, com timeline) | Ainda não iniciado como módulo REST. O grupo de banco `chat` (`projeto54900_chat`) já está reservado; o serviço `node` do `docker-compose.yml` já sobe um servidor WebSocket (pensado como transporte real-time dessa mensageria), mas sem schema/API ainda.                                                   |
+
+---
+
+## Tecnologias envolvidas
+
+**Backend:** PHP 8.2, CodeIgniter 4, MySQL 8.0, JWT HS256 (nativo, sem lib
+externa — ver [`README_regra_composer_proibido.md`](app/markdown/geral/README_regra_composer_proibido.md)).
+
+**Frontend:** React 19, TypeScript, Vite, Bootstrap 5, React Router 7.
+
+**Infraestrutura:** Podman (compatível com `docker-compose.yml`), Nginx
+(reverse proxy), Node 20 (WebSocket), Adminer (UI de administração do MySQL).
+
+---
+
+## ⚠️ Alerta — ambiente e DevOps não commitados
+
+O `docker-compose.yml` real (preenchido com credenciais de uso) **não é
+versionado** — só o template público `docker-compose-example.yml`, com
+placeholders, está neste repositório. O projeto **não usa `.env`**: toda
+configuração de ambiente fica explícita no `docker-compose.yml` local e é
+lida via `env()` nos `Config/*.php` do backend — por isso o compose real
+nunca pode ir para o Git.
+
+Gustavo está à disposição para apoiar diretamente no preparo/ajuste do DevOps
+(Podman, compose, Dockerfiles) sempre que for necessário — é ele quem detém o
+compose real e o ambiente de rede onde os serviços `php`/`node` foram
+originalmente construídos.
+
+---
+
+## DevOps — detalhamento dos arquivos
+
+```
+projeto54900/                       (raiz — um nível acima de src/)
+├── docker-compose.yml              (real, com credenciais — NÃO versionado)
+├── docker-compose-example.yml      (versionado — template público, só placeholders)
+├── docker/
+│   ├── index.html                  (placeholder estático da pasta, sem função de runtime)
+│   ├── php/
+│   │   └── Dockerfile              (imagem do serviço php)
+│   ├── mysql/
+│   │   └── init.sql                (script de inicialização do serviço mysql)
+│   ├── nginx/
+│   │   └── default.conf            (config do reverse proxy)
+│   └── node/
+│       ├── Dockerfile              (imagem do serviço node)
+│       ├── server.js               (servidor WebSocket)
+│       └── package.json            (dependências do server Node)
+└── src/                            (este repositório — montado em /var/www/html nos containers php e nginx)
+```
+
+### `docker-compose.yml` / `docker-compose-example.yml`
+
+Definem 5 serviços:
+
+| Serviço   | Container                  | Porta host → container    | Função                                                                       |
+| --------- | -------------------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| `mysql`   | `codeigniter54900_mysql`   | `54901:3306`              | Banco MySQL 8.0. Volume nomeado `mysql_data` (persistência).                 |
+| `adminer` | `codeigniter54900_adminer` | `54902:8080`              | UI web de administração do MySQL.                                            |
+| `php`     | `codeigniter54900_php`     | interno (`9000`, FastCGI) | PHP-FPM 8.2 rodando o backend CodeIgniter. Monta `./src` em `/var/www/html`. |
+| `node`    | `codeigniter54900_node`    | interno (`3000`)          | Servidor WebSocket, exposto para fora só via proxy do `nginx` em `/ws`.      |
+| `nginx`   | `codeigniter54900_nginx`   | `54900:80`                | Reverse proxy: serve `/`, `/api` e `/ws`, roteando para `php`/`node`.        |
+
+Rede interna: `codeigniter54900_net` (bridge). O `docker-compose.yml` real
+difere do `-example.yml` **só** nos valores de credencial/proxy — a
+estrutura (serviços, portas, volumes) é idêntica. `docker-compose-example.yml`
+é o ponto de partida para qualquer ambiente novo: copiar/renomear para
+`docker-compose.yml` e preencher os placeholders com credenciais próprias,
+nunca reaproveitando senha de outro serviço.
+
+Os serviços `php` e `node` aceitam `build.args` de proxy HTTP/HTTPS interno
+(`USE_INTERNAL_PROXY`, `PROXY_HOST`, `PROXY_PORT`) — só usados quando o build
+roda dentro da rede corporativa isolada onde o ambiente foi originalmente
+montado; fora dela, o default (`"false"`) builda sem proxy.
+
+### `docker/php/Dockerfile`
+
+Imagem PHP 8.2-FPM com as extensões que o CodeIgniter 4 e os drivers de banco
+exigem: `pdo_mysql`, `mysqli`, `mbstring`, `zip`, `intl`. Lê os `ARG` de proxy
+do compose (nunca hardcoded no próprio Dockerfile, que é versionado).
+
+### `docker/mysql/init.sql`
+
+Script de inicialização do container `mysql`, executado **uma única vez**,
+na primeira criação do volume `mysql_data` (a imagem oficial do MySQL só roda
+`docker-entrypoint-initdb.d/*` em volume vazio). Cria os bancos dedicados por
+módulo (`projeto54900_mapa`, `projeto54900_agenda`, `projeto54900_chat`) e os
+`GRANT`s do usuário da aplicação sobre eles — o banco `codeigniter54900_db`
+(conexão `default`) já nasce sozinho via `MYSQL_DATABASE` do compose. Se o
+volume já existir, este script **não roda de novo**; um módulo/banco novo
+precisa ser criado à mão (Adminer ou `mysql` CLI) num ambiente já
+inicializado.
+
+### `docker/nginx/default.conf`
+
+Configuração do reverse proxy: roteia requisições estáticas e `.php` para
+`php:9000` (FastCGI), `/ws` para `node:3000` (upgrade de conexão WebSocket),
+e serve os arquivos estáticos do frontend com fallback de SPA (qualquer rota
+não encontrada cai em `index.html`, para o React Router assumir).
+
+### `docker/node/`
+
+- **`Dockerfile`** — imagem `node:20-alpine`.
+- **`server.js`** — servidor WebSocket de broadcast interno, com um endpoint
+  HTTP `/internal/broadcast` (usado pelo próprio backend PHP para publicar
+  eventos para quem estiver conectado). É a peça que hoje já sustenta o
+  transporte real-time pensado para a futura Mensageria.
+- **`package.json`** — dependências do servidor Node.
+
+### `docker/index.html`
+
+Arquivo estático sem função de runtime — apenas ocupa a pasta `docker/` na
+raiz servida (não é referenciado por nenhum serviço).
+
+### Subir o ambiente
+
+```bash
+cp docker-compose-example.yml docker-compose.yml
+# editar docker-compose.yml e preencher os placeholders com credenciais próprias
+podman compose up -d --build
+```
+
+App em `http://localhost:54900`, Adminer em `http://localhost:54902`. Passo a
+passo completo, variante sem o serviço `node`, e como adicionar um
+módulo/banco novo: [`README_docker-compose.md`](app/markdown/geral/README_docker-compose.md)
+e [`README_conecta_banco_enviroments.md`](app/markdown/geral/README_conecta_banco_enviroments.md).
+
+O frontend roda **fora do compose**, localmente:
+
+```bash
+cd frontend/projeto54900/
+npm run dev
+```

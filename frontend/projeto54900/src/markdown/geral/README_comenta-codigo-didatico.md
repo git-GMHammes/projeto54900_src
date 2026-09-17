@@ -15,12 +15,107 @@
 
 ## Sumário
 
+0. [Alertas Críticos (LER ANTES DE QUALQUER COISA)](#0-alertas-críticos-ler-antes-de-qualquer-coisa)
 1. [Objetivo Geral](#1-objetivo-geral)
 2. [Regras Gerais (NÃO PULAR)](#2-regras-gerais-não-pular)
 3. [Bloco A — Página (`pages/v1/.../XPage.tsx`)](#3-bloco-a--página-pagesv1xpagetsx)
 4. [Bloco B — Camada Core (`services/`, `hooks/`, `context/`, `utils/`)](#4-bloco-b--camada-core-services-hooks-context-utils)
 5. [Bloco C — Componente de Campo (`components/ui/FormGrid/*`)](#5-bloco-c--componente-de-campo-componentsuiformgrid)
 6. [Checklist Consolidado de Qualidade](#6-checklist-consolidado-de-qualidade)
+
+---
+
+## 0. ⛔ ALERTAS CRÍTICOS (LER ANTES DE QUALQUER COISA)
+
+> Estes três alertas têm prioridade sobre qualquer outra seção deste
+> arquivo. Uma IA que for aplicar este README precisa ler este bloco
+> **primeiro**, mesmo que já conheça o resto do documento — e mesmo que
+> não tenha acesso ao CLAUDE.md global do projeto.
+
+### 0.1 — Este README é sobre COMENTAR, nunca sobre corrigir/alterar código
+
+Esta tarefa é **documentação, não manutenção**. Ao seguir este roteiro:
+
+- **NUNCA** alterar lógica, corrigir bug, renomear variável, "melhorar"
+  performance ou mexer em JSX/estrutura — nem "já que abri o arquivo".
+- Encontrou algo errado (bug, tipo inconsistente, débito técnico)? **Não
+  mexer.** Registrar o achado à parte na resposta ao usuário (arquivo/linha
+  + 1-2 frases) e tratar como **tarefa nova, com seu próprio plano e
+  autorização explícita** — nunca dentro do mesmo diff de comentários.
+  Detalhes em [seção 2](#2-regras-gerais-não-pular).
+
+### 0.2 — `*/` dentro de um comentário QUEBRA o comentário — nunca escrever isso
+
+Comentários deste projeto usam o formato TSDoc `/** ... */`. **Não existe
+escape para `*/` dentro de um bloco `/** */`** — o TypeScript/JS fecha o
+comentário no primeiro `*/` que encontrar, não importa a intenção de quem
+escreveu.
+
+Isso já causou um erro real: ao documentar uma rota, uma IA escreveu, no
+meio de um bloco de comentário, o texto `form-*/create` (querendo dizer
+"endpoint `form-<recurso>` seguido de `/create`"). O `*/` no meio da frase
+fechou o comentário ali mesmo, e todo o texto seguinte passou a ser
+interpretado como **código**, quebrando o arquivo inteiro
+(`formBuilder.model.ts`).
+
+**Regra prática:** antes de escrever qualquer barra `/` dentro de um bloco
+de comentário, checar se o caractere imediatamente anterior é um asterisco
+`*`. Se for, **não escrever isso literalmente** — reformular a frase.
+
+```tsx
+// ERRADO — fecha o comentário no meio da frase, quebra o arquivo:
+/**
+ * Rota: POST form-*/create
+ */
+
+// CERTO — reformular para não colocar "*" logo antes de "/":
+/**
+ * Rota: POST form-<recurso>/create
+ * (ou: "Rota: POST /form/{recurso}/create")
+ */
+```
+
+Depois de comentar, **sempre reabrir o arquivo (ou checar o editor/lint) e
+confirmar que o comentário não fechou antes da hora**. Sinal típico: trecho
+que deveria estar dentro do `/** ... */` aparece destacado como código ou
+como erro de sintaxe.
+
+### 0.3 — Antes de criar, editar ou excluir qualquer arquivo: PLANO primeiro
+
+Regra herdada do fluxo obrigatório deste computador (CLAUDE.md global) —
+copiada aqui porque uma IA "fraca" pode não ter acesso a esse arquivo, mas
+vai ler este README antes de comentar código:
+
+1. **Propor o plano em texto** antes de tocar em qualquer arquivo: título,
+   objetivo, passos planejados, critério de sucesso, rollback (quando
+   aplicável), riscos/observações.
+2. **Aguardar autorização explícita** do usuário ("sim" ou equivalente).
+   Sem isso, não criar, editar nem excluir nada.
+3. Só depois de autorizado, executar.
+
+Isso vale mesmo quando a tarefa "parece pequena" (ex.: só adicionar
+comentários) — um comentário mal formado, como o caso do `*/` do item 0.2,
+pode quebrar o arquivo inteiro.
+
+### 0.4 — Nunca usar emoji/ícone DENTRO do texto de um comentário de código
+
+Comentário de código (`/** ... */`, `// ...`) é texto técnico, não interface
+visual. **Não usar emoji nem ícone decorativo no texto do comentário** (ex.:
+`✏️` para "editar", `🗑` para "remover", `[+]` como substituto de "adicionar").
+Escrever a palavra por extenso.
+
+```tsx
+// ERRADO:
+/** Ações opcionais (✏️ editar, [+] adicionar filho, 🗑 remover). */
+
+// CERTO:
+/** Ações opcionais (botão Editar, botão Adicionar filho, botão Remover). */
+```
+
+**Isso NÃO tem relação com os ícones reais de UI** (`<i className="bi-pencil-square" />`
+e afins, do Bootstrap Icons) usados no JSX dos botões — esses continuam
+normalmente, são parte da interface, não do comentário. A regra é só sobre o
+texto que documenta o código.
 
 ---
 
@@ -383,3 +478,14 @@ consulta automática à ViaCEP e o que acontece em caso de falha.
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
