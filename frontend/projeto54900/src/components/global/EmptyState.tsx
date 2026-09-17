@@ -1,4 +1,22 @@
-// Estado vazio / erro para listagens e detalhes.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/EmptyState.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: estado vazio/erro reutilizavel para listagens e telas de
+ * detalhe (ex.: "nenhum registro", "formulario indisponivel", lista vazia
+ * com alerta de destaque via `variant="warning"` + `eyebrow`).
+ *
+ * DEPENDENCIAS: nenhuma (so tipos de react).
+ * CONSUMIDORES: praticamente toda pagina de listagem/detalhe/wizard (ex.:
+ * RegisterPage, GetAllPage de varios modulos) usa EmptyState para o estado
+ * de erro de carregamento e para a tela final de sucesso do RegisterPage.
+ *
+ * COMO REAPROVEITAR: `variant="danger"` para erro, `"warning"` para aviso
+ * com `eyebrow` em destaque, `"muted"` (default) para vazio neutro/sucesso;
+ * `children` aceita botoes/acoes abaixo da descricao.
+ * -------------------------------------------------------------------------
+ */
 
 import type { ReactNode } from 'react';
 

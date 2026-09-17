@@ -1,5 +1,23 @@
-// Modal de confirmacao controlado por estado React (sem data-bs-*).
-// Renderiza o backdrop manualmente para nao depender da instancia JS do Bootstrap.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/ConfirmModal.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: modal de confirmacao (ex.: "excluir este registro?") controlado
+ * por estado React (`open`), sem depender de `data-bs-*`/instancia JS do
+ * Bootstrap — renderiza o backdrop manualmente. Diferente de Modal.tsx
+ * (generico, sem footer proprio), este ja tem os 2 botoes (cancelar/
+ * confirmar) prontos.
+ *
+ * DEPENDENCIAS: nenhuma (so tipos de react).
+ * CONSUMIDORES: qualquer pagina de listagem/detalhe que precise confirmar
+ * uma acao destrutiva antes de chamar a API (ex.: excluir um registro).
+ *
+ * COMO REAPROVEITAR: controlar `open` em estado local, passar `onConfirm`
+ * (chama o service de delete) e `onClose`; usar `busy` para desabilitar os
+ * botoes e mostrar spinner enquanto a chamada esta em andamento.
+ * -------------------------------------------------------------------------
+ */
 
 import type { ReactNode } from 'react';
 

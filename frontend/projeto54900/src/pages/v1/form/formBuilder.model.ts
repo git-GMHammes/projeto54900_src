@@ -61,9 +61,9 @@
  *   A) CRIAÇÃO (registro novo):
  *      db-schema/tables|columns ──toTabela/toColuna──▶ TabelaInfo/ColunaInfo
  *        └─ `*Inicial()` cria o estado de UI (sempre com `dbId: null`)
- *             └─ `*Payload()` monta o corpo de `form-* /create` (um recurso por
- *                nível: `form-manager`, `form-groups`, `form-rows`,
- *                `form-campos`)
+ *             └─ `*Payload()` monta o corpo de `form-<recurso>/create` (um
+ *                recurso por nível: `form-manager`, `form-groups`,
+ *                `form-rows`, `form-campos`)
  *                  └─ a API devolve o `id` → vira `dbId` no estado, e SÓ
  *                     então o nó filho pode ser criado (FK explícita)
  *

@@ -1,6 +1,23 @@
-// Modal generico controlado por estado React (mesmo padrao do ConfirmModal:
-// sem depender da instancia JS do Bootstrap, backdrop manual). Sem footer
-// proprio — quem usa decide os botoes dentro do children.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/Modal.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: modal generico controlado por estado React (mesmo padrao do
+ * ConfirmModal: sem depender de `data-bs-*`/instancia JS do Bootstrap,
+ * backdrop manual). Sem footer proprio nem botoes prontos — quem usa decide
+ * o conteudo (inclusive os botoes de acao) dentro de `children`.
+ *
+ * DEPENDENCIAS: nenhuma (so tipos de react).
+ * CONSUMIDORES: qualquer pagina que precise de um modal de conteudo livre
+ * (formulario dentro de modal, detalhe expandido, etc.) — para confirmacao
+ * simples de sim/nao, preferir ConfirmModal.tsx.
+ *
+ * COMO REAPROVEITAR: controlar `open` em estado local; usar `size` ('sm' |
+ * 'lg' | 'xl') para largura; o corpo (`modal-body`) ja e scrollavel
+ * (`modal-dialog-scrollable`).
+ * -------------------------------------------------------------------------
+ */
 
 import type { ReactNode } from 'react';
 

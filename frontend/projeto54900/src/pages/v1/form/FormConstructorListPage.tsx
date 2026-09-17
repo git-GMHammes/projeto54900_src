@@ -18,21 +18,21 @@
  *   Ver `src/markdown/geral/README_list_constructor.md`.
  *
  * DE ONDE VEM CADA COISA:
- *   definição → `list_manager` (slug `form-manager`) + `list_columns` +
+ *   definição -> `list_manager` (slug `form-manager`) + `list_columns` +
  *               `list_actions`, normalizados por `@/utils/listConstructor`
- *   dados     → `api_get_endpoint` do próprio manager (o cabeçalho mostra esse
+ *   dados     -> `api_get_endpoint` do próprio manager (o cabeçalho mostra esse
  *               valor; o fallback exibido é `api/v1/form-manager`)
- *   paginação → a URL (`page`/`limit`/`sort`/`order`), via `usePagination`
- *   célula    → `renderCell(column, row)`: o `format` de cada `list_columns`
- *               escolhe um `CUSTOM_CELL_RENDERERS` do motor (`code` → `<code>`,
- *               `status-badge` → badge colorido, `roles-badges` → chips)
- *   ação      → `list_actions` (`link` navega; `api_call` faz HTTP de verdade)
+ *   paginação -> a URL (`page`/`limit`/`sort`/`order`), via `usePagination`
+ *   célula    -> `renderCell(column, row)`: o `format` de cada `list_columns`
+ *               escolhe um `CUSTOM_CELL_RENDERERS` do motor (`code` -> `<code>`,
+ *               `status-badge` -> badge colorido, `roles-badges` -> chips)
+ *   ação      -> `list_actions` (`link` navega; `api_call` faz HTTP de verdade)
  *
  * FLUXO (dois carregamentos encadeados, nesta ordem):
- *   1. `loadDefinition` (1×, no mount) → acha o manager pelo slug → carrega
- *      `list_columns` e `list_actions` em paralelo → alimenta `columns`/`actions`.
- *   2. `loadData` (reage a `manager` e à URL) → GET no `api_get_endpoint`
- *      passando os params da URL → alimenta `rows`/`total`.
+ *   1. `loadDefinition` (1x, no mount) -> acha o manager pelo slug → carrega
+ *      `list_columns` e `list_actions` em paralelo -> alimenta `columns`/`actions`.
+ *   2. `loadData` (reage a `manager` e à URL) -> GET no `api_get_endpoint`
+ *      passando os params da URL -> alimenta `rows`/`total`.
  *   Falha em qualquer um dos dois vira o `error` composto (definição tem
  *   precedência) exibido no `<EmptyState>` — ver BLOCO 6.
  *
@@ -40,7 +40,7 @@
  *   - `@/services/v1` (`listManagerTable`/`listColumnsTable`/`listActionsTable`)
  *     — as 3 tabelas da DEFINIÇÃO; são as mesmas que o `ListBuilderPage` edita.
  *   - `@/utils/listConstructor` — o motor: `toManager`/`toColumn`/`toAction`
- *     (snake_case da API → tipos de UI), `renderCell`, `evalBusinessRule`,
+ *     (snake_case da API -> tipos de UI), `renderCell`, `evalBusinessRule`,
  *     `resolveHrefTemplate`, `str`.
  *   - `@/services/http` (`http`, `ApiError`) — a chamada dos DADOS (e das ações
  *     `api_call`) e o erro tipado que vira mensagem na tela.
@@ -57,7 +57,7 @@
  *   - `@/routes/paths` (`paths.v1.form.create`) e `@/types/api` (`QueryParams`).
  *
  * CONSUMIDORES:
- *   - `src/routes/v1/form.routes.tsx` → `{ path: 'form-constructor' }` (lazy).
+ *   - `src/routes/v1/form.routes.tsx` -> `{ path: 'form-constructor' }` (lazy).
  *   - `pages/v1/list/ListConstructorPage.tsx` é o PREVIEW do mesmo motor:
  *     mesma estrutura de leitura, mas as ações só emitem toast (não executam).
  *     Esta aqui é a tela de PRODUÇÃO — ao mudar comportamento comum, avalie as
@@ -78,11 +78,11 @@
  *
  * REGRAS DE MANUTENÇÃO:
  *   1. Não fixe coluna nem rótulo aqui: isso vive em `list_columns`.
- *   2. O comportamento de `link` × `api_call` é do padrão do motor — antes de
+ *   2. O comportamento de `link` x `api_call` é do padrão do motor — antes de
  *      mudar, veja o preview (`ListConstructorPage.tsx`).
  *   3. `error` é COMPOSTO (`defsError ?? dataError`): falha de DEFINIÇÃO esconde
  *      a de DADOS. Se as duas precisarem aparecer, separe os estados.
- *   4. Toda ação executada chama `onExecuted` → `loadData()` para a tabela
+ *   4. Toda ação executada chama `onExecuted` -> `loadData()` para a tabela
  *      refletir a mudança; sem isso a lista fica "mentindo" na tela.
  * =============================================================================
  */
@@ -143,9 +143,9 @@ const MANAGER_SLUG = 'form-manager';
  * O QUE FAZ:
  *   Renderiza UMA ação de `list_actions` na coluna "Ações" da linha. A decisão
  *   vem do `action_type` gravado no banco:
- *     'link'     → `<Link>` do react-router para `href_template`, com os campos
+ *     'link'     -> `<Link>` do react-router para `href_template`, com os campos
  *                  da linha substituídos (`{id}`, `{slug}` — `resolveHrefTemplate`)
- *     'api_call' → chamada HTTP de verdade (`http.*`) no `api_endpoint`, com
+ *     'api_call' -> chamada HTTP de verdade (`http.*`) no `api_endpoint`, com
  *                  confirmação opcional antes
  *
  * POR QUE ESTA PÁGINA EXECUTA DE VERDADE (e o preview não):
@@ -205,7 +205,7 @@ function ActionButton({
 
   /**
    * Ramo de EXECUÇÃO (`api_call`): faz a chamada HTTP descrita pela ação.
-   * Ordem deliberada: confirmação → resolve o endpoint → escolhe o método →
+   * Ordem deliberada: confirmação -> resolve o endpoint -> escolhe o método ->
    * avisa a página. O método vem do banco (`http_method`), com GET como
    * default quando não é um dos verbos tratados.
    * Só `onExecuted()` no SUCESSO (a página recarrega a lista); falha vira toast
@@ -251,7 +251,7 @@ function ActionButton({
 
 /**
  * =============================================================================
- * BLOCO 3 — ESTADO DA PÁGINA (definição × dados × paginação)
+ * BLOCO 3 — ESTADO DA PÁGINA (definição x dados x paginação)
  * =============================================================================
  *
  * O QUE FAZ: guarda os três grupos de estado que esta tela usa. Separar os
@@ -277,7 +277,7 @@ function ActionButton({
  *   ou usar o botão "voltar" do browser preserva o que o usuário estava vendo.
  *   Por isso `setLimit`/`toggleSort` são chamados direto no JSX (BLOCO 7).
  *
- * DERIVADO: `totalPages` é calculado de `total`/`params.limit` — `Math.max(1, …)`
+ * DERIVADO: `totalPages` é calculado de `total`/`params.limit` — `Math.max(1, ...)`
  *   garante 1 página mesmo com lista vazia (o rodapé nunca fica "0 de 0").
  *
  * COMO REAPROVEITAR: em outra lista com o motor, copie os DOIS grupos como
@@ -360,8 +360,8 @@ export default function FormConstructorListPage() {
         listColumnsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
         listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
       ]);
-      // `toColumn`/`toAction` normalizam snake_case → tipos de UI (o JSX usa
-      // `c.label`, `c.sortable`, `a.actionType`… e nunca o campo cru da API).
+      // `toColumn`/`toAction` normalizam snake_case -> tipos de UI (o JSX usa
+      // `c.label`, `c.sortable`, `a.actionType`... e nunca o campo cru da API).
       setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
       setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
@@ -396,13 +396,13 @@ export default function FormConstructorListPage() {
    *     roda — é assim que os dados só carregam DEPOIS da definição, sem
    *     "esperar" explícito.
    *   - O efeito depende de `params`: mudar página/limite/ordenação pela UI
-   *     altera a URL → `params` muda → recarrega. Refresh e botão "voltar" do
+   *     altera a URL -> `params` muda -> recarrega. Refresh e botão "voltar" do
    *     browser caem no mesmo caminho (por isso a paginação vive na URL).
    *
    * DETALHES DE MANUTENÇÃO:
    *   - `resolveEndpoint` é obrigatório aqui: o endpoint do banco começa com
    *     `/api`, que o wrapper `http` já prefixa.
-   *   - `params` vão como query string (`?page=…&limit=…&sort=…&order=…`) — o
+   *   - `params` vão como query string (`?page=...&limit=...&sort=...&order=...`) — o
    *     cast para `QueryParams` é só para o tipo aceitar o objeto de `PageParams`.
    *   - Em erro, `rows`/`total` são ZERADOS de propósito: melhor uma tabela
    *     vazia + erro do que a lista antiga parecendo atual.
@@ -468,10 +468,10 @@ export default function FormConstructorListPage() {
    *   1. `<PageHeader>` — título/subtítulo vêm da DEFINIÇÃO (com fallback, caso a
    *      definição ainda não tenha chegado) + "Recarregar" (só o DADO) e "Novo
    *      formulário" (rota fixa `paths.v1.form.create`).
-   *   2. `defsLoading` → `<LoadingOverlay />` cheio: sem definição não há o que
+   *   2. `defsLoading` -> `<LoadingOverlay />` cheio: sem definição não há o que
    *      mostrar e nada é clicável.
-   *   3. `error` → `<EmptyState variant="danger">` com a mensagem do BLOCO 6.
-   *   4. Lista VAZIA (`!dataLoading && rows.length === 0`) → `<EmptyState>` de
+   *   3. `error` -> `<EmptyState variant="danger">` com a mensagem do BLOCO 6.
+   *   4. Lista VAZIA (`!dataLoading && rows.length === 0`) -> `<EmptyState>` de
    *      orientação (não é erro: mandou usar "Novo formulário").
    *   5. Card da TABELA — aparece com dados ou enquanto recarrega
    *      (`dataLoading || rows.length > 0`), com overlay INTERNO na recarga.
@@ -480,14 +480,14 @@ export default function FormConstructorListPage() {
    * ORDEM IMPORTA: as condições são avaliadas de cima para baixo e são
    *   exclusivas entre si; a tabela só aparece quando a definição carregou SEM
    *   erro — se você acrescentar uma janela nova, replique o padrão
-   *   (`!defsLoading && !error && …`) para ela não aparecer por cima das outras.
+   *   (`!defsLoading && !error && ...`) para ela não aparecer por cima das outras.
    *
    * DE ONDE VEM O CONTEÚDO DA GRADE:
-   *   cabeçalho → `columns` (`label`, `sortable`, `sortKey`)
-   *   células   → `renderCell(c, row)` — o `format` da coluna decide o visual
-   *   ações     → `actions` → `<ActionButton>` (BLOCO 2), habilitado por
+   *   cabeçalho -> `columns` (`label`, `sortable`, `sortKey`)
+   *   células   -> `renderCell(c, row)` — o `format` da coluna decide o visual
+   *   ações     -> `actions` -> `<ActionButton>` (BLOCO 2), habilitado por
    *               `evalBusinessRule(a.businessRule, row)`
-   *   página    → `paginationWindow(params.page, totalPages)` (utils/pagination)
+   *   página    -> `paginationWindow(params.page, totalPages)` (utils/pagination)
    *
    * COMO REAPROVEITAR: para outra lista, mantenha esta ordem de janelas e troque
    *   só o que a definição não cobre (hoje: o botão de criar e o texto do vazio).
@@ -601,7 +601,7 @@ export default function FormConstructorListPage() {
                     Anterior
                   </button>
                 </li>
-                {/* Janela de páginas: os dois extremos e `delta` em volta da atual; buraco vira '…'. */}
+                {/* Janela de páginas: os dois extremos e `delta` em volta da atual; buraco vira '...'. */}
                 {paginationWindow(params.page, totalPages).map((tok, i) =>
                   tok === '...' ? (
                     <li key={`ellipsis-${i}`} className="page-item disabled">

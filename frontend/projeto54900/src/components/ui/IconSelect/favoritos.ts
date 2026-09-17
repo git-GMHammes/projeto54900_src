@@ -1,12 +1,27 @@
-// Ícones favoritos do IconSelect — aparecem primeiro no dropdown, antes do
-// separador. O resto segue a ordem do JSON do pacote (= ordem dos IDs da
-// tabela `bootstrap_icons`).
-//
-// Formato: nome do ícone sem o prefixo `bi-` (ex.: 'arrow-down-left-circle-fill').
-// Nomes inexistentes são ignorados. A ordem aqui é a ordem de exibição.
-//
-// Espelho de `bootstrap_icons.is_favorite = 1`. Ponto de troca futuro: quando a
-// tabela tiver endpoint, esta lista passa a vir do banco.
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/IconSelect/favoritos.ts
+ * =========================================================================
+ *
+ * PROPOSITO: lista estatica de icones favoritos do IconSelect — aparecem
+ * primeiro no dropdown, antes do separador. O resto segue a ordem do JSON
+ * do pacote bootstrap-icons (= ordem dos IDs da tabela `bootstrap_icons`).
+ * Formato: nome do icone sem o prefixo `bi-` (ex.:
+ * 'arrow-down-left-circle-fill'). Nomes inexistentes sao ignorados pelo
+ * IconSelect. A ordem aqui e a ordem de exibicao.
+ *
+ * Espelho de `bootstrap_icons.is_favorite = 1`. Ponto de troca futuro:
+ * quando a tabela tiver endpoint, esta lista passa a vir do banco em vez de
+ * hardcoded aqui.
+ *
+ * DEPENDENCIAS: nenhuma.
+ * CONSUMIDORES: components/ui/IconSelect/index.tsx (unico consumidor).
+ *
+ * COMO REAPROVEITAR: adicionar/remover nomes de icone (sem `bi-`) nesta
+ * lista para mudar os favoritos exibidos primeiro; a validacao contra os
+ * nomes reais do pacote acontece no IconSelect, nao aqui.
+ * -------------------------------------------------------------------------
+ */
 
 export const ICON_FAVORITOS: readonly string[] = [
   // Pessoa / identificação

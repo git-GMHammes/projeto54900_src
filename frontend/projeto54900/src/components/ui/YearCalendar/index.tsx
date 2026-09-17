@@ -1,5 +1,20 @@
-// Grade responsiva com os 12 meses de um ano, reaproveitando MonthCalendar
-// em tamanho compacto (1 mes por linha no celular, ate 4 por linha no desktop).
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/YearCalendar/index.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: grade responsiva com os 12 meses de um ano, reaproveitando
+ * MonthCalendar em tamanho compacto (1 mes por linha no celular, ate 4 por
+ * linha no desktop).
+ *
+ * DEPENDENCIAS: components/ui/MonthCalendar (renderiza cada mes).
+ * CONSUMIDORES: qualquer pagina/formulario que precise de uma visao anual
+ * (ex.: form renderizado via /v1/form/calendario, link da navbar).
+ *
+ * COMO REAPROVEITAR: passar so `year` — os 12 meses sao gerados
+ * automaticamente.
+ * -------------------------------------------------------------------------
+ */
 
 import MonthCalendar from '@/components/ui/MonthCalendar';
 

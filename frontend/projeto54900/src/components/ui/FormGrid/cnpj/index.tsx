@@ -1,3 +1,26 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/cnpj/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'cnpj'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> com
+ *     os 14 caracteres limpos em maiusculas (aceita CNPJ alfanumerico 2026
+ *     e o legado so-numerico)
+ *   - A chave no FormData/payload e: field.name
+ *   - O <input> visivel so exibe a mascara (00.000.000/0000-00)
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

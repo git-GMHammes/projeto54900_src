@@ -1,7 +1,26 @@
-// Par montar/parse para campos cujo valor persistido é uma LISTA JSON de strings
-// (ex.: form_manager.roles = ["admin","user"]), mas cuja edição é um
-// controle comum (select múltiplo). O usuário nunca digita JSON.
-// Ver src/markdown/geral/README_campo_json_montado.md.
+/**
+ * =========================================================================
+ * FILE HEADER — utils/jsonList.ts
+ * =========================================================================
+ *
+ * PROPOSITO: par montar/parse para campos cujo valor persistido e uma LISTA
+ * JSON de strings (ex.: form_manager.roles = ["admin","user"],
+ * list_actions.roles), mas cuja edicao e um controle comum (select
+ * multiplo/checkboxes). O usuario nunca digita JSON — ver
+ * README_campo_json_montado.md para o contrato completo.
+ *
+ * DEPENDENCIAS: nenhuma (arquivo autocontido).
+ * CONSUMIDORES: utils/listConstructor.tsx usa parseStringList() no renderer
+ * de coluna `roles-badges` (mostra a lista de papeis como badges); qualquer
+ * form de construtor com campo "roles"/"lista de strings" usa o par
+ * toStringList/parseStringList para converter entre o array editado na UI e
+ * a string JSON gravada no banco.
+ *
+ * COMO REAPROVEITAR EM OUTRO CAMPO JSON DE STRINGS: usar
+ * parseStringList(valorDoBanco) para hidratar o estado da UI como array, e
+ * toStringList(arrayEditado) para persistir de volta no submit.
+ * -------------------------------------------------------------------------
+ */
 
 /**
  * Estado da UI (array de strings) → string para persistir.

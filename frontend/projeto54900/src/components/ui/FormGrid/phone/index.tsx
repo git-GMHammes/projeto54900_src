@@ -1,3 +1,29 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/phone/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'phone'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, minLength/maxLength/pattern (aplicados aos digitos puros)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> com
+ *     os digitos puros (10 = fixo, 11 = celular com 9)
+ *   - A chave no FormData/payload e: field.name
+ *
+ * ATENCAO ESPECIFICA: valida o DDD contra a lista real de DDDs brasileiros
+ * (DDDS_VALIDOS) e exige "9" logo apos o DDD quando ha 11 digitos (regra do
+ * celular).
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

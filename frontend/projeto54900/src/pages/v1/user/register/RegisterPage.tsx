@@ -1,23 +1,68 @@
-// Novo Cadastro — wizard em 2 cards (nao abas), um card por TABELA, ligados por
-// chave estrangeira. Cada card usa o form_manager ATIVO cuja fm_table_name seja
-// a tabela da etapa — nunca um slug/ID fixo, para nao depender de quem montou o
-// build nem de qual banco/maquina (ver loadFormByTable() abaixo):
-//   1. Login    -> form ativo da tabela user_manager, INTEIRO: username +
-//                  password_hash juntos, como configurado no FormBuilderPage.
-//                  Grava de verdade (POST) e guarda o id retornado.
-//   2. Cadastro -> form ativo da tabela user_profiles, INTEIRO. So aparece
-//                  depois do login confirmado. O campo user_manager_id (FK) vem
-//                  pre-preenchido com o id do passo 1 e read-only NESTA TELA
-//                  (o build em si continua exatamente como configurado — visivel,
-//                  sem hidden/collapse).
-//
-// Nao dividimos campos de um MESMO build entre cards — cada card e um build
-// completo. As etapas existem para encadear tabelas diferentes, nao para
-// fatiar um formulario so.
-//
-// Fica em pasta propria (register/) dentro do modulo user porque e um fluxo
-// composto entre 2 recursos (user-manager + user-profiles), nao a acao de uma
-// tabela so — ver src/markdown/geral/README_paginas_modulo.md.
+/**
+ * =========================================================================
+ * FILE HEADER — RegisterPage.tsx
+ * =========================================================================
+ *
+ * O QUE FAZ: pagina de "Novo Cadastro" publica (rota /v1/user/register, ver
+ * routes/v1/user.routes.tsx). E um wizard em 2 cards sequenciais (nao
+ * abas) — um card por TABELA do banco, ligados por chave estrangeira:
+ *
+ *   1. Login    -> form ativo da tabela user_manager, INTEIRO: username +
+ *                  password_hash juntos, como configurado no FormBuilderPage.
+ *                  Grava de verdade (POST) e guarda o id retornado.
+ *   2. Cadastro -> form ativo da tabela user_profiles, INTEIRO. So aparece
+ *                  depois do login confirmado. O campo user_manager_id (FK)
+ *                  vem pre-preenchido com o id do passo 1 e read-only NESTA
+ *                  TELA (o build em si continua exatamente como configurado
+ *                  no construtor — visivel, sem hidden/collapse).
+ *
+ * Cada card usa o form_manager ATIVO cuja fm_table_name seja a tabela da
+ * etapa — nunca um slug/ID fixo, para nao depender de quem montou o build
+ * nem de qual banco/maquina (ver loadFormByTable() abaixo). Nao dividimos
+ * campos de um MESMO build entre cards: cada card e um build completo; as
+ * etapas existem para encadear tabelas diferentes, nao para fatiar um
+ * formulario so.
+ *
+ * Fica em pasta propria (register/) dentro do modulo user porque e um fluxo
+ * composto entre 2 recursos (user-manager + user-profiles), nao a acao de
+ * uma tabela so (ver README_paginas_modulo.md).
+ *
+ * DEPENDENCIAS (arquivos proprios do projeto):
+ *   - components/ui/FormGrid/Input (FormGrid + FormGridSchema): renderiza
+ *     o schema de cada form ativo como inputs de verdade.
+ *   - components/global/PageHeader, EmptyState, LoadingOverlay: casca
+ *     visual padrao (titulo, estado vazio/erro, overlay de carregamento).
+ *   - hooks/useToast: feedback de sucesso/erro apos cada submit.
+ *   - services/http (ApiError): erro tipado vindo da API.
+ *   - services/v1 (formManagerView): leitura agrupada do form_manager
+ *     ativo por tabela.
+ *   - services/formSchema (buildRenderSchema, RenderForm): converte as
+ *     linhas cruas do form_manager num schema pronto para o FormGrid.
+ *   - utils/apiResult (normalizeList, normalizeItem): extraem os dados
+ *     uteis das respostas variadas da API.
+ *   - utils/formSubmit (formDataToPayload, errorDetail, resolveEndpoint,
+ *     senderFor): montam o payload do form e escolhem o metodo/URL de
+ *     envio a partir do meta do form ativo.
+ *   - routes/paths: caminhos centralizados (Voltar, Entrar agora).
+ *
+ * CONSUMIDORES: routes/v1/user.routes.tsx registra esta pagina na rota
+ * "register" (carregada via lazy import), montando /v1/user/register.
+ *
+ * COMO CRIAR UMA PAGINA WIZARD SIMILAR (N tabelas encadeadas por FK):
+ *   1. Definir as constantes de tabela (TABLE_*) e o(s) nome(s) do campo FK.
+ *   2. Reaproveitar loadFormByTable() por tabela (ou generalizar para uma
+ *      lista) para buscar o form ativo de cada etapa via formManagerView.
+ *   3. Guardar em estado o id retornado por cada submit anterior e usar
+ *      uma funcao como prefillFkField() para pre-preencher a FK do proximo
+ *      card, travando o campo com readOnly nesta tela (nao no build).
+ *   4. Um handler de submit por card, seguindo o mesmo fluxo: valida o
+ *      form nativo, monta o payload com formDataToPayload(), envia com
+ *      senderFor()/resolveEndpoint(), normaliza a resposta, dispara toast
+ *      de sucesso/erro e atualiza estado.
+ *   5. No JSX, renderizar os cards em sequencia, cada um condicionado ao
+ *      estado (id) do card anterior ter sido criado.
+ * -------------------------------------------------------------------------
+ */
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -38,13 +83,44 @@ import type { ApiRow } from '@/types/api';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 
-// Resolucao por TABELA (fm_table_name, fonte de verdade gravada na criacao do
-// form_manager) + status ativo — nao por slug/ID de quem construiu o formulario.
-// Assim a tela funciona em qualquer maquina/banco, desde que exista 1 form
-// ativo publicado para cada tabela do modulo (ver README_form_constructor.md).
+/**
+ * =========================================================================
+ * BLOCO 1 — CONSTANTES DE MODULO
+ * =========================================================================
+ *
+ * O QUE FAZ: identificam as tabelas de cada etapa do wizard e o nome do
+ * campo FK que liga a segunda etapa a primeira.
+ * POR QUE E IMPORTANTE: a resolucao do form ativo e por TABELA
+ * (fm_table_name, fonte de verdade gravada na criacao do form_manager) e
+ * status ativo — nunca por slug/ID de quem construiu o formulario. Assim a
+ * tela funciona em qualquer maquina/banco, desde que exista 1 form ativo
+ * publicado para cada tabela do modulo (ver README_form_constructor.md).
+ * CONEXAO: usadas por loadFormByTable() (carregamento) e por
+ * prefillFkField() (pre-preenchimento da FK no card 2).
+ * -------------------------------------------------------------------------
+ */
 const TABLE_MANAGER = 'user_manager';
 const TABLE_PROFILE = 'user_profiles';
 const FK_FIELD = 'user_manager_id';
+
+/**
+ * =========================================================================
+ * BLOCO 2 — FUNCOES AUXILIARES (fora do componente)
+ * =========================================================================
+ *
+ * O QUE FAZ: carregam e validam o form ativo de uma tabela
+ * (loadFormByTable), apoiadas por um helper de deduplicacao de ids
+ * (distinctManagerIds), e pre-preenchem/travam o campo FK do card 2 com o
+ * id criado no card 1 (prefillFkField). Sao funcoes puras/assincronas sem
+ * estado de React — podem ser reaproveitadas fora deste componente.
+ * CONEXAO: loadFormByTable() chama services/v1 (formManagerView.getGrouped)
+ * e services/formSchema (buildRenderSchema); prefillFkField() opera sobre o
+ * FormGridSchema que sera passado ao FormGrid.
+ * COMO REAPROVEITAR EM OUTRA PAGINA: chamar loadFormByTable(tabela, label)
+ * para cada etapa do wizard e prefillFkField(schema, nomeDoCampoFk, valor)
+ * sempre que uma etapa precisar herdar o id de uma etapa anterior.
+ * -------------------------------------------------------------------------
+ */
 
 interface LoadFormResult {
   form: RenderForm | null;
@@ -52,6 +128,12 @@ interface LoadFormResult {
   error: string | null;
 }
 
+/**
+ * Extrai os ids distintos de form_manager (fm_id) presentes nas linhas
+ * retornadas pela API, ignorando valores invalidos ou ausentes.
+ * @param rows linhas cruas de form_manager + form_columns agrupadas por form
+ * @returns lista de ids numericos unicos, na ordem de primeira ocorrencia
+ */
 function distinctManagerIds(rows: readonly ApiRow[]): number[] {
   const ids = new Set<number>();
   for (const row of rows) {
@@ -62,6 +144,16 @@ function distinctManagerIds(rows: readonly ApiRow[]): number[] {
   return [...ids];
 }
 
+/**
+ * Busca o form_manager ATIVO de uma tabela e converte suas linhas no
+ * RenderForm pronto para o FormGrid. Garante que exista exatamente um form
+ * ativo publicado para a tabela — nenhum ou mais de um vira uma mensagem de
+ * erro amigavel, exibida na tela via EmptyState (ver JSX no final do
+ * arquivo).
+ * @param tableName valor de fm_table_name a filtrar (ex.: 'user_manager')
+ * @param label rotulo humano da etapa, usado nas mensagens de erro
+ * @returns { form, error }; form so vem preenchido quando error e null
+ */
 async function loadFormByTable(tableName: string, label: string): Promise<LoadFormResult> {
   const raw = await formManagerView.getGrouped(
     { fm_table_name: [tableName], fm_status: ['active'] },
@@ -91,8 +183,15 @@ async function loadFormByTable(tableName: string, label: string): Promise<LoadFo
   return { form, error: null };
 }
 
-// Pre-preenche a FK com o id ja criado e trava edicao so na tela do wizard —
-// o build no banco continua exatamente como o usuario configurou (sem hidden).
+/**
+ * Pre-preenche a FK com o id ja criado na etapa anterior e trava a edicao
+ * so nesta tela — o build gravado no banco continua exatamente como o
+ * usuario configurou no construtor (sem hidden/readOnly no schema salvo).
+ * @param schema schema renderizavel do card seguinte (ja resolvido)
+ * @param fieldName nome do campo FK a sobrescrever (ex.: FK_FIELD)
+ * @param value id (como string) retornado pelo submit da etapa anterior
+ * @returns novo schema com o campo FK marcado com defaultValue + readOnly
+ */
 function prefillFkField(schema: FormGridSchema, fieldName: string, value: string): FormGridSchema {
   return {
     rows: schema.rows.map((row) => ({
@@ -110,6 +209,22 @@ function prefillFkField(schema: FormGridSchema, fieldName: string, value: string
 
 export default function RegisterPage() {
   const toast = useToast();
+
+  /**
+   * =========================================================================
+   * BLOCO 3 — ESTADO DO COMPONENTE
+   * =========================================================================
+   *
+   * O QUE FAZ: guarda os dois RenderForm carregados (login e cadastro), o
+   * erro/loading da carga inicial, uma chave de remontagem dos <form> apos
+   * reset (reloadKey), o resultado do submit do card 1 (managerId /
+   * managerUsername), os flags de "enviando" de cada card e a flag de
+   * conclusao do wizard (done).
+   * CONEXAO: populado por load() (Bloco 4) e pelos handlers de submit
+   * (Bloco 5); consumido direto no JSX (Bloco 6) para decidir qual
+   * card/estado exibir.
+   * -------------------------------------------------------------------------
+   */
   const [formManager, setFormManager] = useState<RenderForm | null>(null);
   const [formProfile, setFormProfile] = useState<RenderForm | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +237,24 @@ export default function RegisterPage() {
   const [submittingProfile, setSubmittingProfile] = useState(false);
   const [done, setDone] = useState(false);
 
+  /**
+   * =========================================================================
+   * BLOCO 4 — CARREGAMENTO DE DADOS
+   * =========================================================================
+   *
+   * O QUE FAZ: dispara em paralelo (Promise.all) a busca do form ativo de
+   * login (user_manager) e de cadastro (user_profiles) via
+   * loadFormByTable(). Se qualquer uma delas voltar com error, a carga para
+   * ali (curto-circuito) e o erro e exibido via EmptyState — so preenche
+   * formManager/formProfile quando as duas etapas tem exatamente 1 form
+   * ativo valido.
+   * POR QUE E IMPORTANTE: garante que o wizard nunca comece com uma etapa
+   * faltando (build nao publicado, duplicado ou sem campos configurados).
+   * CONEXAO: load() e chamado pelo useEffect de montagem logo abaixo, e de
+   * novo por handleReset() (Bloco 5, via reloadKey) quando o usuario clica
+   * em "Novo cadastro".
+   * -------------------------------------------------------------------------
+   */
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -148,6 +281,31 @@ export default function RegisterPage() {
     void load();
   }, [load]);
 
+  /**
+   * =========================================================================
+   * BLOCO 5 — HANDLERS DE ACAO
+   * =========================================================================
+   *
+   * O QUE FAZ: respondem aos eventos de submit de cada card e ao clique de
+   * "Novo cadastro". Os dois handlers de submit seguem o mesmo fluxo ponta
+   * a ponta: validam o form nativo (checkValidity/reportValidity), montam o
+   * payload com formDataToPayload(), escolhem metodo/URL com
+   * senderFor()/resolveEndpoint() a partir do meta do form ativo, enviam,
+   * normalizam a resposta e atualizam estado + toast de sucesso/erro.
+   * CONEXAO: consomem utils/formSubmit (formDataToPayload, errorDetail,
+   * resolveEndpoint, senderFor) e utils/apiResult (normalizeItem); escrevem
+   * em managerId/managerUsername/done, que o JSX (Bloco 6) usa para avancar
+   * de card.
+   * -------------------------------------------------------------------------
+   */
+
+  /**
+   * Submit do card 1 (login/user_manager). Cria o registro em user_manager
+   * e guarda o id retornado — esse id e usado depois para pre-preencher a
+   * FK do card 2 (ver prefillFkField() e a derivacao de profileSchema mais
+   * abaixo).
+   * @param event evento de submit do form do card 1
+   */
   const handleManagerSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -190,6 +348,14 @@ export default function RegisterPage() {
     [formManager, toast],
   );
 
+  /**
+   * Submit do card 2 (cadastro/user_profiles). So e chamado quando
+   * profileSchema ja existe, ou seja, quando o login do card 1 ja foi
+   * criado. Em caso de erro, a mensagem deixa explicito que o login ja foi
+   * criado (para o usuario nao tentar repetir o card 1) e orienta a
+   * reenviar so o card 2.
+   * @param event evento de submit do form do card 2
+   */
   const handleProfileSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -228,6 +394,12 @@ export default function RegisterPage() {
     [formProfile, managerId, managerUsername, toast],
   );
 
+  /**
+   * Reseta o wizard para um novo cadastro: limpa o id/username do login
+   * criado, tira a flag "done" e incrementa reloadKey para remontar os
+   * <form> (via key={`manager-${reloadKey}`} / key={`profile-${reloadKey}`})
+   * com estado interno limpo.
+   */
   const handleReset = useCallback(() => {
     setManagerId(null);
     setManagerUsername(null);
@@ -235,11 +407,28 @@ export default function RegisterPage() {
     setReloadKey((k) => k + 1);
   }, []);
 
+  /**
+   * Schema do card 2 com a FK ja pre-preenchida/travada com o id do login
+   * criado no card 1. So existe quando ha form de perfil carregado E o
+   * login ja foi criado (managerId setado) — por isso o card 2 so aparece
+   * no JSX depois do card 1 (ver condicao "formProfile && profileSchema").
+   */
   const profileSchema =
     formProfile && managerId ? prefillFkField(formProfile.schema, FK_FIELD, managerId) : null;
 
+  /**
+   * =========================================================================
+   * BLOCO 6 — RENDERIZACAO (JSX)
+   * =========================================================================
+   *
+   * O QUE FAZ: cabecalho da pagina + estado de loading/erro + (quando
+   * concluido) tela de sucesso + os dois cards do wizard, cada um so
+   * aparecendo quando as condicoes da etapa anterior forem satisfeitas.
+   * -------------------------------------------------------------------------
+   */
   return (
     <>
+      {/* Cabecalho da pagina, com link de volta para a listagem de usuarios */}
       <PageHeader
         title="Novo Cadastro"
         subtitle="Duas tabelas ligadas por chave: login (user_manager) e depois perfil (user_profiles)"
@@ -249,10 +438,13 @@ export default function RegisterPage() {
         </Link>
       </PageHeader>
 
+      {/* Estado de carregamento inicial (busca dos 2 forms ativos) */}
       {loading && <LoadingOverlay />}
 
+      {/* Estado de erro: form ausente/duplicado/sem campos em alguma etapa */}
       {error && !loading && <EmptyState title="Formulario indisponivel" description={error} />}
 
+      {/* Estado de sucesso: wizard concluido, oferece login ou novo cadastro */}
       {!loading && !error && done && (
         <EmptyState title="Cadastro criado com sucesso" variant="muted">
           <div className="d-flex gap-2 justify-content-center flex-wrap">
@@ -266,6 +458,7 @@ export default function RegisterPage() {
         </EmptyState>
       )}
 
+      {/* Card 1 — login (user_manager): form ate managerId ser definido, depois vira aviso */}
       {!loading && !error && !done && formManager && (
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-body p-4">
@@ -289,6 +482,7 @@ export default function RegisterPage() {
         </div>
       )}
 
+      {/* Card 2 — cadastro (user_profiles): so aparece com FK ja pre-preenchida */}
       {!loading && !error && !done && formProfile && profileSchema && (
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-body p-4">

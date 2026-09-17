@@ -1,14 +1,32 @@
-// Painel dev-only: lista o JSON bruto das respostas de API capturadas em
-// services/http.ts (todas as chamadas passam por la). So renderiza em hosts
-// de desenvolvimento (config/envHost.ts) e quando ha pelo menos uma entrada.
-//
-// Sem rolagem interna deliberadamente — o painel cresce com a pagina, sem
-// scrollbars aninhadas (card > lista > pre).
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/ApiDebugPanel.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: painel dev-only que lista o JSON bruto das respostas de API
+ * capturadas em services/http.ts (todas as chamadas passam por la), mais o
+ * access_token mais recente decodificado. So renderiza em hosts de
+ * desenvolvimento (config/envHost.ts) e quando ha pelo menos uma entrada.
+ * Sem rolagem interna deliberadamente — o painel cresce com a pagina, sem
+ * scrollbars aninhadas (card > lista > pre).
+ *
+ * DEPENDENCIAS: config/envHost (isDevHost), hooks/useApiDebugLog
+ * (useApiDebugLog, useLatestAccessToken) e services/apiDebugLog (clear).
+ * CONSUMIDORES: nenhuma pagina especifica — e um componente global (ver
+ * onde e montado no layout, tipicamente RootLayout/Footer, para aparecer em
+ * qualquer tela durante o desenvolvimento).
+ *
+ * COMO REAPROVEITAR: nao chamar services/apiDebugLog diretamente de outro
+ * lugar — sempre passar por este componente + hooks/useApiDebugLog para
+ * manter a captura centralizada em http.ts.
+ * -------------------------------------------------------------------------
+ */
 
 import { isDevHost } from '@/config/envHost';
 import { useApiDebugLog, useLatestAccessToken } from '@/hooks/useApiDebugLog';
 import { clear as clearApiDebugLog } from '@/services/apiDebugLog';
 
+/** Verde para resposta ok, vermelho para erro (usado no badge de status HTTP de cada entrada). */
 function statusBadgeClass(ok: boolean): string {
   return ok ? 'text-bg-success' : 'text-bg-danger';
 }
