@@ -1,4 +1,15 @@
-// Rodape simples.
+/**
+ * =========================================================================
+ * FILE HEADER — components/layout/Footer.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: rodape simples e estatico (nome do projeto + ano atual).
+ *
+ * DEPENDENCIAS: nenhuma.
+ * CONSUMIDORES: layouts/RootLayout.tsx (montado uma vez, em toda pagina que
+ * usa o layout raiz).
+ * -------------------------------------------------------------------------
+ */
 
 export default function Footer() {
   const year = new Date().getFullYear();

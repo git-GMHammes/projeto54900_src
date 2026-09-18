@@ -1,4 +1,23 @@
-// Pilha visual de toasts (Bootstrap). Controlada pelo ToastProvider.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/ToastStack.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: pilha visual de toasts (Bootstrap `.toast-container`), so
+ * apresentacao — nao tem estado proprio, so renderiza a lista recebida e
+ * delega o fechamento (`onDismiss`) para quem a controla.
+ *
+ * DEPENDENCIAS: context/ToastContext (tipo Toast).
+ * CONSUMIDORES: context/ToastContext.tsx renderiza <ToastStack> dentro do
+ * <ToastProvider>, passando a lista de toasts e dismiss(); nenhuma pagina
+ * usa este componente diretamente (usar hooks/useToast() para disparar
+ * toasts, nunca montar outro <ToastStack>).
+ *
+ * COMO REAPROVEITAR: nao instanciar diretamente — disparar toasts via
+ * hooks/useToast() (toast.success/error/...), que ja aparecem nesta pilha
+ * unica montada pelo Provider.
+ * -------------------------------------------------------------------------
+ */
 
 import type { Toast } from '@/context/ToastContext';
 

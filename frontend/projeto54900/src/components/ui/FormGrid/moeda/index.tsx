@@ -1,3 +1,26 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/moeda/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'moeda'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> em
+ *     formato decimal ("1234.56")
+ *   - A chave no FormData/payload e: field.name
+ *   - Internamente trabalha com digitos inteiros (centavos) para a mascara
+ *     ("R$ 1.234,56" exibido) e converte para/de decimal nas bordas
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

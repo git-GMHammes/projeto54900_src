@@ -1,15 +1,32 @@
-// IconSelect — seletor de icone do Bootstrap Icons.
-//
-// Separado do `select` do FormGrid de proposito: <option> nao renderiza
-// <i class="bi ...">, entao este e um dropdown proprio (div) que mostra o
-// glifo + o nome (ex.: "arrow-down-left-circle-fill"), com busca.
-//
-// Fonte dos nomes: bootstrap-icons/font/bootstrap-icons.json (pacote instalado,
-// mesma versao da fonte carregada em src/bootstrap.ts). A ordem do JSON = ordem
-// dos IDs da tabela `bootstrap_icons` (o seeder inseriu nessa ordem).
-//
-// Favoritos (./favoritos.ts) aparecem primeiro, com um separador antes do resto.
-// A tabela do banco (com `is_favorite`) ainda nao e consultada aqui — falta endpoint.
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/IconSelect/index.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: seletor de icone do Bootstrap Icons, com busca. Separado do
+ * `select` do FormGrid de proposito: `<option>` nao renderiza
+ * `<i class="bi ...">`, entao este e um dropdown proprio (div) que mostra o
+ * glifo + o nome (ex.: "arrow-down-left-circle-fill").
+ *
+ * Fonte dos nomes: bootstrap-icons/font/bootstrap-icons.json (pacote
+ * instalado, mesma versao da fonte carregada em src/bootstrap.ts). A ordem
+ * do JSON = ordem dos IDs da tabela `bootstrap_icons` (o seeder inseriu
+ * nessa ordem).
+ *
+ * Favoritos (./favoritos.ts) aparecem primeiro, com um separador antes do
+ * resto. A tabela do banco (com `is_favorite`) ainda nao e consultada aqui
+ * — falta endpoint (ver comentario em favoritos.ts).
+ *
+ * DEPENDENCIAS: bootstrap-icons/font/bootstrap-icons.json (nomes reais dos
+ * icones) e ./favoritos (ICON_FAVORITOS).
+ * CONSUMIDORES: qualquer form/builder que precise escolher um icone
+ * Bootstrap (ex.: builders de menu/nav que gravam o nome do icone).
+ *
+ * COMO REAPROVEITAR: controlar `value`/`onChange` como um input comum —
+ * `value` e o nome do icone sem `bi-`; renderizar `<i className={`bi bi-${value}`} />`
+ * onde for exibir o icone escolhido.
+ * -------------------------------------------------------------------------
+ */
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import iconsData from 'bootstrap-icons/font/bootstrap-icons.json';

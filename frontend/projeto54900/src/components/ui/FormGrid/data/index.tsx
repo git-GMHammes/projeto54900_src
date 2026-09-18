@@ -1,3 +1,27 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/data/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'data'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, min/max (datas limite, em ISO)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> em
+ *     formato ISO ("YYYY-MM-DD") quando completo, vazio enquanto incompleto
+ *   - A chave no FormData/payload e: field.name
+ *   - Internamente trabalha com digitos "DDMMYYYY" para a mascara
+ *     (DD/MM/AAAA exibido) e converte para/de ISO nas bordas
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useEffect, useState } from 'react'
 import type {
   ChangeEvent,

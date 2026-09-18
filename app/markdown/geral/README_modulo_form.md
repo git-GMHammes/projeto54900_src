@@ -41,9 +41,10 @@ Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
 | Coluna | Tipo | Nota |
 | --- | --- | --- |
 | `slug` | VARCHAR(255) NOT NULL **UNIQUE** | identidade do formulário (única) |
+| `table_name` | VARCHAR(255) NULL | tabela real do banco escolhida no construtor — validada contra o schema (`SchemaInspector::isKnownTable`) no Processor; fonte da verdade para reabrir o formulário em edição |
 | `title` | VARCHAR(255) NULL | cabeçalho exibido no topo (vazio → sem cabeçalho) |
 | `description` | TEXT NULL | |
-| `profile_group` | VARCHAR(255) NULL | grupo de perfil dono do formulário |
+| `roles` | VARCHAR(255) NULL | lista JSON de slugs de `user_roles` com acesso ao formulário |
 | `react_route` | VARCHAR(255) NULL | rota do React onde o form fica ativo |
 | `submit_endpoint` | VARCHAR(255) NULL | para onde o form envia |
 | `http_method` | VARCHAR(10) NULL DEFAULT `POST` | |
@@ -70,9 +71,9 @@ aplicada pelo `Form/FormCampos/Processor` quando o campo é vinculado.
   `read_only`, `is_hidden`, `max_length`, `min_length`, `pattern`,
   `input_mode`, `autocomplete`.
 - **Flags por tipo (TINYINT 1):** `no_numbers`, `no_letters`,
-  `no_special_chars`, `strong_password`, `double_field`, `equal_fields`,
-  `with_seconds`, `show_counter`, `inline`; `rows_qty` (INT), `min_date`,
-  `max_date` (VARCHAR(10) ISO).
+  `no_special_chars`, `strong_password`, `double_field` (exige igualdade
+  sozinho, sem flag separada), `with_seconds`, `show_counter`, `inline`;
+  `rows_qty` (INT), `min_date`, `max_date` (VARCHAR(10) ISO).
 - **Colunas JSON:** `options_json` (radio/checkbox/select), `datalist_json`
   (text), `allowed_domains_json` (email), `select_config_json` (`src`,
   `valueKey`, `labelKey`, `labelTemplate`, `maxVisible`, `findSrc`,
@@ -120,6 +121,7 @@ Envelope de resposta e status: §6 do ROADMAP.
 | Regra | Onde |
 | --- | --- |
 | `slug` único (form_manager) | `FormManager/Processor::validateOnCreate/Update` (409) |
+| `table_name` deve ser tabela real do schema | `FormManager/Processor::validateOnCreate/Update` via `SchemaInspector::isKnownTable` (422) |
 | `slug` único por formulário (form_groups) | `FormGroups/Processor` via `existsBySlugInForm` (409) |
 | FK `form_manager_id` / `form_group_id` / `form_row_id` existe e está ativa | `validateOnCreate/Update` de cada Processor (422) |
 | `status` de `form_manager` nasce `draft` | `FormManager/Processor::prepareData` (`unset`) |
@@ -135,6 +137,8 @@ Database/Migrations/
   2026-09-06-012302_CreateFormRowsTableMigration.php
   2026-09-06-012303_CreateFormCamposTableMigration.php
   2026-09-06-012304_CreateViewFormManagerMigration.php
+  2026-09-12-231700_AddTableNameToFormManagerMigration.php
+  2026-09-12-231701_BackfillTableNameFormManagerMigration.php
 Models/V1/Form/FormManager/     SqlTableModel.php  SqlViewModel.php
 Models/V1/Form/FormGroups/      SqlTableModel.php
 Models/V1/Form/FormRows/        SqlTableModel.php   (+ sumCampoCols/countCampos)
@@ -169,3 +173,14 @@ marca apenas o registro-alvo.
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

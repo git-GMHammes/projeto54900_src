@@ -1,12 +1,30 @@
-// Leitura centralizada das variaveis de ambiente do Vite.
-// Nao acesse `import.meta.env` fora daqui.
-//
-// O projeto NAO usa arquivo .env e nao ha mais container de frontend. Em dev
-// (`npm run dev`) e no build (`npm run build`) os valores usados sao os DEFAULTS
-// abaixo (basePath '/', apiBaseUrl '/api', apiVersion 'v1', wsUrl '/ws'). Para
-// um deploy que precise de outros valores, exportar as chaves VITE_* no
-// ambiente do processo antes do build (o Vite le variaveis prefixadas VITE_).
+/**
+ * =========================================================================
+ * FILE HEADER — config/env.ts
+ * =========================================================================
+ *
+ * PROPOSITO: leitura centralizada das variaveis de ambiente do Vite. Nao
+ * acessar `import.meta.env` fora daqui.
+ *
+ * O projeto NAO usa arquivo .env e nao ha mais container de frontend. Em
+ * dev (`npm run dev`) e no build (`npm run build`) os valores usados sao os
+ * DEFAULTS abaixo (basePath '/', apiBaseUrl '/api', apiVersion 'v1', wsUrl
+ * '/ws'). Para um deploy que precise de outros valores, exportar as chaves
+ * VITE_* no ambiente do processo antes do build (o Vite le variaveis
+ * prefixadas VITE_).
+ *
+ * DEPENDENCIAS: nenhuma (arquivo autocontido; le so import.meta.env nativo do Vite).
+ * CONSUMIDORES: constants/api.ts (DEFAULT_API_VERSION), services/http.ts
+ * (apiBaseUrl), context/AppConfigContext.tsx (todo o objeto env),
+ * config/envHost.ts nao depende deste arquivo (checagem de host separada).
+ *
+ * COMO REAPROVEITAR: importar `env` (nunca `import.meta.env` direto) para
+ * ler qualquer valor de ambiente; usar `routerBasename` especificamente na
+ * montagem do `createBrowserRouter` (routes/index.tsx).
+ * -------------------------------------------------------------------------
+ */
 
+/** Remove a barra final de um path/URL, se houver (evita "//" ao concatenar). */
 function trimTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
@@ -33,5 +51,5 @@ export const env: AppEnv = Object.freeze({
   isProd: import.meta.env.PROD,
 });
 
-// basename do react-router: "/" quando o app roda na raiz.
+/** basename do react-router: "/" quando o app roda na raiz. @see routes/index.tsx */
 export const routerBasename: string = env.basePath === '' ? '/' : env.basePath;

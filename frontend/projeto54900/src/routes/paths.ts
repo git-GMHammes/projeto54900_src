@@ -8,11 +8,16 @@ export const paths = {
   home: '/',
 
   v1: {
+    auth: {
+      login: '/v1/login',
+    },
     user: {
       list: '/v1/user-manager',
-      new: '/v1/user-manager/novo',
+      create: '/v1/user-manager/create',
       view: (id: RouteId) => `/v1/user-manager/${id}`,
-      edit: (id: RouteId) => `/v1/user-manager/${id}/editar`,
+      update: (id: RouteId) => `/v1/user-manager/update/${id}`,
+      // Wizard de 2 tabelas (user-manager -> user-profiles) ligadas por FK
+      register: '/v1/register',
     },
     upload: {
       list: '/v1/upload-manager',
@@ -28,6 +33,30 @@ export const paths = {
       constructor: '/v1/form-constructor-claude',
       // Renderiza UM formulario real a partir da definicao gravada (por slug)
       render: (slug: string) => `/v1/form/${slug}`,
+    },
+    list: {
+      // Preview do construtor de listas (list_manager -> list_columns / list_actions)
+      list: '/v1/list-constructor',
+      // ListBuilderPage: nova listagem / edicao de uma existente
+      create: '/v1/list-constructor/create',
+      edit: (id: RouteId) => `/v1/list-constructor/update/${id}`,
+    },
+    // Nav — config/branding do app/navbar (nome, imagem, icone, versao)
+    nav: {
+      list: '/v1/nav-manager',
+      create: '/v1/nav-manager/create',
+      view: (id: RouteId) => `/v1/nav-manager/${id}`,
+      update: (id: RouteId) => `/v1/nav-manager/update/${id}`,
+    },
+    // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
+    menu: {
+      list: '/v1/menu-manager',
+      // Itens de UM nav especifico (usado pelo botao "Itens" do nav-manager)
+      listByNav: (navId: RouteId) => `/v1/menu-manager?nav_manager_id=${navId}`,
+      create: '/v1/menu-manager/create',
+      createForNav: (navId: RouteId) => `/v1/menu-manager/create?nav_manager_id=${navId}`,
+      view: (id: RouteId) => `/v1/menu-manager/${id}`,
+      update: (id: RouteId) => `/v1/menu-manager/update/${id}`,
     },
   },
 

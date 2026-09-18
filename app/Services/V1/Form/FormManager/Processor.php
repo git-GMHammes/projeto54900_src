@@ -5,6 +5,7 @@ namespace App\Services\V1\Form\FormManager;
 use App\Models\V1\Form\FormManager\SqlTableModel;
 use App\Models\V1\Form\FormManager\SqlViewModel;
 use App\Services\V1\BaseTableService;
+use App\Services\V1\Meta\DbSchema\SchemaInspector;
 
 /**
  * Service de negocio do modulo Form/FormManager.
@@ -12,6 +13,7 @@ use App\Services\V1\BaseTableService;
  * Todo o CRUD generico (leitura, escrita, exclusao) e as leituras de view vem
  * de BaseTableService / BaseViewService. Este Processor:
  *  - garante unicidade de slug (validateOnCreate / validateOnUpdate)
+ *  - garante que table_name e uma tabela real do schema (validateOnCreate / validateOnUpdate)
  *  - sela o status no create (nasce 'draft', DEFAULT da coluna)
  *
  * Metodos herdados: find, getGrouped, search, get, getAll, getNoPagination,
@@ -24,10 +26,13 @@ class Processor extends BaseTableService
     protected SqlTableModel $tableModel;
     protected SqlViewModel  $viewModel;
 
+    private SchemaInspector $schemaInspector;
+
     public function __construct()
     {
-        $this->tableModel = new SqlTableModel();
-        $this->viewModel  = new SqlViewModel();
+        $this->tableModel      = new SqlTableModel();
+        $this->viewModel       = new SqlViewModel();
+        $this->schemaInspector = new SchemaInspector();
     }
 
     // -------------------------------------------------------------------------
@@ -40,6 +45,10 @@ class Processor extends BaseTableService
             return ['success' => false, 'message' => 'slug ja utilizado por outro formulario', 'code' => 409];
         }
 
+        if (!empty($data['table_name']) && !$this->schemaInspector->isKnownTable((string) $data['table_name'])) {
+            return ['success' => false, 'message' => "table_name '{$data['table_name']}' nao encontrada no schema", 'code' => 422];
+        }
+
         return null;
     }
 
@@ -47,6 +56,10 @@ class Processor extends BaseTableService
     {
         if (!empty($data['slug']) && $this->tableModel->existsBySlug((string) $data['slug'], $id)) {
             return ['success' => false, 'message' => 'slug ja utilizado por outro formulario', 'code' => 409];
+        }
+
+        if (!empty($data['table_name']) && !$this->schemaInspector->isKnownTable((string) $data['table_name'])) {
+            return ['success' => false, 'message' => "table_name '{$data['table_name']}' nao encontrada no schema", 'code' => 422];
         }
 
         return null;
