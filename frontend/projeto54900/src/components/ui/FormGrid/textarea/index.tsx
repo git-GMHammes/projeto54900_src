@@ -1,3 +1,26 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/textarea/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'textarea'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     rows/cols, maxLength/minLength, showCounter, noSpecialChars/
+ *     noNumbers/noLetters, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: o proprio <textarea name={field.name}>
+ *     (sem hidden — nao ha mascara)
+ *   - A chave no FormData/payload e: field.name
+ *
+ * DEPENDENCIAS: nenhuma (nao usa ../emitValue — sem mascara).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

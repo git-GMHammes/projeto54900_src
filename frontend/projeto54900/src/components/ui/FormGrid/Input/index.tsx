@@ -1,3 +1,42 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/Input/index.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: <FormGrid> — o motor do "Factory de Formularios". Recebe um
+ * `schema` (FormGridSchema: linhas de campos, cada campo com um `field.type`
+ * discriminador) e, por linha, renderiza a grade Bootstrap (`col-md-N`) e
+ * despacha cada campo para o componente especializado correspondente
+ * (CpfField, SelectField, CepField, etc.) — ou, sem `type`/`type: 'text'`/
+ * `'password'`, renderiza o campo texto padrao definido neste proprio
+ * arquivo (TextFieldSchema).
+ *
+ * O `schema` normalmente vem de form_manager/form_groups/form_rows/
+ * form_fields (ver services/formSchema.ts, buildRenderSchema), mas tambem
+ * pode ser montado na mao por uma pagina (ver prefillFkField em
+ * pages/v1/user/register/RegisterPage.tsx).
+ *
+ * DEPENDENCIAS: cada componente de campo do diretorio (`../cpf`, `../phone`,
+ * `../cnpj`, `../cep`, `../moeda`, `../data`, `../hora`, `../pis`,
+ * `../placa`, `../titulo`, `../cnh`, `../processo`, `../renavam`, `../sei`,
+ * `../email`, `../textarea`, `../senha`, `../radio`, `../checkbox`,
+ * `../select`) — cada um exporta seu componente + `XxxFieldSchema`.
+ * CONSUMIDORES: qualquer pagina que renderize um formulario dinamico
+ * (pages/v1/form/FormRendererPage.tsx, pages/v1/user/register/RegisterPage.tsx,
+ * FormBuilderPage.tsx no preview) — sempre com
+ * `new FormData(form)` no submit para coletar os valores (ver
+ * utils/formSubmit.ts, formDataToPayload).
+ *
+ * COMO CRIAR UM NOVO TIPO DE CAMPO: 1) criar a pasta
+ * `components/ui/FormGrid/<tipo>/index.tsx` seguindo o padrao de um campo
+ * existente (ver README_FormGrid.md e o Bloco C do
+ * README_comenta-codigo-didatico.md); 2) importar o componente + schema
+ * aqui; 3) adicionar `<tipo>FieldSchema` na union `AnyFieldSchema`; 4)
+ * adicionar o `if (field.type === '<tipo>')` correspondente no switch
+ * abaixo, ANTES do fallback de campo texto.
+ * -------------------------------------------------------------------------
+ */
+
 import { Fragment, useState } from 'react'
 import type {
   ChangeEvent,
@@ -125,6 +164,7 @@ export interface FormGridSchema {
 
 // ─── Validações de campo texto ────────────────────────────────────────────────
 
+/** Validacoes do campo texto padrao no blur: required/minLength/maxLength/pattern, na ordem. */
 function validarBlur(field: TextFieldSchema, valor: string): string | null {
   const nome = field.label ?? field.name ?? field.id ?? 'Campo'
 
@@ -143,6 +183,7 @@ function validarBlur(field: TextFieldSchema, valor: string): string | null {
   return null
 }
 
+/** Validacoes do campo texto padrao a cada tecla: noNumbers/noLetters/noSpecialChars. */
 function validarDigitacao(field: TextFieldSchema, valor: string): string | null {
   const nome = field.label ?? field.name ?? field.id ?? 'Campo'
 
@@ -164,6 +205,13 @@ interface FormGridProps {
   schema: FormGridSchema
 }
 
+/**
+ * Renderiza schema.rows como linhas de grade Bootstrap, despachando cada
+ * field.type para o componente de campo correspondente (fallback: campo
+ * texto padrao). Erros de validacao sao gerenciados aqui so para o campo
+ * texto padrao — cada componente especializado (CpfField, etc.) gerencia o
+ * proprio erro internamente.
+ */
 function FormGrid({ schema }: FormGridProps) {
   // Erros gerenciados apenas para campos texto (CPF gerencia o próprio)
   const [erros, setErros] = useState<Record<string, string>>({})

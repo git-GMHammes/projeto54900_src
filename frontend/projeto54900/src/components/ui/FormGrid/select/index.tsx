@@ -1,3 +1,45 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/select/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'select'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, options/src/findSrc/
+ *     getSrc (3 canais de dados, ver abaixo), valueKey/labelKey/
+ *     labelTemplate, multiple/values/defaultValues, disabledValues,
+ *     required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - Single: <input type="hidden" name={field.name}> com o valor selecionado
+ *   - Multiple: um <input type="hidden" name={field.name}> por valor
+ *     selecionado (mesmo padrao do checkbox, serializa como lista)
+ *   - A chave no FormData/payload e: field.name
+ *
+ * TRES CANAIS DE DADOS (o mais complexo do FormGrid):
+ *   1. `options` — array inline, ja carregado (sem fetch).
+ *   2. `src` — GET na montagem, popula o cache local (allData) inteiro.
+ *   3. `findSrc`/`findColumn` — POST com debounce a cada busca (>= 2 chars),
+ *      usado quando o dataset e grande demais para caber em `src`/`options`.
+ *   `getSrc` (GET /{id}) e o fallback de REIDRATACAO: quando o valor
+ *   pre-selecionado (edicao) nao esta no cache local, busca so aquele item
+ *   por id para exibir o label correto.
+ *
+ * MODO single vs multiple: single usa value/onChange (um <select> disfarcado
+ * de combobox com busca); multiple usa values/onChangeMultiple e mantem o
+ * listbox sempre visivel (sem dropdown que fecha ao selecionar).
+ *
+ * DEPENDENCIAS: nenhuma (fetch nativo direto — nao usa services/http.ts,
+ * pois `src`/`findSrc`/`getSrc` podem apontar para qualquer endpoint,
+ * inclusive fora do grupo de recursos padrao).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C) — mas para um combobox remoto novo, preferir copiar este
+ * arquivo como base em vez de partir do zero, dada a complexidade dos 3
+ * canais de dados.
+ * -------------------------------------------------------------------------
+ */
+
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ChangeEvent, FocusEvent, FocusEventHandler, KeyboardEvent } from 'react'
 

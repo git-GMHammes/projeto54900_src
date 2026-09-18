@@ -1,3 +1,25 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/sei/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'sei'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> com
+ *     o valor "cru" SEI15NNNNNNNNNN20NN (19 chars, sem separadores)
+ *   - A chave no FormData/payload e: field.name
+ *   - O <input> visivel exibe a mascara SEI-15NNNN/NNNNNN/20NN
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

@@ -158,8 +158,9 @@ Estado local `managers: Record<string, ManagerLocal>`; editado por
 
 | Campo             | `col` | `required` UI    | Banco / `CreateRequest`                                   | Tipo no schema                                                                                                                                                                                                                                                                                              |
 | ----------------- | ----- | ---------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `table_name`      | —     | —                | `NULL` / `required`, validada contra o schema (422)        | **Sem campo no `<FormGrid>`** — gravado automaticamente com a tabela escolhida no card seletor (`handleTabelas` → `managerInicial(tabela)`); nunca editado à mão                                                                                                                                          |
 | `title`           | 12    | sim              | `NULL` / `permit_empty`                                   | `text` — cabeçalho no topo. **slug acompanha** enquanto `slugAuto` (`slugify` no `onChange`)                                                                                                                                                                                                                |
-| `profile_group`   | 12    | sim              | `NULL` / `permit_empty`                                   | `select` **`multiple`**, `src` = `${apiBaseUrl}/v1/user-roles/get-no-pagination`, `valueKey: 'slug'`, `labelKey: 'name'`. `values` = `parseStringList(m.profile_group)`; `onChangeMultiple` grava `toStringList(values)`; vazio → `''`. Ver [`README_campo_json_montado.md`](README_campo_json_montado.md). |
+| `roles`           | 12    | sim              | `NULL` / `permit_empty`                                   | `select` **`multiple`**, `src` = `${apiBaseUrl}/v1/user-roles/get-no-pagination`, `valueKey: 'slug'`, `labelKey: 'name'`. `values` = `parseStringList(m.roles)`; `onChangeMultiple` grava `toStringList(values)`; vazio → `''`. Ver [`README_campo_json_montado.md`](README_campo_json_montado.md). |
 | `slug`            | 6     | sim              | `NOT NULL` UNIQUE / `required`                            | `text` — identidade do formulário. Nasce vazio; acompanha o Título enquanto `slugAuto`; ao editar à mão zera `slugAuto`                                                                                                                                                                                     |
 | `status`          | 6     | sim              | `NOT NULL` DEFAULT `draft` / não enviado no create        | `select` estático `draft`/`active`/`inactive` — sempre nasce `draft`; `required` só barra o botão `×`                                                                                                                                                                                                       |
 | `react_route`     | 12    | sim              | `NULL` / `permit_empty`                                   | `text`                                                                                                                                                                                                                                                                                                      |
@@ -258,7 +259,7 @@ apaga o `CampoLocal` e a coluna volta a ficar selecionável no listbox.
 - **`CAMPOS_POR_TIPO`** (em `FormBuilderPage.tsx`):
   - `text` → `datalist_json`, `no_*`
   - `password` → `no_*`
-  - `senha` → `no_*`, `strong_password`, `double_field`, `equal_fields`
+  - `senha` → `no_*`, `strong_password`, `double_field` (exige igualdade sozinho)
   - `email` → `allowed_domains_json`
   - `textarea` → `rows_qty`, `show_counter`, `no_*`
   - `select` → `sel_multiple`, `options_json` + grupo `sel_*` (`sel_src`,
@@ -295,12 +296,12 @@ apaga o `CampoLocal` e a coluna volta a ficar selecionável no listbox.
   tipos aceitam) — pinta `*` no label e valida no `blur` (`"<label> é
 obrigatório"` + `is-invalid`). É **regra de produto do construtor**, mais
   estrita que o banco: hoje só `form_manager.slug` e `form_groups.title` são
-  `NOT NULL` sem default; os demais marcados (`title`, `profile_group`,
+  `NOT NULL` sem default; os demais marcados (`title`, `roles`,
   `react_route`, `submit_endpoint`, `http_method`, `status`, `version`) são
   `NULL` ou têm default no banco e `permit_empty` no `CreateRequest`. Enquanto o
   backend não for endurecido, a API ainda aceita esses campos vazios. Bloqueio
   de envio real só quando o construtor ganhar `submit`.
-- **`profile_group`**: par `parseStringList` / `toStringList` de
+- **`roles`**: par `parseStringList` / `toStringList` de
   [`@/utils/jsonList`](../../utils/jsonList.ts).
 - **Tipos e defaults**: `src/pages/v1/form/formBuilder.model.ts` (`ManagerLocal`,
   `managerInicial`, `GrupoLocal`, `grupoInicial`, `RowLocal`, `rowInicial`,
@@ -327,7 +328,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Estrutura ✅          | `field_type`, `col`, `sort_order`, `label`, `field_name`, `field_key`, `placeholder`, `default_value`, `help_text`                                                                                                                                                                                           |
 | Estado / validação ✅ | `required`, `disabled`, `read_only`, `is_hidden`, `min_length`, `max_length`, `pattern`, `input_mode`, `autocomplete`                                                                                                                                                                                        |
-| Específico ✅         | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`/`equal_fields`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*` |
+| Específico ✅         | por `field_type` via `CAMPOS_POR_TIPO` (só o que o `<Tipo>FieldSchema` declara): `no_*`, `strong_password`/`double_field`, `with_seconds`, `show_counter`, `inline`, `rows_qty`, `min_date`/`max_date`, `options_json`/`datalist_json`/`allowed_domains_json`, `sel_multiple` + grupo `sel_*`                |
 
 **Fora da UI (auto):** atributos DOM soltos (`title`, `className`, `tabIndex`,
 `size`, `cols`, `dir`, `lang`, `spellCheck`, `autoFocus`, `list`) e `style_json`
@@ -344,7 +345,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
   validada no `Form/FormCampos/Processor` ao vincular o campo, **não** no DDL. O
   construtor deveria somar os `col` da linha e avisar antes de qualquer envio.
 - **`field_type`**: o ENUM mistura inglês/português e duplica `password`/`senha`
-  (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 21 tipos
+  (ver "Observação de nomenclatura" abaixo). Resolver ao casar com os 22 tipos
   do `<FormGrid>` ([`README_FormGrid.md`](README_FormGrid.md)).
 - **Persistência por nó**: ✅ feita (ver "Persistência por nó — Salvar no
   modal"). **Falta**: recarregar do banco uma árvore já persistida para
@@ -362,7 +363,7 @@ Específico — {tipo}) e só expõe o que é preenchido ao criar um field.
   com `password`/`senha` duplicando o mesmo tipo — e documentos BR (`cpf`,
   `cnpj`, `phone`, `cep`, `pis`, `placa`, `titulo`, `cnh`, `processo`,
   `renavam`, `sei`). Padronizar ao conectar com o `<FormGrid>` (ver
-  [`README_FormGrid.md`](README_FormGrid.md), que cobre 21 tipos).
+  [`README_FormGrid.md`](README_FormGrid.md), que cobre 22 tipos).
 
 ## Arquivos
 
@@ -372,7 +373,7 @@ src/pages/v1/form/FormBuilderTree.tsx     <FormTree>/<TreeNode> — árvore de h
 src/pages/v1/form/FormModal.tsx           <FormModal> — modal controlado (portal), abre o form do nó
 src/pages/v1/form/formBuilder.model.ts    tipos, defaults, mappers (toTabela/toColuna)
 src/utils/slug.ts                         slugify() (slug automático)
-src/utils/jsonList.ts                     parseStringList()/toStringList() (profile_group)
+src/utils/jsonList.ts                     parseStringList()/toStringList() (roles)
 src/services/v1/dbSchema.ts               tables() / columns(tabela)
 src/services/v1/formManager.table.ts      create/update/deleteSoft de form_manager (Salvar no modal)
 src/services/v1/formGroups.table.ts       idem form_groups
@@ -396,3 +397,14 @@ Backend do `user-roles` (módulo read-only, espelha `User/UserManager`):
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

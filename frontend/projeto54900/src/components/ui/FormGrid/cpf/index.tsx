@@ -1,3 +1,28 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/cpf/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'cpf'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, minLength/maxLength/pattern (aplicados aos digitos puros)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: <input type="hidden" name={field.name}> com
+ *     os 11 digitos puros (sem pontuacao)
+ *   - A chave no FormData/payload e: field.name
+ *   - O <input> visivel so exibe a mascara (000.000.000-00); nao vai no submit
+ *
+ * DEPENDENCIAS: ../emitValue (emitValue — reemite o onChange com os digitos
+ * puros em vez do texto mascarado).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C) — interface XxxFieldSchema, helpers de mascara/validacao
+ * fora do componente, export function XxxField + export default.
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

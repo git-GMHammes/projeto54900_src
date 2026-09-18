@@ -9,13 +9,15 @@ digitado no host (PowerShell, na raiz do projeto):
 
 ```
 
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed <NomeDaClasse>
 
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
 podman compose exec php php spark db:seed BootstrapIconsSeeder
 podman compose exec php php spark db:seed FormConstructorSeeder
+podman compose exec php php spark db:seed NavManagerSeeder
+podman compose exec php php spark db:seed MenuManagerSeeder
  
 ``` 
 
@@ -69,13 +71,15 @@ Nos exemplos abaixo, `SPARK` abrevia `podman compose exec php php spark`
 
 ## Seeds do sistema
 
-Em `app/Database/Seeds/`. Três classes, todas idempotentes:
+Em `app/Database/Seeds/`. Cinco classes, todas idempotentes:
 
 | Classe                  | Tabela(s) preenchida(s)                                | O que popula                                                                                 | Reexecução                                                                 |
 | ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `UserRolesSeeder`       | `user_roles`                                          | 3 perfis de acesso: `admin`, `user`, `guest` (coluna `permissions` em JSON, placeholder)   | `INSERT ... ON DUPLICATE KEY UPDATE` pela `slug` (UNIQUE); não troca `id` |
 | `BootstrapIconsSeeder`  | `bootstrap_icons`                                     | catálogo do Bootstrap Icons (`name` + `codepoint`); origem: `public/bootstrap-icons.json` versionado, com fallback jsDelivr 1.11.3 | `ON DUPLICATE KEY UPDATE` pela `name` (UNIQUE); **preserva** `is_favorite` |
 | `FormConstructorSeeder` | `form_manager`, `form_groups`, `form_rows`, `form_fields` | a árvore do "Construtor de Formulários" (slug `form-constructor`): 4 grupos → linhas → campos, via os Processors do módulo Form | se o slug já existe, faz **delete-hard** (CASCADE) e recria do zero        |
+| `NavManagerSeeder`      | `nav_manager`                                         | o nav de referência do sistema (`title` "Menu Teste"), via `Processor` do módulo Nav          | se o `title` já existe, faz **delete-hard** (CASCADE apaga os itens de menu do nav) e recria |
+| `MenuManagerSeeder`     | `menu_manager`                                        | roda `NavManagerSeeder` primeiro, depois a árvore completa de itens: os 7 links do Navbar real (`sort_order` 10-70, `parent_id` nulo) + a árvore administrativa "Menu" (`sort_order>=2000`) exibida em árvore em `/v1/menu-manager?nav_manager_id=` — ver [`README_modulo_nav_menu.md`](README_modulo_nav_menu.md) | reroda `NavManagerSeeder` (o CASCADE já limpa os itens do nav anterior) e recria tudo |
 
 ### Rodar individualmente
 
@@ -86,7 +90,7 @@ PowerShell:
 
 ```
 
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
  
 ```
@@ -94,7 +98,7 @@ podman compose exec php php spark db:seed UserRolesSeeder
 `BootstrapIconsSeeder` — catálogo Bootstrap Icons em `bootstrap_icons`:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
  
 ```
@@ -103,8 +107,25 @@ podman compose exec php php spark db:seed BootstrapIconsSeeder
 `form_manager`/`form_groups`/`form_rows`/`form_fields`:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed FormConstructorSeeder
+ 
+```
+
+`NavManagerSeeder` — nav de referência ("Menu Teste") em `nav_manager`:
+
+```
+cd C:\laragon\www\js\habilidade\projeto54900
+podman compose exec php php spark db:seed NavManagerSeeder
+ 
+```
+
+`MenuManagerSeeder` — árvore completa de itens em `menu_manager` (roda
+`NavManagerSeeder` primeiro):
+
+```
+cd C:\laragon\www\js\habilidade\projeto54900
+podman compose exec php php spark db:seed MenuManagerSeeder
  
 ```
 
@@ -112,24 +133,28 @@ podman compose exec php php spark db:seed FormConstructorSeeder
 
 ## Rodar todos os seeds do sistema
 
-Ordem recomendada (perfis → ícones → formulário; sem dependência rígida entre
-eles hoje, mas o construtor usa o módulo Form já migrado). Bloco único, colar no
-host:
+Ordem recomendada (perfis → ícones → formulário → nav → menu; sem dependência
+rígida entre a maioria, mas `MenuManagerSeeder` já roda `NavManagerSeeder`
+sozinho — chamar os dois é redundante, não é erro). Bloco único, colar no host:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark db:seed UserRolesSeeder
 podman compose exec php php spark db:seed BootstrapIconsSeeder
 podman compose exec php php spark db:seed FormConstructorSeeder
-```
+cd C:\laragon\www\js\habilidade\projeto54900
+podman compose exec php php spark db:seed MenuManagerSeeder
+ 
+``` 
 
 Sem TTY (CI):
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec -T php php spark db:seed UserRolesSeeder
 podman compose exec -T php php spark db:seed BootstrapIconsSeeder
 podman compose exec -T php php spark db:seed FormConstructorSeeder
+podman compose exec -T php php spark db:seed MenuManagerSeeder
 ```
 
 Pré-condição: as migrations já aplicadas (`SPARK migrate` — ver
@@ -155,6 +180,7 @@ class DatabaseSeeder extends Seeder
         $this->call('UserRolesSeeder');
         $this->call('BootstrapIconsSeeder');
         $this->call('FormConstructorSeeder');
+        $this->call('MenuManagerSeeder'); // ja chama NavManagerSeeder sozinho
     }
 }
 ```
@@ -169,7 +195,7 @@ Não têm dados de partida — nascem vazias e são preenchidas pela aplicação
 
 - `user_manager`, `user_profiles` — usuários reais do sistema.
 - `upload_manager` — anexos, criados pelo endpoint de upload.
-- `calendars`, `calendar_events`, `calendar_event_attendees`,
+- `calendar_manager`, `calendar_events`, `calendar_event_attendees`,
   `calendar_event_reminders`, `calendar_event_attachments`,
   `calendar_event_extended_properties` — dados do módulo agenda.
 
@@ -209,3 +235,14 @@ Ou pelo Adminer em `http://localhost:54902` (banco `codeigniter54900_db`).
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

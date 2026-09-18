@@ -9,6 +9,7 @@
 
 ```
 podman compose exec php php spark migrate
+ 
 ```
 
 Item a item:
@@ -196,7 +197,7 @@ pelo grupo dentro do `run()`.
 - **Alerta:** as 9 migrations já presentes em `app/Database/Migrations/` **não**
   declaram `$DBGroup`. Como estão, um `SPARK migrate` sem `-g` aplica todas no
   `codeigniter54900_db`, inclusive tabelas que são do módulo `agenda`
-  (`calendars`, `calendar_events`, ...). Definir o `$DBGroup` de cada arquivo
+  (`calendar_manager`, `calendar_events`, ...). Definir o `$DBGroup` de cada arquivo
   antes de montar o banco.
 - Testes usam o grupo `tests` (SQLite em memória): `SPARK migrate -g tests` não
   é necessário no fluxo normal.
@@ -206,3 +207,14 @@ pelo grupo dentro do `run()`.
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

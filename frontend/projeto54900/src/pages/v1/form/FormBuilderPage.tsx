@@ -1,17 +1,69 @@
-// Construtor — o usuário escolhe tabelas (todas vindas da API de introspecção do
-// banco) e cada tabela vira um card com um subcard FORMULÁRIO (campos de
-// form_manager) e N subcards GRUPOS (campos de form_groups). Estado só local:
-// nada é persistido ainda.
-//
-// Campos: renderizados por <FormGrid> a partir de um FormGridSchema. Nenhum
-// <input>/<select>/<textarea> escrito à mão aqui — ver
-// src/markdown/geral/README_render_via_formgrid.md.
-//
-// Fonte dos dados — sem lista estática:
-//   - tabelas : dbSchema.tables()        -> GET api/v1/db-schema/tables
-//   - colunas : dbSchema.columns(tabela) -> GET api/v1/db-schema/columns/{tabela}
-//   - perfis  : o próprio campo select "Grupo de perfil" carrega via `src`
-//               -> GET {apiBaseUrl}/v1/user-roles/get-no-pagination
+/**
+ * =============================================================================
+ * FILE HEADER — FormBuilderPage (construtor de formulários com árvore + modal)
+ * =============================================================================
+ *
+ * O QUE FAZ:
+ *   Página `/v1/form-constructor` (criação) e `/v1/form-constructor/update/:id`
+ *   (edição). O usuário escolhe 1+ tabelas reais do banco (vindas da API de
+ *   introspecção, não uma lista fixa no código) e cada tabela vira um card com
+ *   uma árvore de 4 níveis: form_manager (1:1 com a tabela) → form_groups (N)
+ *   → form_rows (N por grupo) → form_fields (1 por coluna escolhida na linha).
+ *   Cada nível é uma linha compacta e colapsável (`<TreeNode>`); o formulário
+ *   de edição de cada nó abre num modal (`<FormModal>`), nunca inline na árvore.
+ *
+ * DEPENDÊNCIAS (arquivos deste projeto que este arquivo consome):
+ *   - `./formBuilder.model.ts` — TODOS os tipos (`ManagerLocal`/`GrupoLocal`/
+ *     `RowLocal`/`CampoLocal`), os construtores `*Inicial()`, os mappers
+ *     estado→payload (`*Payload()`) e o hidratador reverso do modo edição
+ *     (`viewRowsToBuilderState`). Esta página só monta ESTADO e SCHEMA; a
+ *     forma dos dados vive isolada no model.
+ *   - `./FormBuilderTree.tsx` (`<FormTree>`/`<TreeNode>`) — componente
+ *     GENÉRICO e reutilizável de árvore pai→filho com colapso em estado React
+ *     (nunca o plugin JS do Bootstrap). Não tem nenhum conhecimento de
+ *     form_manager/form_groups/etc.; só recebe `id`/`parents`/`level`/`name`.
+ *   - `./FormModal.tsx` — modal genérico controlado por React (portal +
+ *     Esc/clique fora), com rodapé "Salvar"/"Fechar" quando recebe `onSave`.
+ *   - `@/components/ui/FormGrid/Input` (`<FormGrid>`) — fábrica de campos por
+ *     schema JSON; nenhum `<input>`/`<select>`/`<textarea>` é escrito à mão
+ *     aqui (ver `src/markdown/geral/README_render_via_formgrid.md`).
+ *   - `@/components/ui/IconSelect` — seletor visual de ícone (só no subcard
+ *     GRUPOS, fica fora do `<FormGrid>` porque não é um campo de formulário).
+ *   - `@/services/v1` (`dbSchema`, `formManagerTable`, `formManagerView`,
+ *     `formGroupsTable`, `formRowsTable`, `formCamposTable`) — cada tabela
+ *     do módulo Form tem seu próprio service REST (`createResource`); a
+ *     página chama `create`/`update`/`deleteSoft` diretamente, nó a nó.
+ *   - `@/utils/apiResult` (`normalizeItem`/`normalizeList`) — extraem
+ *     `{ data }`/`{ rows }` de respostas HTTP em formatos variados.
+ *   - `@/utils/jsonList`, `@/utils/slug` — helpers de lista-em-JSON (campo
+ *     "Grupo de perfil") e slugify automático (título → slug).
+ *
+ * CONSUMIDORES (quem monta esta página):
+ *   - `src/routes/v1/form.routes.tsx` — rota lazy do construtor.
+ *
+ * COMO FUNCIONA A PERSISTÊNCIA (ponto mais importante para manutenção):
+ *   Estado 100% local (React) até o usuário clicar "Salvar" no modal de um
+ *   nó específico. Cada nível só pode ser salvo DEPOIS que o pai já tem
+ *   `dbId` (reforçado tanto no desabilitar do botão `[+]` quanto dentro da
+ *   própria função `salvarXxx`, que barra com `setErroSalvar(...)` se a FK
+ *   do pai ainda não existe). O `dbId` retornado pela API vira a chave que
+ *   liga a camada filha (ex.: só depois que `form_groups` tem `dbId` é que
+ *   `form_rows` pode ser criado apontando para ele).
+ *
+ * COMO CRIAR UMA TELA SIMILAR (árvore pai→filho de N níveis + modal por nó):
+ *   1. Modelar os tipos `*Local` (estado de UI) e as funções `*Inicial()` +
+ *      `*Payload()` num arquivo `<nome>.model.ts` próprio, separado da página
+ *      (ver `formBuilder.model.ts` como referência).
+ *   2. Reaproveitar `<FormTree>`/`<TreeNode>` (genéricos) e `<FormModal>`
+ *      (genérico) — não recriar árvore nem modal do zero.
+ *   3. Um `useState` por nível (`Record<chaveDoPai, NivelLocal[]>`), nunca um
+ *      array só; a chave é sempre o `id` (uuid) do pai, não o `dbId`.
+ *   4. Uma função `<nivel>Schema(...)` por nível, devolvendo `FormGridSchema`,
+ *      igual a `managerSchema`/`grupoSchema`/`rowSchema`/`campoSchema` abaixo.
+ *   5. Um `ModalAlvo` (union discriminada por `kind`) guardando qual nó está
+ *      aberto, e uma função `salvar<Nivel>` por nível, todas passando por um
+ *      `executarSalvar` comum (liga/desliga `saving`, trata `ApiError`).
+ */
 
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -64,6 +116,38 @@ import {
   viewRowsToBuilderState,
 } from './formBuilder.model';
 
+/**
+ * =============================================================================
+ * BLOCO 1 — TIPOS DE APOIO (assinaturas de patch + alvo do modal)
+ * =============================================================================
+ *
+ * O QUE FAZ:
+ *   `*Patch` são as assinaturas das 4 funções `atualizarXxx` (definidas mais
+ *   abaixo, dentro do componente) que cada `<Xxx>Schema` recebe para escrever
+ *   de volta no estado — um "setter parcial" por nível, sempre identificando
+ *   o nó pela cadeia de chaves do pai (`tabela`, depois `id`/`grupoId`, etc.).
+ *   `ModalAlvo` é uma union discriminada por `kind`: descreve QUAL nó da
+ *   árvore está com o formulário aberto no `<FormModal>` (só um de cada vez).
+ *
+ * POR QUE É IMPORTANTE:
+ *   Os IDs encadeados (`tabela` → `grupoId` → `linhaId` → `coluna`)
+ *   em `ModalAlvo` espelham exatamente a hierarquia de chaves dos `useState`
+ *   do componente (`managers[tabela]`, `grupos[tabela]`, `linhas[grupoId]`,
+ *   `campos[linhaId][coluna]`) — por isso `renderModal()` consegue reidratar
+ *   o nó certo só com o `ModalAlvo` guardado.
+ *
+ * CONEXÃO: `*Patch` é o tipo dos parâmetros `patch` de `managerSchema`/
+ *   `grupoSchema`/`rowSchema`/`campoSchema`, que por sua vez chamam
+ *   `atualizarManager`/`atualizarGrupo`/`atualizarLinha`/`atualizarCampo`
+ *   (ver "BLOCO — Handlers de CRUD local do estado", dentro do componente).
+ *   `ModalAlvo` é o tipo do estado `modal` e do parâmetro de `setModal(...)`.
+ *
+ * COMO REAPROVEITAR: numa árvore nova de N níveis, criar 1 `*Patch` por nível
+ *   (parâmetros = chaves de todos os ancestrais + `patch` parcial) e um
+ *   `ModalAlvo` com 1 variante de `kind` por nível, cada uma carregando a
+ *   cadeia completa de chaves até aquele nó.
+ * -----------------------------------------------------------------------------
+ */
 type ManagerPatch = (tabela: string, patch: Partial<ManagerLocal>) => void;
 type GrupoPatch = (tabela: string, id: string, patch: Partial<GrupoLocal>) => void;
 type RowPatch = (grupoId: string, id: string, patch: Partial<RowLocal>) => void;
@@ -80,6 +164,41 @@ type ModalAlvo =
   | { kind: 'row'; tabela: string; grupoId: string; linhaId: string }
   | { kind: 'field'; tabela: string; grupoId: string; linhaId: string; coluna: string };
 
+/**
+ * =============================================================================
+ * BLOCO 2 — CONSTANTES DE MÓDULO (opções de select + config por field_type)
+ * =============================================================================
+ *
+ * O QUE FAZ:
+ *   `*_OPCOES` são listas fixas no formato `{ value, label }` (ou `{ name }`
+ *   quando o `valueKey`/`labelKey` é `name`) consumidas pelo `options`/
+ *   `valueKey`/`labelKey` dos campos `type: 'select'` dos schemas abaixo —
+ *   nenhuma vem de API, são enums do próprio banco/protocolo HTTP/Bootstrap.
+ *   `CAMPOS_POR_TIPO` é o mapa que decide, por `field_type` escolhido no
+ *   subcard CAMPO, quais linhas extras aparecem na seção "Específico — {tipo}"
+ *   (montada em `campoSchema`, mais abaixo).
+ *
+ * POR QUE É IMPORTANTE:
+ *   `FIELD_TYPE_OPCOES` precisa bater exatamente com o enum `field_type` da
+ *   coluna no banco (migration `2026-09-06-012303`) — divergência aqui não dá
+ *   erro de TypeScript (é `string`), só falha silenciosa ao salvar. `CAMPOS_
+ *   POR_TIPO` precisa bater com o que cada `<Tipo>FieldSchema` de
+ *   `src/components/ui/FormGrid/<tipo>` realmente lê; um campo aqui que o
+ *   componente de campo não lê fica visível no builder sem nenhum efeito.
+ *
+ * CONEXÃO: `CAMPOS_POR_TIPO[c.field_type]` é consumido só em `campoSchema()`
+ *   (bloco "Específico — {tipo}"), que mapeia cada nome para uma prop via
+ *   `colunaField()`. Tipos mascarados (`cpf`…`sei`) e `moeda` não aparecem
+ *   como chave aqui de propósito — não têm opção de produto além dos blocos
+ *   comuns (Estrutura / Estado e validação).
+ *
+ * COMO REAPROVEITAR: para dar suporte a um `field_type` novo com opções
+ *   próprias, (1) acrescentar a chave em `CAMPOS_POR_TIPO` com a lista de
+ *   nomes de config, (2) tratar cada nome novo em `colunaField()` (switch
+ *   mais abaixo), (3) garantir que o componente `FormGrid/<tipo>` realmente
+ *   lê essas props.
+ * -----------------------------------------------------------------------------
+ */
 const STATUS_OPCOES = [
   { value: 'draft', label: 'draft' },
   { value: 'active', label: 'active' },
@@ -121,7 +240,7 @@ const CAMPOS_POR_TIPO: Record<string, string[]> = {
   password: ['no_numbers', 'no_letters', 'no_special_chars'],
   senha: [
     'no_numbers', 'no_letters', 'no_special_chars',
-    'strong_password', 'double_field', 'equal_fields',
+    'strong_password', 'double_field',
   ],
   email: ['allowed_domains_json'],
   textarea: [
@@ -139,14 +258,52 @@ const CAMPOS_POR_TIPO: Record<string, string[]> = {
   hora: ['with_seconds'],
 };
 
+/**
+ * URLs consumidas diretamente por campos `type: 'select'` via prop `src` —
+ * o próprio `SelectField` (`components/ui/FormGrid/select`) faz o `fetch`,
+ * então basta passar a URL pronta (não passa por `http.ts`/`resourceFactory`,
+ * que exigem `version`+`group`). `USER_ROLES_SRC` alimenta o "Grupo de
+ * perfil" de `managerSchema`; `ROUTE_MANAGER_SRC` alimenta "Rota React" e
+ * "Endpoint de envio".
+ */
 const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
+const ROUTE_MANAGER_SRC = `${env.apiBaseUrl}/v1/route-manager/get-no-pagination`;
 
-/** Sufixo de status de persistência no `name` do nó da árvore. */
+/**
+ * Sufixo exibido no `name` de cada `<TreeNode>` indicando se aquele nó já
+ * está gravado no banco (`#123`) ou só existe em memória (`não salvo`) — é a
+ * única pista visual, na árvore, de que o botão `[+]` do nível abaixo está
+ * habilitado (todo `addDisabled` do JSX depende de `dbId` truthy).
+ */
 const sufixoDbId = (dbId: number | null | undefined): string =>
   dbId ? ` · #${dbId}` : ' · não salvo';
 
-// ─── Schema do subcard FORMULÁRIO (form_manager) ────────────────────────────
-
+/**
+ * =============================================================================
+ * BLOCO 3 — SCHEMA DO SUBCARD FORMULÁRIO (form_manager)
+ * =============================================================================
+ *
+ * O QUE FAZ: monta o `FormGridSchema` (linhas/campos) do formulário que abre
+ *   no `<FormModal>` do nível `manager` — 1 registro `form_manager` por
+ *   tabela escolhida. Não tem estado próprio: recebe o `ManagerLocal` atual
+ *   (`m`) e devolve `onChange` que chamam `patch(tabela, {...})`.
+ *
+ * CONEXÃO: chamada só em `renderModal()` quando `modal.kind === 'manager'`.
+ *   O `patch` recebido é sempre `atualizarManager` (ver "Handlers de CRUD
+ *   local", dentro do componente). O botão "Slug" ilustra o padrão de campo
+ *   dependente: enquanto `m.slugAuto` é `true`, digitar em "Título" também
+ *   atualiza `slug` via `slugify()`; editar "Slug" na mão desliga `slugAuto`.
+ *   "Grupo de perfil" é o único campo que grava lista (JSON de slugs) — usa
+ *   `parseStringList`/`toStringList` (`@/utils/jsonList`) para ir e voltar
+ *   entre `string[]` (UI) e a string JSON persistida em `m.roles`.
+ *
+ * COMO REAPROVEITAR EM OUTRO NÓ: copiar a assinatura
+ *   `(chaveDoPai, EstadoLocal, PatchDoNível) => FormGridSchema` e, para cada
+ *   campo, ler o valor de `m.<campo>` e escrever via `patch(...)` — nunca
+ *   `useState` dentro da função de schema (o estado mora sempre no
+ *   componente `FormBuilderPage`, a função de schema é pura).
+ * -----------------------------------------------------------------------------
+ */
 function managerSchema(
   tabela: string,
   m: ManagerLocal,
@@ -185,9 +342,9 @@ function managerSchema(
             src: USER_ROLES_SRC,
             valueKey: 'slug',
             labelKey: 'name',
-            values: parseStringList(m.profile_group),
+            values: parseStringList(m.roles),
             onChangeMultiple: (values) =>
-              patch(tabela, { profile_group: toStringList(values) }),
+              patch(tabela, { roles: toStringList(values) }),
           },
         ],
       },
@@ -219,28 +376,28 @@ function managerSchema(
       {
         fields: [
           {
+            type: 'select',
             col: 12,
             label: 'Rota React',
-            name: 'react_route',
-            required: true,
-            maxLength: 255,
-            placeholder: '/v1/meu-form',
+            src: ROUTE_MANAGER_SRC,
+            labelTemplate: '{method} - {object} - {action}',
+            valueKey: 'endpoint',
             value: m.react_route,
-            onChange: (e) => patch(tabela, { react_route: e.target.value }),
+            onChange: (value) => patch(tabela, { react_route: value }),
           },
         ],
       },
       {
         fields: [
           {
+            type: 'select',
             col: 4,
             label: 'Endpoint de envio',
-            name: 'submit_endpoint',
-            required: true,
-            maxLength: 255,
-            placeholder: '/api/v1/...',
+            src: ROUTE_MANAGER_SRC,
+            labelTemplate: '{method} - {object} - {action}',
+            valueKey: 'endpoint',
             value: m.submit_endpoint,
-            onChange: (e) => patch(tabela, { submit_endpoint: e.target.value }),
+            onChange: (value) => patch(tabela, { submit_endpoint: value }),
           },
           {
             type: 'select',
@@ -284,8 +441,28 @@ function managerSchema(
   };
 }
 
-// ─── Schema do subcard GRUPOS (form_groups) — o ícone fica fora (IconSelect) ──
-
+/**
+ * =============================================================================
+ * BLOCO 4 — SCHEMA DO SUBCARD GRUPOS (form_groups)
+ * =============================================================================
+ *
+ * O QUE FAZ: monta o `FormGridSchema` do formulário de UM `form_groups` (N
+ *   por tabela). Mesmo padrão de `managerSchema`: recebe o `GrupoLocal` (`g`)
+ *   e um `patch` que já sabe identificar esse grupo (`tabela` + `g.id`).
+ *
+ * CONEXÃO: chamada em `renderModal()` quando `modal.kind === 'group'`. O
+ *   `patch` é `atualizarGrupo`. O `<FormGrid>` gerado aqui NÃO inclui o campo
+ *   "Ícone" — esse campo é renderizado à parte, logo depois do `<FormGrid>`,
+ *   em `renderModal()`, usando `<IconSelect>` (não é um tipo do `FormGrid`,
+ *   por isso fica fora do schema). O checkbox "Recolhido" também segue o
+ *   padrão de flag-única: um único `options` com 1 item, valor `['1']`/`[]`.
+ *
+ * COMO REAPROVEITAR: mesmo modelo de `managerSchema`; se o nó novo precisar
+ *   de um controle que não existe no `FormGrid` (como o `IconSelect` aqui),
+ *   renderizá-lo fora do `<FormGrid>` no `renderModal()`, nunca forçar dentro
+ *   do schema.
+ * -----------------------------------------------------------------------------
+ */
 function grupoSchema(
   tabela: string,
   g: GrupoLocal,
@@ -369,8 +546,36 @@ function grupoSchema(
   };
 }
 
-// ─── Schema do subcard LINHAS (form_rows) ───────────────────────────────────
-
+/**
+ * =============================================================================
+ * BLOCO 5 — SCHEMA DO SUBCARD LINHAS (form_rows)
+ * =============================================================================
+ *
+ * O QUE FAZ: monta o `FormGridSchema` de UM `form_rows` (N por grupo), com um
+ *   3º campo que os outros níveis não têm: o select múltiplo "Colunas", que
+ *   não edita uma propriedade de `RowLocal` diretamente — dispara
+ *   `onAddColunas` (== `adicionarColunasLinha` do componente), que por sua
+ *   vez cria um `CampoLocal` novo para cada coluna escolhida.
+ *
+ * PARÂMETROS EXTRAS (além de `grupoId`/`r`/`patch`, padrão dos outros níveis):
+ *   - `todasColunas`: nomes de TODAS as colunas da tabela (metadata do banco).
+ *   - `colunasUsadas`: nomes já escolhidos por QUALQUER linha do grupo — viram
+ *     `disabledValues` no select (aparecem cinza, não removíveis por aqui).
+ *   - `onAddColunas`: callback disparado a cada nova seleção múltipla.
+ *
+ * CONEXÃO: chamada em `renderModal()` quando `modal.kind === 'row'`. O select
+ *   de colunas fica `disabled` enquanto `!r.dbId` — reforça a regra "salvar o
+ *   pai antes do filho" também na UI, não só no `salvarCampo`. `values: []`
+ *   fixo é proposital: cada seleção só ADICIONA (nunca reflete o que já foi
+ *   escolhido), pois as colunas já usadas saem da lista de opções
+ *   selecionáveis (viram `disabled`), não desaparecem.
+ *
+ * COMO REAPROVEITAR: para um nível cujo formulário precisa dar origem a
+ *   registros de outro nível (aqui: escolher coluna → nasce `form_fields`),
+ *   passar callbacks extras como estes em vez de tentar encaixar a criação
+ *   dentro de um `onChange` de campo comum.
+ * -----------------------------------------------------------------------------
+ */
 function rowSchema(
   grupoId: string,
   r: RowLocal,
@@ -448,13 +653,55 @@ function rowSchema(
   };
 }
 
-// ─── Schema do subcard CAMPO (form_fields) — 1 por coluna selecionada ───────
-//
-// Blocos: Estrutura + Estado/validação (sempre) + Específico — {tipo} (de
-// CAMPOS_POR_TIPO). `form_row_id` é implícito e nunca aparece. Só entra o que
-// alguém preenche ao criar o field; atributos DOM soltos e `style_json` ficam
-// fora (renderer/submit cuidam). A config do `select` (`sel_*`) é serializada em
-// `select_config_json` por `camposParaPayload()`.
+/**
+ * =============================================================================
+ * BLOCO 6 — SCHEMA DO SUBCARD CAMPO (form_fields) — 1 por coluna selecionada
+ * =============================================================================
+ *
+ * O QUE FAZ: dois níveis de função — `colunaField()` monta UM campo do bloco
+ *   dinâmico "Específico — {tipo}" (chamado 1x por nome em `CAMPOS_POR_TIPO`);
+ *   `campoSchema()` (mais abaixo) monta o `FormGridSchema` inteiro do
+ *   `form_fields`: seção fixa "Estrutura", seção fixa "Estado e validação" e,
+ *   só se `CAMPOS_POR_TIPO[c.field_type]` não for vazio, a seção dinâmica
+ *   "Específico — {tipo}" formada pelos `colunaField()`.
+ *
+ * POR QUE É IMPORTANTE: `form_row_id` (a FK do pai) é implícito — nunca
+ *   aparece em nenhum schema aqui, só é resolvido na hora de salvar
+ *   (`salvarCampo`, dentro do componente) e serializado por `campoPayload()`
+ *   (`formBuilder.model.ts`). Só entra na UI o que faz sentido alguém
+ *   preencher ao criar um field; atributos DOM soltos (`title`, `className`,
+ *   `tabIndex`, `dir`, `lang`, `spellCheck`, `autoFocus`, `list`) e
+ *   `style_json` ficam fora de propósito — o renderer final e o submit
+ *   assumem o default/null deles.
+ *
+ * CONEXÃO: `colunaField()` é chamada só de dentro de `campoSchema()` (loop
+ *   sobre `CAMPOS_POR_TIPO[c.field_type]`). A config do `select` (prefixo
+ *   `sel_*` em `CampoLocal`) é serializada para `select_config_json` só na
+ *   hora de montar o payload, por `camposParaPayload()` (`formBuilder.model.ts`)
+ *   — aqui na UI cada `sel_*` continua sendo um campo de texto/checkbox comum.
+ *
+ * DETALHE DOS 3 HELPERS INTERNOS DE `colunaField()`:
+ *   - `flag(campo, label)` — monta um checkbox de UM item só (padrão "flag
+ *     única": `value` é `['1']`/`[]`, nunca lista de verdade) para os `boolean`
+ *     de `CampoLocal` (ex.: `no_numbers`, `strong_password`).
+ *   - `json(campo, label, disabled?)` — textarea cru para as colunas
+ *     `*_json` (`options_json`, `datalist_json`, `allowed_domains_json`);
+ *     usado também para `sel_src` (indiretamente via `txt`, ver abaixo).
+ *   - `txt(campo, label, col?, numeric?, disabled?)` — input de texto genérico
+ *     para as colunas `sel_*` de configuração do `select`; `numeric: true`
+ *     filtra dígitos no próprio `onChange` (`replace(/\D/g, '')`).
+ *   `temOptions`/`temSrc` implementam a exclusividade "lista fixa (options_json)
+ *   OU fonte remota (sel_src)" do tipo `select`: preencher um desabilita
+ *   (visualmente, `disabled: true`) os campos que só servem ao outro modo —
+ *   sem apagar o valor, então trocar de ideia não perde o que foi digitado.
+ *
+ * COMO REAPROVEITAR: para um `field_type` novo com config própria, acrescentar
+ *   a chave em `CAMPOS_POR_TIPO` (bloco de constantes) e um novo `case` no
+ *   `switch` de `colunaField()` — usando `flag`/`json`/`txt` quando servirem,
+ *   ou um literal `AnyFieldSchema` inline (ver `rows_qty`/`min_date`/`max_date`)
+ *   quando o tipo de campo do FormGrid for diferente dos 3 padrões.
+ * -----------------------------------------------------------------------------
+ */
 
 type CampoSet = (patch: Partial<CampoLocal>) => void;
 
@@ -468,7 +715,7 @@ function colunaField(
   const flag = (
     campo:
       | 'no_numbers' | 'no_letters' | 'no_special_chars' | 'strong_password'
-      | 'double_field' | 'equal_fields' | 'with_seconds' | 'show_counter'
+      | 'double_field' | 'with_seconds' | 'show_counter'
       | 'inline' | 'sel_multiple',
     label: string,
   ): AnyFieldSchema => ({
@@ -549,9 +796,7 @@ function colunaField(
     case 'strong_password':
       return flag('strong_password', 'Senha forte');
     case 'double_field':
-      return flag('double_field', 'Campo de confirmação');
-    case 'equal_fields':
-      return flag('equal_fields', 'Exige campos iguais');
+      return flag('double_field', 'Campo de confirmação (exige igualdade)');
     case 'with_seconds':
       return flag('with_seconds', 'Com segundos');
     case 'show_counter':
@@ -611,6 +856,9 @@ function colunaField(
   }
 }
 
+// Monta o FormGridSchema completo do form_fields — ver Bloco 6 acima para o
+// panorama; comentários pontuais abaixo só onde o agrupamento por seção não
+// é óbvio pelo `sectionTitle`.
 function campoSchema(keyBase: string, c: CampoLocal, set: CampoSet): FormGridSchema {
   const rows: FormRowSchema[] = [
     {
@@ -806,6 +1054,34 @@ function campoSchema(keyBase: string, c: CampoLocal, set: CampoSet): FormGridSch
 
 // ─── Página ────────────────────────────────────────────────────────────────
 
+/**
+ * =============================================================================
+ * BLOCO 7 — ESTADO DO COMPONENTE
+ * =============================================================================
+ *
+ * O QUE FAZ: declara TODO o estado local da página, em 4 grupos:
+ *   1. Modo edição (`edicaoLoading`/`edicaoErro`) — só usados quando a rota
+ *      tem `:id`.
+ *   2. Tabelas disponíveis para escolher (`tabelasDisponiveis`/`tabelasLoading`/
+ *      `tabelasErro`) — vem da 1ª chamada de API (`dbSchema.tables()`).
+ *   3. A árvore em si: `tabelas` (quais foram escolhidas) e, para cada nível,
+ *      um `Record` cuja CHAVE é sempre o `id`/nome do NÓ-PAI (nunca um array
+ *      solto): `managers` por `tabela`, `colunas` (cache da 2ª API) por
+ *      `tabela`, `grupos` por `tabela`, `linhas` por `grupo.id`, `campos` por
+ *      `linha.id` e depois por nome da coluna.
+ *   4. Persistência do nó aberto no modal (`salvando`/`erroSalvar`) — comum a
+ *      todos os níveis, porque só um nó pode estar salvando por vez.
+ *
+ * POR QUE É IMPORTANTE: o padrão "`Record<chaveDoPai, NívelLocal[]>`" (em vez
+ *   de um array plano) é o que permite achar/atualizar um nó sem varrer a
+ *   árvore inteira — todo `atualizarXxx`/`removerXxx` (bloco seguinte) parte
+ *   de `prev[chaveDoPai]` e faz um `.map()`/`.filter()` só naquele nível.
+ *
+ * CONEXÃO: este estado é lido por `renderModal()` (para reidratar o nó aberto
+ *   a partir do `ModalAlvo`) e pelo JSX final (para desenhar a árvore com
+ *   `<FormTree>`/`<TreeNode>`).
+ * -----------------------------------------------------------------------------
+ */
 export default function FormBuilderPage() {
   // Modo edição: /v1/form-constructor/update/:id. Sem :id -> modo criação (padrão).
   const { id: routeId } = useParams();
@@ -836,6 +1112,39 @@ export default function FormBuilderPage() {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
 
+  /**
+   * ===========================================================================
+   * BLOCO 8 — CARREGAMENTO DE DADOS (2 APIs de introspecção + hidratação da edição)
+   * ===========================================================================
+   *
+   * O QUE FAZ: três fontes de dados independentes, cada uma com seu próprio
+   *   `loading`/`erro`:
+   *   1. `useEffect` (tabelas) — roda 1x ao montar, chama `dbSchema.tables()`
+   *      e popula `tabelasDisponiveis` (o select do card de topo).
+   *   2. `carregarColunas(tabela)` — chamada sob demanda (quando uma tabela é
+   *      escolhida ou, em edição, para a tabela do registro), com cache: se
+   *      `colunas[tabela]` já existe, não busca de novo.
+   *   3. `useEffect` (modo edição) — só roda quando há `recordId` na rota;
+   *      busca a `view_form_manager` agrupada por `fm_id` e usa
+   *      `viewRowsToBuilderState()` (`formBuilder.model.ts`) para reconstruir
+   *      TODO o estado da árvore (`tabelas`/`managers`/`grupos`/`linhas`/
+   *      `campos`) a partir das linhas achatadas da view.
+   *
+   * POR QUE É IMPORTANTE: os 3 `useEffect`/callbacks usam `AbortController`
+   *   e checam `ctrl.signal.aborted` no `.catch()` — se o componente
+   *   desmontar (ou a rota mudar) no meio da requisição, o erro do fetch
+   *   abortado é silenciosamente ignorado, evitando `setState` em componente
+   *   desmontado. O Salvar de cada nó (Bloco 10) reaproveita o MESMO estado
+   *   que a edição hidrata aqui — não existe um "modo edição" separado na
+   *   persistência: um nó com `dbId` (vindo da view) já faz `update` normal.
+   *
+   * CONEXÃO: `carregarColunas` é chamada por `handleTabelas` (ao escolher
+   *   tabela no card de topo) e pelo `useEffect` de edição (para a tabela do
+   *   registro). `viewRowsToBuilderState` é o inverso exato dos `*Payload()`
+   *   usados ao salvar — mesmo arquivo (`formBuilder.model.ts`), documentado
+   *   lá como "Hidratação: view_form_manager → estado do builder".
+   * ---------------------------------------------------------------------------
+   */
   // 1a API — todas as tabelas do banco, sem paginação.
   useEffect(() => {
     const ctrl = new AbortController();
@@ -900,13 +1209,18 @@ export default function FormBuilderPage() {
       });
   }, []);
 
+  // Handler do select "Escolha as tabelas" (card de topo, onChangeMultiple):
+  // registra as tabelas escolhidas, garante um ManagerLocal inicial para cada
+  // uma que ainda não tem (sem sobrescrever as que já têm) e dispara a 2a API
+  // (colunas) para todas — parte do Bloco 8, mas é acionado pelo usuário, não
+  // por montagem do componente.
   const handleTabelas = useCallback(
     (values: string[]) => {
       setTabelas(values);
       setManagers((prev) => {
         const next = { ...prev };
         values.forEach((t) => {
-          if (!next[t]) next[t] = managerInicial();
+          if (!next[t]) next[t] = managerInicial(t);
         });
         return next;
       });
@@ -959,10 +1273,49 @@ export default function FormBuilderPage() {
     };
   }, [recordId, carregarColunas]);
 
+  /**
+   * ===========================================================================
+   * BLOCO 9 — HANDLERS DE CRUD LOCAL DO ESTADO (adicionar/atualizar/remover)
+   * ===========================================================================
+   *
+   * O QUE FAZ: um trio (`adicionar`/`atualizar`/`remover`) por nível — exceto
+   *   `manager`, que não é removível nem tem "adicionar" (nasce ao escolher a
+   *   tabela, em `handleTabelas`) — mais os dois handlers específicos de
+   *   coluna (`adicionarColunasLinha`/`removerColunaLinha`), que também mexem
+   *   em `campos` além de `linhas`. TODOS seguem o mesmo formato de updater
+   *   funcional do React: `setEstado((prev) => ...)`, nunca leem `prev` fora
+   *   do callback (evita stale closure em atualizações rápidas).
+   *
+   * POR QUE É IMPORTANTE — remoção com persistência:
+   *   `removerGrupo`/`removerLinha`/`removerColunaLinha` (a de `form_fields`)
+   *   verificam se o nó já tem `dbId`: se não tem, só limpam o estado local
+   *   (`limparLocal()`); se tem, chamam `deleteSoft(dbId)` no service daquele
+   *   nível ANTES de limpar o estado, com toast de sucesso/erro. Isso evita
+   *   registros órfãos no banco quando o usuário remove um nó que já foi
+   *   salvo. Note que `removerLinha`/`removerGrupo` também limpam os
+   *   `Record`s filhos (`linhas[id]`/`campos[id]`) — sem isso, dados do nó
+   *   removido ficariam "vazando" em memória (não apareceriam na árvore, mas
+   *   continuariam no estado).
+   *
+   * DETALHE — `adicionarColunasLinha`/`removerColunaLinha`:
+   *   são os únicos handlers que mexem em DOIS `Record`s ao mesmo tempo
+   *   (`linhas` e `campos`), porque uma "coluna escolhida" em `RowLocal.columns`
+   *   só faz sentido acompanhada do `CampoLocal` correspondente em `campos`.
+   *   `adicionarColunasLinha` usa `campoInicial(info, ...)` (`formBuilder.model.ts`)
+   *   para pré-preencher o field a partir da metadata real da coluna do banco
+   *   (ex.: `required` = `!coluna.nullable`, `field_type` inferido do
+   *   `data_type`). Entradas de `campos` sem coluna correspondente em
+   *   `r.columns` (excedente do teto `MAX_COLUNAS_POR_LINHA`) ficam ociosas —
+   *   nunca renderizadas, nunca limpas automaticamente.
+   *
+   * CONEXÃO: são os `patch`/callbacks passados aos `<Xxx>Schema` (Blocos 3-6)
+   *   e aos `onAdd`/`onRemove` de cada `<TreeNode>` no JSX final.
+   * ---------------------------------------------------------------------------
+   */
   const atualizarManager = useCallback<ManagerPatch>((tabela, patch) => {
     setManagers((prev) => ({
       ...prev,
-      [tabela]: { ...(prev[tabela] ?? managerInicial()), ...patch },
+      [tabela]: { ...(prev[tabela] ?? managerInicial(tabela)), ...patch },
     }));
   }, []);
 
@@ -1157,12 +1510,42 @@ export default function FormBuilderPage() {
     setErroSalvar(null);
   }, [modal]);
 
-  // ─── Persistência por nó — Salvar no modal ────────────────────────────────
-  // create quando o nó ainda não tem dbId, update quando tem. O id retornado
-  // vira a chave que liga a camada filha. Sucesso fecha o modal + toast; erro
-  // da API aparece no <FormModal> (saveError). Um filho só pode ser salvo
-  // depois do pai — garantido pelo gating dos botões [+] e reforçado aqui.
-
+  /**
+   * ===========================================================================
+   * BLOCO 10 — PERSISTÊNCIA POR NÓ (Salvar no modal)
+   * ===========================================================================
+   *
+   * O QUE FAZ: `create` quando o nó ainda não tem `dbId`, `update` quando já
+   *   tem — nunca um "modo edição" separado, o próprio `dbId` decide. O `id`
+   *   retornado pela API vira a chave que liga a camada filha (ex.: o `dbId`
+   *   de `form_manager` é a FK `form_manager_id` que `grupoPayload()` exige
+   *   para criar um `form_groups`). Sucesso: `toast.success` + fecha o modal
+   *   (`setModal(null)`, dentro de `executarSalvar`). Erro: mensagem da
+   *   `ApiError` aparece dentro do próprio `<FormModal>` (prop `saveError`),
+   *   sem fechar — o usuário corrige e tenta salvar de novo sem perder o que
+   *   digitou.
+   *
+   * PEÇAS:
+   *   - `extrairId(raw)` — normaliza a resposta de `create`/`update` (formatos
+   *     variados de envelope, via `normalizeItem`) e garante que veio um `id`
+   *     numérico válido; lança `ApiError` se não veio (vira o `erroSalvar`).
+   *   - `executarSalvar(fn, okMsg)` — wrapper comum aos 4 `salvarXxx`: liga
+   *     `salvando`, zera `erroSalvar`, roda `fn()`, e trata sucesso/erro de
+   *     forma idêntica para os 4 níveis. Nenhum `salvarXxx` duplica esse
+   *     try/catch.
+   *   - `salvarManager`/`salvarGrupo`/`salvarLinha`/`salvarCampo` — cada um:
+   *     (1) acha o registro local pelo id de UI, (2) confere se o `dbId` do
+   *     PAI existe (senão `setErroSalvar('Salve o X antes do Y.')` e para —
+   *     é o reforço, em código, da regra que a UI já impõe desabilitando o
+   *     botão `[+]`), (3) chama `create`/`update` do service daquele nível
+   *     com o payload montado pelo `*Payload()` correspondente
+   *     (`formBuilder.model.ts`), (4) grava o `dbId` novo de volta no estado
+   *     via `atualizarXxx`.
+   *
+   * CONEXÃO: cada `salvarXxx` é passado como `onSave` ao `<FormModal>` dentro
+   *   de `renderModal()` (bloco seguinte), 1 por `modal.kind`.
+   * ---------------------------------------------------------------------------
+   */
   const extrairId = (raw: unknown): number => {
     const rec = normalizeItem<Record<string, unknown>>(raw);
     const id = Number(rec?.id);
@@ -1250,7 +1633,10 @@ export default function FormBuilderPage() {
     }, c.dbId ? 'form_fields atualizado.' : 'form_fields salvo.');
   };
 
-  // Card seletor de tabelas — já era FormGrid.
+  // Schema do card de topo (fora da árvore): 1 select múltiplo, opções vindas
+  // de `tabelasDisponiveis` (Bloco 8). `onChangeMultiple: handleTabelas` é o
+  // único ponto de entrada da árvore — escolher uma tabela aqui é o que cria
+  // o ManagerLocal inicial dela (ver handleTabelas, Bloco 9 acima).
   const schema: FormGridSchema = {
     rows: [
       {
@@ -1278,12 +1664,43 @@ export default function FormBuilderPage() {
     setErroSalvar(null);
   };
 
+  /**
+   * ===========================================================================
+   * BLOCO 11 — RENDERMODAL (formulário do nó aberto)
+   * ===========================================================================
+   *
+   * O QUE FAZ: função de renderização (não é `useCallback`/memoizada — roda a
+   *   cada render da página) que devolve o `<FormModal>` do nó atualmente em
+   *   `modal`, ou `null` se nenhum estiver aberto. Um `if`/early-return por
+   *   `modal.kind`, sempre no mesmo formato: (1) acha o registro local pelo(s)
+   *   id(s) do `ModalAlvo`, devolvendo `null` se não achar (nó removido
+   *   enquanto o modal estava com dados antigos), (2) monta o `<FormModal>`
+   *   com `title`, `onSave` = `salvar<Nível>`, `saving`/`saveError` do estado
+   *   comum (Bloco 10), (3) dentro, um `<FormGrid schema={<nível>Schema(...)}>`.
+   *
+   * PARTICULARIDADES POR NÍVEL:
+   *   - `group`: além do `<FormGrid>`, renderiza `<IconSelect>` à parte (não
+   *     é campo do FormGrid — ver Bloco 4).
+   *   - `row`: calcula `todasColunas` (metadata cacheada em `colunas`) e
+   *     `colunasUsadas` (achatando `linhas` de TODOS os grupos da tabela) só
+   *     nesta hora, porque só fazem sentido enquanto o modal de linha está
+   *     aberto; mostra aviso/loading/erro de colunas conforme `colunas[tabela]`.
+   *   - `field` (`default`, sem `if` próprio): busca `campos[linhaId][coluna]`
+   *     — é o único nível que não tem `modal.kind === 'field'` explícito no
+   *     código porque é o último `if` teria sobrado só esse caso; o comentário
+   *     `// modal.kind === 'field'` marca isso no código.
+   *
+   * CONEXÃO: chamada 1x no fim do JSX da página (`{renderModal()}`), fora do
+   *   `.map()` de tabelas — por isso o modal aparece sempre por cima da árvore
+   *   inteira, não preso a um card específico.
+   * ---------------------------------------------------------------------------
+   */
   // Formulário do nó aberto — sempre via <FormGrid>, dentro do <FormModal>.
   const renderModal = () => {
     if (!modal) return null;
 
     if (modal.kind === 'manager') {
-      const m = managers[modal.tabela] ?? managerInicial();
+      const m = managers[modal.tabela] ?? managerInicial(modal.tabela);
       const tabela = modal.tabela;
       return (
         <FormModal
@@ -1420,6 +1837,42 @@ export default function FormBuilderPage() {
     );
   };
 
+  /**
+   * =============================================================================
+   * BLOCO 12 — RENDERIZAÇÃO (JSX)
+   * =============================================================================
+   *
+   * O QUE FAZ: três partes, nesta ordem:
+   *   1. Card de topo: em modo edição mostra o cabeçalho "Editar formulário
+   *      #id" (+ link "Voltar" e erro, se houver); em modo criação mostra o
+   *      `<FormGrid schema={schema}>` (o select de tabelas) ou "Carregando
+   *      tabelas…"/erro.
+   *   2. `{tabelas.map(...)}`: 1 card por tabela escolhida, cada um com uma
+   *      `<FormTree>` de 4 níveis aninhados (`<TreeNode level="manager">` →
+   *      `"group"` → `"row"` → `"field"`). Cada `<TreeNode>` recebe `id`
+   *      (namespaced por tipo: `manager:`/`group:`/`row:`/`field:`, sempre
+   *      único na árvore inteira), `parents` (cadeia de ids ancestrais, usada
+   *      pelo `<FormTree>` para expandir a cadeia quando um nó novo nasce),
+   *      `name` (rótulo + sufixo `sufixoDbId`), `onAdd`/`onEdit`/`onRemove`
+   *      ligados aos handlers dos Blocos 9-10, e `addDisabled={!dbIdDoPai}`
+   *      (o gate visual da regra "salva pai antes do filho").
+   *   3. `{renderModal()}`: o modal do nó em edição, sempre por último, fora
+   *      do `.map()` de tabelas.
+   *
+   * POR QUE É IMPORTANTE: os textos "Sem grupos —.../Sem linhas —.../Sem
+   *   campos —..." dentro de cada `<TreeNode>` (children condicionais,
+   *   `length === 0 ? <p>...</p> : null`) são o único feedback de árvore
+   *   vazia — não há um `EmptyState` genérico aqui, porque cada nível tem uma
+   *   instrução diferente (qual botão usar para o próximo nível).
+   *
+   * COMO REAPROVEITAR: para uma árvore de N níveis diferente, manter a mesma
+   *   forma (`<FormTree>` uma vez, `<TreeNode>` aninhado por `.map()`,
+   *   `parents` sempre a cadeia completa de ids acima, modal único fora do
+   *   loop) — é o padrão descrito em `README_form_builder.md` como
+   *   "reutilizável" (`FormBuilderTree.tsx` + `FormModal.tsx` não conhecem
+   *   nada de form_manager/form_groups).
+   * -----------------------------------------------------------------------------
+   */
   return (
     <div className="container py-3">
       {modoEdicao ? (

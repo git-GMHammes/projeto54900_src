@@ -1,3 +1,28 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/checkbox/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'checkbox'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, options
+ *     (CheckboxOption[]), inline, value/defaultValue (arrays), required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: os proprios <input type="checkbox"
+ *     name={`${field.name}[]`}> — o form submete como array (name[])
+ *   - A chave no FormData/payload e: field.name (o "[]" e removido/agrupado
+ *     por utils/formSubmit.ts formDataToPayload)
+ *   - onChange tem assinatura propria `(values: string[]) => void` — nao
+ *     usa ../emitValue
+ *
+ * DEPENDENCIAS: nenhuma.
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
