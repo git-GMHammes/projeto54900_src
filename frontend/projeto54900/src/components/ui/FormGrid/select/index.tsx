@@ -52,7 +52,7 @@ export interface SelectFieldSchema {
   col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
   label?: string
   id?: string
-  /** Texto de ajuda — vira tooltip do campo (ver components/ui/FormGrid/Input) */
+  /** Texto de ajuda (fc_help_text) — exibido só no ícone de ajuda ao lado do campo (FieldTooltip), NUNCA como title deste elemento. */
   title?: string
   name?: string
   placeholder?: string

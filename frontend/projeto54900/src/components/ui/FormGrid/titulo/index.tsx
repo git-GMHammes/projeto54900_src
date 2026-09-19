@@ -53,6 +53,7 @@ export interface TituloFieldSchema {
   tabIndex?: number
   className?: string
   style?: CSSProperties
+  /** Texto de ajuda (fc_help_text) — exibido só no ícone de ajuda ao lado do campo (FieldTooltip), NUNCA como title deste elemento. */
   title?: string
   hidden?: boolean
   /**

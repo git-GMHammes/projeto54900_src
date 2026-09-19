@@ -257,7 +257,9 @@ function buildField(row: ApiRow): AnyFieldSchema {
   set('name', str(row.fc_field_name));
   set('placeholder', str(row.fc_placeholder));
   set('defaultValue', str(row.fc_default_value));
-  // FormGrid nao tem slot de ajuda: help_text vira tooltip (title).
+  // FormGrid nao tem slot de ajuda: help_text vira `title` no schema, exibido
+  // so no icone de tooltip (components/ui/FormGrid/FieldTooltip) - nunca como
+  // atributo title nativo do elemento renderizado.
   set('title', str(row.fc_help_text));
   if (bool(row.fc_required)) set('required', true);
   if (bool(row.fc_disabled)) set('disabled', true);
