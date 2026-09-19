@@ -79,7 +79,11 @@ class Processor extends BaseTableService
 
     protected function prepareUpdateData(int $id, array $data): array
     {
-        unset($data['password_hash']);
+        if (!empty($data['password_hash'])) {
+            $data['password_hash'] = password_hash($data['password_hash'], PASSWORD_BCRYPT);
+        } else {
+            unset($data['password_hash']);
+        }
 
         return $this->normalizeUserRole($data);
     }

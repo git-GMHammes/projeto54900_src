@@ -14,8 +14,9 @@ use CodeIgniter\Database\Config;
  *
  * Alem dela, cada modulo tem o seu proprio grupo de conexao, dedicado a um
  * database especifico neste mesmo servidor MySQL (db_connect('mapa'),
- * $model->DBGroup = 'agenda', etc.). Esses grupos usam credenciais fixas
- * (constantes DB_* desta classe), nao env().
+ * $model->DBGroup = 'agenda', etc.). Esses grupos compartilham host/usuario/
+ * senha com a conexao "default" (mesmas chaves DB_* do ambiente, via env()
+ * em buildGroup()); muda apenas o nome do database.
  *
  * Para adicionar um novo modulo/conexao (ver src/app/CLAUDE.md):
  *   1. Acrescente uma linha em $modules: 'novo_modulo' => 'projeto54900_novo'.
@@ -39,7 +40,7 @@ class Database extends Config
 
     /**
      * Conexao "default" => banco codeigniter54900_db. Preenchida no construtor
-     * por buildDefaultFromEnv(), a partir das chaves DB_* do ambiente.
+     * por buildGroup(), a partir das chaves DB_* do ambiente.
      *
      * @var array<string, mixed>
      */
@@ -48,7 +49,7 @@ class Database extends Config
     /**
      * Grupo nomeado da API V1 (constante DB_GROUP_001). Aponta hoje para o
      * mesmo banco compartilhado codeigniter54900_db da conexao "default",
-     * lendo as chaves DB_* do ambiente do container (via buildDefaultFromEnv()).
+     * lendo as chaves DB_* do ambiente do container (via buildGroup()).
      * Os models da API V1 declaram `protected $DBGroup = DB_GROUP_001;` e nao
      * precisam saber de onde vem a credencial. Bancos futuros ganham
      * DB_GROUP_002... com o seu proprio array publico.
@@ -120,12 +121,12 @@ class Database extends Config
 
         // Conexao "default": banco compartilhado codeigniter54900_db, com
         // credenciais vindas do ambiente do container (DB_* no docker-compose.yml).
-        $this->default = $this->buildDefaultFromEnv();
+        $this->default = $this->buildGroup((string) env('DB_DATABASE', ''));
 
         // Grupo nomeado da API V1 (DB_GROUP_001). Hoje = mesmo banco da
         // conexao "default"; quando houver bancos dedicados, trocar por
-        // $this->buildGroup('projeto54900_xxx') ou outro builder.
-        $this->codeigniter54900_mysql = $this->buildDefaultFromEnv();
+        // $this->buildGroup('projeto54900_xxx').
+        $this->codeigniter54900_mysql = $this->buildGroup((string) env('DB_DATABASE', ''));
 
         // Preenche um grupo de conexao para cada modulo registrado.
         foreach ($this->modules as $group => $database) {
@@ -140,17 +141,11 @@ class Database extends Config
         }
     }
 
-    // --- Credenciais compartilhadas por todos os grupos/modulos ---
-    // Explicitas aqui por decisao do projeto. Somente o "database" varia por modulo.
-    private const DB_HOSTNAME = 'mysql';
-    private const DB_PORT     = 3306;
-    private const DB_USERNAME = 'codeigniter54900_user';
-    private const DB_PASSWORD = 'codeigniter54900_P@ssw0rd_2024';
-    private const DB_DRIVER   = 'MySQLi';
-
     /**
-     * Monta a configuracao de um grupo de conexao. Host/porta/usuario/senha sao
-     * os mesmos para todos os modulos; muda apenas o "database".
+     * Monta a configuracao de um grupo de conexao. Host/porta/usuario/senha vem
+     * sempre do ambiente do container (DB_* no docker-compose.yml, servico php),
+     * sem fallback com valor real — nunca hardcoded no codigo-fonte versionado.
+     * Muda apenas o "database" entre os grupos.
      *
      * @return array<string, mixed>
      */
@@ -158,47 +153,10 @@ class Database extends Config
     {
         return [
             'DSN'          => '',
-            'hostname'     => self::DB_HOSTNAME,
-            'username'     => self::DB_USERNAME,
-            'password'     => self::DB_PASSWORD,
+            'hostname'     => (string) env('DB_HOST', ''),
+            'username'     => (string) env('DB_USERNAME', ''),
+            'password'     => (string) env('DB_PASSWORD', ''),
             'database'     => $database,
-            'DBDriver'     => self::DB_DRIVER,
-            'DBPrefix'     => '',
-            'pConnect'     => false,
-            'DBDebug'      => (ENVIRONMENT !== 'production'),
-            'charset'      => 'utf8mb4',
-            'DBCollat'     => 'utf8mb4_general_ci',
-            'swapPre'      => '',
-            'encrypt'      => false,
-            'compress'     => false,
-            'strictOn'     => false,
-            'failover'     => [],
-            'port'         => self::DB_PORT,
-            'numberNative' => false,
-            'foundRows'    => false,
-            'dateFormat'   => [
-                'date'     => 'Y-m-d',
-                'datetime' => 'Y-m-d H:i:s',
-                'time'     => 'H:i:s',
-            ],
-        ];
-    }
-
-    /**
-     * Monta a conexao "default" a partir do ambiente do container. As chaves
-     * DB_* sao definidas no docker-compose.yml (servico php) e lidas via env().
-     * Os fallbacks cobrem execucao fora do compose.
-     *
-     * @return array<string, mixed>
-     */
-    private function buildDefaultFromEnv(): array
-    {
-        return [
-            'DSN'          => '',
-            'hostname'     => env('DB_HOST', 'mysql'),
-            'username'     => env('DB_USERNAME', 'codeigniter54900_user'),
-            'password'     => env('DB_PASSWORD', ''),
-            'database'     => env('DB_DATABASE', 'codeigniter54900_db'),
             'DBDriver'     => 'MySQLi',
             'DBPrefix'     => '',
             'pConnect'     => false,

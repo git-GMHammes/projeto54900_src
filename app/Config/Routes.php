@@ -8,6 +8,17 @@ $routes->get('/', 'Home::index');
 $routes->group('api/v1', static function ($routes) {
 
     // =========================================================================
+    // /Auth — Login/refresh/logout/me (emissao/consumo de JWT). login e refresh
+    //         publicos; logout e me exigem filtro 'jwtauth'. Nenhum outro grupo
+    //         desta lista usa 'jwtauth' ainda — decisao explicita, ver
+    //         src/writable/claude/20260914164550_login_cadastro_jwt_plano.json.
+    // =========================================================================
+
+    $routes->group('auth', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Auth/EndpointAuth.php';
+    });
+
+    // =========================================================================
     // /User — Módulo de usuários
     // =========================================================================
 
@@ -67,33 +78,79 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
-    // /Agenda — Modulo de calendario (espelho do Google Agenda): calendars >
+    // /List — Modulo de construtor de listagens (list_manager > list_columns,
+    //         list_manager > list_actions — colecoes irmas, sem aninhamento).
+    //         APIs publicas (sem JWT), mesmo endpoint-set do modulo Form.
+    // =========================================================================
+
+    $routes->group('list-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListManager/EndpointTable.php';
+    });
+
+    $routes->group('list-columns', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListColumns/EndpointTable.php';
+    });
+
+    $routes->group('list-actions', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/List/ListActions/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /BootstrapIcons — catalogo de icones do Bootstrap Icons (usado pelo
+    //                    IconSelect do frontend). Populado por
+    //                    Database/Seeds/BootstrapIconsSeeder.php.
+    // =========================================================================
+
+    $routes->group('bootstrap-icons', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/BootstrapIcons/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Calendar — Modulo de calendario (espelho do Google Calendar): calendar_manager >
     //           calendar_events > {attendees, reminders, attachments,
     //           extended_properties}. APIs REST, contrato canonico (18 rotas).
     // =========================================================================
 
-    $routes->group('calendars', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/Calendars/EndpointTable.php';
+    $routes->group('calendar-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php';
     });
 
     $routes->group('calendar-events', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEvents/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEvents/EndpointTable.php';
     });
 
     $routes->group('calendar-event-attendees', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttendees/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventAttendees/EndpointTable.php';
     });
 
     $routes->group('calendar-event-reminders', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventReminders/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventReminders/EndpointTable.php';
     });
 
     $routes->group('calendar-event-attachments', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventAttachments/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventAttachments/EndpointTable.php';
     });
 
     $routes->group('calendar-event-extended-properties', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Agenda/CalendarEventExtendedProperties/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventExtendedProperties/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
+    //        versao do sistema.
+    // =========================================================================
+
+    $routes->group('nav-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Nav/NavManager/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Menu — arvore de itens navegaveis (submenus via parent_id), ligada a
+    //         um nav_manager.
+    // =========================================================================
+
+    $routes->group('menu-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Menu/MenuManager/EndpointTable.php';
     });
 
     // =========================================================================
@@ -121,5 +178,15 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('db-schema', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Meta/DbSchema/Endpoint.php';
+    });
+
+    // =========================================================================
+    // /Meta/route-manager — catalogo de rotas da API/frontend (CRUD completo,
+    //        padrao Manager), para selecionar uma rota pre-cadastrada em vez
+    //        de digita-la.
+    // =========================================================================
+
+    $routes->group('route-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Meta/RouteManager/EndpointTable.php';
     });
 });

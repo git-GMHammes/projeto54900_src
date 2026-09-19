@@ -41,7 +41,6 @@ class UpdateRequest
             'no_special_chars'     => 'permit_empty|in_list[0,1]',
             'strong_password'      => 'permit_empty|in_list[0,1]',
             'double_field'         => 'permit_empty|in_list[0,1]',
-            'equal_fields'         => 'permit_empty|in_list[0,1]',
             'with_seconds'         => 'permit_empty|in_list[0,1]',
             'show_counter'         => 'permit_empty|in_list[0,1]',
             'inline'               => 'permit_empty|in_list[0,1]',

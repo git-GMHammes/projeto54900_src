@@ -1,4 +1,30 @@
-import { useState } from 'react'
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/senha/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'senha'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, minLength/maxLength, strongPassword, noSpecialChars/
+ *     noNumbers/noLetters, doubleField (campo de confirmacao)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: o proprio <input type="password" name={field.name}>
+ *     (sem hidden — nao ha mascara, o valor exibido/oculto e o mesmo do submit)
+ *   - Com doubleField, existe um 2o input de confirmacao com
+ *     name={`${field.name}_confirm`} — usado so para validar igualdade
+ *     (setCustomValidity), nao precisa ser lido no payload
+ *   - A chave no FormData/payload e: field.name
+ *
+ * DEPENDENCIAS: nenhuma (nao usa ../emitValue — sem mascara).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
+import { useEffect, useRef, useState } from 'react'
 import type {
   ChangeEvent,
   ChangeEventHandler,
@@ -28,10 +54,8 @@ export interface SenhaFieldSchema {
   noNumbers?: boolean
   /** Bloqueia letras */
   noLetters?: boolean
-  /** Exibe segundo campo de confirmação */
+  /** Exibe segundo campo de confirmação — sempre exige igualdade entre os dois */
   doubleField?: boolean
-  /** Valida igualdade entre os dois campos (requer doubleField) */
-  equalFields?: boolean
   readOnly?: boolean
   disabled?: boolean
   required?: boolean
@@ -87,15 +111,25 @@ export function SenhaField({ field }: SenhaFieldProps) {
   const [show, setShow] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const confirmRef = useRef<HTMLInputElement>(null)
 
   const valor = isControlled ? (field.value ?? '') : internalValue
   const nome = field.label ?? 'Senha'
+
+  // Liga a igualdade dos 2 campos a validacao nativa (checkValidity/reportValidity) —
+  // sem isso o mismatch so aparecia como texto cosmetico e o form deixava enviar
+  // com a confirmacao vazia ou diferente.
+  useEffect(() => {
+    if (!confirmRef.current) return
+    const mismatch = field.doubleField && valor !== confirmValue
+    confirmRef.current.setCustomValidity(mismatch ? 'As senhas não coincidem' : '')
+  }, [valor, confirmValue, field.doubleField])
 
   function computeErro(v: string, c: string): string | null {
     if (field.required && !v.trim()) return `${nome} é obrigatório`
     const msgs = validarSenha(v, field)
     if (msgs.length) return msgs.join(' | ')
-    if (field.doubleField && field.equalFields && v && c && v !== c)
+    if (field.doubleField && v && c && v !== c)
       return 'As senhas não coincidem'
     return null
   }
@@ -178,6 +212,7 @@ export function SenhaField({ field }: SenhaFieldProps) {
           </label>
           <div style={{ position: 'relative' }}>
             <input
+              ref={confirmRef}
               type={showConfirm ? 'text' : 'password'}
               id={confirmId}
               name={confirmName}
@@ -186,6 +221,7 @@ export function SenhaField({ field }: SenhaFieldProps) {
               maxLength={field.maxLength}
               readOnly={field.readOnly}
               disabled={field.disabled}
+              required={field.required}
               style={{ paddingRight: '2.5rem' }}
               value={confirmValue}
               onChange={handleConfirmChange}

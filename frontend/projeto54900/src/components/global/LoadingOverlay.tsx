@@ -1,4 +1,22 @@
-// Spinner. `overlay` cobre o container relativo mais proximo; senao renderiza inline.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/LoadingOverlay.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: spinner de carregamento. `overlay=true` cobre o container
+ * `position: relative` mais proximo (precisa de um ancestral relativo/
+ * absolute para posicionar corretamente); `overlay=false` (default)
+ * renderiza inline, centralizado, ocupando o espaco do proprio fluxo.
+ *
+ * DEPENDENCIAS: nenhuma.
+ * CONSUMIDORES: praticamente toda pagina com carregamento assincrono (ex.:
+ * RegisterPage, paginas de listagem/detalhe) durante o loading inicial.
+ *
+ * COMO REAPROVEITAR: usar sem `overlay` para o loading de pagina inteira
+ * (substitui o conteudo); usar `overlay` quando precisar cobrir so uma
+ * secao (ex.: recarregando uma lista que ja tem conteudo visivel atras).
+ * -------------------------------------------------------------------------
+ */
 
 export interface LoadingOverlayProps {
   overlay?: boolean;

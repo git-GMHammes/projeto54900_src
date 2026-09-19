@@ -1,8 +1,27 @@
-// Paginacao no padrao da API (page/limit/sort/order) sincronizada com a URL.
-// A URL e a fonte da verdade -> refresh/voltar preservam o estado.
-//
-//   const { params, setPage, setLimit, toggleSort } = usePagination();
-//   userManagerView.getAll(params);
+/**
+ * =========================================================================
+ * FILE HEADER — hooks/usePagination.ts
+ * =========================================================================
+ *
+ * PROPOSITO: paginacao no padrao da API (page/limit/sort/order) sincronizada
+ * com a querystring da URL (useSearchParams) — a URL e a fonte da verdade,
+ * entao refresh/voltar/compartilhar link preservam o estado da listagem.
+ *
+ *   const { params, setPage, setLimit, toggleSort } = usePagination();
+ *   userManagerView.getAll(params);
+ *
+ * DEPENDENCIAS: utils/querystring (readPaginationParams) e constants/api
+ * (PAGINATION_DEFAULTS, usado para omitir da URL o valor que ja e o
+ * default).
+ * CONSUMIDORES: paginas de listagem (GetAllPage de user/menu/nav/upload,
+ * ListConstructorPage) que passam `params` direto para o service de leitura.
+ *
+ * COMO REAPROVEITAR: chamar usePagination() no topo da pagina, usar `params`
+ * na chamada ao service e ligar setPage/setLimit/toggleSort aos controles de
+ * paginacao/ordenacao da UI (ver utils/pagination.ts para o calculo da
+ * janela de paginas exibida).
+ * -------------------------------------------------------------------------
+ */
 
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -20,11 +39,13 @@ export interface UsePaginationResult {
   patch: (next: PaginationPatch) => void;
 }
 
+/** Le page/limit/sort/order da URL e expoe setters que gravam de volta na querystring. */
 export function usePagination(): UsePaginationResult {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const params = useMemo(() => readPaginationParams(searchParams), [searchParams]);
 
+  /** Aplica um patch parcial na querystring; remove a chave quando o valor cai no default. */
   const patch = useCallback(
     (next: PaginationPatch) => {
       setSearchParams(
@@ -46,9 +67,12 @@ export function usePagination(): UsePaginationResult {
     [setSearchParams],
   );
 
+  /** Muda so a pagina atual. */
   const setPage = useCallback((page: number) => patch({ page }), [patch]);
+  /** Muda o limite por pagina e volta para a pagina 1 (evita pagina "fantasma" fora do range). */
   const setLimit = useCallback((limit: number) => patch({ limit, page: 1 }), [patch]);
 
+  /** Ordena pela coluna clicada; clicar de novo na mesma coluna inverte ASC/DESC. Sempre volta para a pagina 1. */
   const toggleSort = useCallback(
     (column: string) => {
       const sameColumn = params.sort === column;
