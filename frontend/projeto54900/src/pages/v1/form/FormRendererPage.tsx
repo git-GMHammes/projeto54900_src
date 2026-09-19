@@ -12,9 +12,13 @@ import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
+import MonthCalendar from '@/components/ui/MonthCalendar';
+import YearCalendar from '@/components/ui/YearCalendar';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import Modal from '@/components/global/Modal';
+import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import { formManagerView } from '@/services/v1';
@@ -32,6 +36,7 @@ export default function FormRendererPage() {
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,9 +116,39 @@ export default function FormRendererPage() {
 
       {error && !loading && <EmptyState title="Formulario indisponivel" description={error} />}
 
+      {/* Bloco exclusivo da slug "calendario" — FormRendererPage continua generica para as demais. */}
+      {slug === 'calendario' && !loading && (
+        <>
+          <MonthCalendar
+            year={new Date().getFullYear()}
+            month={new Date().getMonth()}
+            size="lg"
+            className="mb-4"
+          />
+
+          <div className="mb-4">
+            <h2 className="h5 mb-3">Ano completo</h2>
+            <YearCalendar year={new Date().getFullYear()} />
+          </div>
+        </>
+      )}
+
       {!loading && !error && form && (
-        <div className="card border-0 shadow-sm mb-4">
-          <div className="card-body p-4">
+        <button type="button" className="btn btn-primary mb-4" onClick={() => setShowFormModal(true)}>
+          Novo Calendário
+        </button>
+      )}
+
+      {showFormModal && form && <FakeFillButton slug={slug} />}
+
+      <Modal
+        open={showFormModal && !!form}
+        title={form?.meta.title}
+        onClose={() => setShowFormModal(false)}
+        size="lg"
+      >
+        {form && (
+          <>
             {form.meta.status && form.meta.status !== 'active' && (
               <div className="alert alert-warning py-2">
                 Formulario com status <strong>{form.meta.status}</strong> — ainda nao publicado.
@@ -131,9 +166,9 @@ export default function FormRendererPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </>
   );
 }

@@ -123,7 +123,7 @@ export function PisField({ field }: PisFieldProps) {
   }
 
   const { type: _, col: _c, label, hidden: _hidden, id, name, className,
-    value: _v, defaultValue: _dv, onChange: _oc, onBlur: _ob, ...restProps } = field
+    value: _v, defaultValue: _dv, onChange: _oc, onBlur: _ob, title: _title, ...restProps } = field
 
   const inputClass = ['form-control', erro ? 'is-invalid' : '', className ?? '']
     .filter(Boolean).join(' ')

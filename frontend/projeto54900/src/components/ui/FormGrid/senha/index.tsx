@@ -180,7 +180,6 @@ export function SenhaField({ field }: SenhaFieldProps) {
           disabled={field.disabled}
           required={field.required}
           tabIndex={field.tabIndex}
-          title={field.title}
           style={{ ...field.style, paddingRight: '2.5rem' }}
           autoComplete={field.autoComplete}
           autoFocus={field.autoFocus}

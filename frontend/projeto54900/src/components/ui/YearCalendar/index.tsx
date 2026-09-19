@@ -30,7 +30,7 @@ export default function YearCalendar({ year, className = '' }: YearCalendarProps
     <div className={`row g-4 ${className}`}>
       {MONTHS.map((month) => (
         <div key={month} className="col-12 col-sm-6 col-lg-4 col-xl-3">
-          <MonthCalendar year={year} month={month} size="sm" />
+          <MonthCalendar year={year} month={month} size="sm" className="h-100" />
         </div>
       ))}
     </div>

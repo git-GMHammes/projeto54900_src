@@ -38,7 +38,7 @@ const AppConfigContext = createContext<AppConfig | null>(null);
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppConfig>(
     () => ({
-      appName: 'projeto54900',
+      appName: 'Projeto 54900',
       apiVersion: DEFAULT_API_VERSION,
       apiBaseUrl: env.apiBaseUrl,
       basePath: env.basePath,

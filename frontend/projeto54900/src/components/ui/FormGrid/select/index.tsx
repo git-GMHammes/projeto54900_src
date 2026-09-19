@@ -52,6 +52,8 @@ export interface SelectFieldSchema {
   col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
   label?: string
   id?: string
+  /** Texto de ajuda — vira tooltip do campo (ver components/ui/FormGrid/Input) */
+  title?: string
   name?: string
   placeholder?: string
   /** Opções inline no formato { value: string, label: string } ou objeto genérico */

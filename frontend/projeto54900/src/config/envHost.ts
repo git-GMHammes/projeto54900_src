@@ -3,6 +3,8 @@
  * FILE HEADER — config/envHost.ts
  * =========================================================================
  *
+ * C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\config\envHost.ts
+ *
  * PROPOSITO: validador global de ambiente (host) — espelho do
  * env_host.js (core legado). Fonte unica da lista de hosts de
  * desenvolvimento e da checagem usada pelo frontend V2 para decidir se um

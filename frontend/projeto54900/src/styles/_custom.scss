@@ -69,6 +69,12 @@ dl .text-break {
   overflow-y: auto;
 }
 
+// Tooltip customizado dos campos do FormGrid: é padrão da própria fábrica de
+// campos, não do app hospedeiro — por isso o CSS mora junto do componente
+// (components/ui/FormGrid/FieldTooltip/tooltip.scss) e só é importado aqui,
+// no ponto central de estilo do projeto.
+@import "../components/ui/FormGrid/FieldTooltip/tooltip";
+
 @keyframes tree-flash {
   0%,
   25% {
