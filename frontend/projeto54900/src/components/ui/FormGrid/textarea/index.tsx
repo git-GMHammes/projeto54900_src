@@ -155,7 +155,6 @@ export function TextareaField({ field }: TextareaFieldProps) {
         disabled={field.disabled}
         required={field.required}
         tabIndex={field.tabIndex}
-        title={field.title}
         style={field.style}
         autoFocus={field.autoFocus}
         spellCheck={field.spellCheck}

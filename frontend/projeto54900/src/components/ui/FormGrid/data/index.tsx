@@ -163,7 +163,7 @@ export function DataField({ field }: DataFieldProps) {
 
   const { type: _, col: _c, label, hidden: _hidden, id, name, className,
     value: _v, defaultValue: _dv, min: _mn, max: _mx,
-    onChange: _oc, onBlur: _ob, ...restProps } = field
+    onChange: _oc, onBlur: _ob, title: _title, ...restProps } = field
 
   const inputClass = ['form-control', erro ? 'is-invalid' : '', className ?? '']
     .filter(Boolean).join(' ')

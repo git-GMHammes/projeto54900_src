@@ -127,7 +127,7 @@ export function MoedaField({ field }: MoedaFieldProps) {
   }
 
   const { type: _, col: _c, label, hidden: _hidden, id, name, className,
-    value: _v, defaultValue: _dv, onChange: _oc, onBlur: _ob,
+    value: _v, defaultValue: _dv, onChange: _oc, onBlur: _ob, title: _title,
     ...restProps } = field
 
   const inputClass = ['form-control', erro ? 'is-invalid' : '', className ?? '']

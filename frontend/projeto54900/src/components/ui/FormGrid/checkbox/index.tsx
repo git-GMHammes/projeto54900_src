@@ -39,6 +39,8 @@ export interface CheckboxFieldSchema {
   col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
   label?: string
   id?: string
+  /** Texto de ajuda — vira tooltip do campo (ver components/ui/FormGrid/Input) */
+  title?: string
   /** Nome do grupo — o form submete como name[] */
   name: string
   options: CheckboxOption[]

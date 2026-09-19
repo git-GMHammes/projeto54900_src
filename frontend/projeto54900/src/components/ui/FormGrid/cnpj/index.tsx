@@ -200,7 +200,7 @@ export function CnpjField({ field }: CnpjFieldProps) {
   const {
     type: _type, col: _col, label, hidden: _hidden, id, name, className,
     value: _v, defaultValue: _dv,
-    onChange: _oc, onBlur: _ob,
+    onChange: _oc, onBlur: _ob, title: _title,
     ...restProps
   } = field
 

@@ -152,7 +152,6 @@ export function SeiField({ field }: SeiFieldProps) {
         disabled={field.disabled}
         required={field.required}
         tabIndex={field.tabIndex}
-        title={field.title}
         style={field.style}
         value={displayValue}
         onChange={handleChange}

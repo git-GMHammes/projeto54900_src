@@ -6,7 +6,9 @@
  * PROPOSITO: grade de um mes — cabecalho (mes/ano), linha de dias da semana
  * responsiva (1 letra no celular, abreviado no tablet, nome completo no
  * desktop) e os dias em CSS Grid de 7 colunas. Sem lib de calendario — so
- * Date/Intl nativos do browser.
+ * Date/Intl nativos do browser. O card (`shadow-lg`) que da a borda com
+ * sombra "3D" ja vem embutido aqui — quem consome nao precisa envolver em
+ * outro card.
  *
  * DEPENDENCIAS: nenhuma (so Date/Intl nativos).
  * CONSUMIDORES: components/ui/YearCalendar/index.tsx (12 instancias, uma por
@@ -55,51 +57,53 @@ export default function MonthCalendar({ year, month, size = 'lg', className = ''
   const dayFontSize = size === 'lg' ? undefined : '0.8rem';
 
   return (
-    <div className={`w-100 ${className}`}>
-      <h3 className={`text-capitalize text-center mb-2 ${size === 'lg' ? 'h5' : 'h6'}`}>{titulo}</h3>
+    <div className={`card shadow-lg w-100 ${className}`}>
+      <div className={size === 'lg' ? 'card-body p-4' : 'card-body p-2'}>
+        <h3 className={`text-capitalize text-center mb-2 ${size === 'lg' ? 'h5' : 'h6'}`}>{titulo}</h3>
 
-      <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
-        {WEEKDAYS.map((weekday) => (
-          <div key={weekday} className="text-center text-body-secondary fw-semibold small text-uppercase">
-            {size === 'sm' ? (
-              weekdayLabel(weekday, 'narrow')
-            ) : (
-              <>
-                <span className="d-inline d-sm-none">{weekdayLabel(weekday, 'narrow')}</span>
-                <span className="d-none d-sm-inline d-lg-none">{weekdayLabel(weekday, 'short')}</span>
-                <span className="d-none d-lg-inline">{weekdayLabel(weekday, 'long')}</span>
-              </>
-            )}
-          </div>
-        ))}
-
-        {cells.map((day, idx) => {
-          const isToday = isCurrentMonth && day === today.getDate();
-          return (
-            <div
-              key={idx}
-              className="d-flex align-items-center justify-content-center"
-              style={{ minHeight: cellMinHeight }}
-            >
-              {day !== null && (
-                <span
-                  className={
-                    isToday
-                      ? 'rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                      : ''
-                  }
-                  style={{
-                    width: isToday ? (size === 'lg' ? '2.25rem' : '1.5rem') : undefined,
-                    height: isToday ? (size === 'lg' ? '2.25rem' : '1.5rem') : undefined,
-                    fontSize: dayFontSize,
-                  }}
-                >
-                  {day}
-                </span>
+        <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+          {WEEKDAYS.map((weekday) => (
+            <div key={weekday} className="text-center text-body-secondary fw-semibold small text-uppercase">
+              {size === 'sm' ? (
+                weekdayLabel(weekday, 'narrow')
+              ) : (
+                <>
+                  <span className="d-inline d-sm-none">{weekdayLabel(weekday, 'narrow')}</span>
+                  <span className="d-none d-sm-inline d-lg-none">{weekdayLabel(weekday, 'short')}</span>
+                  <span className="d-none d-lg-inline">{weekdayLabel(weekday, 'long')}</span>
+                </>
               )}
             </div>
-          );
-        })}
+          ))}
+
+          {cells.map((day, idx) => {
+            const isToday = isCurrentMonth && day === today.getDate();
+            return (
+              <div
+                key={idx}
+                className="d-flex align-items-center justify-content-center"
+                style={{ minHeight: cellMinHeight }}
+              >
+                {day !== null && (
+                  <span
+                    className={
+                      isToday
+                        ? 'rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                        : ''
+                    }
+                    style={{
+                      width: isToday ? (size === 'lg' ? '2.25rem' : '1.5rem') : undefined,
+                      height: isToday ? (size === 'lg' ? '2.25rem' : '1.5rem') : undefined,
+                      fontSize: dayFontSize,
+                    }}
+                  >
+                    {day}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

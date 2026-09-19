@@ -18,6 +18,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
+| [`envhost`](#envhost)         | Hostname decide o que é dev-only        |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
@@ -61,6 +62,20 @@ classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
 novo módulo/banco.
 
 [`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
+
+### `envhost`
+
+Como o frontend decide se um comportamento é **dev-only**: `isDevHost()`
+(`config/envHost.ts`) compara `window.location.hostname` contra a lista fixa
+`DEV_HOSTS` — espelho do `env_host.js` legado. Não é o mesmo que `env.isDev`
+(modo de build do Vite). Duas features hoje dependem disso: (1) o painel
+`DEBUG` (`ApiDebugPanel`), que mostra respostas de API capturadas em
+`http.ts` e o `access_token` decodificado; (2) o botão flutuante
+`FakeFillButton`, que preenche o formulário aberto com dados fake válidos via
+um script por formulário (`dev/fakeFill/<slug>.ts`, registrado em
+`dev/fakeFill/registry.ts`). Cadeias completas documentadas no arquivo.
+
+[`geral/README_envHost.md`](geral/README_envHost.md) — o que `isDevHost()` libera (painel DEBUG de respostas de API + botão de preenchimento fake de formulário).
 
 ### `formulario`
 

@@ -114,7 +114,7 @@ export function EmailField({ field }: EmailFieldProps) {
 
   const { type: _, col: _c, label, hidden: _hidden, id, name, className,
     value: _v, defaultValue: _dv, onChange: _oc, onBlur: _ob,
-    allowedDomains: _ad, ...restProps } = field
+    allowedDomains: _ad, title: _title, ...restProps } = field
 
   const inputClass = ['form-control', erro ? 'is-invalid' : '', className ?? '']
     .filter(Boolean).join(' ')

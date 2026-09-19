@@ -66,6 +66,7 @@ import { SenhaField, type SenhaFieldSchema } from '../senha'
 import { RadioField, type RadioFieldSchema } from '../radio'
 import { CheckboxField, type CheckboxFieldSchema } from '../checkbox'
 import { SelectField, type SelectFieldSchema } from '../select'
+import FieldTooltip from '../FieldTooltip'
 
 // ─── Schema de campo texto ────────────────────────────────────────────────────
 
@@ -269,9 +270,10 @@ function FormGrid({ schema }: FormGridProps) {
               return (
                 <div
                   key={fieldIndex}
-                  className={`col-md-${field.col} mb-1`}
+                  className={`col-md-${field.col} mb-1 position-relative`}
                   hidden={field.hidden}
                 >
+                  {field.title && <FieldTooltip text={field.title} />}
                   <CpfField field={field} />
                 </div>
               )
@@ -282,9 +284,10 @@ function FormGrid({ schema }: FormGridProps) {
               return (
                 <div
                   key={fieldIndex}
-                  className={`col-md-${field.col} mb-1`}
+                  className={`col-md-${field.col} mb-1 position-relative`}
                   hidden={field.hidden}
                 >
+                  {field.title && <FieldTooltip text={field.title} />}
                   <PhoneField field={field} />
                 </div>
               )
@@ -295,9 +298,10 @@ function FormGrid({ schema }: FormGridProps) {
               return (
                 <div
                   key={fieldIndex}
-                  className={`col-md-${field.col} mb-1`}
+                  className={`col-md-${field.col} mb-1 position-relative`}
                   hidden={field.hidden}
                 >
+                  {field.title && <FieldTooltip text={field.title} />}
                   <CnpjField field={field} />
                 </div>
               )
@@ -308,9 +312,10 @@ function FormGrid({ schema }: FormGridProps) {
               return (
                 <div
                   key={fieldIndex}
-                  className={`col-md-${field.col} mb-1`}
+                  className={`col-md-${field.col} mb-1 position-relative`}
                   hidden={field.hidden}
                 >
+                  {field.title && <FieldTooltip text={field.title} />}
                   <CepField field={field} />
                 </div>
               )
@@ -319,7 +324,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Moeda ─────────────────────────────────────────────────────
             if (field.type === 'moeda') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <MoedaField field={field} />
                 </div>
               )
@@ -328,7 +334,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Data ──────────────────────────────────────────────────────
             if (field.type === 'data') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <DataField field={field} />
                 </div>
               )
@@ -337,7 +344,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Hora ──────────────────────────────────────────────────────
             if (field.type === 'hora') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <HoraField field={field} />
                 </div>
               )
@@ -346,7 +354,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── PIS / NIS / PASEP ─────────────────────────────────────────
             if (field.type === 'pis') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <PisField field={field} />
                 </div>
               )
@@ -355,7 +364,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Placa de Veículo ──────────────────────────────────────────
             if (field.type === 'placa') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <PlacaField field={field} />
                 </div>
               )
@@ -364,7 +374,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Título de Eleitor ─────────────────────────────────────────
             if (field.type === 'titulo') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <TituloField field={field} />
                 </div>
               )
@@ -373,7 +384,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── CNH ───────────────────────────────────────────────────────
             if (field.type === 'cnh') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <CnhField field={field} />
                 </div>
               )
@@ -382,7 +394,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Processo Judicial ─────────────────────────────────────────
             if (field.type === 'processo') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <ProcessoField field={field} />
                 </div>
               )
@@ -391,7 +404,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── RENAVAM ───────────────────────────────────────────────────
             if (field.type === 'renavam') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <RenavamField field={field} />
                 </div>
               )
@@ -400,7 +414,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── SEI ───────────────────────────────────────────────────────
             if (field.type === 'sei') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <SeiField field={field} />
                 </div>
               )
@@ -409,7 +424,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── E-mail ────────────────────────────────────────────────────
             if (field.type === 'email') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <EmailField field={field} />
                 </div>
               )
@@ -418,7 +434,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Textarea ──────────────────────────────────────────────────
             if (field.type === 'textarea') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <TextareaField field={field} />
                 </div>
               )
@@ -427,7 +444,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Senha (com toggle + doubleField) ──────────────────────────
             if (field.type === 'senha') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <SenhaField field={field} />
                 </div>
               )
@@ -436,7 +454,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Radio ─────────────────────────────────────────────────────
             if (field.type === 'radio') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <RadioField field={field} />
                 </div>
               )
@@ -445,7 +464,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Checkbox ──────────────────────────────────────────────────
             if (field.type === 'checkbox') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <CheckboxField field={field} />
                 </div>
               )
@@ -454,7 +474,8 @@ function FormGrid({ schema }: FormGridProps) {
             // ── Select (combobox com busca) ───────────────────────────────
             if (field.type === 'select') {
               return (
-                <div key={fieldIndex} className={`col-md-${field.col} mb-1`} hidden={field.hidden}>
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
                   <SelectField field={field} />
                 </div>
               )
@@ -472,6 +493,7 @@ function FormGrid({ schema }: FormGridProps) {
               noNumbers: _n,
               noLetters: _l,
               noSpecialChars: _s,
+              title: _title,
               ...inputProps
             } = field
 
@@ -491,7 +513,12 @@ function FormGrid({ schema }: FormGridProps) {
                 : {}
 
             return (
-              <div key={fieldIndex} className={`col-md-${col} mb-1`} hidden={hidden}>
+              <div
+                key={fieldIndex}
+                className={`col-md-${col} mb-1 position-relative`}
+                hidden={hidden}
+              >
+                {field.title && <FieldTooltip text={field.title} />}
                 {label && (
                   <label htmlFor={id} className="form-label">
                     {label}

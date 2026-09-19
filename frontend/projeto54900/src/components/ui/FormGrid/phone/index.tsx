@@ -240,7 +240,7 @@ export function PhoneField({ field }: PhoneFieldProps) {
     type: _type, col: _col, label, hidden: _hidden, id, name, className,
     value: _v, defaultValue: _dv,
     onChange: _oc, onBlur: _ob,
-    maxLength: _mx, minLength: _mn, pattern: _pt,
+    maxLength: _mx, minLength: _mn, pattern: _pt, title: _title,
     ...restProps
   } = field
 
