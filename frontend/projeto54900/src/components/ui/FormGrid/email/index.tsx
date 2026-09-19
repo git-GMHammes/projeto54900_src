@@ -1,3 +1,26 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/email/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'email'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
+ *     required, allowedDomains (lista de dominios aceitos)
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: o proprio <input type="email" name={field.name}>
+ *     visivel (sem mascara, sem hidden — nao ha diferenca entre "cru" e exibido)
+ *   - A chave no FormData/payload e: field.name
+ *
+ * DEPENDENCIAS: nenhuma (nao usa ../emitValue — o valor exibido e o mesmo
+ * que vai no submit).
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 import type {
   ChangeEvent,

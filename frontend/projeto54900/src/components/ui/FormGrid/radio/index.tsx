@@ -1,3 +1,27 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/ui/FormGrid/radio/index.tsx
+ * =========================================================================
+ *
+ * CONEXAO COM O FORMGRID:
+ *   - field.type que ativa este componente: 'radio'
+ *   - Despachado por components/ui/FormGrid/Input/index.tsx (<FormGrid>)
+ *   - Props do schema lidas aqui: col, label, name, options (RadioOption[]),
+ *     inline, value/defaultValue, required
+ *
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: os proprios <input type="radio" name={field.name}>
+ *     (sem hidden — o radio nativo ja serializa no FormData)
+ *   - A chave no FormData/payload e: field.name
+ *   - onChange tem assinatura propria `(value: string) => void` (nao
+ *     ChangeEventHandler like os campos mascarados) — nao usa ../emitValue
+ *
+ * DEPENDENCIAS: nenhuma.
+ * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
+ * secao 5 (Bloco C).
+ * -------------------------------------------------------------------------
+ */
+
 import { useState } from 'react'
 
 // ─── Interface ────────────────────────────────────────────────────────────────

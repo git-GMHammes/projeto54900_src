@@ -1,5 +1,25 @@
-// Contexto de toasts (notificacoes). Renderiza a pilha via <ToastStack/>.
-// Consumir pelo hook useToast().
+/**
+ * =========================================================================
+ * FILE HEADER — context/ToastContext.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: fila global de toasts (notificacoes efemeras) — expoe
+ * push/success/error/warning/info e renderiza a pilha visual via
+ * <ToastStack/> junto do Provider. Cada toast some sozinho apos `delay` ms
+ * (dismiss automatico via setTimeout), alem do dismiss manual pelo X.
+ *
+ * DEPENDENCIAS: components/global/ToastStack (render da pilha visual).
+ * CONSUMIDORES: App.tsx monta <ToastProvider> na raiz da arvore; qualquer
+ * pagina que faca submit de formulario usa hooks/useToast() para disparar
+ * toast.success/error apos a resposta da API (ex.: RegisterPage,
+ * FormRendererPage).
+ *
+ * COMO REAPROVEITAR: chamar useToast() (ver hooks/useToast.ts) e disparar
+ * toast.success(msg)/toast.error(msg)/toast.warning(msg)/toast.info(msg);
+ * usar push() diretamente so quando precisar de opcoes fora do padrao
+ * (title/variant/delay customizados).
+ * -------------------------------------------------------------------------
+ */
 
 import { createContext, useCallback, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -45,10 +65,12 @@ export const ToastContext = createContext<ToastApi | null>(null);
 
 let seq = 0;
 
+/** Provider da fila de toasts: guarda a lista em estado e um timer de auto-dismiss por toast. */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
+  /** Remove um toast da lista e cancela seu timer de auto-dismiss, se ainda pendente. */
   const dismiss = useCallback((id: number) => {
     setToasts((list) => list.filter((t) => t.id !== id));
     const timer = timers.current.get(id);
@@ -58,6 +80,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /** Adiciona um toast a fila e agenda seu auto-dismiss (delay <= 0 desativa). @returns id do toast criado */
   const push = useCallback(
     ({ message, title, variant = 'primary', delay = 4000 }: PushToastInput): number => {
       const id = ++seq;

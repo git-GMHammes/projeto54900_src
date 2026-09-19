@@ -1,9 +1,26 @@
-// STUB — tabela EM BRANCO ate a fabrica de listas (list factory).
-//
-// A versao anterior (tabela Bootstrap com ordenacao por coluna e estados de
-// loading/erro/vazio) esta no backup do projeto e sera substituida pela fabrica.
-// Nao reimplementar aqui: este arquivo apenas mantem o modulo importavel e
-// preserva o contrato de props enquanto as paginas de listagem estao em branco.
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/DataTable.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: STUB — tabela EM BRANCO ate a fabrica de listas (list factory,
+ * ver utils/listConstructor.tsx e o modulo list-constructor). A versao
+ * anterior (tabela Bootstrap com ordenacao por coluna e estados de
+ * loading/erro/vazio) esta no backup do projeto e sera substituida pela
+ * fabrica. NAO REIMPLEMENTAR AQUI: este arquivo so mantem o modulo
+ * importavel e preserva o contrato de props (`DataTableColumn`,
+ * `DataTableProps`) enquanto as paginas de listagem estao em branco.
+ *
+ * DEPENDENCIAS: nenhuma (so tipos de react).
+ * CONSUMIDORES: nenhum ainda — o contrato de props existe para paginas que
+ * hoje renderizam so o stub e vao migrar para a fabrica de listas quando
+ * ela existir.
+ *
+ * COMO REAPROVEITAR: nao criar uma tabela paralela em outra pagina — usar
+ * este componente (mesmo em branco) para manter o ponto unico de futura
+ * substituicao pela fabrica.
+ * -------------------------------------------------------------------------
+ */
 
 import type { ReactNode } from 'react';
 

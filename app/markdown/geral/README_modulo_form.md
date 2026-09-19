@@ -71,9 +71,9 @@ aplicada pelo `Form/FormCampos/Processor` quando o campo é vinculado.
   `read_only`, `is_hidden`, `max_length`, `min_length`, `pattern`,
   `input_mode`, `autocomplete`.
 - **Flags por tipo (TINYINT 1):** `no_numbers`, `no_letters`,
-  `no_special_chars`, `strong_password`, `double_field`, `equal_fields`,
-  `with_seconds`, `show_counter`, `inline`; `rows_qty` (INT), `min_date`,
-  `max_date` (VARCHAR(10) ISO).
+  `no_special_chars`, `strong_password`, `double_field` (exige igualdade
+  sozinho, sem flag separada), `with_seconds`, `show_counter`, `inline`;
+  `rows_qty` (INT), `min_date`, `max_date` (VARCHAR(10) ISO).
 - **Colunas JSON:** `options_json` (radio/checkbox/select), `datalist_json`
   (text), `allowed_domains_json` (email), `select_config_json` (`src`,
   `valueKey`, `labelKey`, `labelTemplate`, `maxVisible`, `findSrc`,
@@ -173,3 +173,14 @@ marca apenas o registro-alvo.
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

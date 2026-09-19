@@ -36,7 +36,7 @@ Banco `codeigniter54900_db` (conexão `default`; ver
 | `User`   | `user_profiles`                                                                                                                                            | perfil 1:1, FK `user_manager_id` → `user_manager` (CASCADE); `email` unique |
 | `User`   | `user_roles`                                                                                                                                               | `permissions` JSON; `slug` unique — **sem módulo ainda**                    |
 | `User`   | `view_user_manager`                                                                                                                                        | view: `user_manager` (um*) LEFT JOIN `user_profiles` (uc*)                  |
-| `Agenda` | `calendars`, `calendar_events`, `calendar_event_attendees`, `calendar_event_reminders`, `calendar_event_attachments`, `calendar_event_extended_properties` | migrations existem; **sem módulo ainda**                                    |
+| `Calendar` | `calendar_manager`, `calendar_events`, `calendar_event_attendees`, `calendar_event_reminders`, `calendar_event_attachments`, `calendar_event_extended_properties` | migrations existem; **sem módulo ainda**                                    |
 | `Upload` | `uploads`, `view_upload_manager`                                                                                                                            | módulo `Upload/UploadManager`; anexos polimórficos (ver desvio abaixo)      |
 
 ## 2. As 6 camadas
@@ -92,7 +92,7 @@ HTTP  ──►  Routes  ──►  Controller  ──►  Request (regras)     
 
 ## 4. Árvore de arquivos de um módulo
 
-Placeholders: `<Dominio>` (ex.: `User`, `Agenda`), `<Modulo>` (ex.: `UserManager`),
+Placeholders: `<Dominio>` (ex.: `User`, `Calendar`), `<Modulo>` (ex.: `UserManager`),
 `<slug>` = kebab-case do módulo (ex.: `user-manager`), `<tabela>`, `<view>`.
 
 ```
@@ -308,27 +308,27 @@ Métodos de conveniência do módulo: aliases semânticos sobre `existsByField`
 
 ## 10. Passo a passo — criar um módulo novo
 
-Exemplo: domínio `Agenda`, módulo `Calendar`, tabela `calendars`, slug
-`calendar`.
+Exemplo: domínio `Calendar`, módulo `CalendarManager`, tabela `calendar_manager`,
+slug `calendar-manager`.
 
 1. **Migration da tabela** (se ainda não existe):
-   `SPARK make:migration CreateCalendarTable` → preencher com o DDL, colunas
+   `SPARK make:migration CreateCalendarManagerTable` → preencher com o DDL, colunas
    padrão, uniques, FKs. (`SPARK` = `podman compose exec php php spark`.)
-2. **Migration da view** (se o módulo terá view): `CreateViewCalendarMigration`
+2. **Migration da view** (se o módulo terá view): `CreateViewCalendarManagerMigration`
    com o `CREATE VIEW` e prefixos.
 3. `SPARK migrate` — cria em `codeigniter54900_db`. Conferir com
    `SPARK migrate:status`.
-4. **Model(s)** em `Models/V1/Agenda/Calendar/`: `SqlTableModel` (e
+4. **Model(s)** em `Models/V1/Calendar/CalendarManager/`: `SqlTableModel` (e
    `SqlViewModel`), preenchendo as propriedades da §8 a partir do DDL.
-5. **Requests** em `Requests/V1/Agenda/Calendar/`: `CreateRequest` +
+5. **Requests** em `Requests/V1/Calendar/CalendarManager/`: `CreateRequest` +
    `UpdateRequest`, `rules()` pelo mapa da §7.1, `messages()` em pt-BR.
-6. **Processor** em `Services/V1/Agenda/Calendar/Processor.php` estendendo
+6. **Processor** em `Services/V1/Calendar/CalendarManager/Processor.php` estendendo
    `BaseTableService` (ou `BaseViewService` se for só leitura): construtor liga
    os models; sobrescrever só os hooks necessários.
-7. **Controllers** em `Controllers/Api/V1/Agenda/Calendar/`:
+7. **Controllers** em `Controllers/Api/V1/Calendar/CalendarManager/`:
    `ResourceTableController` (declara `processor` + `getCreateRules/getUpdateRules`)
    e `ResourceViewController` (só `processor`).
-8. **Rotas**: criar `Config/Routes/Api/v1/Agenda/Calendar/EndpointTable.php`
+8. **Rotas**: criar `Config/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php`
    (18) e `EndPointView.php` (10) copiando o contrato da §5 e trocando o
    namespace do controller; registrar os 2 grupos em `Config/Routes.php`.
 9. **Conferir**: `SPARK routes` lista as ~28 rotas novas; testar `create`,
@@ -407,3 +407,14 @@ tabela trata os dois casos).
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
