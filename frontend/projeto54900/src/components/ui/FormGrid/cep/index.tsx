@@ -72,6 +72,7 @@ export interface CepFieldSchema {
   // ── Atributos globais ─────────────────────────────────────────────────────
   className?: string
   style?: CSSProperties
+  /** Texto de ajuda (fc_help_text) — exibido só no ícone de ajuda ao lado do campo (FieldTooltip), NUNCA como title deste elemento. */
   title?: string
   tabIndex?: number
   hidden?: boolean
