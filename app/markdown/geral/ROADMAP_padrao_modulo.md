@@ -34,7 +34,7 @@ Banco `codeigniter54900_db` (conexão `default`; ver
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `User`   | `user_manager`                                                                                                                                             | credenciais; `username` unique; `status` ENUM                               |
 | `User`   | `user_profiles`                                                                                                                                            | perfil 1:1, FK `user_manager_id` → `user_manager` (CASCADE); `email` unique |
-| `User`   | `user_roles`                                                                                                                                               | `permissions` JSON; `slug` unique — **sem módulo ainda**                    |
+| `User`   | `user_roles`                                                                                                                                               | `permissions` JSON; `slug` unique — módulo `User/UserRoles`, CRUD completo (2026-09-20) |
 | `User`   | `view_user_manager`                                                                                                                                        | view: `user_manager` (um*) LEFT JOIN `user_profiles` (uc*)                  |
 | `Calendar` | `calendar_manager`, `calendar_events`, `calendar_event_attendees`, `calendar_event_reminders`, `calendar_event_attachments`, `calendar_event_extended_properties` | migrations existem; **sem módulo ainda**                                    |
 | `Upload` | `uploads`, `view_upload_manager`                                                                                                                            | módulo `Upload/UploadManager`; anexos polimórficos (ver desvio abaixo)      |
@@ -393,7 +393,8 @@ O padrão só fecha 100% depois destas decisões (nenhuma resolvida neste ROADMA
    renomear a coluna para `zip_code` ou trocar a constante para `cep`.
 
 Extras observados (menor prioridade): `user_roles` sem tabela-pivô
-usuário↔papel e sem módulo; `user_profiles.uuid` sem geração;
+usuário↔papel (módulo `User/UserRoles` já existe, CRUD completo desde
+2026-09-20); `user_profiles.uuid` sem geração;
 `BaseResourceViewController::getAllWithDeleted()` ignora o `$id` (a versão de
 tabela trata os dois casos).
 

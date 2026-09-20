@@ -466,6 +466,17 @@ export interface RenderForm {
   schema: FormGridSchema;
 }
 
+/**
+ * Fonte unica de verdade de "este formulario pode ser preenchido/enviado
+ * agora?" — status precisa ser exatamente 'active' (draft/inactive/ausente
+ * bloqueiam). Usada por toda pagina que renderiza um RenderForm
+ * (FormRendererPage.tsx, pages/v1/calendar/calendar-manager/GetAllPage.tsx)
+ * para nao duplicar a regra em cada consumidor.
+ */
+export function isFormPublished(form: RenderForm | null): boolean {
+  return form?.meta.status === 'active';
+}
+
 export function buildRenderSchema(rows: readonly ApiRow[]): RenderForm | null {
   const groups = buildConstructorSchemas(rows);
   if (groups.length === 0) return null;

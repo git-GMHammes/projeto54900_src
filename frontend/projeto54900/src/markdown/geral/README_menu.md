@@ -138,7 +138,7 @@ Entrar
 | Cadastro Usuário   | `/v1/user-manager/create`     |
 | Dados Usuário      | `/v1/user-profiles/create`    |
 | Calendário         | ``                            |
-| Novo Calendário    | `/v1/form/calendario`        |
+| Novo Calendário    | `/v1/form/calendario`         |
 | Admin Calendário   | `/v1/calendar-manager`        |
 | Uploads            | `/v1/upload-manager`          |
 | Form               | ``                            |
