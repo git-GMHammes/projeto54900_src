@@ -1,15 +1,16 @@
-// Formulario de criacao de usuario — ETAPA 1 (build 'cadastro-usuario', tabela
-// user_manager: username + password). Ao criar, pega o id retornado e manda
-// para /v1/user-profiles/create?user_manager_id={id} (etapa 2, pagina propria
-// do modulo user-profiles). Mesmo pipeline de FormRendererPage.tsx:
-// formManagerView.getGrouped -> buildRenderSchema -> FormGrid -> submit para
-// o submit_endpoint do build. Ver src/markdown/geral/README_FormGrid.md.
+// Formulario de dados do usuario — ETAPA 2 (build 'dados-do-usuario', tabela
+// user_profiles). Le ?user_manager_id= da querystring (vem da etapa 1,
+// pages/v1/user/user-manager/CreatePage.tsx), pre-preenche o campo FK
+// obrigatorio (read-only) e submete. Ao concluir, manda para /v1/login.
+// Mesmo pipeline de FormRendererPage.tsx: formManagerView.getGrouped ->
+// buildRenderSchema -> FormGrid -> submit para o submit_endpoint do build.
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
+import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
@@ -18,16 +19,32 @@ import { ApiError } from '@/services/http';
 import { formManagerView } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
-import { normalizeList, normalizeItem } from '@/utils/apiResult';
-import type { ApiRow } from '@/types/api';
+import { normalizeList } from '@/utils/apiResult';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 
-const SLUG = 'cadastro-usuario';
+const SLUG = 'dados-do-usuario';
+const FK_FIELD = 'user_manager_id';
+
+function prefillFkField(schema: FormGridSchema, fieldName: string, value: string): FormGridSchema {
+  return {
+    rows: schema.rows.map((row) => ({
+      ...row,
+      fields: row.fields.map((f) => {
+        if (f.name !== fieldName) return f;
+        if (f.type !== undefined && f.type !== 'text' && f.type !== 'password') return f;
+        return { ...f, defaultValue: value, readOnly: true };
+      }),
+    })),
+  };
+}
 
 export default function CreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const [searchParams] = useSearchParams();
+  const userManagerId = searchParams.get('user_manager_id');
+
   const [form, setForm] = useState<RenderForm | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,15 +97,9 @@ export default function CreatePage() {
 
       setSubmitting(true);
       try {
-        const res = await send(path, payload);
-        const row = normalizeItem<ApiRow>(res);
-        const id = row?.id;
-        if (typeof id !== 'string' && typeof id !== 'number') {
-          toast.error('Registro criado sem id na resposta.', { title: 'Erro ao enviar' });
-          return;
-        }
-        toast.success('Usuario criado.', { title: form.meta.title });
-        void navigate(`${paths.v1.user.profilesCreate}?user_manager_id=${id}`);
+        await send(path, payload);
+        toast.success('Cadastro concluido.', { title: form.meta.title });
+        void navigate(paths.v1.auth.login);
       } catch (err) {
         if (err instanceof ApiError) {
           toast.error(`${err.message}${errorDetail(err)}`, { title: 'Erro ao enviar' });
@@ -102,23 +113,33 @@ export default function CreatePage() {
     [form, navigate, toast],
   );
 
+  const schema =
+    form && userManagerId ? prefillFkField(form.schema, FK_FIELD, userManagerId) : form?.schema;
+
   return (
     <>
       <PageHeader
-        title={form?.meta.title ?? 'Novo usuario'}
-        subtitle={form?.meta.description ?? 'POST api/v1/user-manager/create'}
+        title={form?.meta.title ?? 'Dados do usuario'}
+        subtitle={form?.meta.description ?? 'POST api/v1/user-profiles/create'}
       />
 
       {loading && <LoadingOverlay />}
 
+      {!loading && !userManagerId && (
+        <EmptyState
+          title="Falta o usuario de origem"
+          description="Esta tela precisa de ?user_manager_id= na URL — venha pelo passo 1 (Novo usuario)."
+        />
+      )}
+
       {error && !loading && <EmptyState title="Formulario indisponivel" description={error} />}
 
-      {!loading && !error && form && (
+      {!loading && !error && userManagerId && form && schema && (
         <form onSubmit={(e) => void handleSubmit(e)} noValidate>
-          <FormGrid schema={form.schema} />
+          <FormGrid schema={schema} />
           <div className="d-flex gap-2 mt-4 pt-3 border-top">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? 'Criando...' : 'Criar'}
+              {submitting ? 'Enviando...' : 'Concluir cadastro'}
             </button>
           </div>
         </form>

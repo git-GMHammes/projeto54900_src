@@ -10,27 +10,25 @@
  * (ver `README_paginas_modulo.md`).
  *
  * MAPA DAS ROTAS (path relativo ao pai "/v1"):
- *   user-manager            -> GetAllPage   lista de usuários (motor do Construtor
- *                                           de Listas, definição de slug
- *                                           'user-manager' + busca com debounce)
- *   user-manager/create     -> CreatePage   formulário do build 'cadastro-usuario'
- *   user-manager/:id        -> GetPage      detalhe SOMENTE LEITURA (via -view)
- *   user-manager/update/:id -> UpdatePage   formulário do build 'atualizar-usuario'
- *   register                -> RegisterPage fluxo COMPOSTO de cadastro (login +
- *                                           perfil, 2 tabelas ligadas por FK)
- *
- * O FLUXO COMPOSTO NÃO FICA NO RECURSO: o wizard (login + perfil) mora em
- *   `pages/v1/user/register/RegisterPage.tsx` — atravessa duas tabelas ligadas
- *   por FK e não é o CRUD de `user-manager`. Ver o header daquele arquivo para
- *   o detalhe das etapas.
+ *   user-manager            -> GetAllPage      lista de usuários (motor do Construtor
+ *                                              de Listas, definição de slug
+ *                                              'user-manager' + busca com debounce)
+ *   user-manager/create     -> CreatePage      ETAPA 1 do cadastro: build 'cadastro-usuario'
+ *                                              (user_manager); ao criar, redireciona para
+ *                                              user-profiles/create?user_manager_id={id}
+ *   user-manager/:id        -> GetPage         detalhe SOMENTE LEITURA (via -view)
+ *   user-manager/update/:id -> UpdatePage      formulário do build 'atualizar-usuario'
+ *   user-profiles/create    -> ProfilesCreatePage ETAPA 2 do cadastro: build 'dados-do-usuario'
+ *                                              (user_profiles), lê ?user_manager_id= da
+ *                                              querystring; ao concluir, vai para /v1/login
  *
  * DEPENDÊNCIAS: `pages/v1/user/user-manager/*` e
- *   `pages/v1/user/register/RegisterPage` (todos com lazy import).
+ *   `pages/v1/user/user-profiles/CreatePage` (todos com lazy import).
  *
  * CONSUMIDORES: `routes/v1/index.tsx` espalha `...userRoutes`; a navbar usa
- *   `paths.v1.user.list` e `paths.v1.user.register`; os redirects internos do
- *   módulo usam `paths.v1.user.view(id)` (sucesso do create e do update) e
- *   `paths.v1.user.create` (botão "Novo usuario" da lista).
+ *   `paths.v1.user.list`; os redirects internos do módulo usam
+ *   `paths.v1.user.profilesCreate` (sucesso da etapa 1), `paths.v1.auth.login`
+ *   (sucesso da etapa 2) e `paths.v1.user.create` (botão "Novo usuario" da lista).
  *
  * REGRAS DE MANUTENÇÃO / ARMADILHAS:
  *   1. `create`/`update`/`register` são segmentos ESTÁTICOS e vencem `:id` pelo
@@ -62,7 +60,7 @@ const GetAllPage = lazy(() => import('@/pages/v1/user/user-manager/GetAllPage'))
 const GetPage = lazy(() => import('@/pages/v1/user/user-manager/GetPage'));
 const CreatePage = lazy(() => import('@/pages/v1/user/user-manager/CreatePage'));
 const UpdatePage = lazy(() => import('@/pages/v1/user/user-manager/UpdatePage'));
-const RegisterPage = lazy(() => import('@/pages/v1/user/register/RegisterPage'));
+const ProfilesCreatePage = lazy(() => import('@/pages/v1/user/user-profiles/CreatePage'));
 
 /**
  * =========================================================================
@@ -86,7 +84,7 @@ export const userRoutes: RouteObject[] = [
   { path: 'user-manager/create', element: <CreatePage /> },
   { path: 'user-manager/:id', element: <GetPage /> },
   { path: 'user-manager/update/:id', element: <UpdatePage /> },
-  { path: 'register', element: <RegisterPage /> },
+  { path: 'user-profiles/create', element: <ProfilesCreatePage /> },
 ];
 
 export default userRoutes;
