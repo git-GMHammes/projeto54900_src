@@ -135,11 +135,11 @@ export default function FormRendererPage() {
 
       {!loading && !error && form && (
         <button type="button" className="btn btn-primary mb-4" onClick={() => setShowFormModal(true)}>
-          Novo Calendário
+          Preencher formulário
         </button>
       )}
 
-      {showFormModal && form && isFormPublished(form) && <FakeFillButton slug={slug} />}
+      {showFormModal && form && <FakeFillButton slug={slug} />}
 
       <Modal
         open={showFormModal && !!form}
@@ -148,13 +148,12 @@ export default function FormRendererPage() {
         size="lg"
       >
         {form && !isFormPublished(form) && (
-          <EmptyState
-            title="Formulario indisponivel"
-            description={`Status "${form.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
-          />
+          <div className="alert alert-warning py-2">
+            Formulario com status <strong>{form.meta.status ?? 'draft'}</strong> — ainda nao publicado.
+          </div>
         )}
 
-        {form && isFormPublished(form) && (
+        {form && (
           <form onSubmit={(e) => void handleSubmit(e)} noValidate>
             <FormGrid key={reloadKey} schema={form.schema} />
             <div className="d-flex gap-2 mt-4 pt-3 border-top">

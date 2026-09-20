@@ -32,8 +32,14 @@ export const paths = {
       edit: (id: RouteId) => `/v1/form-constructor/update/${id}`,
       // Construtor legado (view_form_manager -> FormGrid -> API), nao mexer
       constructor: '/v1/form-constructor-claude',
-      // Renderiza UM formulario real a partir da definicao gravada (por slug)
+      // Renderiza UM formulario real a partir da definicao gravada (por slug),
+      // dentro de um modal (botao "Preencher formulario" revela os campos)
       render: (slug: string) => `/v1/form/${slug}`,
+      // Mesma renderizacao, mas campos direto na pagina (sem modal), por
+      // table_name + ID (nao slug) — destino do botao "Build" da lista em
+      // /v1/form-constructor. id e a chave real; table_name e validado contra
+      // o registro encontrado.
+      build: (table: string, id: RouteId) => `/v1/form-constructor/${table}/${id}`,
     },
     list: {
       // Preview do construtor de listas (list_manager -> list_columns / list_actions)
