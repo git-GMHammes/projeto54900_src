@@ -19,8 +19,8 @@ use RuntimeException;
  *     site (components/layout/Navbar.tsx via hooks/useSiteMenu.ts, que so le
  *     sort_order < 100 com parent_id nulo).
  *   - 1 arvore administrativa "Menu" (sort_order >= 2000, fora do alcance do
- *     Navbar) com os grupos Inicio/Usuario/Perfil/Buld Form/Nav/Google
- *     Calendar/Extra - usada hoje so na tela /v1/menu-manager?nav_manager_id=
+ *     Navbar) com os grupos Inicio/Usuario/Perfil/Buld Form/Nav/Calendario/
+ *     Extra - usada hoje so na tela /v1/menu-manager?nav_manager_id=
  *     (renderizacao em arvore em pages/v1/menu/GetAllPage.tsx).
  *
  * ATENCAO - bug conhecido: a conexao 'default' usa charset 'utf8' (3 bytes,
@@ -58,7 +58,7 @@ class MenuManagerSeeder extends Seeder
         $this->criar(null, 'Formularios', '/v1/form-constructor', 40);
         $this->criar(null, 'Nav', '/v1/nav-manager', 50);
         $this->criar(null, 'Menus', '/v1/menu-manager', 60);
-        $this->criar(null, 'Google Calendars', '/v1/form/calendario', 70);
+        $this->criar(null, 'Calendario', '/v1/form/calendario', 70);
 
         // Arvore administrativa "Menu" (sort_order >= 2000)
         $menuId = $this->criar(null, 'Menu', null, 2000);
@@ -79,7 +79,7 @@ class MenuManagerSeeder extends Seeder
         $menuInnerId = $this->criar($navInnerId, 'Menu', null, 2);
         $this->criar($menuInnerId, 'Listar', '/v1/menu-manager', 1);
 
-        $this->criar($menuId, 'Google Calendar', '/v1/form/calendario', 6);
+        $this->criar($menuId, 'Calendario', '/v1/form/calendario', 6);
 
         $extraId = $this->criar($menuId, 'Extra', null, 7);
         $this->criar($extraId, 'V1 (Redirecionamento)', '/v1', 1);

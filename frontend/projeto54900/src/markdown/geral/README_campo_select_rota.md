@@ -1,4 +1,6 @@
-[`README.md`](../README.md)
+[◄ Índice da base de conhecimento](../README.md)
+
+---
 
 # Campo de rota = sempre um select (`route_manager`)
 
@@ -153,7 +155,7 @@ rota vai continuar oferecendo (ou faltando) a opção errada.
   a conversão de `api_endpoint`, não implementado — aguardando decisão do
   usuário se/quando o padrão for revisitado.
 
-[`README.md`](../README.md)
+[◄ Índice da base de conhecimento](../README.md)
 
 ---
 

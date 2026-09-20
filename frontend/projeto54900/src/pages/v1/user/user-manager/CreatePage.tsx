@@ -22,6 +22,7 @@ import { normalizeList, normalizeItem } from '@/utils/apiResult';
 import type { ApiRow } from '@/types/api';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
+import PasswordHashPreviewButton from './PasswordHashPreviewButton';
 
 const SLUG = 'cadastro-usuario';
 
@@ -104,6 +105,7 @@ export default function CreatePage() {
 
   return (
     <>
+      <PasswordHashPreviewButton />
       <PageHeader
         title={form?.meta.title ?? 'Novo usuario'}
         subtitle={form?.meta.description ?? 'POST api/v1/user-manager/create'}

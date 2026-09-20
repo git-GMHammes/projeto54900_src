@@ -49,7 +49,7 @@ não só os links do topo. Como não existe (ainda) um campo dedicado tipo
 
 | Faixa           | Significado                                                                 |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `< 100`          | **Navbar real do site.** `parent_id` sempre nulo. É o que `hooks/useSiteMenu.ts` lê para montar `components/layout/Navbar.tsx` (fallback estático se a API falhar/vier vazia). Hoje: Início(10), Usuários(20), Uploads(30), Formulários(40), Nav(50), Menus(60), Google Calendars(70). |
+| `< 100`          | **Navbar real do site.** `parent_id` sempre nulo. É o que `hooks/useSiteMenu.ts` lê para montar `components/layout/Navbar.tsx` (fallback estático se a API falhar/vier vazia). Hoje: Início(10), Usuários(20), Uploads(30), Formulários(40), Nav(50), Menus(60), Calendario(70). |
 | `>= 1000`        | Catálogo "Extra": rotas reais do site que não aparecem no navbar nem na árvore administrativa (sub-rotas de CRUD, placeholders, 404). Hoje vivem todas reparentadas sob o nó "Extra" da árvore abaixo. |
 | `>= 2000`        | Árvore administrativa "Menu" (ver abaixo) — visível só na tela de gestão, nunca no navbar real. |
 
@@ -62,7 +62,7 @@ do site.
 Construída manualmente nesta sessão (não é regra fixa, é o estado de exemplo/dev):
 
 ```
-Início(10) / Usuários(20) / Uploads(30) / Formulários(40) / Nav(50) / Menus(60) / Google Calendars(70)   <- navbar real
+Início(10) / Usuários(20) / Uploads(30) / Formulários(40) / Nav(50) / Menus(60) / Calendario(70)   <- navbar real
 Menu (2000)
 ├─ Inicio          -> /
 ├─ Usuario
@@ -76,7 +76,7 @@ Menu (2000)
 │  ├─ Listar        -> /v1/nav-manager
 │  └─ Menu
 │     └─ Listar     -> /v1/menu-manager
-├─ Google Calendar  -> /v1/form/calendario
+├─ Calendario       -> /v1/form/calendario
 └─ Extra
    ├─ V1 (Redirecionamento)      -> /v1
    ├─ Registrar                  -> /v1/user-manager/create

@@ -115,6 +115,10 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php';
     });
 
+    $routes->group('calendar-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarManager/EndPointView.php';
+    });
+
     $routes->group('calendar-events', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEvents/EndpointTable.php';
     });

@@ -3,6 +3,7 @@
 namespace App\Services\V1\Calendar\CalendarManager;
 
 use App\Models\V1\Calendar\CalendarManager\SqlTableModel;
+use App\Models\V1\Calendar\CalendarManager\SqlViewModel;
 use App\Models\V1\User\UserManager\SqlTableModel as UserManagerModel;
 use App\Services\V1\BaseTableService;
 
@@ -25,11 +26,13 @@ use App\Services\V1\BaseTableService;
 class Processor extends BaseTableService
 {
     protected SqlTableModel $tableModel;
+    protected SqlViewModel $viewModel;
     private UserManagerModel $userManagerModel;
 
     public function __construct()
     {
         $this->tableModel       = new SqlTableModel();
+        $this->viewModel        = new SqlViewModel();
         $this->userManagerModel = new UserManagerModel();
     }
 

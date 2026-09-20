@@ -19,6 +19,7 @@
  *   list.routes.tsx   -> listRoutes    construtor de listagens
  *   nav.routes.tsx    -> navRoutes     nav-manager (a "casca" do app)
  *   menu.routes.tsx   -> menuRoutes    menu-manager (itens de menu)
+ *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
  *
  * DEPENDÊNCIAS (arquivos próprios do projeto):
  *   - `routes/v1/*.routes.tsx` — um arquivo por módulo, cada um exportando seu
@@ -67,6 +68,7 @@ import { formRoutes } from './form.routes';
 import { listRoutes } from './list.routes';
 import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
+import { calendarRoutes } from './calendar.routes';
 
 /**
  * =========================================================================
@@ -106,6 +108,7 @@ export const v1Routes: RouteObject = {
     ...listRoutes,
     ...navRoutes,
     ...menuRoutes,
+    ...calendarRoutes,
   ],
 };
 

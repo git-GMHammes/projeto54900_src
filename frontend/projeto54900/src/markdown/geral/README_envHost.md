@@ -1,6 +1,8 @@
-# envHost — o que `isDevHost() === true` libera
+[◄ Índice da base de conhecimento](../README.md)
 
-Volta para [README.md](../README.md).
+---
+
+# envHost — o que `isDevHost() === true` libera
 
 `config/envHost.ts` (frontend, `src/frontend/projeto54900/src/config/envHost.ts`)
 é o validador global de ambiente por **hostname**: espelho do `env_host.js`
@@ -146,4 +148,17 @@ qualquer mudança nesse componente.
   das seções "1. DEBUG" e "2. Preenchimento automático") — este README existe
   para listar **tudo** que o `true` libera.
 
-Volta para [README.md](../README.md).
+---
+
+[◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

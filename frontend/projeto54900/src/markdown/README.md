@@ -15,21 +15,44 @@ cada resumo termina com o link para o conteúdo completo.
 
 ## Índice
 
-| Palavra-chave                 | Assunto (5 palavras)                     |
-| ----------------------------- | --------------------------------------- |
-| [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice     |
-| [`builder`](#builder)         | Construtor novo: tabela vira formulário  |
-| [`construtor`](#construtor)   | Página cria formulários via API          |
-| [`formgrid`](#formgrid)       | Fábrica de campos dirigida por JSON      |
-| [`json`](#json)               | Campo monta JSON sem digitação           |
-| [`node`](#node)               | Comandos do Node e módulos               |
-| [`paginas`](#paginas)         | Página por módulo, recurso e ação        |
-| [`render`](#render)           | Renderizar formulário só via FormGrid    |
-| [`rotas`](#rotas)             | Mapa de todas as rotas React             |
+| Palavra-chave                     | Assunto (5 palavras)                     |
+| ---------------------------------- | --------------------------------------- |
+| [`alerta`](#alerta)                | Checklist antes de criar UI              |
+| [`atualizacao`](#atualizacao)      | Registrar novo markdown neste índice     |
+| [`builder`](#builder)              | Construtor novo: tabela vira formulário  |
+| [`calendario`](#calendario)        | Módulo calendário: só visualização hoje  |
+| [`comentario`](#comentario)        | Comentar código em estilo didático       |
+| [`construtor`](#construtor)        | Página cria formulários via API          |
+| [`envhost`](#envhost)              | O que isDevHost() libera hoje            |
+| [`formgrid`](#formgrid)            | Fábrica de campos dirigida por JSON      |
+| [`json`](#json)                    | Campo monta JSON sem digitação           |
+| [`listagem`](#listagem)            | Consumir o motor de listagens            |
+| [`listas`](#listas)                | Estrutura de banco para listagens        |
+| [`menu`](#menu)                    | Nav e menu: duas tabelas                 |
+| [`modal`](#modal)                  | Padrão único de modal centralizado       |
+| [`node`](#node)                    | Comandos do Node e módulos               |
+| [`paginas`](#paginas)              | Página por módulo, recurso e ação        |
+| [`placeholder`](#placeholder)      | Placeholder vazio não é bug              |
+| [`render`](#render)                | Renderizar formulário só via FormGrid    |
+| [`rota`](#rota)                    | Campo de rota vira select                |
+| [`rotas`](#rotas)                  | Mapa de todas as rotas React             |
 
 ---
 
 ## Resumos
+
+### `alerta`
+
+Alerta registrado em 2026-09-14 depois de um erro real: um elemento de navbar
+foi adicionado direto em `Navbar.tsx`, fora de `nav-manager`/`menu-manager`.
+Checklist obrigatório antes de escrever qualquer UI nova (item de navbar,
+campo de formulário, página, rota, campo JSON, modal): se nenhum item do
+checklist cobrir o caso, é sinal de decisão em aberto — **parar e perguntar**,
+nunca inventar um padrão novo sozinho. Registra também, como caso de
+referência, a decisão final sobre onde mora o estado de sessão (Entrar/Sair)
+na navbar.
+
+[`geral/README_alerta_padroes_ui.md`](geral/README_alerta_padroes_ui.md) — checklist obrigatório antes de criar UI nova.
 
 ### `atualizacao`
 
@@ -66,6 +89,34 @@ markdown antes de reinventar.
 
 [`geral/README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage`, o **padrão árvore+modal reutilizável** e o roadmap.
 
+### `calendario`
+
+Módulo `calendar` (espelho do Google Calendar), primeiro da pasta
+`geral/modulos/`. Backend completo: 6 tabelas (`calendar_manager`,
+`calendar_events`, `calendar_event_attendees`, `calendar_event_reminders`,
+`calendar_event_attachments`, `calendar_event_extended_properties`) com CRUD
+REST inteiro. Frontend ainda **só visualização**: `MonthCalendar`/`YearCalendar`
+calculam a grade por `Date`/`Intl` puro e não leem nenhuma tabela do banco;
+criar um calendário pelo modal grava em `calendar_manager`, mas a tela não
+volta e não mostra esse calendário nem seus eventos. Roadmap: ligar a
+visualização a um `calendar_id` real, marcar dias com evento e abrir CRUD de
+evento a partir do dia clicado.
+
+[`geral/modulos/calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo calendário, estado atual e roadmap.
+
+### `comentario`
+
+Roteiro para comentar código React/TSX de forma didática — em **blocos**,
+nunca linha a linha — adaptado de um roteiro equivalente usado em outro
+projeto. Abre com três alertas críticos: esta tarefa é **só documentação**
+(bug encontrado durante a leitura vira tarefa nova, nunca corrigido no mesmo
+diff), `*/` dentro de um bloco `/** */` **quebra o comentário** (e o arquivo
+inteiro), e nunca usar emoji dentro do texto do comentário. Cobre os três
+alvos do stack: Página (`pages/v1/.../XPage.tsx`), camada Core (`services/`,
+`hooks/`, `context/`, `utils/`) e componente de campo do `FormGrid`.
+
+[`geral/README_comenta-codigo-didatico.md`](geral/README_comenta-codigo-didatico.md) — como comentar código React/TSX em blocos didáticos.
+
 ### `construtor`
 
 Página `/v1/form-constructor` que cria formulários dinâmicos gravando na própria
@@ -81,12 +132,25 @@ Services em `src/services/v1/form*.ts`, rota lazy em `routes/v1/form.routes.tsx`
 
 [`geral/README_form_constructor.md`](geral/README_form_constructor.md) — página construtor de formulários e o seed.
 
+### `envhost`
+
+`isDevHost()` (`config/envHost.ts`) compara `window.location.hostname` contra a
+lista fixa `DEV_HOSTS` para decidir se um comportamento **dev-only** deve
+aparecer — diferente de `env.isDev`, que só diz se o bundle foi buildado em
+modo dev. Hoje libera dois comportamentos: o painel `ApiDebugPanel` (histórico
+das últimas respostas de API + `access_token` mais recente decodificado) e o
+`FakeFillButton` (preenche o formulário aberto com dados fake válidos,
+respeitando as regras de negócio reais de cada `slug`). Documento cresce por
+seção numerada a cada novo uso de `isDevHost()`.
+
+[`geral/README_envHost.md`](geral/README_envHost.md) — o que `isDevHost()` libera hoje.
+
 ### `formgrid`
 
 Fábrica de campos de formulário dirigida por um schema JSON. O componente
 `FormGrid` recebe `{ rows: [{ sectionTitle?, fields: [...] }] }`, faz o switch por
 `field.type` e monta a grade Bootstrap (`col` 1-12), delegando cada tipo a um
-componente especializado. Cobre 21 tipos (CPF, CNPJ, CEP, telefone, moeda, data,
+componente especializado. Cobre 22 tipos (CPF, CNPJ, CEP, telefone, moeda, data,
 hora, PIS, placa, título de eleitor, CNH, processo, RENAVAM, SEI, e-mail,
 textarea, senha, radio, checkbox, select com busca) mais `text`/`password`
 padrão, com validação em digitação e no blur, modo controlado/não-controlado e
@@ -115,6 +179,59 @@ Caso de referência: `roles` (campo "Grupo de perfil" do `FormBuilderPage`),
 `<select multiple>` de `user_roles` gravando `["admin","user"]`.
 
 [`geral/README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo grava JSON, a UI monta.
+
+### `listagem`
+
+Regra do frontend, espelhando [`render`](#render) mas para listagens/grids em
+vez de formulários: uma tabela que lê dados de uma API passa pelo motor
+`src/utils/listConstructor.tsx` (tipos + funções puras, sem estado React),
+consumindo a definição em `list_manager`/`list_columns`/`list_actions` — nunca
+`<thead>`/`<tbody>` com colunas fixas escritas à mão. Receita de 4 passos:
+carregar a definição, buscar os dados reais no `api_get_endpoint`, renderizar
+colunas via `renderCell`/`cellValue`, e renderizar ações decidindo entre toast
+de pré-visualização (preview) ou execução real (produção). Inclui o padrão de
+paginação por footer (`paginationWindow`, `src/utils/pagination.ts`).
+
+[`geral/README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — regra de uso do motor de listagens e o footer de paginação.
+
+### `listas`
+
+Estrutura de banco (`list_manager` 1:N `list_columns`/`list_actions`) para
+descrever grids/listagens alimentadas por API — paginação, ordenação, colunas
+compostas e ações por linha com permissão —, no mesmo espírito do
+[construtor de formulários](#builder). Estado atual: banco + backend REST +
+frontend completo — preview (`/v1/list-constructor`, `ListConstructorPage.tsx`)
+e builder de listagens novas (`/v1/list-constructor/create`,
+`ListBuilderPage.tsx`, nos moldes do `FormBuilderPage`), com modo edição.
+Registra a simplificação de `list_actions` (13→10 campos, só o que é
+funcional) e o motor compartilhado `src/utils/listConstructor.tsx`.
+
+[`geral/README_list_constructor.md`](geral/README_list_constructor.md) — modelo de dados do construtor de listas e estado do frontend.
+
+### `menu`
+
+`nav_manager` (a casca do app: nome, imagem, ícone, versão) e `menu_manager`
+(a árvore de itens, com `parent_id` para submenu) são duas tabelas distintas
+ligadas por FK — nenhuma delas é "o menu" sozinha. `useSiteMenu.ts` só lê
+itens com `parent_id = NULL`, `react_route` preenchida e `sort_order < 100`;
+hoje **não existe** dropdown/submenu na navbar pública. Documenta as faixas de
+`sort_order` (navbar real / catálogo "Extra" / árvore administrativa) e erros
+já cometidos (seed duplicando itens por não checar o que já existia, charset
+`utf8` mojibake em `INSERT` direto).
+
+[`geral/README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu são montadas.
+
+### `modal`
+
+Regra: todo modal do frontend é **sempre centralizado** (`modal-dialog-centered`
+em Bootstrap 5), nunca colado no topo da viewport, e controlado por **estado
+React** (`open` via `useState`), nunca pela instância JS do Bootstrap
+(`data-bs-toggle`/`bootstrap.Modal`). Dois componentes prontos cobrem a maioria
+dos casos — `components/global/Modal.tsx` (genérico, sem footer próprio) e
+`ConfirmModal.tsx` (confirmação, botões fixos) —; só criar um terceiro se o
+caso não for nem um nem outro.
+
+[`geral/README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por React.
 
 ### `node`
 
@@ -146,6 +263,20 @@ usuário **continuam em português**.
 
 [`geral/README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação e onde entram fluxos compostos.
 
+### `placeholder`
+
+Várias telas foram criadas como placeholders intencionais — `<EmptyState>`
+fixo ("Formulário/Listagem em branco") + comentário `EM BRANCO ate a fabrica`.
+**Não é bug de dado ausente**: é código nunca religado, e o sintoma engana
+(parece faltar cadastro no banco, mas a tela nem chega a chamar a API).
+Receita para religar: confirmar que é mesmo placeholder, checar se existe
+build no `form_manager` (pipeline dinâmico) ou escrever o schema à mão (CRUD
+direto), atenção ao select cuja lista carrega depois do primeiro render (usar
+`src`, nunca `options` num `useState`), e sempre testar no navegador — `tsc`
+limpo não prova que a tela funciona.
+
+[`geral/README_erro_placeholder.md`](geral/README_erro_placeholder.md) — como identificar e religar um placeholder "em branco".
+
 ### `render`
 
 Regra: **campo de formulário no frontend passa pelo `<FormGrid>`** (schema JSON),
@@ -161,6 +292,21 @@ múltiplas (`multiple` + `values` + `onChangeMultiple`). Exceção: chrome que n
 [`formgrid`](#formgrid).
 
 [`geral/README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — regra de uso do `FormGrid` e o débito do `FormBuilderPage`.
+
+### `rota`
+
+Regra geral, válida para qualquer construtor: **nenhum campo que armazena uma
+rota/endpoint é `<input type="text">`** — sempre um `<select>` carregado de
+`route_manager`, mostrando `method - object - action` (`labelTemplate`) e
+gravando a coluna `endpoint` (`valueKey`). Cobre qualquer campo com sufixo
+`_endpoint`/`_route`/`_url_template` (`href_template`, `api_endpoint`,
+`submit_endpoint`, `api_get_endpoint`, `api_search_endpoint`). Checklist
+obrigatório antes de aplicar: conferir se o `object` existe em `route_manager`
+e se a tabela bate com o código-fonte real (rotas de backend ou de frontend,
+prefixo `/api` só no backend), corrigindo tabela **e** os dois READMEs de
+rotas juntos quando divergir.
+
+[`geral/README_campo_select_rota.md`](geral/README_campo_select_rota.md) — campo de rota é sempre um select de `route_manager`.
 
 ### `rotas`
 
@@ -181,12 +327,25 @@ para a convenção de pastas por trás dessas rotas.
 
 ### `geral/`
 
+- [`README_alerta_padroes_ui.md`](geral/README_alerta_padroes_ui.md) — checklist obrigatório antes de criar UI nova (navbar, campo, página, rota, campo JSON, modal); caso de referência do estado de sessão na navbar.
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_campo_json_montado.md`](geral/README_campo_json_montado.md) — campo cujo valor é JSON montado pela UI (o usuário não digita JSON).
+- [`README_campo_select_rota.md`](geral/README_campo_select_rota.md) — campo que grava uma rota/endpoint é sempre um `<select>` de `route_manager`.
+- [`README_comenta-codigo-didatico.md`](geral/README_comenta-codigo-didatico.md) — roteiro para comentar código React/TSX em blocos didáticos.
+- [`README_erro_placeholder.md`](geral/README_erro_placeholder.md) — como identificar e religar telas placeholder "em branco".
 - [`README_form_builder.md`](geral/README_form_builder.md) — construtor novo `FormBuilderPage` (`/v1/form-constructor`), o padrão reutilizável árvore+modal, estado atual e roadmap.
 - [`README_form_constructor.md`](geral/README_form_constructor.md) — página `/v1/form-constructor` e o `FormConstructorSeeder`.
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
+- [`README_envHost.md`](geral/README_envHost.md) — o que `isDevHost()` libera hoje (`ApiDebugPanel`, `FakeFillButton`).
+- [`README_list_constructor.md`](geral/README_list_constructor.md) — modelo de dados do construtor de listas (`list_manager`/`list_columns`/`list_actions`) e estado do frontend.
+- [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`nav_manager`/`menu_manager`) são montadas.
+- [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
 - [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.
 - [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.
+- [`README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — listagem renderiza via o motor `list_manager`/`list_columns`/`list_actions`, não tabela manual.
 - [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
+
+### `geral/modulos/`
+
+- [`calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo `calendar` (espelho do Google Calendar): estado atual (só visualização) e roadmap.
