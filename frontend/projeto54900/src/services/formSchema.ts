@@ -454,6 +454,7 @@ export function buildConstructorSchemas(rows: readonly ApiRow[]): ConstructorGro
  */
 export interface RenderFormMeta {
   slug: string;
+  tableName?: string | undefined;
   title: string;
   description?: string | undefined;
   submitEndpoint?: string | undefined;
@@ -484,6 +485,7 @@ export function buildRenderSchema(rows: readonly ApiRow[]): RenderForm | null {
   const head = rows.find((r) => str(r.fm_slug) !== undefined) ?? rows[0];
   const meta: RenderFormMeta = {
     slug: str(head?.fm_slug) ?? '',
+    tableName: str(head?.fm_table_name),
     title: str(head?.fm_title) ?? str(head?.fm_slug) ?? 'Formulario',
     description: str(head?.fm_description),
     submitEndpoint: str(head?.fm_submit_endpoint),
