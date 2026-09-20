@@ -165,9 +165,9 @@ Não têm dados de partida — nascem vazias e são preenchidas pela aplicação
 
 - `user_manager`, `user_profiles` — usuários reais do sistema.
 - `upload_manager` — anexos, criados pelo endpoint de upload.
-- `calendars`, `calendar_events`, `calendar_event_attendees`,
+- `calendar_manager`, `calendar_events`, `calendar_event_attendees`,
   `calendar_event_reminders`, `calendar_event_attachments`,
-  `calendar_event_extended_properties` — dados do módulo agenda.
+  `calendar_event_extended_properties` — dados do módulo Calendar.
 
 As views (`view_user_manager`, `view_upload_manager`, `view_form_manager`) são
 criadas pelas **migrations**, não por seed.

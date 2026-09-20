@@ -4,8 +4,8 @@
 //
 // Irmao de FormConstructorPage (/v1/form-constructor-claude): mesmo pipeline
 // get-grouped -> formSchema -> FormGrid, aqui generico e dirigido pelos dados.
-// Alvo inicial: slug "calendario" -> POST /api/v1/calendars/create (modulo
-// Agenda do Google / Google Calendars).
+// Alvo inicial: slug "calendario" -> POST /api/v1/calendar-manager/create
+// (modulo Calendar, espelho do Google Calendar).
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';

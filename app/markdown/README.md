@@ -17,12 +17,13 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | ----------------------------- | -------------------------------------- |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
+| [`composer`](#composer)       | PHP Composer proibido sem autorização   |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
-| [`envhost`](#envhost)         | Hostname decide o que é dev-only        |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
 | [`navmenu`](#navmenu)         | Config do app e árvore de navegação     |
+| [`rotas`](#rotas)             | Mapa de todas as rotas REST             |
 | [`schema`](#schema)           | Introspecção do banco por API            |
 | [`seed`](#seed)               | Popular tabelas com dados iniciais      |
 | [`upload`](#upload)           | Módulo de anexos para outros módulos     |
@@ -53,6 +54,18 @@ renomeando e preenchendo credenciais próprias antes de subir a stack.
 
 [`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
 
+### `composer`
+
+O usuário **nunca** autorizou uso de PHP Composer neste projeto. Proibido
+`composer install/require/update/create-project` e criar/editar a pasta
+`vendor/`. Qualquer tarefa que pareça exigir Composer/vendor deve **parar e
+avisar antes de propor plano**, com o texto fixo do alerta. Preferir sempre a
+alternativa nativa do PHP (ex.: `app/Libraries/Auth/JwtService.php` gera JWT
+HS256 só com `hash_hmac`, sem lib externa). Origem: incidente real em
+2026-09-14 — `composer install` rodado e commitado sem autorização, revertido.
+
+[`geral/README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — Composer/vendor proibidos sem autorização explícita.
+
 ### `conexao`
 
 Como o sistema conecta aos bancos usando podman e o `docker-compose.yml`. Há a
@@ -62,20 +75,6 @@ classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
 novo módulo/banco.
 
 [`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
-
-### `envhost`
-
-Como o frontend decide se um comportamento é **dev-only**: `isDevHost()`
-(`config/envHost.ts`) compara `window.location.hostname` contra a lista fixa
-`DEV_HOSTS` — espelho do `env_host.js` legado. Não é o mesmo que `env.isDev`
-(modo de build do Vite). Duas features hoje dependem disso: (1) o painel
-`DEBUG` (`ApiDebugPanel`), que mostra respostas de API capturadas em
-`http.ts` e o `access_token` decodificado; (2) o botão flutuante
-`FakeFillButton`, que preenche o formulário aberto com dados fake válidos via
-um script por formulário (`dev/fakeFill/<slug>.ts`, registrado em
-`dev/fakeFill/registry.ts`). Cadeias completas documentadas no arquivo.
-
-[`geral/README_envHost.md`](geral/README_envHost.md) — o que `isDevHost()` libera (painel DEBUG de respostas de API + botão de preenchimento fake de formulário).
 
 ### `formulario`
 
@@ -131,6 +130,18 @@ título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
 
 [`geral/README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu, convenção de sort_order, bug de charset e seeders.
 
+### `rotas`
+
+Mapa textual de todas as rotas REST da API V1 (`app/Config/Routes/Api/v1`),
+agrupadas por módulo (User, Upload, Form, Calendar, Meta) na mesma ordem em
+que são registradas em `Config/Routes.php`. Cada módulo lista o arquivo
+`EndpointTable.php`/`EndPointView.php` de origem e a tabela completa
+Método/Rota/Controller::method (18 rotas canônicas de tabela, 9 de view).
+Espelha, do lado do backend, o `README_rotas_frontend.md` do frontend
+(lá o eixo é Path React → Página; aqui é Método HTTP → Controller).
+
+[`geral/README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1.
+
 ### `schema`
 
 Utilitário REST **read-only** `api/v1/db-schema` que introspecta o banco da API
@@ -150,18 +161,15 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 
 Comandos diretos do `spark` para popular tabelas com dados iniciais, digitados
 no host com `podman compose exec php php spark db:seed <Classe>` (mesmo prefixo
-das migrations). Cinco seeders, todos na conexão `default` (`codeigniter54900_db`)
-e idempotentes: `UserRolesSeeder` (perfis `admin`/`user`/`guest` em
-`user_roles`), `BootstrapIconsSeeder` (catálogo Bootstrap Icons em
-`bootstrap_icons`, preserva favoritos), `FormConstructorSeeder` (árvore do
-construtor de formulários em `form_manager`/`form_groups`/`form_rows`/`form_fields`),
-`NavManagerSeeder` (nav de referência em `nav_manager`) e `MenuManagerSeeder`
-(árvore completa de itens em `menu_manager`, chama `NavManagerSeeder` sozinho —
-ver [`navmenu`](#navmenu)). Não há `DatabaseSeeder` agregador — `db:seed` sem
-argumento falha; roda-se um a um, ou cria-se o agregador (exemplo no doc).
+das migrations). Duas classes ativas, ambas na conexão `default`
+(`codeigniter54900_db`) e idempotentes: `BootstrapIconsSeeder` (catálogo
+Bootstrap Icons em `bootstrap_icons`, preserva favoritos) e `DumpSeeder`
+(restaura o snapshot `202609161351_seed.sql` — form/list/nav/menu/route/
+user_roles via `REPLACE INTO`). Não há `DatabaseSeeder` agregador — `db:seed`
+sem argumento falha; roda-se um a um, ou cria-se o agregador (exemplo no doc).
 Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
-(`user_manager`, `user_profiles`, `upload_manager`, `calendars`/`calendar_*`) e
-conferência via `spark db:table` ou Adminer.
+(`user_manager`, `user_profiles`, `upload_manager`, `calendar_manager`/
+`calendar_*`) e conferência via `spark db:table` ou Adminer.
 
 [`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.
 
@@ -178,3 +186,22 @@ tabela sem foreign key e 3 rotas extras (`upload` multipart, `serve`,
 como outro módulo anexa/lista/exibe arquivos.
 
 [`geral/README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo de upload/anexos da API V1.
+
+---
+
+## Conteúdo
+
+### `geral/`
+
+- [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
+- [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
+- [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
+- [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
+- [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
+- [`README_modulo_form.md`](geral/README_modulo_form.md) — módulo Form: formulários dinâmicos persistidos no banco.
+- [`README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu: config do app e árvore de navegação.
+- [`README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo Upload/UploadManager: anexos polimórficos da API V1.
+- [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.
+- [`README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1, por módulo.
+- [`README_seed.md`](geral/README_seed.md) — comandos diretos de seed para popular as tabelas do sistema.
+- [`ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1 (Routes/Controller/Request/Processor/Model/Migration).

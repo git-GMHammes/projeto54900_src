@@ -49,6 +49,10 @@ export const paths = {
       view: (id: RouteId) => `/v1/nav-manager/${id}`,
       update: (id: RouteId) => `/v1/nav-manager/update/${id}`,
     },
+    // Calendar — listagem de calendarios (view_calendar_manager: calendario -> eventos)
+    calendar: {
+      list: '/v1/calendar-manager',
+    },
     // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
     menu: {
       list: '/v1/menu-manager',

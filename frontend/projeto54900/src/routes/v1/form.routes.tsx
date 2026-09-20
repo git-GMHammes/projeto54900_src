@@ -12,11 +12,8 @@
 // - /v1/form/:slug                  -> FormRendererPage: renderiza UM formulario real
 //                                      a partir da definicao gravada e submete para o
 //                                      submit_endpoint do registro.
-// - /v1/calendar-manager            -> redirect para /v1/form/calendario (apelido de
-//                                      menu para o formulario publicado da slug 'calendario').
 
 import { lazy } from 'react';
-import { redirect } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 
 const FormConstructorListPage = lazy(() => import('@/pages/v1/form/FormConstructorListPage'));
@@ -30,7 +27,6 @@ export const formRoutes: RouteObject[] = [
   { path: 'form-constructor/update/:id', element: <FormBuilderPage /> },
   { path: 'form-constructor-claude', element: <FormConstructorPage /> },
   { path: 'form/:slug', element: <FormRendererPage /> },
-  { path: 'calendar-manager', loader: () => redirect('/v1/form/calendario') },
 ];
 
 export default formRoutes;

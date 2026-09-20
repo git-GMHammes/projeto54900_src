@@ -40,6 +40,42 @@ destacado visualmente. Criar um registro pelo modal grava em `calendar_manager`,
 a tela não volta e não mostra esse calendário nem seus eventos — não há
 vínculo nenhum entre o que é exibido e o que está no banco ainda.
 
+## Listagem administrativa — `/v1/calendar-manager` (2026-09-20)
+
+Rota própria (não é mais um redirect para `/v1/form/calendario` — decisão
+revertida a pedido explícito do usuário: nenhum item de menu deve
+redirecionar). Lista os calendários com seus eventos, uma linha por evento
+agrupada por calendário — mesma ideia de `view_form_manager` +
+`buildConstructorSchemas`, só que com 2 níveis (`calendar_manager` →
+`calendar_events`) em vez de 4.
+
+- **View** `view_calendar_manager` (migration
+  `CreateViewCalendarManagerMigration`) — `calendar_manager` (`cm_`) `LEFT
+  JOIN` `calendar_events` (`ce_`), filtrando `deleted_at IS NULL` dos dois
+  lados. **Só 2 níveis de propósito**: os 4 ramos-filhos de `calendar_events`
+  (`calendar_event_attendees/reminders/attachments/extended_properties`) NÃO
+  entram nesta view — um `JOIN` simultâneo nos 4 geraria produto cartesiano
+  (linhas repetidas multiplicadas). Ficam de fora, para consulta à parte
+  quando existir tela de detalhe de evento.
+- **Backend do módulo -view**: `Models/V1/Calendar/CalendarManager/SqlViewModel.php`,
+  `Controllers/Api/V1/Calendar/CalendarManager/ResourceViewController.php`,
+  `Config/Routes/Api/v1/Calendar/CalendarManager/EndPointView.php` (grupo
+  `api/v1/calendar-manager-view`, 9 rotas, mesmo contrato do resto do
+  projeto). O `Processor.php` do módulo (já existia, só de tabela) ganhou
+  `$viewModel` ao lado do `$tableModel` já existente — mesmo padrão do
+  `UserManager\Processor`.
+- **Frontend**: `services/calendarSchema.ts` (`groupCalendarView`) agrupa as
+  linhas achatadas por `cm_id`; `pages/v1/calendar/calendar-manager/GetAllPage.tsx`
+  busca tudo via `getNoPagination` (sem paginação de servidor — a view pagina
+  LINHA da view, não CALENDÁRIO) e faz busca + paginação **no cliente** sobre
+  a lista já agrupada. O botão "Novo Calendário" reaproveita o mesmo
+  `form_manager` de slug `calendario` já usado em `/v1/form/calendario`
+  (mesmo `<FormGrid>`, mesmo `POST /api/v1/calendar-manager/create`) — não
+  duplica formulário.
+- **Débito conhecido**: paginação client-side é aceitável para poucos
+  calendários/eventos; se o volume crescer, precisa de um redesenho de
+  paginação de verdade sobre dados agrupados (fora de escopo por ora).
+
 ## Backend disponível (contrato já pronto para o frontend consumir)
 
 | Recurso                            | Tabela                               | Endpoint-set REST (18 rotas cada)              |

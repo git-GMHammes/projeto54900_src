@@ -39,4 +39,5 @@ export { listColumnsTable } from './listColumns.table';
 export { listActionsTable } from './listActions.table';
 export { navManagerTable } from './navManager.table';
 export { menuManagerTable } from './menuManager.table';
+export { calendarManagerView } from './calendarManager.view';
 export { dbSchema } from './dbSchema';

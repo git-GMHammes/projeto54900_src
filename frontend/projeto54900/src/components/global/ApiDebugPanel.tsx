@@ -11,7 +11,10 @@
  * scrollbars aninhadas (card > lista > pre).
  *
  * DEPENDENCIAS: config/envHost (isDevHost), hooks/useApiDebugLog
- * (useApiDebugLog, useLatestAccessToken) e services/apiDebugLog (clear).
+ * (useApiDebugLog, useLatestAccessToken), services/apiDebugLog (clear) e
+ * hooks/useDevToolsExtra (slot opcional de botao extra ao lado do DEBUG,
+ * registrado pela pagina aberta via services/devToolsExtra — ver
+ * pages/v1/user/user-manager/PasswordHashPreviewButton.tsx para um exemplo).
  * CONSUMIDORES: nenhuma pagina especifica — e um componente global (ver
  * onde e montado no layout, tipicamente RootLayout/Footer, para aparecer em
  * qualquer tela durante o desenvolvimento).
@@ -24,6 +27,7 @@
 
 import { isDevHost } from '@/config/envHost';
 import { useApiDebugLog, useLatestAccessToken } from '@/hooks/useApiDebugLog';
+import { useDevToolsExtra } from '@/hooks/useDevToolsExtra';
 import { clear as clearApiDebugLog } from '@/services/apiDebugLog';
 
 /** Verde para resposta ok, vermelho para erro (usado no badge de status HTTP de cada entrada). */
@@ -34,22 +38,26 @@ function statusBadgeClass(ok: boolean): string {
 export default function ApiDebugPanel() {
   const entries = useApiDebugLog();
   const latestToken = useLatestAccessToken();
+  const extra = useDevToolsExtra();
 
   if (!isDevHost() || (entries.length === 0 && !latestToken)) return null;
 
   return (
     <div className="mt-3">
-      <button
-        type="button"
-        className="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
-        data-bs-toggle="collapse"
-        data-bs-target="#apiDebugPanelCollapse"
-        aria-expanded="false"
-        aria-controls="apiDebugPanelCollapse"
-      >
-        <i className="bi bi-bug-fill" />
-        DEBUG
-      </button>
+      <div className="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+          data-bs-toggle="collapse"
+          data-bs-target="#apiDebugPanelCollapse"
+          aria-expanded="false"
+          aria-controls="apiDebugPanelCollapse"
+        >
+          <i className="bi bi-bug-fill" />
+          DEBUG
+        </button>
+        {extra}
+      </div>
 
       <div className="collapse" id="apiDebugPanelCollapse">
         <div className="card border border-danger shadow-sm mt-2">

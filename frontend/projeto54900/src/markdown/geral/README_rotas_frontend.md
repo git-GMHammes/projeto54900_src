@@ -1,4 +1,6 @@
-[`README.md`](../README.md)
+[◄ Índice da base de conhecimento](../README.md)
+
+---
 
 # Rotas do frontend (React)
 
@@ -36,7 +38,7 @@ Fora da árvore de paths, capturado pelo `errorElement` do nó raiz:
 
 ---
 
-## v1 — Módulo de usuários, uploads, formulários, nav e menu
+## v1 — Módulo de usuários, uploads, formulários, nav, menu e calendário
 
 Fonte: `routes/v1/index.tsx` — agrupa tudo sob o prefixo `/v1`, espelhando o
 grupo `api/v1` do backend (`app/Config/Routes.php`).
@@ -119,6 +121,18 @@ foram trocados para refletir que esta é a árvore de menu de verdade.
 | `/v1/menu-manager/:id`         | `pages/v1/menu/GetPage`      | Detalhe real; "Voltar" religa em `?nav_manager_id=` do próprio item                  |
 | `/v1/menu-manager/:id/update`  | `pages/v1/menu/UpdatePage`   | **Stub em branco**                                                                   |
 
+### calendar — Listagem de calendários (view_calendar_manager)
+
+Fonte: `routes/v1/calendar.routes.tsx` — espelha `api/v1/calendar-manager`
+(+ `-view`). Rota própria desde 2026-09-20: **não é mais um redirect** para
+`/v1/form/calendario` (decisão revertida — nenhum item de menu deve
+redirecionar). Ver detalhe em
+[`markdown/geral/modulos/calendar/README_calendar.md`](modulos/calendar/README_calendar.md).
+
+| Path                   | Elemento (lazy)                                | Observação                                                                                                    |
+| ---------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `/v1/calendar-manager` | `pages/v1/calendar/calendar-manager/GetAllPage` | Lista calendários com seus eventos (`view_calendar_manager`, agrupada no cliente); busca/paginação no cliente; botão "Novo Calendário" reaproveita o form `calendario` (mesmo de `/v1/form/calendario`) |
+
 ---
 
 ## v1a — Reservado
@@ -151,4 +165,15 @@ string solta.
 | Menus            | `paths.v1.menu.list` (`/v1/menu-manager`)                     |
 | Google Calendars | `paths.v1.form.render('calendario')` (`/v1/form/calendario`) |
 
-[`README.md`](../README.md)
+[◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo | Informação |
+| --- | --- |
+| **Nome** | Gustavo Hammes |
+| **Local** | Rio de Janeiro |
+| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

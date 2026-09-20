@@ -67,7 +67,7 @@ parte final (a ação do `spark`):
 ```
 podman compose exec php php spark migrate:status -g mapa
 podman compose exec php php spark migrate:rollback -g mapa
-podman compose exec php php spark make:migration CreateCalendarsTable
+podman compose exec php php spark make:migration CreateExampleTable
 ```
 
 Leitura do prefixo: `podman` roda no host → `compose exec php` executa no
@@ -93,8 +93,8 @@ Nos exemplos abaixo, `SPARK` é abreviação de `podman compose exec php php spa
 ## Criar migration
 
 ```
-SPARK make:migration CreateCalendarsTable
-SPARK make:migration Add_status_to_calendars
+SPARK make:migration CreateExampleTable
+SPARK make:migration Add_status_to_example
 ```
 
 Gera `app/Database/Migrations/AAAA-MM-DD-His_Nome.php` (formato de timestamp
@@ -105,7 +105,7 @@ sem `$DBGroup`, a migration roda na conexão `default` (`codeigniter54900_db`),
 não no banco do módulo:
 
 ```php
-class CreateCalendarsTable extends Migration
+class CreateExampleTable extends Migration
 {
     protected $DBGroup = 'agenda';   // mapa | agenda | chat
     // ...
@@ -158,8 +158,8 @@ os dados. Só usar em desenvolvimento.
 ## Seeds
 
 ```
-SPARK make:seed CalendarSeeder
-SPARK db:seed CalendarSeeder
+SPARK make:seed ExampleSeeder
+SPARK db:seed ExampleSeeder
 ```
 
 Declarar o grupo na seed (`protected $DBGroup = 'agenda';`) ou obter a conexão
@@ -196,7 +196,7 @@ pelo grupo dentro do `run()`.
   `-g <grupo>`.
 - **Alerta:** as 9 migrations já presentes em `app/Database/Migrations/` **não**
   declaram `$DBGroup`. Como estão, um `SPARK migrate` sem `-g` aplica todas no
-  `codeigniter54900_db`, inclusive tabelas que são do módulo `agenda`
+  `codeigniter54900_db`, inclusive tabelas que são do módulo `Calendar`
   (`calendar_manager`, `calendar_events`, ...). Definir o `$DBGroup` de cada arquivo
   antes de montar o banco.
 - Testes usam o grupo `tests` (SQLite em memória): `SPARK migrate -g tests` não

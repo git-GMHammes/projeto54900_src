@@ -109,6 +109,7 @@ Usuários
 ├─ Cadastro Usuário
 └─ Dados Usuário
 Calendário
+└─ Novo Calendário
 └─ Admin Calendário
 Uploads
 Form
@@ -137,6 +138,7 @@ Entrar
 | Cadastro Usuário   | `/v1/user-manager/create`     |
 | Dados Usuário      | `/v1/user-profiles/create`    |
 | Calendário         | ``                            |
+| Novo Calendário    | `/v1/form/calendario`        |
 | Admin Calendário   | `/v1/calendar-manager`        |
 | Uploads            | `/v1/upload-manager`          |
 | Form               | ``                            |
@@ -154,4 +156,17 @@ Entrar
 | Novo Item          | `/v1/menu-manager/create`     |
 | Entrar             | `/v1/login`                   |
 
+---
+
 [◄ Índice da base de conhecimento](../README.md)
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

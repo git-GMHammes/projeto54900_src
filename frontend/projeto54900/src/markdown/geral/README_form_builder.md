@@ -37,7 +37,7 @@ consumidas pelo select **Colunas** de cada LINHA (ver subcard LINHAS).
    - **`card-header`**: só o nome da tabela (`fw-semibold text-nowrap`). Sem mais nada.
    - **`card-body`**: uma **árvore de hierarquia** (`<FormTree>` + `<TreeNode>`,
      [`FormBuilderTree.tsx`](../../pages/v1/form/FormBuilderTree.tsx)) no visual de
-     [`doc/html/estrutura.html`](../../../../../doc/html/estrutura.html). Cada
+     [`doc/html/estrutura.html`](../../../../../../doc/html/estrutura.html). Cada
      nível é uma **linha compacta** (chevron + ícone + `form_<tabela>` + `·
      {nome}` + pill de contagem); clicar expande/recolhe **só a estrutura
      abaixo** (nunca despeja formulário). O formulário de cada nó abre num
