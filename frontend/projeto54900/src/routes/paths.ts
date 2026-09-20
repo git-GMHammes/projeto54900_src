@@ -16,8 +16,9 @@ export const paths = {
       create: '/v1/user-manager/create',
       view: (id: RouteId) => `/v1/user-manager/${id}`,
       update: (id: RouteId) => `/v1/user-manager/update/${id}`,
-      // Wizard de 2 tabelas (user-manager -> user-profiles) ligadas por FK
-      register: '/v1/register',
+      // Etapa 2 do cadastro (user_profiles), encadeada pelo user_manager_id
+      // retornado na etapa 1 (user.create)
+      profilesCreate: '/v1/user-profiles/create',
     },
     upload: {
       list: '/v1/upload-manager',

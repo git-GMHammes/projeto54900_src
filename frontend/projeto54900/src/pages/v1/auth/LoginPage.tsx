@@ -41,7 +41,7 @@
  * DEPENDÊNCIAS (arquivos deste projeto que esta página consome):
  *   - `@/context/AuthContext` (`useAuth`) — a única fonte de `login`.
  *   - `react-router-dom` — `useNavigate` (ir para a home) e `Link` (cadastro).
- *   - `@/routes/paths` — `paths.home` e `paths.v1.user.register`.
+ *   - `@/routes/paths` — `paths.home` e `paths.v1.user.create`.
  *   - `@/hooks/useToast` — feedback de sucesso/erro (nunca `alert`).
  *   - `@/services/http` (`ApiError`) — o erro tipado da API vira mensagem.
  *   - `@/components/global/PageHeader` — título/subtítulo da tela.
@@ -191,8 +191,8 @@ export default function LoginPage() {
    *      enxerga) e `autoComplete` correto para o gerenciador de senhas.
    *   4. Botão de submit com `w-100`, que vira "Entrando..." e desabilita quando
    *      `submitting`.
-   *   5. Link "Criar conta" -> `/v1/register` (módulo user), o outro caminho de
-   *      entrada do sistema.
+   *   5. Link "Criar conta" -> `/v1/user-manager/create` (módulo user, etapa 1
+   *      do cadastro), o outro caminho de entrada do sistema.
    *
    * COMO REAPROVEITAR: mantendo `<label htmlFor>` ligado ao `id` e `required`, a
    *   validação do BLOCO 2 continua valendo. Ao acrescentar um campo, crie o
@@ -252,7 +252,7 @@ export default function LoginPage() {
           {/* 5. Caminho alternativo: cadastro no módulo user. */}
           <p className="text-center text-body-secondary mt-3">
             Não tem conta?{' '}
-            <Link to={paths.v1.user.register}>Criar conta</Link>
+            <Link to={paths.v1.user.create}>Criar conta</Link>
           </p>
         </div>
       </div>

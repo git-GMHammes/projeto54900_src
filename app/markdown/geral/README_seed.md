@@ -9,15 +9,12 @@ digitado no host (PowerShell, na raiz do projeto):
 
 ```
 
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark db:seed <NomeDaClasse>
 
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed UserRolesSeeder
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
-podman compose exec php php spark db:seed FormConstructorSeeder
-podman compose exec php php spark db:seed NavManagerSeeder
-podman compose exec php php spark db:seed MenuManagerSeeder
+podman compose exec php php spark db:seed DumpSeeder
  
 ``` 
 
@@ -71,61 +68,44 @@ Nos exemplos abaixo, `SPARK` abrevia `podman compose exec php php spark`
 
 ## Seeds do sistema
 
-Em `app/Database/Seeds/`. Cinco classes, todas idempotentes:
+Em `app/Database/Seeds/`. Duas classes ativas, ambas idempotentes:
 
-| Classe                  | Tabela(s) preenchida(s)                                | O que popula                                                                                 | Reexecução                                                                 |
-| ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `UserRolesSeeder`       | `user_roles`                                          | 3 perfis de acesso: `admin`, `user`, `guest` (coluna `permissions` em JSON, placeholder)   | `INSERT ... ON DUPLICATE KEY UPDATE` pela `slug` (UNIQUE); não troca `id` |
-| `BootstrapIconsSeeder`  | `bootstrap_icons`                                     | catálogo do Bootstrap Icons (`name` + `codepoint`); origem: `public/bootstrap-icons.json` versionado, com fallback jsDelivr 1.11.3 | `ON DUPLICATE KEY UPDATE` pela `name` (UNIQUE); **preserva** `is_favorite` |
-| `FormConstructorSeeder` | `form_manager`, `form_groups`, `form_rows`, `form_fields` | a árvore do "Construtor de Formulários" (slug `form-constructor`): 4 grupos → linhas → campos, via os Processors do módulo Form | se o slug já existe, faz **delete-hard** (CASCADE) e recria do zero        |
-| `NavManagerSeeder`      | `nav_manager`                                         | o nav de referência do sistema (`title` "Menu Teste"), via `Processor` do módulo Nav          | se o `title` já existe, faz **delete-hard** (CASCADE apaga os itens de menu do nav) e recria |
-| `MenuManagerSeeder`     | `menu_manager`                                        | roda `NavManagerSeeder` primeiro, depois a árvore completa de itens: os 7 links do Navbar real (`sort_order` 10-70, `parent_id` nulo) + a árvore administrativa "Menu" (`sort_order>=2000`) exibida em árvore em `/v1/menu-manager?nav_manager_id=` — ver [`README_modulo_nav_menu.md`](README_modulo_nav_menu.md) | reroda `NavManagerSeeder` (o CASCADE já limpa os itens do nav anterior) e recria tudo |
+| Classe                 | Tabela(s) preenchida(s)                                                                                                                          | O que popula                                                                                                                                          | Reexecução                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `BootstrapIconsSeeder` | `bootstrap_icons`                                                                                                                                 | catálogo do Bootstrap Icons (`name` + `codepoint`); origem: `public/bootstrap-icons.json` versionado, com fallback jsDelivr 1.11.3                     | `ON DUPLICATE KEY UPDATE` pela `name` (UNIQUE); **preserva** `is_favorite`            |
+| `DumpSeeder`           | `form_manager`, `form_groups`, `form_rows`, `form_fields`, `list_manager`, `list_columns`, `list_actions`, `nav_manager`, `menu_manager`, `route_manager`, `user_roles` | restaura o snapshot `202609161351_seed.sql` (dump completo, copiado para dentro de `Database/Seeds/` porque o container só monta `./src`) — extrai um bloco `REPLACE INTO` por tabela e executa na ordem de dependência de FK | `REPLACE INTO` com `id` explícito; repetir substitui as linhas existentes, não duplica |
+
+> **Descontinuados** (movidos para `app/Database/Seeds/removido/`, não rodam
+> mais): `UserRolesSeeder`, `FormConstructorSeeder`, `ListConstructorSeeder`,
+> `ListConstructorRealTablesSeeder`, `RouteManagerSeeder`, e as versões antigas
+> (via `Processor`) de `NavManagerSeeder`/`MenuManagerSeeder`. O `DumpSeeder`
+> substitui todos eles.
+>
+> **Atenção:** ainda existem `NavManagerSeeder.php` e `MenuManagerSeeder.php`
+> ativos (fora de `removido/`), populando `nav_manager`/`menu_manager` via
+> `Processor` em vez do dump SQL. **Não rodar os dois fluxos juntos** — o
+> `DumpSeeder` já cobre essas tabelas; rodar `NavManagerSeeder`/
+> `MenuManagerSeeder` depois sobrescreve os dados do dump pela árvore de
+> exemplo do `Processor`.
 
 ### Rodar individualmente
 
 Cada bloco é autossuficiente (entra na pasta e roda). Colar no host, no
 PowerShell:
 
-`UserRolesSeeder` — perfis `admin`, `user`, `guest` em `user_roles`:
-
-```
-
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed UserRolesSeeder
- 
-```
-
 `BootstrapIconsSeeder` — catálogo Bootstrap Icons em `bootstrap_icons`:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
  
 ```
 
-`FormConstructorSeeder` — árvore do construtor em
-`form_manager`/`form_groups`/`form_rows`/`form_fields`:
+`DumpSeeder` — restaura form/list/nav/menu/route/user_roles a partir do dump SQL:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed FormConstructorSeeder
- 
-```
-
-`NavManagerSeeder` — nav de referência ("Menu Teste") em `nav_manager`:
-
-```
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed NavManagerSeeder
- 
-```
-
-`MenuManagerSeeder` — árvore completa de itens em `menu_manager` (roda
-`NavManagerSeeder` primeiro):
-
-```
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed MenuManagerSeeder
+cd C:\laragon\www\php\habilidade\projeto54900
+podman compose exec php php spark db:seed DumpSeeder
  
 ```
 
@@ -133,30 +113,24 @@ podman compose exec php php spark db:seed MenuManagerSeeder
 
 ## Rodar todos os seeds do sistema
 
-Ordem recomendada (perfis → ícones → formulário → nav → menu; sem dependência
-rígida entre a maioria, mas `MenuManagerSeeder` já roda `NavManagerSeeder`
-sozinho — chamar os dois é redundante, não é erro). Bloco único, colar no host:
+Ordem recomendada (ícones → dump completo). Bloco único, colar no host:
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec php php spark db:seed UserRolesSeeder
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark db:seed BootstrapIconsSeeder
-podman compose exec php php spark db:seed FormConstructorSeeder
-podman compose exec php php spark db:seed MenuManagerSeeder
+podman compose exec php php spark db:seed DumpSeeder
 ```
 
 Sem TTY (CI):
 
 ```
-cd C:\xampp\htdocs\php\projeto54900
-podman compose exec -T php php spark db:seed UserRolesSeeder
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec -T php php spark db:seed BootstrapIconsSeeder
-podman compose exec -T php php spark db:seed FormConstructorSeeder
-podman compose exec -T php php spark db:seed MenuManagerSeeder
+podman compose exec -T php php spark db:seed DumpSeeder
 ```
 
 Pré-condição: as migrations já aplicadas (`SPARK migrate` — ver
-[`README_migrate.md`](README_migrate.md)). Os três são idempotentes: repetir
+[`README_migrate.md`](README_migrate.md)). Os dois são idempotentes: repetir
 não duplica dados.
 
 ### Opcional — criar um `DatabaseSeeder` agregador
@@ -175,10 +149,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call('UserRolesSeeder');
         $this->call('BootstrapIconsSeeder');
-        $this->call('FormConstructorSeeder');
-        $this->call('MenuManagerSeeder'); // ja chama NavManagerSeeder sozinho
+        $this->call('DumpSeeder');
     }
 }
 ```
