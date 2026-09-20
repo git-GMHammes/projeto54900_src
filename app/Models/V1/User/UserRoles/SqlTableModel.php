@@ -5,10 +5,10 @@ namespace App\Models\V1\User\UserRoles;
 use App\Models\V1\BaseTableModel;
 
 /**
- * Model de leitura da tabela user_roles — perfis de acesso (admin, user, guest).
+ * Model da tabela user_roles — perfis de acesso (admin, user, guest).
  *
- * Usada pelo modulo read-only User/UserRoles (API V1). Alimenta selects como o
- * campo "Grupo de perfil" do FormBuilderPage.
+ * Usada pelo modulo User/UserRoles (API V1), CRUD completo. Tambem alimenta
+ * selects como o campo "Grupo de perfil" do FormBuilderPage.
  *
  * Tabela: user_roles
  * DDL: id (BIGINT PK auto), name (VARCHAR 100), slug (VARCHAR 100 UNIQUE),

@@ -22,7 +22,7 @@ import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import { formManagerView } from '@/services/v1';
-import { buildRenderSchema } from '@/services/formSchema';
+import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList } from '@/utils/apiResult';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
@@ -139,7 +139,7 @@ export default function FormRendererPage() {
         </button>
       )}
 
-      {showFormModal && form && <FakeFillButton slug={slug} />}
+      {showFormModal && form && isFormPublished(form) && <FakeFillButton slug={slug} />}
 
       <Modal
         open={showFormModal && !!form}
@@ -147,26 +147,25 @@ export default function FormRendererPage() {
         onClose={() => setShowFormModal(false)}
         size="lg"
       >
-        {form && (
-          <>
-            {form.meta.status && form.meta.status !== 'active' && (
-              <div className="alert alert-warning py-2">
-                Formulario com status <strong>{form.meta.status}</strong> — ainda nao publicado.
-              </div>
-            )}
+        {form && !isFormPublished(form) && (
+          <EmptyState
+            title="Formulario indisponivel"
+            description={`Status "${form.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
+          />
+        )}
 
-            <form onSubmit={(e) => void handleSubmit(e)} noValidate>
-              <FormGrid key={reloadKey} schema={form.schema} />
-              <div className="d-flex gap-2 mt-4 pt-3 border-top">
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Enviando...' : 'Enviar'}
-                </button>
-                <button type="reset" className="btn btn-outline-secondary">
-                  Limpar
-                </button>
-              </div>
-            </form>
-          </>
+        {form && isFormPublished(form) && (
+          <form onSubmit={(e) => void handleSubmit(e)} noValidate>
+            <FormGrid key={reloadKey} schema={form.schema} />
+            <div className="d-flex gap-2 mt-4 pt-3 border-top">
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Enviando...' : 'Enviar'}
+              </button>
+              <button type="reset" className="btn btn-outline-secondary">
+                Limpar
+              </button>
+            </div>
+          </form>
         )}
       </Modal>
     </>

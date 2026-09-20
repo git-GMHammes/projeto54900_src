@@ -92,6 +92,13 @@ de slug, FK ativa, teto de 12 do grid, serialização de JSON) nos Processors.
 
 [`geral/README_modulo_form.md`](geral/README_modulo_form.md) — módulo de formulários dinâmicos da API V1.
 
+Migrations/seed de `form` abolidos (2026-09-20) — fonte de verdade agora é
+dump + markdown revisado antes do `INSERT`, mesmo padrão do `README_menu.md`.
+
+[`geral/README_form.md`](geral/README_form.md) — índice dos 16 formulários já
+desenhados (todos com `INSERT` executado), organizados por pasta de
+`geral/form/`.
+
 ### `migracao`
 
 Comandos diretos do `spark` para criar, aplicar e reverter migrations, digitados

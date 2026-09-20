@@ -4,6 +4,23 @@
 
 # Módulo Form (API V1)
 
+> ⚠️ **2026-09-20 — migrations e seed de `form` abolidos.** As tabelas
+> (`form_manager`/`form_groups`/`form_rows`/`form_fields`/`view_form_manager`)
+> deixaram de ser criadas/versionadas por `Database/Migrations/`. Fonte de
+> verdade agora: dump (`doc/sql/dump/`) + markdown da árvore de dados (mesmo
+> padrão de [`README_menu.md`](../../../frontend/projeto54900/src/markdown/geral/README_menu.md))
+> → `INSERT` revisado antes de rodar. **Índice completo dos 16 formulários
+> já desenhados (todos com `INSERT` executado)**:
+> [`README_form.md`](README_form.md) — não duplicar a lista aqui, manter
+> num lugar só.
+>
+> Nota à parte: a tabela órfã `calendars` (sem código associado; a FK de
+> `calendar_events.calendar_id` apontava errado pra ela) foi corrigida e
+> removida do banco em 2026-09-20, antes do `INSERT` do módulo Calendar.
+>
+> Seções 5 e 6 abaixo continuam pendentes até o processo geral ficar
+> documentado.
+
 Domínio que **persiste e serve formulários dinâmicos** — a definição estrutural
 de um formulário (como o `src/public/form_test.html`) guardada no banco e
 exposta por APIs REST **públicas** (sem JWT). O front React lê a definição e
@@ -132,13 +149,7 @@ Envelope de resposta e status: §6 do ROADMAP.
 
 ```
 Database/Migrations/
-  2026-09-06-012300_CreateFormManagerTableMigration.php
-  2026-09-06-012301_CreateFormGroupsTableMigration.php
-  2026-09-06-012302_CreateFormRowsTableMigration.php
-  2026-09-06-012303_CreateFormCamposTableMigration.php
-  2026-09-06-012304_CreateViewFormManagerMigration.php
-  2026-09-12-231700_AddTableNameToFormManagerMigration.php
-  2026-09-12-231701_BackfillTableNameFormManagerMigration.php
+  (pendente — schema de form não vem mais daqui; ver aviso no topo)
 Models/V1/Form/FormManager/     SqlTableModel.php  SqlViewModel.php
 Models/V1/Form/FormGroups/      SqlTableModel.php
 Models/V1/Form/FormRows/        SqlTableModel.php   (+ sumCampoCols/countCampos)
@@ -155,13 +166,9 @@ Config/Routes.php   (+ 5 grupos)
 ## 6. Aplicar
 
 ```
-podman compose exec php php spark migrate     # cria as 4 tabelas + a view
-podman compose exec php php spark routes       # confere as 81 rotas novas
+(pendente — comando de rebuild via dump/markdown ainda não definido)
+podman compose exec php php spark routes       # confere as rotas (isso continua valendo)
 ```
-
-Sem `-g`: as migrations rodam na conexão `default` (`codeigniter54900_db`),
-igual a `UserManager`/`UploadManager`. Os Models usam `DB_GROUP_001`, que hoje
-aponta para o mesmo banco.
 
 ## 7. Ordem de criação de dados
 

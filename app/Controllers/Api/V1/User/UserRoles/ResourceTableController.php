@@ -3,18 +3,18 @@
 namespace App\Controllers\Api\V1\User\UserRoles;
 
 use App\Controllers\Api\V1\BaseResourceTableController;
+use App\Requests\V1\User\UserRoles\CreateRequest;
+use App\Requests\V1\User\UserRoles\UpdateRequest;
 use App\Services\V1\User\UserRoles\Processor;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Controller de recurso para leitura da tabela user_roles.
+ * Controller de recurso para operacoes diretas na tabela user_roles.
  *
- * Modulo read-only: so as rotas de leitura sao registradas em
- * Config/Routes/Api/v1/User/UserRoles/EndpointTable.php. getCreateRules/
- * getUpdateRules existem so para satisfazer a classe base e retornam [] —
- * nao ha endpoint create/update exposto.
+ * Todos os endpoints REST estao em BaseResourceTableController. Este controller
+ * declara apenas o Processor e as regras de validacao do modulo.
  */
 class ResourceTableController extends BaseResourceTableController
 {
@@ -29,11 +29,11 @@ class ResourceTableController extends BaseResourceTableController
 
     protected function getCreateRules(): array
     {
-        return [];
+        return (new CreateRequest())->rules();
     }
 
     protected function getUpdateRules(): array
     {
-        return [];
+        return (new UpdateRequest())->rules();
     }
 }

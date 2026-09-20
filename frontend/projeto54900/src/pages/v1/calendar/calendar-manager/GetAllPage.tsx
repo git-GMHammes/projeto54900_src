@@ -15,12 +15,13 @@ import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import Modal from '@/components/global/Modal';
+import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import { calendarManagerView, formManagerView } from '@/services/v1';
 import { groupCalendarView } from '@/services/calendarSchema';
 import type { CalendarGroup } from '@/services/calendarSchema';
-import { buildRenderSchema } from '@/services/formSchema';
+import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList } from '@/utils/apiResult';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
@@ -272,9 +273,19 @@ export default function CalendarManagerGetAllPage() {
         </>
       )}
 
+      {showFormModal && form && isFormPublished(form) && <FakeFillButton slug={CALENDAR_FORM_SLUG} />}
+
       <Modal open={showFormModal} title={form?.meta.title ?? 'Novo Calendário'} onClose={() => setShowFormModal(false)} size="lg">
         {formError && !form && <EmptyState title="Formulario indisponivel" description={formError} />}
-        {form && (
+
+        {form && !isFormPublished(form) && (
+          <EmptyState
+            title="Formulario indisponivel"
+            description={`Status "${form.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
+          />
+        )}
+
+        {form && isFormPublished(form) && (
           <form onSubmit={(e) => void handleSubmit(e)} noValidate>
             <FormGrid schema={form.schema} />
             <div className="d-flex gap-2 mt-4 pt-3 border-top">

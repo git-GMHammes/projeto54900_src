@@ -56,6 +56,16 @@ inventar um padrão novo sozinho.
    `data-bs-toggle`/instância JS do Bootstrap. Ver
    [`README_modal.md`](README_modal.md).
 
+8. **É um campo novo em `form_fields`, sendo publicado num `form_manager`?**
+   → `help_text` é **obrigatório**, nunca `NULL`/vazio. É o que aciona o
+   tooltip automático (`components/ui/FormGrid/FieldTooltip`) — o
+   `FormGrid` já faz isso sozinho via `field.title` (mapeado de
+   `fc_help_text`), sem precisar tocar no componente do campo; falta o
+   texto é falta de dado, não falta de funcionalidade. Registrado em
+   2026-09-20 depois de publicar o form `calendario` com os 10 campos sem
+   `help_text` — nenhum deles mostrava tooltip em `/v1/form/calendario` nem
+   em `/v1/calendar-manager`.
+
 ## Decisão: onde mora o estado de sessão (Entrar/Sair) na navbar
 
 Login/logout não é conteúdo navegável (não tem `href` fixo, muda com quem
