@@ -9,14 +9,19 @@
  *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
  *     required, min/max (datas limite, em ISO)
  *
- * CONEXAO COM A PAGINA:
- *   - O valor e coletado via: <input type="hidden" name={field.name}> em
- *     formato ISO ("YYYY-MM-DD") quando completo, vazio enquanto incompleto
- *   - A chave no FormData/payload e: field.name
- *   - Internamente trabalha com digitos "DDMMYYYY" para a mascara
- *     (DD/MM/AAAA exibido) e converte para/de ISO nas bordas
+ * RENDERIZA SEMPRE <input type="date"> NATIVO — com o calendario do
+ * navegador ao lado do campo. NUNCA <input type="text"> com mascara (regra
+ * do projeto: schema 'data' = date nativo). O navegador exibe a data no
+ * formato do idioma (DD/MM/AAAA em pt-BR); o valor e sempre ISO.
  *
- * DEPENDENCIAS: ../emitValue (emitValue).
+ * CONEXAO COM A PAGINA:
+ *   - O valor e coletado via: o proprio <input type="date" name={field.name}>,
+ *     em formato ISO ("YYYY-MM-DD") quando completo, vazio enquanto
+ *     incompleto/invalido
+ *   - A chave no FormData/payload e: field.name
+ *   - onChange recebe `e.target.value` = ISO ou '' (nunca data parcial)
+ *
+ * DEPENDENCIAS: nenhuma (input nativo).
  * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
  * secao 5 (Bloco C).
  * -------------------------------------------------------------------------
@@ -30,7 +35,6 @@ import type {
   FocusEvent,
   FocusEventHandler,
 } from 'react'
-import { emitValue } from '../emitValue'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -64,9 +68,9 @@ export interface DataFieldSchema {
   title?: string
   hidden?: boolean
   /**
-   * Disparado a cada digitação.
-   * `e.target.value` contém data em ISO quando completa ("YYYY-MM-DD"),
-   * ou os dígitos parciais (ex: "2812") enquanto incompleta.
+   * Disparado a cada alteração.
+   * `e.target.value` contém a data em ISO quando completa ("YYYY-MM-DD"),
+   * ou '' enquanto incompleta/inválida.
    */
   onChange?: ChangeEventHandler<HTMLInputElement>
   onBlur?: FocusEventHandler<HTMLInputElement>
@@ -75,40 +79,10 @@ export interface DataFieldSchema {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function soDigitos(v: string): string {
-  return v.replace(/\D/g, '').slice(0, 8)
-}
-
-/** "YYYY-MM-DD" → "DDMMYYYY" (dígitos internos) */
-function isoParaDigitos(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
-  if (!m) return soDigitos(iso)
-  const [, ano = '', mes = '', dia = ''] = m
-  return `${dia}${mes}${ano}`
-}
-
-/** "DDMMYYYY" → "YYYY-MM-DD" */
-function digitosParaIso(d: string): string {
-  if (d.length !== 8) return d
-  return `${d.slice(4)}-${d.slice(2, 4)}-${d.slice(0, 2)}`
-}
-
-function aplicarMascara(raw: string): string {
-  const d = raw.slice(0, 8)
-  const len = d.length
-  if (len <= 2) return d
-  if (len <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
-  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
-}
-
-function dataValida(raw: string): boolean {
-  if (raw.length !== 8) return false
-  const day = parseInt(raw.slice(0, 2))
-  const month = parseInt(raw.slice(2, 4))
-  const year = parseInt(raw.slice(4, 8))
-  if (month < 1 || month > 12 || day < 1 || year < 1) return false
-  const d = new Date(year, month - 1, day)
-  return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day
+/** Só a parte de data de um ISO ("YYYY-MM-DD[...]"); outro formato vira ''. */
+function soIsoData(v: string): string {
+  const m = /^\d{4}-\d{2}-\d{2}/.exec(v)
+  return m ? m[0] : ''
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -118,8 +92,8 @@ interface DataFieldProps { field: DataFieldSchema }
 export function DataField({ field }: DataFieldProps) {
   const isControlled = field.value !== undefined && field.onChange !== undefined
 
-  const [internalRaw, setInternalRaw] = useState(() =>
-    isoParaDigitos(field.value ?? field.defaultValue ?? '')
+  const [internalValue, setInternalValue] = useState(() =>
+    soIsoData(field.value ?? field.defaultValue ?? '')
   )
   const [erro, setErro] = useState<string | null>(null)
 
@@ -127,43 +101,34 @@ export function DataField({ field }: DataFieldProps) {
   // edição): ressincroniza o estado interno quando o valor externo muda.
   useEffect(() => {
     if (!isControlled && field.value !== undefined) {
-      setInternalRaw(isoParaDigitos(field.value))
+      setInternalValue(soIsoData(field.value))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [field.value])
 
-  const raw = isControlled ? isoParaDigitos(field.value ?? '') : internalRaw
-  const displayValue = aplicarMascara(raw)
+  const value = isControlled ? soIsoData(field.value ?? '') : internalValue
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const next = soDigitos(e.target.value)
-    if (!isControlled) setInternalRaw(next)
+    if (!isControlled) setInternalValue(e.target.value)
     setErro(null)
-
-    emitValue(e, next.length === 8 ? digitosParaIso(next) : next, field.onChange)
+    field.onChange?.(e)
   }
 
   function handleBlur(e: FocusEvent<HTMLInputElement>) {
     const nome = field.label ?? field.name ?? field.id ?? 'Data'
-    if (field.required && !raw) { setErro(`${nome} é obrigatória`); field.onBlur?.(e); return }
-    if (raw && raw.length < 8) { setErro(`${nome} incompleta`); field.onBlur?.(e); return }
-    if (raw.length === 8 && !dataValida(raw)) { setErro(`${nome} inválida`); field.onBlur?.(e); return }
-
-    if (raw.length === 8 && field.min) {
-      const iso = digitosParaIso(raw)
-      if (iso < field.min) { setErro(`${nome} deve ser a partir de ${field.min}`); field.onBlur?.(e); return }
-    }
-    if (raw.length === 8 && field.max) {
-      const iso = digitosParaIso(raw)
-      if (iso > field.max) { setErro(`${nome} deve ser até ${field.max}`); field.onBlur?.(e); return }
-    }
+    const atual = e.target.value
+    // badInput: o usuário digitou algo que o navegador não aceita como data (incompleta/inválida).
+    if (e.target.validity.badInput) { setErro(`${nome} inválida ou incompleta`); field.onBlur?.(e); return }
+    if (field.required && !atual) { setErro(`${nome} é obrigatória`); field.onBlur?.(e); return }
+    if (atual && field.min && atual < field.min) { setErro(`${nome} deve ser a partir de ${field.min}`); field.onBlur?.(e); return }
+    if (atual && field.max && atual > field.max) { setErro(`${nome} deve ser até ${field.max}`); field.onBlur?.(e); return }
 
     setErro(null)
     field.onBlur?.(e)
   }
 
   const { type: _, col: _c, label, hidden: _hidden, id, name, className,
-    value: _v, defaultValue: _dv, min: _mn, max: _mx,
+    value: _v, defaultValue: _dv, min, max, placeholder: _ph,
     onChange: _oc, onBlur: _ob, title: _title, ...restProps } = field
 
   const inputClass = ['form-control', erro ? 'is-invalid' : '', className ?? '']
@@ -177,17 +142,17 @@ export function DataField({ field }: DataFieldProps) {
         </label>
       )}
       <input
-        type="text"
+        type="date"
         id={id}
+        name={name}
         className={inputClass}
         {...restProps}
-        placeholder={restProps.placeholder ?? 'DD/MM/AAAA'}
-        inputMode="numeric"
-        value={displayValue}
+        min={min}
+        max={max}
+        value={value}
         onChange={handleChange}
         onBlur={handleBlur}
       />
-      {name && <input type="hidden" name={name} value={raw.length === 8 ? digitosParaIso(raw) : ''} />}
       <div className="text-danger small mt-1" style={{ minHeight: '1.25rem' }}>{erro}</div>
     </>
   )

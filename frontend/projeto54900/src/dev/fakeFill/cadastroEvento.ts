@@ -36,6 +36,9 @@
  *     exclusivos por design do formulario (help_text: "Preencher OU esta,
  *     OU 'Data/hora de início'"): só start_datetime/end_datetime sao
  *     preenchidos aqui, start_date/end_date ficam vazios de proposito.
+ *   - Datas aleatorias de verdade (randomEventRange): inicio em hoje±540
+ *     dias (passado incluso), fim = inicio + duracao (15 min..4 h, ou 1..5
+ *     dias em ~15% dos casos) — fim nunca antes do inicio.
  *   - `start_time_zone`/`end_time_zone`/`recurrence`/`color_id`: select
  *     (desde 2026-09-23) — só valor presente nas opções passa
  *     (selectComboboxOption). Fusos: options_json IANA; recorrência: RRULE
@@ -92,21 +95,43 @@ function setText(id: string, value: string): void {
   if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) setReactValue(el, value);
 }
 
-/** "DDMMYYYY" (sem separador) — o campo 'data'/'datahora' do FormGrid extrai só dígitos, então não precisa de barras. */
-function randomFutureDateDigits(daysAhead: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = String(d.getFullYear());
-  return `${dd}${mm}${yyyy}`;
+/** Inteiro aleatório em [min, max] (inclusive). */
+function randomInt(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-/** "HHMM" (sem separador) — sub-campo de hora do tipo 'datahora' (components/ui/FormGrid/datahora). */
-function randomTimeDigits(): string {
-  const hh = String(9 + Math.floor(Math.random() * 9)).padStart(2, '0'); // 09..17
-  const mm = randomItem(['00', '15', '30', '45']);
-  return `${hh}${mm}`;
+// Janela do início do evento: ~1,5 ano para trás e para frente (passado incluso).
+const DAYS_RANGE = 540;
+
+/**
+ * Par início/fim aleatório: início em qualquer dia de hoje-540 a hoje+540,
+ * hora 07:00..20:45 (passo de 15 min); fim = início + duração — ~85% de
+ * 15 min a 4 h, ~15% de 1 a 5 dias (evento de vários dias). Fim sempre > início.
+ */
+function randomEventRange(): { start: Date; end: Date } {
+  const start = new Date();
+  start.setDate(start.getDate() + randomInt(-DAYS_RANGE, DAYS_RANGE));
+  start.setHours(randomInt(7, 20), randomInt(0, 3) * 15, 0, 0);
+
+  const end = new Date(start);
+  if (Math.random() < 0.15) {
+    end.setDate(end.getDate() + randomInt(1, 5));
+  } else {
+    end.setMinutes(end.getMinutes() + randomInt(1, 16) * 15); // 15 min .. 4 h
+  }
+  return { start, end };
+}
+
+/**
+ * Date -> valores dos 2 sub-inputs nativos do tipo 'datahora' (components/ui/FormGrid/datahora):
+ * <input type="date"> recebe ISO "YYYY-MM-DD" e <input type="time"> recebe "HH:MM".
+ */
+function toDateTimeInputs(d: Date): { date: string; time: string } {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  };
 }
 
 /** Preenche os campos do modal "Criar evento" com dados fake válidos (calendar_id fica intocado). */
@@ -118,10 +143,13 @@ export async function fillCadastroEventoForm(): Promise<void> {
   // Campo tipo 'datahora' (components/ui/FormGrid/datahora): 2 sub-inputs,
   // data no id do campo e hora em `${id}-time` — precisa preencher os dois
   // pra emitir o valor combinado (só data, sem hora, fica vazio/incompleto).
-  setText('fc_data_start_datetime', randomFutureDateDigits(3));
-  setText('fc_data_start_datetime-time', randomTimeDigits());
-  setText('fc_data_end_datetime', randomFutureDateDigits(3));
-  setText('fc_data_end_datetime-time', randomTimeDigits());
+  const range = randomEventRange();
+  const start = toDateTimeInputs(range.start);
+  const end = toDateTimeInputs(range.end);
+  setText('fc_data_start_datetime', start.date);
+  setText('fc_data_start_datetime-time', start.time);
+  setText('fc_data_end_datetime', end.date);
+  setText('fc_data_end_datetime-time', end.time);
 
   setText('fc_recorrencia_sequence', '0');
 
