@@ -59,6 +59,10 @@ export const paths = {
     calendar: {
       list: '/v1/calendar-manager',
     },
+    // ibgeMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
+    ibgeMap: {
+      view: '/v1/ibge-map',
+    },
     // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
     menu: {
       list: '/v1/menu-manager',
