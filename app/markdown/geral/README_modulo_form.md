@@ -105,6 +105,37 @@ processo, renavam, sei`.
 Os Processors serializam para string as colunas JSON recebidas como
 array/objeto (`json_encode`).
 
+#### ⛔ Regra: `help_text` obrigatório em TODO campo (tooltip)
+
+Padrão do FRONTEND: todo campo publicado num `form_manager` exibe um ícone de
+ajuda (ⓘ) com tooltip. O mecanismo já existe e é automático, sem tocar em
+componente:
+
+```
+form_fields.help_text → view (fc_help_text) → formSchema.ts buildField()
+  → field.title → FormGrid → components/ui/FormGrid/FieldTooltip (ícone ⓘ)
+```
+
+- `help_text` **nunca** `NULL`/vazio em campo novo ou recadastrado — o banco
+  aceita `NULL`, a regra não. Campo sem ícone ⓘ = **falta de dado**, não falta
+  de funcionalidade: corrigir preenchendo `help_text`, nunca alterando o
+  componente.
+- O texto explica **para que serve / o que digitar** (1 frase curta), não
+  repete o rótulo. Formato esperado vai no texto (ex.: `#RRGGBB`,
+  `America/Sao_Paulo`).
+- `title` em `attributes_json` **não** substitui `help_text` (não vira
+  tooltip, e o título nativo do elemento é proibido pelo frontend).
+- Na árvore markdown de cada form (`form/<modulo>/*.md`), a tabela de campos
+  tem a coluna fixa **Tooltip (`help_text`)**; não se gera `INSERT` com
+  essa coluna vazia. Modelo: [`form/calendar/calendar_manager.md`](form/calendar/calendar_manager.md).
+- Gravar/corrigir `help_text` com acento via API do app (`PUT
+  /api/v1/form-fields/update/{id}`), não por SQL cru (charset).
+- Espelho no frontend:
+  [`README_alerta_padroes_ui.md`](../../../frontend/projeto54900/src/markdown/geral/README_alerta_padroes_ui.md)
+  (item 8). Origem: 2026-09-20 (form `calendario` publicado sem tooltip) e
+  reincidência em 2026-09-23 (modal "Editar Calendário" com só 1 de 10
+  campos com ⓘ).
+
 ### 2.5 `view_form_manager`
 
 Achata os 4 níveis — **1 linha por campo**. Colunas com prefixo de origem

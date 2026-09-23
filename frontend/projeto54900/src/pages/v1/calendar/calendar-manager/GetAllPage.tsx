@@ -17,8 +17,9 @@ import LoadingOverlay from '@/components/global/LoadingOverlay';
 import Modal from '@/components/global/Modal';
 import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
-import { http, ApiError } from '@/services/http';
-import { calendarManagerView, formManagerView, listManagerTable, listActionsTable, listColumnsTable } from '@/services/v1';
+import { useAuth } from '@/context/AuthContext';
+import { http, ApiError, hasAccessToken } from '@/services/http';
+import { calendarManagerView, formManagerView, listManagerTable, listActionsTable, listColumnsTable, userManagerTable } from '@/services/v1';
 import { groupCalendarView } from '@/services/calendarSchema';
 import type { CalendarGroup, CalendarManagerRow } from '@/services/calendarSchema';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
@@ -37,6 +38,11 @@ const EVENT_FORM_SLUG = 'cadastro-evento'; // form_manager: criar evento (POST)
 const ACTIONS_LIST_SLUG = 'calendar-manager'; // list_manager: ações da linha (list_actions)
 const EVENTS_LIST_SLUG = 'calendar-events-view'; // list_manager: colunas do modal "Ver eventos"
 const PAGE_SIZE = 10;
+// Usuários de sistema (user_manager, status 'blocked' — não logam) usados como
+// dono padrão do calendário quando a sessão JWT não identifica o usuário:
+// sem token -> 'guest'; com token mas sem usuário resolvido -> 'unknown'.
+const GUEST_USERNAME = 'guest';
+const UNKNOWN_USERNAME = 'unknown';
 
 /** Valores atuais do calendário, por field_name do form_manager — usado para pré-preencher o modal "Editar". */
 function calendarToFieldValues(c: CalendarManagerRow): Record<string, string> {
@@ -164,6 +170,10 @@ function matchesSearch(group: CalendarGroup, term: string): boolean {
 
 export default function CalendarManagerGetAllPage() {
   const toast = useToast();
+  const { user, bootstrapping } = useAuth();
+
+  // ids de 'guest'/'unknown' em user_manager, buscados por username (nunca fixos no código).
+  const [fallbackOwners, setFallbackOwners] = useState<{ guest: string; unknown: string }>({ guest: '', unknown: '' });
 
   // Listagem (view_calendar_manager, agrupada por calendario).
   const [groups, setGroups] = useState<CalendarGroup[] | null>(null);
@@ -235,6 +245,32 @@ export default function CalendarManagerGetAllPage() {
   );
 
   const loadForm = useCallback(() => fetchForm(CALENDAR_FORM_SLUG, setForm, setFormError), [fetchForm]);
+
+  /** Carrega os ids de 'guest'/'unknown' (dono padrão quando a sessão não identifica o usuário). */
+  const loadFallbackOwners = useCallback(async () => {
+    try {
+      const { rows } = normalizeList<Record<string, unknown>>(
+        await userManagerTable.getNoPagination({ sort: 'id', order: 'ASC' }),
+      );
+      const idOf = (username: string) => {
+        const id = rows.find((r) => r.username === username)?.id;
+        return typeof id === 'string' || typeof id === 'number' ? String(id) : '';
+      };
+      setFallbackOwners({ guest: idOf(GUEST_USERNAME), unknown: idOf(UNKNOWN_USERNAME) });
+    } catch {
+      setFallbackOwners({ guest: '', unknown: '' });
+    }
+  }, []);
+
+  // Dono padrão do "Novo Calendário": usuário da sessão JWT; sem ele, 'unknown'
+  // (há token, mas o usuário não foi resolvido) ou 'guest' (sem sessão).
+  const defaultOwnerId = bootstrapping
+    ? ''
+    : user
+      ? String(user.id)
+      : hasAccessToken()
+        ? fallbackOwners.unknown
+        : fallbackOwners.guest;
   const loadEditForm = useCallback(() => fetchForm(EDIT_FORM_SLUG, setEditForm, setEditFormError), [fetchForm]);
   const loadEventForm = useCallback(() => fetchForm(EVENT_FORM_SLUG, setEventForm, setEventFormError), [fetchForm]);
 
@@ -280,7 +316,8 @@ export default function CalendarManagerGetAllPage() {
     void loadEventForm();
     void loadActions();
     void loadEventColumns();
-  }, [load, loadForm, loadEditForm, loadEventForm, loadActions, loadEventColumns]);
+    void loadFallbackOwners();
+  }, [load, loadForm, loadEditForm, loadEventForm, loadActions, loadEventColumns, loadFallbackOwners]);
 
   // Busca nova sempre volta pra pagina 1 (senao a pagina atual pode nao existir mais).
   useEffect(() => {
@@ -540,7 +577,10 @@ export default function CalendarManagerGetAllPage() {
 
         {form && isFormPublished(form) && (
           <form onSubmit={(e) => void handleSubmit(e)} noValidate>
-            <FormGrid schema={form.schema} />
+            <FormGrid
+              key={defaultOwnerId}
+              schema={withDefaultValues(form.schema, { user_manager_id: defaultOwnerId })}
+            />
             <div className="d-flex gap-2 mt-4 pt-3 border-top">
               <button type="submit" className="btn btn-primary" disabled={submitting}>
                 {submitting ? 'Enviando...' : 'Criar'}

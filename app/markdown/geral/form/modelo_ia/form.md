@@ -27,6 +27,20 @@ a coluna real da tabela (minúsculo, snake_case — nunca `'Location'`, nunca
 grupo (`fc_<grupo>_<coluna>`) para não colidir entre campos de grupos
 diferentes — nunca usado no submit.
 
+## ⛔ Regra de tooltip — `help_text` obrigatório em todo campo
+
+Todo campo desenhado a partir deste modelo **precisa** de `help_text`: é ele
+que gera o ícone ⓘ com tooltip no FormGrid (padrão do FRONTEND — ver
+[`README_modulo_form.md`](../../README_modulo_form.md), seção 2.4, "Regra:
+`help_text` obrigatório"). Na tabela de campos de cada form novo, usar a
+coluna fixa **Tooltip (`help_text`)** — 1 frase curta dizendo para que serve
+/ o que digitar — como em [`calendar_manager.md`](../calendar/calendar_manager.md).
+Não gerar `INSERT` com essa coluna vazia.
+
+> As tabelas abaixo são anteriores à regra (help só em alguns campos, dentro
+> de "Observação"); ao recadastrar este form, completar o `help_text` de
+> todos os campos.
+
 ## O registro `form_manager` (o formulário em si)
 
 | Coluna | Valor |

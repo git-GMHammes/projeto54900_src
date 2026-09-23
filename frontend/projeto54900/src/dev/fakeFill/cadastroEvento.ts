@@ -36,8 +36,11 @@
  *     exclusivos por design do formulario (help_text: "Preencher OU esta,
  *     OU 'Data/hora de início'"): só start_datetime/end_datetime sao
  *     preenchidos aqui, start_date/end_date ficam vazios de proposito.
- *   - `color_id`/`sequence`: texto livre mas com significado numerico
- *     (placeholder do formulario) — geram numero como string, nao lixo.
+ *   - `start_time_zone`/`end_time_zone`/`recurrence`/`color_id`: select
+ *     (desde 2026-09-23) — só valor presente nas opções passa
+ *     (selectComboboxOption). Fusos: options_json IANA; recorrência: RRULE
+ *     das opções prontas; cor: hexadecimal de `aux_cor` (select remoto).
+ *   - `sequence`: texto livre com significado numérico — gera "0".
  *   - Convidados (4 checkboxes) sao clique real (clickIfUnchecked), nao
  *     setReactValue — sao <input type="checkbox"> nativos.
  *
@@ -60,6 +63,17 @@ const VISIBILITIES = ['default', 'public', 'private', 'confidential'] as const;
 const EVENT_TYPES = ['default', 'outOfOffice', 'focusTime', 'workingLocation', 'birthday'] as const;
 
 const TIME_ZONES = ['America/Sao_Paulo', 'America/Bahia', 'America/Manaus', 'UTC'] as const;
+
+// Subconjunto das opções prontas do campo `recurrence` (form_fields 160).
+const RECURRENCES = [
+  'RRULE:FREQ=WEEKLY;COUNT=10',
+  'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+  'RRULE:FREQ=MONTHLY',
+  'RRULE:FREQ=WEEKLY;INTERVAL=2',
+] as const;
+
+// Hexadecimais existentes em `aux_cor` (DodgerBlue, SeaGreen, RoyalBlue, SlateBlue, Teal).
+const COLORS = ['#1E90FF', '#2E8B57', '#4169E1', '#6A5ACD', '#008080'] as const;
 
 const TOPICOS = [
   'equipe', 'projeto', 'cliente', 'diretoria', 'sprint', 'planejamento',
@@ -106,15 +120,10 @@ export async function fillCadastroEventoForm(): Promise<void> {
   // pra emitir o valor combinado (só data, sem hora, fica vazio/incompleto).
   setText('fc_data_start_datetime', randomFutureDateDigits(3));
   setText('fc_data_start_datetime-time', randomTimeDigits());
-  setText('fc_data_start_time_zone', randomItem(TIME_ZONES));
   setText('fc_data_end_datetime', randomFutureDateDigits(3));
   setText('fc_data_end_datetime-time', randomTimeDigits());
-  setText('fc_data_end_time_zone', randomItem(TIME_ZONES));
 
-  setText('fc_recorrencia_recurrence', 'RRULE:FREQ=WEEKLY;COUNT=10');
   setText('fc_recorrencia_sequence', '0');
-
-  setText('fc_visibilidade_color_id', String(1 + Math.floor(Math.random() * 11)));
 
   for (const id of CHECKBOX_IDS) clickIfUnchecked(id);
 
@@ -122,6 +131,10 @@ export async function fillCadastroEventoForm(): Promise<void> {
   await selectComboboxOption('fc_visibilidade_transparency', randomItem(TRANSPARENCIES));
   await selectComboboxOption('fc_visibilidade_visibility', randomItem(VISIBILITIES));
   await selectComboboxOption('fc_visibilidade_event_type', randomItem(EVENT_TYPES));
+  await selectComboboxOption('fc_data_start_time_zone', randomItem(TIME_ZONES));
+  await selectComboboxOption('fc_data_end_time_zone', randomItem(TIME_ZONES));
+  await selectComboboxOption('fc_recorrencia_recurrence', randomItem(RECURRENCES));
+  await selectComboboxOption('fc_visibilidade_color_id', randomItem(COLORS));
 }
 
 export default fillCadastroEventoForm;
