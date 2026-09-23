@@ -4,46 +4,52 @@
 
 # Migrations — comandos diretos (CodeIgniter 4)
 
-## ⚠️ A partir de 2026-09-22 — migrations CI4 pausadas, schema muda direto no banco DEV
+## Modelo ativo: Migrate REMAKE (desde 2026-09-23)
 
-**Decisão do usuário (2026-09-22), vale até segunda ordem:** o fluxo abaixo
-(`spark make:migration` / `spark migrate`) **não é o caminho ativo agora**.
-Mudança de schema (`ALTER TABLE`, `CREATE TABLE`) é aplicada **direto no banco
-DEV** (`codeigniter54900_db`), via SQL, **só depois de autorização expressa do
-usuário para aquele comando específico** — nunca por conta própria. Nenhuma
-migration nova é criada em `app/Database/Migrations/` enquanto esta nota
-estiver valendo.
+**Decisão do usuário (2026-09-23):** substitui a pausa de 2026-09-22. Não se
+escreve migration incremental (Forge, `ALTER TABLE` à mão, `spark
+make:migration` por tabela). **Sempre que for preciso rodar os migrates, gera-se
+um REMAKE** — um snapshot completo do banco DEV (`codeigniter54900_db`) que
+recria tudo do zero.
 
-- **Por quê:** o usuário vai tirar `dump` do banco DEV periodicamente; a ideia
-  é que esse dump (e não uma migration escrita à mão) seja o que documenta o
-  schema real, pelo menos por enquanto. Ainda não está definido *como* o dump
-  vai virar migration de novo — está marcado como "vemos depois".
-- **O que isso NÃO muda:** dado (linha de tabela) continua entrando pelo
-  caminho já estabelecido do projeto — API/Processor para `form_manager`/
-  `list_manager`/`menu_manager`/etc. (nunca `INSERT` cru, ver
-  [`README_form.md`](README_form.md) e `README_list_constructor.md` no
-  frontend) — essa regra é sobre **integridade/charset dos dados**, não sobre
-  migration, e continua valendo. A pausa é só no mecanismo de **schema**
-  (`spark migrate`) — o resto deste documento (comandos, `$DBGroup`, etc.)
-  continua sendo a referência de como o projeto funciona quando as migrations
-  voltarem a ser o caminho ativo.
-- **O que "MIGRATE" passa a significar nesse meio-tempo — regra 1:1, sem
-  ambiguidade:** enquanto essa pausa durar, "rodar um MIGRATE" (nas conversas,
-  nos planos `_plano.json`/`_no_plano.json`) significa **executar um SQL
-  direto no banco DEV** — não o comando `spark migrate`. E a granularidade é
-  **um conjunto de MIGRATE = um conjunto de SQL**: cada mudança de schema
-  (cada `ALTER TABLE`, cada `CREATE TABLE`) é o SEU PRÓPRIO passo, com o SEU
-  PRÓPRIO comando SQL registrado — nunca várias mudanças de schema diferentes
-  agrupadas num único passo/registro. Isso vale tanto pra execução quanto pro
-  registro em `src/writable/claude/*_no_plano.json`: 1 SQL executado = 1
-  `_no_plano.json` com o `comando_ou_input` sendo exatamente aquele SQL (texto
-  completo, não resumo) — nada de "rodei 3 ALTER TABLE" num passo só.
-- **Credenciais do banco DEV** para rodar o SQL direto: pedidas ao usuário no
-  momento da execução, nunca gravadas em arquivo versionado (regra global de
-  segredos, `CLAUDE.md`).
-- **Se você (humano ou IA) reabrir este projeto depois:** confirme com o
-  usuário se essa pausa ainda vale antes de assumir que `spark migrate` é o
-  caminho ativo — esta nota fica até ele dizer o contrário.
+**Um REMAKE = 3 SQLs + 3 classes PHP**, mesmo timestamp, em
+`app/Database/Migrations/`:
+
+| Ordem | SQL (dump do banco DEV)              | Classe PHP                                   | Conteúdo                                            |
+| ----- | ------------------------------------ | -------------------------------------------- | --------------------------------------------------- |
+| 1     | `AAAAMMDDHHMM_replace_table.sql`     | `AAAA-MM-DD-HHMM00_ReplaceTable<AAAAMMDD>.php` | `DROP TABLE IF EXISTS` + `CREATE TABLE` de todas    |
+| 2     | `AAAAMMDDHHMM_seed_table.sql`        | `AAAA-MM-DD-HHMM00_SeedTable<AAAAMMDD>.php`    | `DELETE` + `INSERT` de todos os dados               |
+| 3     | `AAAAMMDDHHMM_create_view.sql`       | `AAAA-MM-DD-HHMM00_CreateView<AAAAMMDD>.php`   | `DROP VIEW IF EXISTS` + `CREATE VIEW` de todas      |
+
+Regras do REMAKE:
+
+- **Classe = sufixo do nome do arquivo.** O CI4 monta o nome da classe a partir
+  do trecho após o timestamp; por isso o sufixo `<AAAAMMDD>` vai no arquivo
+  **e** na classe (`ReplaceTable20260922` em
+  `2026-09-22-214000_ReplaceTable20260922.php`). Sem sufixo, colide com o
+  REMAKE anterior no mesmo namespace.
+- **A classe só lê o `.sql` ao lado e executa statement por statement**
+  (`executeSqlFile()` + `$this->db->query()`), sem Forge. Espelho:
+  `2026-09-22-2140*_*20260922.php`.
+- **`CREATE DATABASE` / `USE` do dump são ignorados** pelo `executeSqlFile()`
+  do ReplaceTable — o banco vem da conexão (`default`), não do nome cravado no
+  `.sql`.
+- `down()` do ReplaceTable/SeedTable fica vazio (sem inverso genérico);
+  CreateView faz `DROP VIEW IF EXISTS` de cada view.
+- **Destrutivo:** `spark migrate` com um REMAKE pendente dropa todas as tabelas
+  (inclusive `migrations`) e recarrega os dados do dump. Tudo gravado no banco
+  depois do dump se perde — tirar backup antes se houver dado novo.
+- Em banco vazio, `spark migrate` roda **todos** os REMAKEs pendentes em ordem;
+  o último sobrescreve os anteriores (resultado final correto, só mais lento).
+- Dado de linha avulsa no dia a dia continua entrando pela API/Processor
+  (`form_manager`/`list_manager`/`menu_manager`/etc.), nunca `INSERT` cru —
+  ver [`README_form.md`](README_form.md). O REMAKE só captura o estado.
+- Credenciais do banco DEV nunca gravadas em arquivo versionado (regra global
+  de segredos, `CLAUDE.md`).
+
+As seções "Criar migration", "Seeds" e o `$DBGroup` abaixo continuam válidos
+como referência do CI4, mas o caminho ativo para o `codeigniter54900_db` é o
+REMAKE.
 
 ---
 
@@ -89,14 +95,14 @@ executa **dentro do container `php`** (`working_dir` = `/var/www/html`), mas
 **1. Digite isto no host, uma vez, para subir o ambiente:**
 
 ```
-cd C:\laragon\www\php\habilidade\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose up -d --build
 ```
 
 **2. Aplicar as migrations — comando real, digitado no host:**
 
 ``` 
-cd C:\laragon\www\php\habilidade\projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark migrate
  
 ```
@@ -237,11 +243,10 @@ pelo grupo dentro do `run()`.
 - `$defaultGroup = 'default'`. `SPARK migrate` sem `-g` roda no
   `codeigniter54900_db`. Para um módulo, declarar `$DBGroup` na migration e usar
   `-g <grupo>`.
-- **Alerta:** as 9 migrations já presentes em `app/Database/Migrations/` **não**
-  declaram `$DBGroup`. Como estão, um `SPARK migrate` sem `-g` aplica todas no
-  `codeigniter54900_db`, inclusive tabelas que são do módulo `Calendar`
-  (`calendar_manager`, `calendar_events`, ...). Definir o `$DBGroup` de cada arquivo
-  antes de montar o banco.
+- As migrations REMAKE em `app/Database/Migrations/` **não** declaram
+  `$DBGroup`: rodam no `codeigniter54900_db`, inclusive as tabelas do módulo
+  `Calendar` (`calendar_manager`, `calendar_events`, ...), que hoje vivem nesse
+  banco.
 - Testes usam o grupo `tests` (SQLite em memória): `SPARK migrate -g tests` não
   é necessário no fluxo normal.
 - `timestampFormat` = `Y-m-d-His_`; tabela de controle = `migrations`;
@@ -255,9 +260,9 @@ pelo grupo dentro do `run()`.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

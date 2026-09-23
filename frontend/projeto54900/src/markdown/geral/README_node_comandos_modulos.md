@@ -4,7 +4,7 @@
 
 # Node — comandos do frontend e mapa dos módulos
 
-Frontend **React 19 + Vite 6 + TypeScript** (`C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900`).
+Frontend **React 19 + Vite 6 + TypeScript** (`C:\laragon\www\js\habilidade\projeto54900\src\frontend\projeto54900`).
 Este documento cobre, nesta ordem:
 
 1. como **instalar o Node e as dependências** (primeira vez) e **subir o app** em desenvolvimento;
@@ -60,10 +60,10 @@ node -v
 Cria a pasta `node_modules/` a partir do `package.json`:
 
 ```bash
-cd C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900\src\frontend\projeto54900
 npm install
  
-```
+``` 
 
 > Repita o `npm install` apenas quando o `package.json` mudar ou a pasta
 > `node_modules/` for apagada.
@@ -74,7 +74,7 @@ npm install
 ### 1.4 Subir o app (dia a dia)
 
 ```bash
-cd C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900
+cd C:\laragon\www\js\habilidade\projeto54900\src\frontend\projeto54900
 npm run dev
  
 ```
@@ -119,7 +119,7 @@ WS `/ws`) — não é preciso exportar nada para o dia a dia.
 para:
 
 ```
-C:/laragon/www/js/habilidade/projeto54900/src/frontend/projeto54900/dist/
+C:\laragon\www\js\habilidade\projeto54900\src\frontend\projeto54900/dist/
 ```
 
 `dist/` é `.gitignore` — é artefato, gerado a cada build.
