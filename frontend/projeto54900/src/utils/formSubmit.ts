@@ -25,6 +25,9 @@ export function senderFor(method: string): (path: string, body: unknown) => Prom
 
 // FormData -> corpo JSON. Chaves "campo[]" (checkbox multiplo) viram array;
 // escalares viram string; vazios sao omitidos (a API e permit_empty).
+// Checkbox de opcao unica (1 so <input> com aquele name[]) e booleano: vai
+// como escalar ("1"), e desmarcado com valor "1" vai "0" — sem isso a API
+// recebe ["1"] e reprova `in_list[0,1]`, e um default 1 nunca vira 0.
 export function formDataToPayload(form: HTMLFormElement): Record<string, unknown> {
   const fd = new FormData(form);
   const payload: Record<string, unknown> = {};
@@ -45,6 +48,21 @@ export function formDataToPayload(form: HTMLFormElement): Record<string, unknown
 
   for (const [key, list] of Object.entries(arrays)) {
     if (list.length > 0) payload[key] = list;
+  }
+
+  // Checkbox booleano: um unico input por name[] no formulario.
+  const checkboxes = new Map<string, HTMLInputElement[]>();
+  for (const input of form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name$="[]"]')) {
+    const key = input.name.slice(0, -2);
+    const list = checkboxes.get(key) ?? [];
+    list.push(input);
+    checkboxes.set(key, list);
+  }
+  for (const [key, inputs] of checkboxes) {
+    const only = inputs.length === 1 ? inputs[0] : undefined;
+    if (!only || only.disabled) continue;
+    if (only.checked) payload[key] = only.value;
+    else if (only.value === '1') payload[key] = '0';
   }
 
   return payload;

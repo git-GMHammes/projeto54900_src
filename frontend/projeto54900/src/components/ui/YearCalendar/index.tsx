@@ -17,20 +17,36 @@
  */
 
 import MonthCalendar from '@/components/ui/MonthCalendar';
+import type { MonthCalendarEvent } from '@/components/ui/MonthCalendar';
 
 export interface YearCalendarProps {
   year: number;
   className?: string;
+  /** Eventos repassados a cada mes (ver MonthCalendar). */
+  events?: MonthCalendarEvent[] | undefined;
+  /** Repassados a cada mes (ver MonthCalendar). */
+  onDayClick?: ((isoDate: string) => void) | undefined;
+  selectedDate?: string | undefined;
+  markedDate?: string | undefined;
 }
 
 const MONTHS = Array.from({ length: 12 }, (_, m) => m);
 
-export default function YearCalendar({ year, className = '' }: YearCalendarProps) {
+export default function YearCalendar({ year, className = '', events, onDayClick, selectedDate, markedDate }: YearCalendarProps) {
   return (
     <div className={`row g-4 ${className}`}>
       {MONTHS.map((month) => (
         <div key={month} className="col-12 col-sm-6 col-lg-4 col-xl-3">
-          <MonthCalendar year={year} month={month} size="sm" className="h-100" />
+          <MonthCalendar
+            year={year}
+            month={month}
+            size="sm"
+            className="h-100"
+            events={events}
+            onDayClick={onDayClick}
+            selectedDate={selectedDate}
+            markedDate={markedDate}
+          />
         </div>
       ))}
     </div>

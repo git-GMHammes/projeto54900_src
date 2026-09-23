@@ -7,10 +7,13 @@
 // form_manager de slug 'calendario' ja publicado (mesmo <FormGrid> usado em
 // pages/v1/form/FormRendererPage.tsx).
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
+import MonthCalendar from '@/components/ui/MonthCalendar';
+import type { MonthCalendarEvent } from '@/components/ui/MonthCalendar';
+import YearCalendar from '@/components/ui/YearCalendar';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
@@ -18,10 +21,11 @@ import Modal from '@/components/global/Modal';
 import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
+import { env } from '@/config/env';
 import { http, ApiError, hasAccessToken } from '@/services/http';
 import { calendarManagerView, formManagerView, listManagerTable, listActionsTable, listColumnsTable, userManagerTable } from '@/services/v1';
 import { groupCalendarView } from '@/services/calendarSchema';
-import type { CalendarGroup, CalendarManagerRow } from '@/services/calendarSchema';
+import type { CalendarEventRow, CalendarGroup, CalendarManagerRow } from '@/services/calendarSchema';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList } from '@/utils/apiResult';
@@ -43,6 +47,10 @@ const PAGE_SIZE = 10;
 // sem token -> 'guest'; com token mas sem usuário resolvido -> 'unknown'.
 const GUEST_USERNAME = 'guest';
 const UNKNOWN_USERNAME = 'unknown';
+// Select de agenda abaixo da lista: carga inicial paginada (limit 1000) e, ao
+// digitar, POST find por summary (LIKE no backend) — alcança agendas fora das 1000.
+const CALENDAR_SELECT_SRC = `${env.apiBaseUrl}/v1/calendar-manager/get-all?page=1&limit=1000&sort=summary&order=ASC`;
+const CALENDAR_FIND_SRC = `${env.apiBaseUrl}/v1/calendar-manager/find?limit=50`;
 
 /** Valores atuais do calendário, por field_name do form_manager — usado para pré-preencher o modal "Editar". */
 function calendarToFieldValues(c: CalendarManagerRow): Record<string, string> {
@@ -80,23 +88,23 @@ function withDefaultValues(schema: RenderForm['schema'], values: Record<string, 
 }
 
 /**
- * Botão só-ícone de uma ação de `list_actions` (calendar-manager). 'modal'
- * avisa a página (que decide qual modal abrir, pelo slug em hrefTemplate);
- * 'api_call' executa de verdade (mesmo padrão do FormConstructorListPage.tsx).
+ * Botão só-ícone de uma ação de `list_actions` para uma linha (calendário ou
+ * evento). 'modal' avisa a página (que decide qual modal abrir, pelo slug em
+ * hrefTemplate); 'api_call' executa de verdade (mesmo padrão do
+ * FormConstructorListPage.tsx) — `{campo}` do endpoint/mensagem sai de `row`.
  */
-function CalendarActionButton({
+function RowActionButton({
   action,
-  group,
+  row,
   onOpenModal,
   onExecuted,
 }: {
   action: ListActionRow;
-  group: CalendarGroup;
-  onOpenModal: (targetSlug: string, group: CalendarGroup) => void;
-  onExecuted: () => void;
+  row: Record<string, unknown>;
+  onOpenModal?: (targetSlug: string) => void;
+  onExecuted: (action: ListActionRow) => void;
 }) {
   const toast = useToast();
-  const row = group.calendar as unknown as Record<string, unknown>;
 
   if (action.actionType === 'link') return null;
 
@@ -113,12 +121,13 @@ function CalendarActionButton({
   );
 
   if (action.actionType === 'modal') {
+    if (!onOpenModal) return null;
     return withTooltip(
       <button
         type="button"
         className="btn btn-sm btn-outline-secondary"
         aria-label={action.label}
-        onClick={() => onOpenModal(action.hrefTemplate, group)}
+        onClick={() => onOpenModal(action.hrefTemplate)}
       >
         <i className={`bi bi-${action.icon}`} />
       </button>,
@@ -136,7 +145,7 @@ function CalendarActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
-      onExecuted();
+      onExecuted(action);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
@@ -154,17 +163,47 @@ function CalendarActionButton({
   );
 }
 
-/** true quando o termo de busca aparece no calendario ou em algum dos seus eventos. */
+/** Início/fim do evento como texto ISO — data pura (evento de dia inteiro) ou data+hora. */
+function eventStart(ev: CalendarEventRow): string {
+  return ev.startDate ?? ev.startDatetime ?? '';
+}
+function eventEnd(ev: CalendarEventRow): string {
+  return ev.endDate ?? ev.endDatetime ?? '';
+}
+
+/**
+ * Eventos com alguma parte dentro de [from, to] (datas ISO 'YYYY-MM-DD'; '' = lado aberto),
+ * comparando só a data de início..fim de cada evento; ordenados pela hora de início.
+ */
+function eventsInRange(events: CalendarEventRow[], from: string, to: string): CalendarEventRow[] {
+  return events
+    .filter((ev) => {
+      const start = eventStart(ev).slice(0, 10);
+      const end = (eventEnd(ev) || start).slice(0, 10);
+      return start !== '' && (!to || start <= to) && (!from || end >= from);
+    })
+    .sort((a, b) => eventStart(a).localeCompare(eventStart(b)));
+}
+
+/** "fevereiro de 2028" — nome do mês (0-11) + ano, em pt-BR. */
+function monthLabel(year: number, month: number): string {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(year, month, 1));
+}
+
+/** 'YYYY-MM-DD[ HH:MM:SS]' -> 'DD/MM/AAAA[ HH:MM]' (sem Date, evita deslocamento de fuso). */
+function formatIsoBr(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(iso);
+  if (!m) return iso;
+  const [, y, mo, d, h, mi] = m;
+  return `${d}/${mo}/${y}${h !== undefined && mi !== undefined ? ` ${h}:${mi}` : ''}`;
+}
+
+/** true quando o termo de busca aparece no nome ou no local do calendario (descricao e eventos ficam de fora). */
 function matchesSearch(group: CalendarGroup, term: string): boolean {
   const needle = term.trim().toLowerCase();
   if (!needle) return true;
 
-  const haystacks = [
-    group.calendar.summary,
-    group.calendar.description,
-    group.calendar.location,
-    ...group.events.flatMap((e) => [e.summary, e.description, e.location]),
-  ];
+  const haystacks = [group.calendar.summary, group.calendar.location];
   return haystacks.some((v) => v?.toLowerCase().includes(needle));
 }
 
@@ -195,6 +234,8 @@ export default function CalendarManagerGetAllPage() {
 
   // Colunas do modal "Ver eventos" (list_manager/list_columns, slug 'calendar-events-view').
   const [eventColumns, setEventColumns] = useState<ListColumnRow[]>([]);
+  // Ações por evento (list_actions do mesmo list_manager 'calendar-events-view'), ex.: Excluir evento.
+  const [eventActions, setEventActions] = useState<ListActionRow[]>([]);
   const [viewingGroup, setViewingGroup] = useState<CalendarGroup | null>(null);
 
   // Formulario de edicao (form_manager slug 'editar-calendario'), pre-preenchido com a linha clicada.
@@ -208,6 +249,18 @@ export default function CalendarManagerGetAllPage() {
   const [eventFormError, setEventFormError] = useState<string | null>(null);
   const [creatingEventFor, setCreatingEventFor] = useState<CalendarGroup | null>(null);
   const [eventSubmitting, setEventSubmitting] = useState(false);
+
+  // Agenda escolhida no select abaixo da lista + collapses "Mês atual" / "Ano".
+  const [selectedCalendarId, setSelectedCalendarId] = useState('');
+  const [showMonth, setShowMonth] = useState(false);
+  const [showYear, setShowYear] = useState(false);
+  // Dia clicado no calendário (ISO 'YYYY-MM-DD') — lista os eventos dele em cards.
+  const [selectedDay, setSelectedDay] = useState('');
+  // Período dos campos Início/Fim (ISO 'YYYY-MM-DD'; '' = aberto/incompleto) — lista os eventos em cards.
+  const [rangeStart, setRangeStart] = useState('');
+  const [rangeEnd, setRangeEnd] = useState('');
+  // Âncora do bloco de cards: o clique num dia rola a página até ele.
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -300,12 +353,18 @@ export default function CalendarManagerGetAllPage() {
       const manager = await findListManager(EVENTS_LIST_SLUG);
       if (!manager) {
         setEventColumns([]);
+        setEventActions([]);
         return;
       }
-      const raw = await listColumnsTable.find({ list_manager_id: manager.id }, { sort: 'sort_order', order: 'ASC', limit: 50 });
-      setEventColumns(normalizeList<Record<string, unknown>>(raw).rows.map(toColumn));
+      const [rawColumns, rawActions] = await Promise.all([
+        listColumnsTable.find({ list_manager_id: manager.id }, { sort: 'sort_order', order: 'ASC', limit: 50 }),
+        listActionsTable.find({ list_manager_id: manager.id }, { sort: 'sort_order', order: 'ASC', limit: 50 }),
+      ]);
+      setEventColumns(normalizeList<Record<string, unknown>>(rawColumns).rows.map(toColumn));
+      setEventActions(normalizeList<Record<string, unknown>>(rawActions).rows.map(toAction));
     } catch {
       setEventColumns([]);
+      setEventActions([]);
     }
   }, [findListManager]);
 
@@ -319,6 +378,14 @@ export default function CalendarManagerGetAllPage() {
     void loadFallbackOwners();
   }, [load, loadForm, loadEditForm, loadEventForm, loadActions, loadEventColumns, loadFallbackOwners]);
 
+  // O modal "Ver eventos" guarda uma cópia do grupo: ao recarregar a listagem
+  // (ex.: após excluir um evento) troca pela versão nova do mesmo calendário.
+  useEffect(() => {
+    setViewingGroup((prev) =>
+      prev ? (groups ?? []).find((g) => g.calendar.id === prev.calendar.id) ?? null : null,
+    );
+  }, [groups]);
+
   // Busca nova sempre volta pra pagina 1 (senao a pagina atual pode nao existir mais).
   useEffect(() => {
     setPage(1);
@@ -330,6 +397,77 @@ export default function CalendarManagerGetAllPage() {
   );
   const totalPages = Math.max(1, Math.ceil(filteredGroups.length / PAGE_SIZE));
   const pageGroups = filteredGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Eventos da agenda escolhida — saem de `groups` (view inteira, sem paginação), sem nova chamada.
+  const selectedGroupEvents = useMemo(
+    () => groups?.find((g) => String(g.calendar.id) === selectedCalendarId)?.events ?? [],
+    [groups, selectedCalendarId],
+  );
+  const selectedEvents = useMemo<MonthCalendarEvent[]>(
+    () =>
+      selectedGroupEvents.map((ev) => {
+        const start = eventStart(ev);
+        return { start, end: eventEnd(ev) || start, summary: ev.summary };
+      }),
+    [selectedGroupEvents],
+  );
+  // Cards — a agenda é a busca; datas e dia só restringem (ambos opcionais):
+  //   1) agenda escolhida -> todos os eventos dela (qualquer ano);
+  //   2) + Início/Fim     -> só os do período;
+  //   3) + dia clicado    -> só os do dia (prioridade; o X volta ao nível 2/1).
+  const dayMode = !!selectedDay && (showMonth || showYear);
+  const rangeMode = !dayMode && !!(rangeStart || rangeEnd);
+  const cardEvents = useMemo(() => {
+    if (dayMode) return eventsInRange(selectedGroupEvents, selectedDay, selectedDay);
+    if (rangeMode) return eventsInRange(selectedGroupEvents, rangeStart, rangeEnd);
+    return eventsInRange(selectedGroupEvents, '', '');
+  }, [dayMode, rangeMode, selectedGroupEvents, selectedDay, rangeStart, rangeEnd]);
+  const cardsTitle = dayMode
+    ? `Eventos de ${formatIsoBr(selectedDay)}`
+    : !rangeMode
+      ? 'Eventos da agenda'
+      : rangeStart && rangeEnd
+        ? `Eventos de ${formatIsoBr(rangeStart)} a ${formatIsoBr(rangeEnd)}`
+        : rangeStart
+          ? `Eventos a partir de ${formatIsoBr(rangeStart)}`
+          : `Eventos até ${formatIsoBr(rangeEnd)}`;
+  const cardsEmptyText = rangeMode ? 'Nenhum compromisso no período.' : 'Esta agenda não tem eventos.';
+
+  // Âncora: clique num dia leva o navegador até o início dos cards.
+  useEffect(() => {
+    if (selectedDay) cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selectedDay]);
+
+  /** onChange dos campos de data: só guarda a data completa (ISO); digitando, fica '' (período aberto). */
+  const onRangeChange = (setFn: (v: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setFn(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : '');
+    setSelectedDay('');
+  };
+  const now = new Date();
+  // Mês/ano de referência dos calendários: o do Início quando preenchido (lido do texto ISO, sem
+  // Date, evita fuso); senão, hoje. Apagar o Início volta ao mês/ano atuais.
+  const refYear = rangeStart ? Number(rangeStart.slice(0, 4)) : now.getFullYear();
+  const refMonth = rangeStart ? Number(rangeStart.slice(5, 7)) - 1 : now.getMonth();
+
+  // Mês exibido sem eventos da agenda: aviso + atalho para o próximo evento (ou o anterior,
+  // se não houver próximo) — evita confundir evento de outro ano com o mês exibido.
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const monthFirst = `${refYear}-${pad2(refMonth + 1)}-01`;
+  const monthLast = `${refYear}-${pad2(refMonth + 1)}-${pad2(new Date(refYear, refMonth + 1, 0).getDate())}`;
+  const monthHasEvents = eventsInRange(selectedGroupEvents, monthFirst, monthLast).length > 0;
+  const allSorted = eventsInRange(selectedGroupEvents, '', '');
+  // Último evento que termina antes do mês e primeiro que começa depois — datas de início (ISO).
+  const prevEvent = [...allSorted].reverse().find((ev) => (eventEnd(ev) || eventStart(ev)).slice(0, 10) < monthFirst);
+  const nextEvent = allSorted.find((ev) => eventStart(ev).slice(0, 10) > monthLast);
+  const prevDate = !monthHasEvents && prevEvent ? eventStart(prevEvent).slice(0, 10) : '';
+  const nextDate = !monthHasEvents && nextEvent ? eventStart(nextEvent).slice(0, 10) : '';
+  /** Atalho do aviso: leva o Início (e, com ele, Mês/Ano/cards) até a data do evento. */
+  const jumpTo = (iso: string) => {
+    setRangeStart(iso);
+    setSelectedDay('');
+  };
+  const isoMonthLabel = (iso: string) => monthLabel(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1);
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -365,6 +503,15 @@ export default function CalendarManagerGetAllPage() {
   );
 
   /** Ramo 'modal' de list_actions: decide qual modal abrir pelo slug gravado em href_template. */
+  /** Pós-ação de um evento (ex.: Excluir evento): avisa e recarrega — o modal aberto se atualiza pelo efeito em `groups`. */
+  const handleEventActionExecuted = useCallback(
+    (action: ListActionRow) => {
+      toast.success('Ação concluída.', { title: action.label });
+      void load();
+    },
+    [toast, load],
+  );
+
   const handleOpenModal = useCallback((targetSlug: string, group: CalendarGroup) => {
     if (targetSlug === EDIT_FORM_SLUG) {
       setEditingGroup(group);
@@ -464,7 +611,7 @@ export default function CalendarManagerGetAllPage() {
             <input
               type="search"
               className="form-control"
-              placeholder="Buscar por calendario ou evento..."
+              placeholder="Buscar por nome ou local do calendário..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -506,11 +653,11 @@ export default function CalendarManagerGetAllPage() {
                   {actions.length > 0 && (
                     <div className="d-flex gap-1" role="group" aria-label="Ações do calendário">
                       {actions.map((a) => (
-                        <CalendarActionButton
+                        <RowActionButton
                           key={a.id}
                           action={a}
-                          group={group}
-                          onOpenModal={handleOpenModal}
+                          row={group.calendar as unknown as Record<string, unknown>}
+                          onOpenModal={(slug) => handleOpenModal(slug, group)}
                           onExecuted={() => void load()}
                         />
                       ))}
@@ -560,6 +707,202 @@ export default function CalendarManagerGetAllPage() {
               </ul>
             </nav>
           )}
+
+          {/* Row de layout 6|6; os campos seguem via <FormGrid>. Na esquerda o select
+              divide o espaço com os 2 botões; na direita as datas em col 6 (= 3/12 cada). */}
+          <div className="row g-3 mt-3">
+            <div className="col-md-6">
+              <div className="d-flex align-items-start gap-2">
+                <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                  <FormGrid
+                    schema={{
+                      rows: [
+                        {
+                          fields: [
+                            {
+                              type: 'select',
+                              col: 12,
+                              label: 'Agenda',
+                              name: 'calendar_id',
+                              src: CALENDAR_SELECT_SRC,
+                              findSrc: CALENDAR_FIND_SRC,
+                              findColumn: 'summary',
+                              valueKey: 'id',
+                              labelKey: 'summary',
+                              value: selectedCalendarId,
+                              onChange: (value) => {
+                                setSelectedCalendarId(value);
+                                setSelectedDay('');
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    }}
+                  />
+                </div>
+                {/* mt-4 pt-2 (2rem) = altura do label do campo, alinha os botões com o input. */}
+                <span className="icon-action-tooltip mt-4 pt-2">
+                  <button
+                    type="button"
+                    className={`btn ${showMonth ? 'btn-primary' : 'btn-outline-primary'}`}
+                    aria-label="Mês atual"
+                    aria-expanded={showMonth}
+                    aria-controls="calendar-month-collapse"
+                    onClick={() => setShowMonth((v) => !v)}
+                  >
+                    <i className="bi bi-calendar3" />
+                  </button>
+                  <span className="icon-action-tooltip-bubble" role="tooltip">
+                    Mês atual
+                  </span>
+                </span>
+                <span className="icon-action-tooltip mt-4 pt-2">
+                  <button
+                    type="button"
+                    className={`btn ${showYear ? 'btn-primary' : 'btn-outline-primary'}`}
+                    aria-label="Ano"
+                    aria-expanded={showYear}
+                    aria-controls="calendar-year-collapse"
+                    onClick={() => setShowYear((v) => !v)}
+                  >
+                    <i className="bi bi-calendar-range" />
+                  </button>
+                  <span className="icon-action-tooltip-bubble" role="tooltip">
+                    Ano
+                  </span>
+                </span>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <FormGrid
+                schema={{
+                  rows: [
+                    {
+                      fields: [
+                        {
+                          type: 'data',
+                          col: 6,
+                          label: 'Início',
+                          name: 'start_date',
+                          // Controlado: o atalho "Ir para o próximo evento" ajusta o Início.
+                          value: rangeStart,
+                          onChange: onRangeChange(setRangeStart),
+                        },
+                        { type: 'data', col: 6, label: 'Fim', name: 'end_date', onChange: onRangeChange(setRangeEnd) },
+                      ],
+                    },
+                  ],
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Botões/datas sem agenda escolhida: aviso em vez de clique/digitação muda. */}
+          {(showMonth || showYear || rangeStart || rangeEnd) && !selectedCalendarId && (
+            <div className="alert alert-warning py-2 mt-3" role="alert">
+              Selecione uma agenda para ver os eventos.
+            </div>
+          )}
+
+          {/* Cards da agenda escolhida (filtro opcional por período/dia) — acima dos calendários; âncora do clique no dia. */}
+          {selectedCalendarId && (
+            <div ref={cardsRef} className="mt-3 mb-4" style={{ scrollMarginTop: '1rem' }}>
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h2 className="h6 mb-0">
+                  {cardsTitle}{' '}
+                  <span className="text-body-secondary fw-normal">({cardEvents.length})</span>
+                </h2>
+                {dayMode && (
+                  <button type="button" className="btn-close" aria-label="Fechar" onClick={() => setSelectedDay('')} />
+                )}
+              </div>
+              {cardEvents.length === 0 && (
+                <div className="text-body-secondary small">{cardsEmptyText}</div>
+              )}
+              <div className="row g-3">
+                {cardEvents.map((ev) => (
+                  <div className="col-md-6 col-lg-4" key={ev.id}>
+                    <div className="card h-100 shadow-sm">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
+                          <h3 className="h6 card-title mb-0">{ev.summary}</h3>
+                          {ev.status && (
+                            <span
+                              className={`badge ${
+                                ev.status === 'confirmed'
+                                  ? 'text-bg-success'
+                                  : ev.status === 'tentative'
+                                    ? 'text-bg-warning'
+                                    : 'text-bg-secondary'
+                              }`}
+                            >
+                              {ev.status}
+                            </span>
+                          )}
+                        </div>
+                        <div className="small text-body-secondary mb-2">
+                          <i className="bi bi-clock me-1" />
+                          {formatIsoBr(eventStart(ev))}
+                          {eventEnd(ev) && ` → ${formatIsoBr(eventEnd(ev))}`}
+                          {ev.location && (
+                            <>
+                              <br />
+                              <i className="bi bi-geo-alt me-1" />
+                              {ev.location}
+                            </>
+                          )}
+                        </div>
+                        {ev.description && <p className="card-text small mb-0">{ev.description}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div id="calendar-month-collapse" className={`collapse${showMonth ? ' show' : ''}`}>
+            <MonthCalendar
+              year={refYear}
+              month={refMonth}
+              size="lg"
+              className="mb-4"
+              events={selectedEvents}
+              onDayClick={setSelectedDay}
+              selectedDate={selectedDay}
+              markedDate={rangeStart}
+            />
+            {selectedCalendarId && !monthHasEvents && (
+              <div className="alert alert-light border d-flex flex-wrap align-items-center gap-2 mb-4 py-2">
+                <span>
+                  Nenhum evento em <span className="text-capitalize">{monthLabel(refYear, refMonth)}</span>.
+                </span>
+                {prevDate && (
+                  <button type="button" className="btn btn-link btn-sm p-0" onClick={() => jumpTo(prevDate)}>
+                    <i className="bi bi-chevron-left" /> Evento anterior ({isoMonthLabel(prevDate)})
+                  </button>
+                )}
+                {nextDate && (
+                  <button type="button" className="btn btn-link btn-sm p-0" onClick={() => jumpTo(nextDate)}>
+                    Próximo evento ({isoMonthLabel(nextDate)}) <i className="bi bi-chevron-right" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div id="calendar-year-collapse" className={`collapse${showYear ? ' show' : ''}`}>
+            <h2 className="h5 mb-3">Ano {refYear} — janeiro a dezembro</h2>
+            <YearCalendar
+              year={refYear}
+              className="mb-4"
+              events={selectedEvents}
+              onDayClick={setSelectedDay}
+              selectedDate={selectedDay}
+              markedDate={rangeStart}
+            />
+          </div>
         </>
       )}
 
@@ -642,35 +985,77 @@ export default function CalendarManagerGetAllPage() {
           />
         )}
 
-        {viewingGroup && viewingGroup.events.length > 0 && (
-          <div className="table-responsive">
-            <table className="table table-sm table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  {eventColumns.map((c) => (
-                    <th key={c.id}>{c.label}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {viewingGroup.events.map((ev) => {
-                  const row: Record<string, unknown> = {
-                    ...ev,
-                    displayStart: ev.startDatetime ?? ev.startDate ?? '',
-                    displayEnd: ev.endDatetime ?? ev.endDate ?? '',
-                  };
-                  return (
-                    <tr key={ev.id}>
+        {viewingGroup && viewingGroup.events.length > 0 && (() => {
+          const rows = viewingGroup.events.map((ev) => ({
+            id: ev.id,
+            row: {
+              ...ev,
+              displayStart: ev.startDatetime ?? ev.startDate ?? '',
+              displayEnd: ev.endDatetime ?? ev.endDate ?? '',
+            },
+          }));
+          const actionsFor = (row: Record<string, unknown>) =>
+            eventActions.map((a) => (
+              <RowActionButton key={a.id} action={a} row={row} onExecuted={handleEventActionExecuted} />
+            ));
+          const [titleColumn, ...detailColumns] = eventColumns;
+
+          return (
+            <>
+              {/* Desktop (md+): tabela. */}
+              <div className="table-responsive d-none d-md-block">
+                <table className="table table-sm table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
                       {eventColumns.map((c) => (
-                        <td key={c.id}>{renderCell(c, row)}</td>
+                        <th key={c.id}>{c.label}</th>
                       ))}
+                      {eventActions.length > 0 && <th className="text-end">Ações</th>}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </thead>
+                  <tbody>
+                    {rows.map(({ id, row }) => (
+                      <tr key={id}>
+                        {eventColumns.map((c) => (
+                          <td key={c.id}>{renderCell(c, row)}</td>
+                        ))}
+                        {eventActions.length > 0 && (
+                          <td className="text-end">
+                            <div className="d-inline-flex gap-1">{actionsFor(row)}</div>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile (< md): 1 card por evento — 1a coluna vira título, demais viram rótulo/valor. */}
+              <div className="d-md-none d-flex flex-column gap-2">
+                {rows.map(({ id, row }) => (
+                  <div className="card shadow-sm" key={id}>
+                    <div className="card-body p-3">
+                      {titleColumn && <div className="fw-semibold mb-2">{renderCell(titleColumn, row)}</div>}
+                      <dl className="row small mb-0">
+                        {detailColumns.map((c) => (
+                          <Fragment key={c.id}>
+                            <dt className="col-4 fw-normal text-body-secondary">{c.label}</dt>
+                            <dd className="col-8 mb-1">{renderCell(c, row)}</dd>
+                          </Fragment>
+                        ))}
+                      </dl>
+                    </div>
+                    {eventActions.length > 0 && (
+                      <div className="card-footer bg-transparent d-flex justify-content-end gap-1 py-2">
+                        {actionsFor(row)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
       </Modal>
 
       {/* Modal "Criar evento" — form_manager 'cadastro-evento', calendar_id pre-selecionado com a linha clicada. */}

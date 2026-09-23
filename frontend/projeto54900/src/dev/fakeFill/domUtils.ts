@@ -70,14 +70,15 @@ function nextFrame(): Promise<void> {
 }
 
 /**
- * Marca um checkbox nativo do FormGrid (components/ui/FormGrid/checkbox) via
- * clique real — ao contrario de input de texto, checkbox nao precisa do hack
+ * Marca um checkbox/radio nativo do FormGrid (components/ui/FormGrid/checkbox
+ * e /radio) via clique real — ao contrario de input de texto, checkbox/radio
+ * nao precisa do hack
  * de setReactValue: um clique verdadeiro ja dispara o 'change' que o React
  * escuta. So clica se existir e ainda nao estiver marcado (idempotente).
  */
 export function clickIfUnchecked(id: string): void {
   const el = document.getElementById(id);
-  if (el instanceof HTMLInputElement && el.type === 'checkbox' && !el.checked) el.click();
+  if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio') && !el.checked) el.click();
 }
 
 // --- geradores aleatorios simples (sem lib externa — projeto nao usa faker) ---

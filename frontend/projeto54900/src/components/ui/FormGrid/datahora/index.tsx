@@ -9,14 +9,16 @@
  *   - Props do schema lidas aqui: col, label, name, defaultValue/value,
  *     required, min/max (data limite, em ISO — só a parte de DATA)
  *
- * POR QUE ESTE COMPONENTE EXISTE: ../data captura só DD/MM/AAAA. Colunas
+ * POR QUE ESTE COMPONENTE EXISTE: ../data captura só a data. Colunas
  * DATETIME do banco (ex.: calendar_events.start_datetime) exigem o formato
  * 'Y-m-d H:i:s' na validação do backend (valid_date[Y-m-d H:i:s]) — enviar
  * só a data falha com 422. Este campo junta um sub-input de data + um
- * sub-input de hora (cada um com a própria máscara, copiada de ../data e
- * ../hora — self-contained, mesmo padrão dos outros tipos do FormGrid, sem
- * import cruzado entre pastas de campo) e só emite o valor combinado quando
- * os DOIS estão completos.
+ * sub-input de hora e só emite o valor combinado quando os DOIS estão
+ * completos.
+ *
+ * RENDERIZA SEMPRE INPUTS NATIVOS: <input type="date"> (com o calendario do
+ * navegador) + <input type="time">. NUNCA <input type="text"> com mascara
+ * (regra do projeto — mesma do ../data).
  *
  * CONEXAO COM A PAGINA:
  *   - O valor e coletado via: <input type="hidden" name={field.name}> em
@@ -24,9 +26,9 @@
  *     segundos ao usuário) quando data E hora estão completas, vazio
  *     enquanto qualquer uma das duas estiver incompleta
  *   - A chave no FormData/payload e: field.name
- *   - ids dos 2 sub-inputs visíveis: `${field.id}` (data) e
- *     `${field.id}-time` (hora) — importante pra script de fake-fill
- *     (dev/fakeFill/*.ts) que preencha este tipo de campo
+ *   - ids dos 2 sub-inputs visíveis: `${field.id}` (data, valor ISO
+ *     'YYYY-MM-DD') e `${field.id}-time` (hora, valor 'HH:MM') — importante
+ *     pra script de fake-fill (dev/fakeFill/*.ts) que preencha este campo
  *
  * DEPENDENCIAS: ../emitValue (emitValue).
  * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
@@ -74,66 +76,23 @@ export interface DataHoraFieldSchema {
   onBlur?: FocusEventHandler<HTMLInputElement>
 }
 
-// ─── Helpers — parte DATA (copiado de ../data, self-contained de propósito) ──
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function soDigitosData(v: string): string {
-  return v.replace(/\D/g, '').slice(0, 8)
+/** Parte de data ('YYYY-MM-DD') de um "YYYY-MM-DD HH:MM[:SS]"; outro formato vira ''. */
+function parteData(v: string): string {
+  const m = /^\d{4}-\d{2}-\d{2}/.exec(v)
+  return m ? m[0] : ''
 }
 
-function isoDataParaDigitos(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
-  if (!m) return soDigitosData(iso)
-  const [, ano = '', mes = '', dia = ''] = m
-  return `${dia}${mes}${ano}`
+/** Parte de hora ('HH:MM') de um "YYYY-MM-DD HH:MM[:SS]"; outro formato vira ''. */
+function parteHora(v: string): string {
+  const m = /(\d{2}):(\d{2})/.exec(v)
+  return m ? `${m[1] ?? ''}:${m[2] ?? ''}` : ''
 }
 
-function digitosParaIsoData(d: string): string {
-  if (d.length !== 8) return ''
-  return `${d.slice(4)}-${d.slice(2, 4)}-${d.slice(0, 2)}`
-}
-
-function mascaraData(raw: string): string {
-  const d = raw.slice(0, 8)
-  const len = d.length
-  if (len <= 2) return d
-  if (len <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
-  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
-}
-
-function dataValida(raw: string): boolean {
-  if (raw.length !== 8) return false
-  const day = parseInt(raw.slice(0, 2))
-  const month = parseInt(raw.slice(2, 4))
-  const year = parseInt(raw.slice(4, 8))
-  if (month < 1 || month > 12 || day < 1 || year < 1) return false
-  const d = new Date(year, month - 1, day)
-  return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day
-}
-
-// ─── Helpers — parte HORA (copiado de ../hora, self-contained de propósito) ──
-
-function soDigitosHora(v: string): string {
-  return v.replace(/\D/g, '').slice(0, 4)
-}
-
-function isoHoraParaDigitos(iso: string): string {
-  const m = /(\d{2}):(\d{2})/.exec(iso)
-  if (!m) return soDigitosHora(iso)
-  const [, hh = '', mm = ''] = m
-  return `${hh}${mm}`
-}
-
-function mascaraHora(raw: string): string {
-  const d = raw.slice(0, 4)
-  if (d.length <= 2) return d
-  return `${d.slice(0, 2)}:${d.slice(2)}`
-}
-
-function horaValida(raw: string): boolean {
-  if (raw.length !== 4) return false
-  const hh = parseInt(raw.slice(0, 2))
-  const mm = parseInt(raw.slice(2, 4))
-  return hh <= 23 && mm <= 59
+/** Valor combinado enviado ao backend — só quando data E hora estão completas. */
+function combinar(data: string, hora: string): string {
+  return data && hora ? `${data} ${hora}:00` : ''
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -144,52 +103,41 @@ export function DataHoraField({ field }: DataHoraFieldProps) {
   const isControlled = field.value !== undefined && field.onChange !== undefined
   const inicial = field.value ?? field.defaultValue ?? ''
 
-  const [dataRaw, setDataRaw] = useState(() => soDigitosData(isoDataParaDigitos(inicial)))
-  const [horaRaw, setHoraRaw] = useState(() => soDigitosHora(isoHoraParaDigitos(inicial)))
+  const [dataState, setDataState] = useState(() => parteData(inicial))
+  const [horaState, setHoraState] = useState(() => parteHora(inicial))
   const [erro, setErro] = useState<string | null>(null)
 
-  const dataCompleta = dataRaw.length === 8
-  const horaCompleta = horaRaw.length === 4
-  const valorCombinado = dataCompleta && horaCompleta
-    ? `${digitosParaIsoData(dataRaw)} ${mascaraHora(horaRaw)}:00`
-    : ''
-
-  /** Recalcula com os dígitos NOVOS (não os do state ainda não atualizado) — evita emitir valor desatualizado no mesmo evento que o alterou. */
-  function combinar(dData: string, dHora: string): string {
-    return dData.length === 8 && dHora.length === 4
-      ? `${digitosParaIsoData(dData)} ${mascaraHora(dHora)}:00`
-      : ''
-  }
+  const data = isControlled ? parteData(field.value ?? '') : dataState
+  const hora = isControlled ? parteHora(field.value ?? '') : horaState
+  const valorCombinado = combinar(data, hora)
 
   function handleDataChange(e: ChangeEvent<HTMLInputElement>) {
-    const next = soDigitosData(e.target.value)
-    if (!isControlled) setDataRaw(next)
+    const next = e.target.value
+    if (!isControlled) setDataState(next)
     setErro(null)
-    emitValue(e, combinar(next, horaRaw), field.onChange)
+    emitValue(e, combinar(next, hora), field.onChange)
   }
 
   function handleHoraChange(e: ChangeEvent<HTMLInputElement>) {
-    const next = soDigitosHora(e.target.value)
-    if (!isControlled) setHoraRaw(next)
+    const next = e.target.value
+    if (!isControlled) setHoraState(next)
     setErro(null)
-    emitValue(e, combinar(dataRaw, next), field.onChange)
+    emitValue(e, combinar(data, next), field.onChange)
   }
 
   function handleBlur(e: FocusEvent<HTMLInputElement>) {
     const nome = field.label ?? field.name ?? field.id ?? 'Data/hora'
-    const algumPreenchido = dataRaw.length > 0 || horaRaw.length > 0
+    const algumPreenchido = data !== '' || hora !== ''
 
-    if (field.required && !algumPreenchido) {
+    if (e.target.validity.badInput) {
+      setErro(`${nome}: data/hora inválida ou incompleta`)
+    } else if (field.required && !algumPreenchido) {
       setErro(`${nome} é obrigatória`)
-    } else if (algumPreenchido && (!dataCompleta || !horaCompleta)) {
+    } else if (algumPreenchido && (!data || !hora)) {
       setErro(`${nome}: preencha data E hora (ou deixe as duas em branco)`)
-    } else if (dataCompleta && !dataValida(dataRaw)) {
-      setErro(`${nome}: data inválida`)
-    } else if (horaCompleta && !horaValida(horaRaw)) {
-      setErro(`${nome}: hora inválida`)
-    } else if (dataCompleta && field.min && digitosParaIsoData(dataRaw) < field.min) {
+    } else if (data && field.min && data < field.min) {
       setErro(`${nome} deve ser a partir de ${field.min}`)
-    } else if (dataCompleta && field.max && digitosParaIsoData(dataRaw) > field.max) {
+    } else if (data && field.max && data > field.max) {
       setErro(`${nome} deve ser até ${field.max}`)
     } else {
       setErro(null)
@@ -209,14 +157,14 @@ export function DataHoraField({ field }: DataHoraFieldProps) {
         </label>
       )}
       <div className="row g-2">
-        <div className="col-8">
+        <div className="col-7">
           <input
-            type="text"
+            type="date"
             id={dataId}
             className={inputClass}
-            placeholder="DD/MM/AAAA"
-            inputMode="numeric"
-            value={mascaraData(dataRaw)}
+            min={field.min}
+            max={field.max}
+            value={data}
             disabled={field.disabled}
             readOnly={field.readOnly}
             hidden={field.hidden}
@@ -224,14 +172,12 @@ export function DataHoraField({ field }: DataHoraFieldProps) {
             onBlur={handleBlur}
           />
         </div>
-        <div className="col-4">
+        <div className="col-5">
           <input
-            type="text"
+            type="time"
             id={horaId}
             className={inputClass}
-            placeholder="HH:MM"
-            inputMode="numeric"
-            value={mascaraHora(horaRaw)}
+            value={hora}
             disabled={field.disabled}
             readOnly={field.readOnly}
             hidden={field.hidden}
