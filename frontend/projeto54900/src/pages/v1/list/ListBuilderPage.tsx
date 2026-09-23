@@ -108,6 +108,7 @@ const HTTP_OPCOES = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((m) => ({
 const ACTION_TYPE_OPCOES = [
   { value: 'link', label: 'link — abre uma URL (ex.: "Ver detalhes", "Editar")' },
   { value: 'api_call', label: 'api_call — chama a API direto, sem sair da tela (ex.: "Excluir", "Aprovar")' },
+  { value: 'modal', label: 'modal — abre um form_manager/list_manager numa janela (ex.: "Ver eventos", "Criar evento")' },
 ];
 
 // Rótulo amigável por format — a lista de VALORES vem de KNOWN_CELL_FORMATS
@@ -550,6 +551,7 @@ function columnSchema(
 // de form_groups no FormBuilderPage.
 function actionSchema(tabela: string, a: ActionLocal, patch: ActionPatch): FormGridSchema {
   const ehLink = a.actionType === 'link';
+  const ehModal = a.actionType === 'modal';
 
   return {
     rows: [
@@ -591,7 +593,7 @@ function actionSchema(tabela: string, a: ActionLocal, patch: ActionPatch): FormG
               label: o.label,
             })),
             value: a.actionType,
-            onChange: (value) => patch(tabela, a.id, { actionType: value as 'link' | 'api_call' }),
+            onChange: (value) => patch(tabela, a.id, { actionType: value as 'link' | 'api_call' | 'modal' }),
           },
         ],
       },
@@ -610,30 +612,44 @@ function actionSchema(tabela: string, a: ActionLocal, patch: ActionPatch): FormG
             },
           ],
         }
-        : {
-          fields: [
-            {
-              type: 'select',
-              col: 8,
-              label: 'api_endpoint — URL que é chamada direto',
-              src: ROUTE_MANAGER_SRC,
-              labelTemplate: '{method} - {object} - {action}',
-              valueKey: 'endpoint',
-              value: a.apiEndpoint,
-              onChange: (value) => patch(tabela, a.id, { apiEndpoint: value }),
-            },
-            {
-              type: 'select',
-              col: 4,
-              label: 'http_method',
-              options: HTTP_OPCOES,
-              valueKey: 'value',
-              labelKey: 'label',
-              value: a.httpMethod,
-              onChange: (value) => patch(tabela, a.id, { httpMethod: value }),
-            },
-          ],
-        },
+        : ehModal
+          ? {
+            fields: [
+              {
+                col: 12,
+                label: 'href_template — slug do form_manager ou list_manager que o modal abre',
+                name: `href_template-modal-${a.id}`,
+                placeholder: 'ex.: editar-calendario, cadastro-evento, calendar-events-view',
+                title: 'Não é URL: é a slug de um form_manager (abre um formulário) ou de um list_manager (abre uma lista). A página decide, pelo slug, qual dos dois é.',
+                value: a.hrefTemplate,
+                onChange: (e) => patch(tabela, a.id, { hrefTemplate: e.target.value }),
+              },
+            ],
+          }
+          : {
+            fields: [
+              {
+                type: 'select',
+                col: 8,
+                label: 'api_endpoint — URL que é chamada direto',
+                src: ROUTE_MANAGER_SRC,
+                labelTemplate: '{method} - {object} - {action}',
+                valueKey: 'endpoint',
+                value: a.apiEndpoint,
+                onChange: (value) => patch(tabela, a.id, { apiEndpoint: value }),
+              },
+              {
+                type: 'select',
+                col: 4,
+                label: 'http_method',
+                options: HTTP_OPCOES,
+                valueKey: 'value',
+                labelKey: 'label',
+                value: a.httpMethod,
+                onChange: (value) => patch(tabela, a.id, { httpMethod: value }),
+              },
+            ],
+          },
       {
         sectionTitle: 'Confirmação antes de executar (opcional)',
         fields: [

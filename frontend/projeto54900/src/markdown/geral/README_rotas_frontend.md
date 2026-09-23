@@ -93,6 +93,14 @@ Fonte: `routes/v1/form.routes.tsx` — espelha `api/v1/form-manager` (+ `-view`)
 > `/v1/register` (`pages/v1/user/register/RegisterPage.tsx`), ver seção
 > "user-manager" acima. É um fluxo composto do módulo `user`, não do módulo `form`.
 
+> **`/v1/form-constructor` e `/v1/form-constructor-claude` são teste/dogfooding
+> do próprio módulo Form** — construtor que grava em `form_manager` usando a
+> API do próprio módulo (ver
+> [`README_form_constructor.md`](README_form_constructor.md)), não uma
+> dependência de outros módulos. Usuários, Calendário e Uploads têm listagem
+> própria e resultado pronto (seções "user-manager", "calendar" e
+> "upload-manager" acima) e não passam por essas duas rotas.
+
 ### nav — Config/branding do app/navbar
 
 Fonte: `routes/v1/nav.routes.tsx` — espelha `api/v1/nav-manager` (sem `-view`;

@@ -4,6 +4,49 @@
 
 # Migrations — comandos diretos (CodeIgniter 4)
 
+## ⚠️ A partir de 2026-09-22 — migrations CI4 pausadas, schema muda direto no banco DEV
+
+**Decisão do usuário (2026-09-22), vale até segunda ordem:** o fluxo abaixo
+(`spark make:migration` / `spark migrate`) **não é o caminho ativo agora**.
+Mudança de schema (`ALTER TABLE`, `CREATE TABLE`) é aplicada **direto no banco
+DEV** (`codeigniter54900_db`), via SQL, **só depois de autorização expressa do
+usuário para aquele comando específico** — nunca por conta própria. Nenhuma
+migration nova é criada em `app/Database/Migrations/` enquanto esta nota
+estiver valendo.
+
+- **Por quê:** o usuário vai tirar `dump` do banco DEV periodicamente; a ideia
+  é que esse dump (e não uma migration escrita à mão) seja o que documenta o
+  schema real, pelo menos por enquanto. Ainda não está definido *como* o dump
+  vai virar migration de novo — está marcado como "vemos depois".
+- **O que isso NÃO muda:** dado (linha de tabela) continua entrando pelo
+  caminho já estabelecido do projeto — API/Processor para `form_manager`/
+  `list_manager`/`menu_manager`/etc. (nunca `INSERT` cru, ver
+  [`README_form.md`](README_form.md) e `README_list_constructor.md` no
+  frontend) — essa regra é sobre **integridade/charset dos dados**, não sobre
+  migration, e continua valendo. A pausa é só no mecanismo de **schema**
+  (`spark migrate`) — o resto deste documento (comandos, `$DBGroup`, etc.)
+  continua sendo a referência de como o projeto funciona quando as migrations
+  voltarem a ser o caminho ativo.
+- **O que "MIGRATE" passa a significar nesse meio-tempo — regra 1:1, sem
+  ambiguidade:** enquanto essa pausa durar, "rodar um MIGRATE" (nas conversas,
+  nos planos `_plano.json`/`_no_plano.json`) significa **executar um SQL
+  direto no banco DEV** — não o comando `spark migrate`. E a granularidade é
+  **um conjunto de MIGRATE = um conjunto de SQL**: cada mudança de schema
+  (cada `ALTER TABLE`, cada `CREATE TABLE`) é o SEU PRÓPRIO passo, com o SEU
+  PRÓPRIO comando SQL registrado — nunca várias mudanças de schema diferentes
+  agrupadas num único passo/registro. Isso vale tanto pra execução quanto pro
+  registro em `src/writable/claude/*_no_plano.json`: 1 SQL executado = 1
+  `_no_plano.json` com o `comando_ou_input` sendo exatamente aquele SQL (texto
+  completo, não resumo) — nada de "rodei 3 ALTER TABLE" num passo só.
+- **Credenciais do banco DEV** para rodar o SQL direto: pedidas ao usuário no
+  momento da execução, nunca gravadas em arquivo versionado (regra global de
+  segredos, `CLAUDE.md`).
+- **Se você (humano ou IA) reabrir este projeto depois:** confirme com o
+  usuário se essa pausa ainda vale antes de assumir que `spark migrate` é o
+  caminho ativo — esta nota fica até ele dizer o contrário.
+
+---
+
 **Comando principal** — aplicar as migrations no banco padrão
 (`codeigniter54900_db`), digitado no host (PowerShell, na raiz do projeto):
 

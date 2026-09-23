@@ -72,7 +72,7 @@ export interface ListActionRow {
   sortOrder: number;
   label: string;
   icon: string;
-  actionType: 'link' | 'api_call';
+  actionType: 'link' | 'api_call' | 'modal';
   hrefTemplate: string;
   apiEndpoint: string;
   httpMethod: string;
@@ -151,7 +151,7 @@ export function toAction(raw: Record<string, unknown>): ListActionRow {
     sortOrder: num(raw.sort_order),
     label: str(raw.label),
     icon: str(raw.icon),
-    actionType: raw.action_type === 'api_call' ? 'api_call' : 'link',
+    actionType: raw.action_type === 'api_call' ? 'api_call' : raw.action_type === 'modal' ? 'modal' : 'link',
     hrefTemplate: str(raw.href_template),
     apiEndpoint: str(raw.api_endpoint),
     httpMethod: str(raw.http_method) || 'GET',

@@ -17,7 +17,7 @@ class UpdateRequest
             'sort_order'         => 'permit_empty|is_natural',
             'label'              => 'permit_empty|string|max_length[255]',
             'icon'               => 'permit_empty|string|max_length[120]',
-            'action_type'        => 'permit_empty|in_list[link,api_call]',
+            'action_type'        => 'permit_empty|in_list[link,api_call,modal]',
             'href_template'      => 'permit_empty|string|max_length[255]',
             'api_endpoint'       => 'permit_empty|string|max_length[255]',
             'http_method'        => 'permit_empty|in_list[GET,POST,PUT,PATCH,DELETE]',
@@ -41,7 +41,7 @@ class UpdateRequest
                 'max_length' => 'O campo label nao pode exceder 255 caracteres',
             ],
             'action_type' => [
-                'in_list' => 'O campo action_type deve ser link ou api_call',
+                'in_list' => 'O campo action_type deve ser link, api_call ou modal',
             ],
             'http_method' => [
                 'in_list' => 'O campo http_method deve ser GET, POST, PUT, PATCH ou DELETE',

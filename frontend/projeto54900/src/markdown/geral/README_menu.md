@@ -156,6 +156,13 @@ Entrar
 | Novo Item          | `/v1/menu-manager/create`     |
 | Entrar             | `/v1/login`                   |
 
+> **Form é teste, os demais são resultado pronto.** O ramo "Form"
+> (`/v1/form-constructor*`) é o ambiente de teste/dogfooding do próprio
+> módulo Form — ver
+> [`README_form_constructor.md`](README_form_constructor.md). Usuários,
+> Calendário e Uploads têm listagem própria e já pronta (`GetAllPage`
+> dedicada de cada módulo), sem passar pelo form-constructor.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

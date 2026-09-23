@@ -302,8 +302,8 @@ export function columnInicial(coluna?: ColunaInfo, sortOrder = 0): ColumnLocal {
  * -------------------------------------------------------------------------
  */
 
-/** Tipo da ação: `link` = navegação (rota do app); `api_call` = chamada HTTP. */
-export type ActionType = 'link' | 'api_call';
+/** Tipo da ação: `link` = navegação (rota do app); `api_call` = chamada HTTP; `modal` = abre um form_manager/list_manager (slug em `hrefTemplate`) numa janela, sem navegar nem chamar API direto. */
+export type ActionType = 'link' | 'api_call' | 'modal';
 
 /**
  * Estado de UI de UMA ação da listagem (filha da raiz, irmã das colunas).
@@ -322,7 +322,7 @@ export interface ActionLocal {
   icon: string;
   /** Ver `ActionType`. */
   actionType: ActionType;
-  /** Rota do app com `{campo}` (usada só quando `actionType = 'link'`). */
+  /** Rota do app com `{campo}` (`actionType = 'link'`) OU slug do form_manager/list_manager que o modal abre (`actionType = 'modal'`). */
   hrefTemplate: string;
   /** Endpoint da API com `{campo}` (usado só quando `actionType = 'api_call'`). */
   apiEndpoint: string;
@@ -614,8 +614,8 @@ export function columnFromRow(raw: Record<string, unknown>): ColumnLocal {
 /**
  * Linha crua de `list-actions/find` -> `ActionLocal` já com `dbId`.
  * @param raw registro de `list_actions` vindo da API
- * @returns ação hidratada (chave de UI NOVA); `action_type` diferente de
- *          `api_call` cai em `'link'` e `http_method` vazio cai em `'GET'`
+ * @returns ação hidratada (chave de UI NOVA); `action_type` fora de
+ *          `api_call`/`modal` cai em `'link'` e `http_method` vazio cai em `'GET'`
  */
 export function actionFromRow(raw: Record<string, unknown>): ActionLocal {
   return {
@@ -624,7 +624,7 @@ export function actionFromRow(raw: Record<string, unknown>): ActionLocal {
     sortOrder: num(raw.sort_order),
     label: str(raw.label),
     icon: str(raw.icon),
-    actionType: raw.action_type === 'api_call' ? 'api_call' : 'link',
+    actionType: raw.action_type === 'api_call' ? 'api_call' : raw.action_type === 'modal' ? 'modal' : 'link',
     hrefTemplate: str(raw.href_template),
     apiEndpoint: str(raw.api_endpoint),
     httpMethod: str(raw.http_method) || 'GET',

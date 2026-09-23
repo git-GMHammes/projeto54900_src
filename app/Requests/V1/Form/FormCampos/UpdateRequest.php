@@ -11,7 +11,7 @@ namespace App\Requests\V1\Form\FormCampos;
  */
 class UpdateRequest
 {
-    private const FIELD_TYPES = 'text,password,email,textarea,senha,select,radio,checkbox,cpf,cnpj,phone,cep,data,hora,moeda,pis,placa,titulo,cnh,processo,renavam,sei';
+    private const FIELD_TYPES = 'text,password,email,textarea,senha,select,radio,checkbox,cpf,cnpj,phone,cep,data,hora,moeda,pis,placa,titulo,cnh,processo,renavam,sei,datahora';
     private const INPUT_MODES = 'text,numeric,decimal,email,tel,url,search,none';
 
     public function rules(): array
