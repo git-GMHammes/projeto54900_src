@@ -10,7 +10,7 @@ namespace App\Requests\V1\List\ListActions;
  *   sort_order          INT          NOT NULL DEFAULT 0
  *   label               VARCHAR(255) NOT NULL
  *   icon                VARCHAR(120) NULL
- *   action_type         ENUM('link','api_call') NOT NULL DEFAULT 'link'
+ *   action_type         ENUM('link','api_call','modal') NOT NULL DEFAULT 'link'
  *   href_template       VARCHAR(255) NULL
  *   api_endpoint        VARCHAR(255) NULL
  *   http_method         VARCHAR(10)  NULL DEFAULT 'GET'
@@ -33,7 +33,7 @@ class CreateRequest
             'sort_order'         => 'permit_empty|is_natural',
             'label'              => 'required|string|max_length[255]',
             'icon'               => 'permit_empty|string|max_length[120]',
-            'action_type'        => 'permit_empty|in_list[link,api_call]',
+            'action_type'        => 'permit_empty|in_list[link,api_call,modal]',
             'href_template'      => 'permit_empty|string|max_length[255]',
             'api_endpoint'       => 'permit_empty|string|max_length[255]',
             'http_method'        => 'permit_empty|in_list[GET,POST,PUT,PATCH,DELETE]',
@@ -59,7 +59,7 @@ class CreateRequest
                 'max_length' => 'O campo label nao pode exceder 255 caracteres',
             ],
             'action_type' => [
-                'in_list' => 'O campo action_type deve ser link ou api_call',
+                'in_list' => 'O campo action_type deve ser link, api_call ou modal',
             ],
             'http_method' => [
                 'in_list' => 'O campo http_method deve ser GET, POST, PUT, PATCH ou DELETE',

@@ -300,7 +300,7 @@ function buildField(row: ApiRow): AnyFieldSchema {
   } else if (type === 'radio' || type === 'checkbox') {
     set('options', optionList(row.fc_options_json) ?? []);
     if (bool(row.fc_inline)) set('inline', true);
-  } else if (type === 'data') {
+  } else if (type === 'data' || type === 'datahora') {
     set('min', str(row.fc_min_date));
     set('max', str(row.fc_max_date));
   } else if (type === 'hora') {

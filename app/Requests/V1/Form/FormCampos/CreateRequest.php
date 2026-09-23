@@ -10,7 +10,7 @@ namespace App\Requests\V1\Form\FormCampos;
  *   sort_order   INT DEFAULT 0
  *   field_type   ENUM(text,password,email,textarea,senha,select,radio,checkbox,
  *                     cpf,cnpj,phone,cep,data,hora,moeda,pis,placa,titulo,cnh,
- *                     processo,renavam,sei) DEFAULT 'text'
+ *                     processo,renavam,sei,datahora) DEFAULT 'text'
  *   col          TINYINT DEFAULT 12   (1..12)
  *   label,field_name,field_key,placeholder,help_text  VARCHAR(255) NULL
  *   default_value TEXT NULL
@@ -32,7 +32,7 @@ namespace App\Requests\V1\Form\FormCampos;
  */
 class CreateRequest
 {
-    private const FIELD_TYPES = 'text,password,email,textarea,senha,select,radio,checkbox,cpf,cnpj,phone,cep,data,hora,moeda,pis,placa,titulo,cnh,processo,renavam,sei';
+    private const FIELD_TYPES = 'text,password,email,textarea,senha,select,radio,checkbox,cpf,cnpj,phone,cep,data,hora,moeda,pis,placa,titulo,cnh,processo,renavam,sei,datahora';
     private const INPUT_MODES = 'text,numeric,decimal,email,tel,url,search,none';
 
     public function rules(): array

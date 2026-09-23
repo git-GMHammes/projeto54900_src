@@ -7,7 +7,7 @@
 Todo `form_manager` deste banco nasce assim: markdown revisado aqui primeiro,
 depois vira `INSERT` (nunca migration, nunca seed — motivo e histórico
 completo em [`README_modulo_form.md`](README_modulo_form.md)). Esta página
-lista, por pasta, os 16 formulários já desenhados — os 16 já com `INSERT`
+lista, por pasta, os 17 formulários já desenhados — os 17 já com `INSERT`
 executado no banco.
 
 ## `form/modelo_ia/` — meta-formulários (dogfooding)
@@ -73,6 +73,7 @@ Cadastro manual — complementa a introspecção automática de
 | Arquivo                                                                                        | slug                          | `table_name`                         |
 | ---------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------ |
 | [`calendar_manager.md`](form/calendar/calendar_manager.md)                                     | `calendario`                  | `calendar_manager`                   |
+| [`calendar_manager_editar.md`](form/calendar/calendar_manager_editar.md)                       | `editar-calendario`           | `calendar_manager`                   |
 | [`calendar_events.md`](form/calendar/calendar_events.md)                                       | `cadastro-evento`             | `calendar_events`                    |
 | [`calendar_event_attendees.md`](form/calendar/calendar_event_attendees.md)                     | `cadastro-convidado`          | `calendar_event_attendees`           |
 | [`calendar_event_reminders.md`](form/calendar/calendar_event_reminders.md)                     | `cadastro-lembrete`           | `calendar_event_reminders`           |

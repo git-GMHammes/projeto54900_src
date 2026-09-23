@@ -52,6 +52,7 @@ import { CnpjField, type CnpjFieldSchema } from '../cnpj'
 import { CepField, type CepFieldSchema } from '../cep'
 import { MoedaField, type MoedaFieldSchema } from '../moeda'
 import { DataField, type DataFieldSchema } from '../data'
+import { DataHoraField, type DataHoraFieldSchema } from '../datahora'
 import { HoraField, type HoraFieldSchema } from '../hora'
 import { PisField, type PisFieldSchema } from '../pis'
 import { PlacaField, type PlacaFieldSchema } from '../placa'
@@ -140,6 +141,7 @@ export type AnyFieldSchema =
   | CepFieldSchema
   | MoedaFieldSchema
   | DataFieldSchema
+  | DataHoraFieldSchema
   | HoraFieldSchema
   | PisFieldSchema
   | PlacaFieldSchema
@@ -348,6 +350,16 @@ function FormGrid({ schema }: FormGridProps) {
                 <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
                   {field.title && <FieldTooltip text={field.title} />}
                   <HoraField field={field} />
+                </div>
+              )
+            }
+
+            // ── Data + Hora (colunas DATETIME que exigem hora, ex.: calendar_events.start_datetime) ──
+            if (field.type === 'datahora') {
+              return (
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
+                  <DataHoraField field={field} />
                 </div>
               )
             }

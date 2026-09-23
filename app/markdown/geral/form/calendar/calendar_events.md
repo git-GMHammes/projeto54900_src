@@ -93,11 +93,23 @@ cadastro-evento
 | Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Data de início | `start_date` | data | 4 | não | help: "Preencher OU esta, OU 'Data/hora de início' — evento de dia inteiro usa só a data." |
-| 1 | Data/hora de início | `start_datetime` | data | 4 | não | `with_seconds=0` |
+| 1 | Data/hora de início | `start_datetime` | **datahora** | 4 | não | 2 sub-campos (data + hora); emite `YYYY-MM-DD HH:MM:00` |
 | 1 | Fuso de início | `start_time_zone` | text | 4 | não | placeholder `America/Sao_Paulo` |
 | 2 | Data de término | `end_date` | data | 4 | não | — |
-| 2 | Data/hora de término | `end_datetime` | data | 4 | não | — |
+| 2 | Data/hora de término | `end_datetime` | **datahora** | 4 | não | 2 sub-campos (data + hora); emite `YYYY-MM-DD HH:MM:00` |
 | 2 | Fuso de término | `end_time_zone` | text | 4 | não | placeholder `America/Sao_Paulo` |
+
+> **Correção 2026-09-22 — `data` → `datahora`:** `start_datetime`/`end_datetime`
+> nasceram com tipo `data` (só captura `DD/MM/AAAA`), mas a coluna no banco é
+> `DATETIME` e a validação do backend (`CreateRequest.php`) exige o formato
+> `Y-m-d H:i:s` — ou seja, preencher esses 2 campos e submeter sempre dava
+> `422`. Corrigido com um novo tipo de campo no FormGrid, `datahora`
+> (`components/ui/FormGrid/datahora`), que junta um sub-campo de data e um de
+> hora num só valor. Os 2 registros de `form_fields` já existentes (ids 155 e
+> 158) foram atualizados via API (`PUT form-campos/update/{id}`), sem
+> recriar. `start_date`/`end_date` continuam tipo `data` (evento de dia
+> inteiro, sem hora) — a exclusividade dos pares (ou uma coluna, ou a outra)
+> continua a mesma.
 
 ## Grupo 3 — Recorrência
 

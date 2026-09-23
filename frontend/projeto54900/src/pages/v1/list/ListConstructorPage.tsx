@@ -355,6 +355,12 @@ export default function ListConstructorPage() {
    * @param row    registro da linha, fonte do `{id}` do template
    */
   const handleActionClick = (action: ListActionRow, row: Record<string, unknown>) => {
+    if (action.actionType === 'modal') {
+      toast.info(`Pre-visualizacao — nao executa de verdade. Abriria o modal do slug "${action.hrefTemplate}".`, {
+        title: action.label,
+      });
+      return;
+    }
     const target =
       action.actionType === 'link'
         ? action.hrefTemplate.replace('{id}', str(row.id))
@@ -536,7 +542,15 @@ export default function ListConstructorPage() {
                               <tr key={a.id}>
                                 <td>{a.label}</td>
                                 <td><span className="badge text-bg-light border">{a.actionType}</span></td>
-                                <td className="small"><code>{a.actionType === 'link' ? a.hrefTemplate : `${a.httpMethod} ${a.apiEndpoint}`}</code></td>
+                                <td className="small">
+                                  <code>
+                                    {a.actionType === 'link'
+                                      ? a.hrefTemplate
+                                      : a.actionType === 'modal'
+                                        ? `modal: ${a.hrefTemplate}`
+                                        : `${a.httpMethod} ${a.apiEndpoint}`}
+                                  </code>
+                                </td>
                                 <td className="small">
                                   {a.roles.length > 0 && <div>roles: {a.roles.join(', ')}</div>}
                                   {a.businessRule && (
