@@ -141,6 +141,20 @@ redirecionar). Ver detalhe em
 | ---------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `/v1/calendar-manager` | `pages/v1/calendar/calendar-manager/GetAllPage` | Lista calendários com seus eventos (`view_calendar_manager`, agrupada no cliente); busca/paginação no cliente; botão "Novo Calendário" reaproveita o form `calendario` (mesmo de `/v1/form/calendario`) |
 
+### ibgeMap — Mapa IBGE dos municípios do RJ (rota estática)
+
+Fonte: `routes/v1/ibgeMap.routes.tsx` — **não espelha API**: a página só
+consome arquivos estáticos de `public/ibge-map/` (`rj_municipios.svg`,
+`rj_municipios_nomes.json`, `rj_municipios_cores.json`). Portado em 2026-09-23
+do CakePHP `diarias` (`Web/V1A/Mapa/Page/index.php` + `mapa_rj_tooltip.js` +
+`mapa_rj_checklist.js`). Item "IBGE" no navbar via `menu_manager`
+(`sort_order` 85). Não portados: `modal_mapa_rj.php` e `mapa_rj_highlight.js`
+(atendem telas do Cake que não existem aqui).
+
+| Path           | Elemento (lazy)                     | Observação                                                                                         |
+| -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `/v1/ibge-map` | `pages/v1/ibge-map/IbgeMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
+
 ---
 
 ## v1a — Reservado

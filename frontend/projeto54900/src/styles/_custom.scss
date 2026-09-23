@@ -127,3 +127,39 @@ dl .text-break {
     background-color: transparent;
   }
 }
+
+// ibgeMap (pages/v1/ibge-map/IbgeMapPage.tsx) — preenchimento/hover dos
+// <path> do SVG inline e painel do checklist sobreposto ao canto vazio
+// superior esquerdo do mapa. Bootstrap nao estiliza SVG.
+#ibgeMapWrapper svg {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+}
+
+#ibgeMapWrapper svg path {
+  fill: #dfe7ef;
+  stroke: #3a5169;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s ease-in-out;
+}
+
+#ibgeMapWrapper svg path:hover {
+  fill: #243263;
+}
+
+#ibgeMapChecklist {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  width: 260px;
+  max-height: 45%;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
