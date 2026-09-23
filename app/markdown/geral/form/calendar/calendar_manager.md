@@ -72,47 +72,47 @@ calendario
 
 *slug `principal` · icon `calendar-event`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Nome do calendário | `summary` | text | 8 | sim | placeholder "Ex: Agenda da Diretoria" |
-| 1 | Local | `location` | text | 4 | não | — |
-| 2 | Descrição | `description` | textarea | 12 | não | `rows_qty=3` |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Nome do calendário | `summary` | text | 8 | sim | Nome exibido do calendário na lista e no Google Calendar. | placeholder "Ex: Agenda da Diretoria" |
+| 1 | Local | `location` | text | 4 | não | Local físico padrão dos eventos (opcional). | — |
+| 2 | Descrição | `description` | textarea | 12 | não | Finalidade ou observações do calendário (opcional). | `rows_qty=3` |
 
 ## Grupo 2 — Vínculo e Integração
 
 *slug `vinculo-e-integracao` · icon `calendar2-heart`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Usuário dono | `user_manager_id` | select | 6 | não | remoto: `GET /api/v1/user-manager/get-no-pagination`, `valueKey=id`, `labelTemplate="{username} #{id}"` |
-| 1 | ID Google Calendar | `google_calendar_id` | text | 6 | não | help: "Sincronização externa (opcional, não gerado automaticamente)." |
-| 2 | Calendário principal | `is_primary` | checkbox | 4 | não | opção única "Sim" |
-| 2 | Papel de acesso | `access_role` | select | 8 | não | opções (coluna `enum`): Livre/ocupado (`freeBusyReader`), Leitor (`reader`), Editor (`writer`), Proprietário (`owner`) |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Usuário dono | `user_manager_id` | select | 6 | não | Usuário responsável pelo calendário. Digite para pesquisar. | remoto: `GET /api/v1/user-manager/get-no-pagination`, `valueKey=id`, `labelTemplate="{username} #{id}"` |
+| 1 | ID Google Calendar | `google_calendar_id` | text | 6 | não | Sincronização externa (opcional, não gerado automaticamente). | — |
+| 2 | Calendário principal | `is_primary` | checkbox | 4 | não | Marque se este é o calendário principal do usuário dono. | opção única "Sim" |
+| 2 | Papel de acesso | `access_role` | select | 8 | não | Nível de permissão do usuário dono sobre este calendário. | opções (coluna `enum`): Livre/ocupado (`freeBusyReader`), Leitor (`reader`), Editor (`writer`), Proprietário (`owner`) |
 
 ## Grupo 3 — Aparência
 
 *slug `aparencia` · icon `palette`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Cor de fundo | `background_color` | text | 6 | não | placeholder `#4285F4`; `max_length=7` |
-| 1 | Cor do texto | `foreground_color` | text | 6 | não | placeholder `#FFFFFF`; `max_length=7` |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Cor de fundo | `background_color` | text | 6 | não | Cor de fundo dos eventos, em hexadecimal (#RRGGBB). | placeholder `#4285F4`; `max_length=7` |
+| 1 | Cor do texto | `foreground_color` | text | 6 | não | Cor do texto dos eventos, em hexadecimal (#RRGGBB). | placeholder `#FFFFFF`; `max_length=7` |
 
 ## Grupo 4 — Configurações Regionais
 
 *slug `configuracoes-regionais` · icon `pin-map-fill`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Fuso horário | `time_zone` | text | 12 | sim | placeholder `America/Sao_Paulo` |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Fuso horário | `time_zone` | text | 12 | sim | Fuso IANA usado nos horários dos eventos. Ex: America/Sao_Paulo. | placeholder `America/Sao_Paulo` |
 
 ## Grupo 5 — Status
 
 *slug `status` · icon `calendar2-check`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Status | `status` | radio | 12 | não | `inline=1`; opções (coluna `enum`, só 2 valores): Ativo (`active`), Inativo (`inactive`) |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Status | `status` | radio | 12 | não | Inativo oculta o calendário sem excluí-lo. | `inline=1`; opções (coluna `enum`, só 2 valores): Ativo (`active`), Inativo (`inactive`) |
 
 ## Próximo passo
 

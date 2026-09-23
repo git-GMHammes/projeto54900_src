@@ -9,7 +9,7 @@
  *   - Props do schema lidas aqui: col, label, name, options/src/findSrc/
  *     getSrc (3 canais de dados, ver abaixo), valueKey/labelKey/
  *     labelTemplate, multiple/values/defaultValues, disabledValues,
- *     required
+ *     required, colorKey (select de cor: opções pintadas + amostra)
  *
  * CONEXAO COM A PAGINA:
  *   - Single: <input type="hidden" name={field.name}> com o valor selecionado
@@ -102,6 +102,14 @@ export interface SelectFieldSchema {
 
   /** Values renderizados como `<option disabled>` — cinza e não selecionáveis */
   disabledValues?: string[]
+
+  /**
+   * Chave do item com uma cor CSS (ex.: 'hexadecimal' de /api/v1/aux-cor).
+   * Quando presente, cada opção é pintada com a própria cor e o campo mostra
+   * uma amostra da cor escolhida. Valor gravado fora da lista (ex.: um hex
+   * personalizado) continua exibido — o próprio valor vira o texto e a cor.
+   */
+  colorKey?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -141,6 +149,15 @@ function filterData(
     return lbl.includes(q) || val.includes(q) ||
       Object.values(item).some(v => typeof v === 'string' && v.toLowerCase().includes(q))
   })
+}
+
+/** Cor de texto legível (preto/branco) sobre um fundo #RRGGBB; '' se não for hex. */
+function contrastText(hex: string): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!m?.[1]) return ''
+  const n = parseInt(m[1], 16)
+  const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return lum > 0.6 ? '#000' : '#fff'
 }
 
 function buildAuthHeaders(authToken?: string): Record<string, string> {
@@ -448,7 +465,11 @@ export function SelectField({ field }: SelectFieldProps) {
   const nm = field.name
   const displayText = field.multiple
     ? selectedItems.map(it => getLabel(it, field)).join(', ')
-    : (effectiveValue ? selectedLabel : '')
+    : (effectiveValue ? (selectedLabel || (field.colorKey ? effectiveValue : '')) : '')
+  // Amostra do campo de cor: cor do item selecionado ou, fora da lista, o próprio valor.
+  const selectedColor = field.colorKey && !field.multiple && effectiveValue
+    ? asText(allData.find(item => getValue(item, field) === effectiveValue)?.[field.colorKey]) || effectiveValue
+    : ''
   const inputClass = ['form-control field-select-search', erro ? 'is-invalid' : '', field.className ?? '']
     .filter(Boolean).join(' ')
 
@@ -478,6 +499,7 @@ export function SelectField({ field }: SelectFieldProps) {
           const lbl = getLabel(item, field)
           const sel = isSelected(val)
           const dis = isOptionDisabled(val)
+          const cor = field.colorKey ? asText(item[field.colorKey]) : ''
           return (
             <option
               key={idx}
@@ -486,9 +508,11 @@ export function SelectField({ field }: SelectFieldProps) {
               style={
                 dis
                   ? { color: '#adb5bd', cursor: 'not-allowed' }
-                  : sel
-                    ? { background: '#dbeafe', fontWeight: 600 }
-                    : undefined
+                  : cor
+                    ? { background: cor, color: contrastText(cor), fontWeight: sel ? 600 : undefined }
+                    : sel
+                      ? { background: '#dbeafe', fontWeight: 600 }
+                      : undefined
               }
             >
               {sel && !field.multiple ? `✓ ${lbl}` : lbl}
@@ -523,12 +547,30 @@ export function SelectField({ field }: SelectFieldProps) {
           disabled={field.disabled}
           tabIndex={field.tabIndex}
           value={searchText || displayText}
-          style={hasAnyValue ? { paddingRight: '2rem' } : undefined}
+          style={
+            hasAnyValue || field.colorKey
+              ? {
+                  paddingRight: hasAnyValue ? '2rem' : undefined,
+                  paddingLeft: field.colorKey ? '2.25rem' : undefined,
+                }
+              : undefined
+          }
           onChange={handleSearchChange}
           onFocus={handleSearchFocus}
           onBlur={handleSearchBlur}
           onKeyDown={handleSearchKeyDown}
         />
+        {field.colorKey && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute', left: '0.6rem', top: '50%',
+              transform: 'translateY(-50%)', width: '1.1rem', height: '1.1rem',
+              borderRadius: '0.2rem', border: '1px solid #ced4da',
+              background: selectedColor || 'transparent', pointerEvents: 'none',
+            }}
+          />
+        )}
         {hasAnyValue && !field.disabled && (
           <button
             type="button"

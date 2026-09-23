@@ -80,6 +80,11 @@ export function setAccessTokenGetter(getter: (() => string | null) | null): void
   getAccessToken = getter;
 }
 
+/** true se há access_token na sessão agora (mesmo que o usuário não tenha sido resolvido). */
+export function hasAccessToken(): boolean {
+  return Boolean(getAccessToken?.());
+}
+
 /**
  * =============================================================================
  * BLOCO 2 — `ApiError`: O ERRO TIPADO DA CAMADA

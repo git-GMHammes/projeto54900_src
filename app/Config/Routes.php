@@ -107,6 +107,16 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /AuxCor — catalogo de cores nomeadas (usado pelo SelectField do
+    //           frontend com colorKey). Populado por
+    //           doc/sql/insert/20260923135922_aux_cor.sql.
+    // =========================================================================
+
+    $routes->group('aux-cor', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/AuxCor/EndpointTable.php';
+    });
+
+    // =========================================================================
     // /Calendar — Modulo de calendario (espelho do Google Calendar): calendar_manager >
     //           calendar_events > {attendees, reminders, attachments,
     //           extended_properties}. APIs REST, contrato canonico (18 rotas).
