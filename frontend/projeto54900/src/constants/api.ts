@@ -50,6 +50,9 @@ export const API_GROUPS = {
   navManager: 'nav-manager',
   menuManager: 'menu-manager',
   calendarManagerView: 'calendar-manager-view',
+  calendarEventAttendees: 'calendar-event-attendees',
+  calendarEventReminders: 'calendar-event-reminders',
+  calendarEventAttachments: 'calendar-event-attachments',
   dbSchema: 'db-schema',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];

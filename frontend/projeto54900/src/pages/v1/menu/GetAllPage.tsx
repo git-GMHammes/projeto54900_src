@@ -8,8 +8,15 @@
 //
 // Tabela self-contained (nao usa o DataTable/Pagination compartilhados —
 // ambos estao stubados aguardando a fabrica de listas).
+//
+// Acoes so-icone com tooltip custom (.icon-action-tooltip, styles/_custom.scss
+// — mesmo padrao de user-manager/calendar). Item de topo ganha 2 icones de
+// destino: Navbar (bi-menu-button-wide-fill) / Offcanvas (bi-layout-sidebar-inset).
+// O clique grava o placement no item E em todos os descendentes (a arvore do
+// nav e buscada inteira, ja que a tabela plana e paginada).
 
 import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { paths } from '@/routes/paths';
@@ -21,6 +28,7 @@ import { normalizeList } from '@/utils/apiResult';
 import { parseStringList } from '@/utils/jsonList';
 import { toText } from '@/utils/format';
 import type { ApiRow } from '@/types/api';
+import type { MenuPlacement } from '@/types/menu';
 
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
@@ -48,6 +56,83 @@ function RolesBadges({ roles }: { roles: unknown }) {
           {role}
         </span>
       ))}
+    </div>
+  );
+}
+
+const PLACEMENT_ACTIONS: { value: MenuPlacement; icon: string; label: string }[] = [
+  { value: 'navbar', icon: 'bi-menu-button-wide-fill', label: 'Mover para a Navbar' },
+  { value: 'offcanvas', icon: 'bi-layout-sidebar-inset', label: 'Mover para o Offcanvas' },
+];
+
+function rowPlacement(row: ApiRow): MenuPlacement {
+  return row.placement === 'offcanvas' ? 'offcanvas' : 'navbar';
+}
+
+// Tooltip custom (bolha CSS) a esquerda do botao — acoes ficam na borda
+// direita (e dentro de .table-responsive na tabela plana).
+function WithTooltip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <span className="icon-action-tooltip">
+      {children}
+      <span className="icon-action-tooltip-bubble icon-action-tooltip-bubble--start" role="tooltip">
+        {label}
+      </span>
+    </span>
+  );
+}
+
+function MenuRowActions({
+  row,
+  busy,
+  onPlacement,
+  onDelete,
+}: {
+  row: ApiRow;
+  busy: boolean;
+  onPlacement: (row: ApiRow, placement: MenuPlacement) => void;
+  onDelete: (row: ApiRow) => void;
+}) {
+  const isRoot = row.parent_id === null || row.parent_id === undefined;
+  const current = rowPlacement(row);
+
+  return (
+    <div className="d-inline-flex gap-1">
+      {isRoot &&
+        PLACEMENT_ACTIONS.map((action) => (
+          <WithTooltip key={action.value} label={current === action.value ? `Esta no ${action.value === 'navbar' ? 'Navbar' : 'Offcanvas'}` : `${action.label} (com submenus)`}>
+            <button
+              type="button"
+              className={`btn btn-sm ${current === action.value ? 'btn-primary' : 'btn-outline-primary'}`}
+              disabled={busy || current === action.value}
+              aria-label={action.label}
+              aria-pressed={current === action.value}
+              onClick={() => onPlacement(row, action.value)}
+            >
+              <i className={`bi ${action.icon}`} aria-hidden="true" />
+            </button>
+          </WithTooltip>
+        ))}
+      <WithTooltip label="Ver detalhes">
+        <Link
+          className="btn btn-sm btn-outline-secondary"
+          to={paths.v1.menu.view(row.id as string | number)}
+          aria-label="Ver detalhes"
+        >
+          <i className="bi bi-eye" aria-hidden="true" />
+        </Link>
+      </WithTooltip>
+      <WithTooltip label="Excluir item">
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-danger"
+          disabled={busy}
+          aria-label="Excluir item"
+          onClick={() => onDelete(row)}
+        >
+          <i className="bi bi-trash" aria-hidden="true" />
+        </button>
+      </WithTooltip>
     </div>
   );
 }
@@ -93,10 +178,14 @@ function buildMenuTree(rows: ApiRow[]): MenuTreeNode[] {
 function MenuTreeRow({
   node,
   depth,
+  busyId,
+  onPlacement,
   onDelete,
 }: {
   node: MenuTreeNode;
   depth: number;
+  busyId: string | null;
+  onPlacement: (row: ApiRow, placement: MenuPlacement) => void;
   onDelete: (row: ApiRow) => void;
 }) {
   const [open, setOpen] = useState(true);
@@ -129,19 +218,21 @@ function MenuTreeRow({
             {children.length}
           </span>
         )}
-        <div className="btn-group btn-group-sm ms-auto">
-          <Link className="btn btn-outline-secondary" to={paths.v1.menu.view(row.id as string | number)}>
-            Ver
-          </Link>
-          <button className="btn btn-outline-danger" onClick={() => onDelete(row)}>
-            Excluir
-          </button>
+        <div className="ms-auto">
+          <MenuRowActions row={row} busy={busyId !== null} onPlacement={onPlacement} onDelete={onDelete} />
         </div>
       </div>
       {hasChildren && open && (
         <div>
           {children.map((child) => (
-            <MenuTreeRow key={toText(child.row.id)} node={child} depth={depth + 1} onDelete={onDelete} />
+            <MenuTreeRow
+              key={toText(child.row.id)}
+              node={child}
+              depth={depth + 1}
+              busyId={busyId}
+              onPlacement={onPlacement}
+              onDelete={onDelete}
+            />
           ))}
         </div>
       )}
@@ -158,6 +249,7 @@ export default function GetAllPage() {
   const { params, setPage, toggleSort } = usePagination();
   const [pendingDelete, setPendingDelete] = useState<ApiRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [placingId, setPlacingId] = useState<string | null>(null);
 
   const { data, error, loading, run } = useApi((signal) =>
     isTreeMode
@@ -176,6 +268,38 @@ export default function GetAllPage() {
   const { rows, total, limit } = normalizeList(data);
   const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;
   const tree = useMemo(() => (isTreeMode ? buildMenuTree(rows) : []), [isTreeMode, rows]);
+
+  // Grava o placement no item e em todos os descendentes. Busca a arvore
+  // inteira do nav (a tabela plana e paginada e pode nao ter os filhos).
+  async function changePlacement(row: ApiRow, placement: MenuPlacement): Promise<void> {
+    const rootId = idKey(row.id);
+    if (!rootId) return;
+    setPlacingId(rootId);
+    try {
+      const payload = await menuManagerTable.find(
+        { nav_manager_id: Number(row.nav_manager_id) },
+        { limit: 200 },
+      );
+      const { rows: all } = normalizeList(payload);
+      const ids = [rootId];
+      // for-of sobre array que cresce: o iterador tambem visita os ids
+      // empurrados durante o laco (busca em largura pelos descendentes).
+      for (const parentKey of ids) {
+        all.forEach((item) => {
+          const key = idKey(item.id);
+          if (key && idKey(item.parent_id) === parentKey && !ids.includes(key)) ids.push(key);
+        });
+      }
+      await Promise.all(ids.map((id) => menuManagerTable.update(id, { placement })));
+      const destino = placement === 'offcanvas' ? 'Offcanvas' : 'Navbar';
+      toast.success(`"${toText(row.title)}" e ${ids.length - 1} submenu(s) movidos para ${destino}.`);
+      void run();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Falha ao alterar o destino do menu.');
+    } finally {
+      setPlacingId(null);
+    }
+  }
 
   async function confirmDelete(): Promise<void> {
     if (!pendingDelete) return;
@@ -231,7 +355,14 @@ export default function GetAllPage() {
       {!loading && !error && rows.length > 0 && isTreeMode && (
         <div className="border rounded">
           {tree.map((node) => (
-            <MenuTreeRow key={toText(node.row.id)} node={node} depth={0} onDelete={setPendingDelete} />
+            <MenuTreeRow
+              key={toText(node.row.id)}
+              node={node}
+              depth={0}
+              busyId={placingId}
+              onPlacement={(row, placement) => void changePlacement(row, placement)}
+              onDelete={setPendingDelete}
+            />
           ))}
         </div>
       )}
@@ -261,14 +392,12 @@ export default function GetAllPage() {
                     <td><StatusBadge status={row.status} /></td>
                     <td>{toText(row.sort_order, '0')}</td>
                     <td className="text-end">
-                      <div className="btn-group btn-group-sm">
-                        <Link className="btn btn-outline-secondary" to={paths.v1.menu.view(row.id as string | number)}>
-                          Ver
-                        </Link>
-                        <button className="btn btn-outline-danger" onClick={() => setPendingDelete(row)}>
-                          Excluir
-                        </button>
-                      </div>
+                      <MenuRowActions
+                        row={row}
+                        busy={placingId !== null}
+                        onPlacement={(r, placement) => void changePlacement(r, placement)}
+                        onDelete={setPendingDelete}
+                      />
                     </td>
                   </tr>
                 ))}

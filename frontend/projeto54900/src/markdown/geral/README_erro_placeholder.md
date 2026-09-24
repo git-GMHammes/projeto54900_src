@@ -42,7 +42,7 @@ precisa religar.
 | 1   | `src/pages/v1/user/user-manager/CreatePage.tsx`                     | Formulário | build `cadastro-usuario` (form_manager) — etapa 1 do cadastro                                    |
 | 2   | `src/pages/v1/user/user-profiles/CreatePage.tsx` (**novo arquivo**) | Formulário | build `dados-do-usuario` (form_manager) — etapa 2, lê `?user_manager_id=`                        |
 | 3   | `src/pages/v1/user/user-manager/GetAllPage.tsx`                     | Listagem   | motor "Construtor de Listas", slug `user-manager` (`list_manager`/`list_columns`/`list_actions`) |
-| 4   | `src/pages/v1/user/user-manager/UpdatePage.tsx`                     | Formulário | build `atualizar-usuario` (form_manager) + preload via `userManagerView.get(id)`                 |
+| 4   | `src/pages/v1/user/user-manager/UpdatePage.tsx`                     | Formulário | build `atualizar-usuario` (form_manager id 19, cópia do `dados-do-usuario`, tabela `user_profiles`) + preload `uc_*` via `userManagerView.get(id)`; salva `PUT user-profiles/update/{uc_id}`; sem profile → "Completar dados" (etapa 2) |
 | 5   | `src/pages/v1/nav/CreatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + `navManagerTable.create`                                       |
 | 6   | `src/pages/v1/nav/UpdatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + preload via `navManagerTable.get(id)`                          |
 | 7   | `src/pages/v1/menu/CreatePage.tsx`                                  | Formulário | schema `FormGrid` escrito à mão + `menuManagerTable.create`                                      |

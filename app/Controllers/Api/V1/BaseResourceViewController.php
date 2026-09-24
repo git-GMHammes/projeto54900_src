@@ -111,12 +111,18 @@ abstract class BaseResourceViewController extends BaseResourceTableController
 
     /**
      * GET .../search?q=termo&page=1&limit=20&sort=id&order=desc
+     *     [&filters[campo]=valor] — filtro exato opcional, só campos de $filterFields do model
      */
     public function search(): ResponseInterface
     {
         try {
             $term = trim((string) ($this->request->getGet('q') ?? ''));
-            $result = $this->processor->searchView($term, $this->getPaginationParams());
+            $filters = $this->request->getGet('filters');
+            $result = $this->processor->searchView(
+                $term,
+                $this->getPaginationParams(),
+                \is_array($filters) ? $filters : []
+            );
 
             return $this->respondPaginated($result['data'], $result['pagination']);
         } catch (\Throwable $e) {

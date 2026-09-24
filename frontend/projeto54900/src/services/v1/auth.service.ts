@@ -54,9 +54,13 @@ async function refresh(refreshToken: string): Promise<AuthPayload> {
   return data;
 }
 
-/** Encerra a sessao no backend (invalida o token corrente). */
-async function logout(): Promise<void> {
-  await http.post(`${base}/logout`);
+/**
+ * Encerra a sessao no backend (user_manager.token NULL — revoga refresh e
+ * access token do par). O Bearer vai pelo http.ts; o refresh_token no corpo
+ * garante a revogacao mesmo com o access token ja expirado.
+ */
+async function logout(refreshToken: string | null): Promise<void> {
+  await http.post(`${base}/logout`, refreshToken ? { refresh_token: refreshToken } : {});
 }
 
 /** Retorna o usuario autenticado atual, ou null se a sessao nao for valida. */

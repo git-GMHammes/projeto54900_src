@@ -13,6 +13,11 @@ use Config\Jwt as JwtConfig;
  * sha256 do refresh token emitido e o unico guardado em user_manager.token
  * (coluna ja existente) — cada refresh/login sobrescreve o hash anterior, o
  * que revoga automaticamente qualquer refresh token emitido antes (rotacao).
+ *
+ * O access token carrega "sid" = esse mesmo hash do refresh token do par. O
+ * JwtAuthFilter so aceita o access token enquanto sid === user_manager.token:
+ * logout (token NULL) ou novo login/refresh (hash novo) derrubam na hora o
+ * access token anterior, sem esperar o exp.
  */
 class JwtService
 {
@@ -24,7 +29,7 @@ class JwtService
     }
 
     /**
-     * @param array{sub:int,username:string,role_id:?int,role_slug:?string,remote_addr:string} $claims
+     * @param array{sub:int,username:string,role_id:?int,role_slug:?string,remote_addr:string,sid:string} $claims
      */
     public function issueAccessToken(array $claims): string
     {
@@ -42,6 +47,7 @@ class JwtService
             'username'    => $claims['username'],
             'role'        => $claims['role_slug'],
             'remote_addr' => $claims['remote_addr'],
+            'sid'         => $claims['sid'],
             // Enigma de ofuscacao (distracao ao curioso), sem uso em validacao.
             'geheimnis'   => md5($role . $ip . date('d')),
         ]);

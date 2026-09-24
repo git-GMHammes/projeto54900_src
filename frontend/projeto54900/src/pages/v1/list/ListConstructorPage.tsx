@@ -502,7 +502,11 @@ export default function ListConstructorPage() {
                                 <td>{c.label}</td>
                                 <td className="small">
                                   {c.concat ? (
-                                    <code>{c.concat.map((p) => (p.type === 'field' ? `{${p.key}}` : p.value)).join('')}</code>
+                                    <code>{c.concat
+                                        .map((p) =>
+                                          p.type === 'field' ? `{${p.key}}` : p.type === 'icon' ? `[icon:${p.icon}]` : p.value,
+                                        )
+                                        .join('')}</code>
                                   ) : (
                                     <code>{c.fieldKey}</code>
                                   )}

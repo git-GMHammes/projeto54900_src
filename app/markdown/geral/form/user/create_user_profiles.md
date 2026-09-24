@@ -73,8 +73,8 @@ _slug `grupo-1-identificacao` · icon `person-rolodex`_
 
 | Linha | Rótulo            | `field_name`      | Tipo | col | Obrig. | Observação                                                  |
 | ----- | ----------------- | ----------------- | ---- | --- | ------ | ----------------------------------------------------------- |
-| 1     | Usuario (vínculo) | `user_manager_id` | text | 3   | sim    | `read_only=1` — ver "A chave que liga as duas etapas" acima |
-| 1     | UUID              | `uuid`            | text | 9   | não    | `read_only=1`                                               |
+| 1     | Usuario (vínculo) | `user_manager_id` | text | 3   | sim    | `read_only=1`, `is_hidden=1` — valor vem de `?user_manager_id=`; ver "A chave que liga as duas etapas" acima |
+| 1     | UUID              | `uuid`            | text | 9   | não    | `read_only=1`, `is_hidden=1` — UUID v4 gerado no frontend (`user-profiles/CreatePage.tsx`) |
 | 2     | Nome              | `name`            | text | 9   | sim    | `min_length=3`                                              |
 | 2     | CPF               | `cpf`             | cpf  | 3   | não    | `input_mode=numeric`                                        |
 

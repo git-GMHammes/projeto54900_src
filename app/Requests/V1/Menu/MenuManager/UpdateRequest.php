@@ -18,6 +18,7 @@ class UpdateRequest
             'parent_id'      => 'permit_empty|is_natural_no_zero',
             'title'          => 'permit_empty|string|max_length[255]',
             'react_route'    => 'permit_empty|string|max_length[255]',
+            'placement'      => 'permit_empty|in_list[navbar,offcanvas]',
             'roles'          => 'permit_empty',
             'sort_order'     => 'permit_empty|is_natural',
             'status'         => 'permit_empty|in_list[active,draft,inactive]',
@@ -38,6 +39,9 @@ class UpdateRequest
             ],
             'react_route' => [
                 'max_length' => 'O campo react_route nao pode exceder 255 caracteres',
+            ],
+            'placement' => [
+                'in_list' => 'O campo placement deve ser navbar ou offcanvas',
             ],
             'status' => [
                 'in_list' => 'O campo status deve ser active, draft ou inactive',

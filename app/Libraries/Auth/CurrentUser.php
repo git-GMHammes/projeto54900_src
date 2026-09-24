@@ -6,7 +6,7 @@ namespace App\Libraries\Auth;
  * Porta-luvas do usuario autenticado dentro de UM request.
  *
  * JwtAuthFilter::before() preenche as claims do access token validado;
- * os controllers atras do filtro (hoje: auth/me, auth/logout) leem daqui.
+ * os controllers atras do filtro (hoje: auth/me) leem daqui.
  * Estatico por request — cada requisicao PHP-FPM e um processo isolado.
  */
 class CurrentUser

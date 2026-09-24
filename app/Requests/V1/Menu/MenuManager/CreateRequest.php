@@ -10,6 +10,7 @@ namespace App\Requests\V1\Menu\MenuManager;
  *   parent_id      BIGINT       NULL      FK -> menu_manager.id (self)
  *   title          VARCHAR(255) NOT NULL
  *   react_route    VARCHAR(255) NULL
+ *   placement      ENUM('navbar','offcanvas') NOT NULL DEFAULT 'navbar'
  *   roles          JSON         NULL      lista de slugs de user_roles com acesso
  *   sort_order     INT          NOT NULL DEFAULT 0
  *   status         ENUM('active','draft','inactive') NOT NULL DEFAULT 'draft'
@@ -27,6 +28,7 @@ class CreateRequest
             'parent_id'      => 'permit_empty|is_natural_no_zero',
             'title'          => 'required|string|max_length[255]',
             'react_route'    => 'permit_empty|string|max_length[255]',
+            'placement'      => 'permit_empty|in_list[navbar,offcanvas]',
             'roles'          => 'permit_empty',
             'sort_order'     => 'permit_empty|is_natural',
         ];
@@ -48,6 +50,9 @@ class CreateRequest
             ],
             'react_route' => [
                 'max_length' => 'O campo react_route nao pode exceder 255 caracteres',
+            ],
+            'placement' => [
+                'in_list' => 'O campo placement deve ser navbar ou offcanvas',
             ],
         ];
     }

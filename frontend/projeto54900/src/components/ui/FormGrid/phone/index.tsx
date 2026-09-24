@@ -18,7 +18,7 @@
  * (DDDS_VALIDOS) e exige "9" logo apos o DDD quando ha 11 digitos (regra do
  * celular).
  *
- * DEPENDENCIAS: ../emitValue (emitValue).
+ * DEPENDENCIAS: ../emitValue (emitValue), ./mask (aplicarMascara).
  * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
  * secao 5 (Bloco C).
  * -------------------------------------------------------------------------
@@ -33,6 +33,7 @@ import type {
   FocusEventHandler,
 } from 'react'
 import { emitValue } from '../emitValue'
+import { aplicarMascara } from './mask'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -156,23 +157,6 @@ const DDDS_VALIDOS = new Set([
 /** Extrai somente dígitos e limita a 11 caracteres. */
 function soDigitos(v: string): string {
   return v.replace(/\D/g, '').slice(0, 11)
-}
-
-/**
- * Formata os dígitos puros com máscara progressiva:
- *   10 dígitos → (NN) NNNN-NNNN   (fixo)
- *   11 dígitos → (NN) NNNNN-NNNN  (celular com 9)
- */
-function aplicarMascara(raw: string): string {
-  const d = raw.slice(0, 11)
-  const len = d.length
-
-  if (len === 0) return ''
-  if (len <= 2) return `(${d}`
-  if (len <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
-  if (len <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
-  // 11 dígitos: grupo antes do traço tem 5 dígitos (inclui o 9)
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
 }
 
 function phoneValido(raw: string): string | null {

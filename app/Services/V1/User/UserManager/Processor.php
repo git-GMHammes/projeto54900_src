@@ -66,6 +66,9 @@ class Processor extends BaseTableService
 
     protected function prepareData(array $data): array
     {
+        // Confirmação de senha só é validada no CreateRequest — não é coluna.
+        unset($data['password_hash_confirm']);
+
         if (!empty($data['password_hash'])) {
             $data['password_hash'] = password_hash($data['password_hash'], PASSWORD_BCRYPT);
         }

@@ -47,7 +47,7 @@ class AuthService
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
             ->update([
-                'token'         => $this->jwt->hashToken($tokens['refresh_token']),
+                'token'         => $tokens['sid'],
                 'last_login_at' => date('Y-m-d H:i:s'),
             ]);
 
@@ -81,14 +81,62 @@ class AuthService
 
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
-            ->update(['token' => $this->jwt->hashToken($tokens['refresh_token'])]);
+            ->update(['token' => $tokens['sid']]);
 
         return ['success' => true, 'data' => $this->buildAuthPayload((int) $user['id'], $tokens)];
     }
 
+    /**
+     * Revoga a sessao do usuario (token NULL): o refresh token deixa de trocar
+     * e o access token do par deixa de passar no JwtAuthFilter (sid sem par).
+     */
     public function logout(int $userId): void
     {
         $this->db()->table('user_manager')->where('id', $userId)->update(['token' => null]);
+    }
+
+    /**
+     * Identifica de quem e a sessao a encerrar. Tenta o access token (Bearer)
+     * com sessao ainda ativa; se ausente/expirado, cai para o refresh token do
+     * corpo, que precisa conferir com o hash gravado. Null = nada a revogar.
+     */
+    public function resolveLogoutUserId(?string $accessToken, ?string $refreshToken): ?int
+    {
+        if ($accessToken !== null && $accessToken !== '') {
+            $claims = $this->jwt->decode($accessToken);
+            if ($claims !== null && ($claims['typ'] ?? null) === 'access'
+                && $this->sessionActive((int) $claims['sub'], (string) ($claims['sid'] ?? ''))) {
+                return (int) $claims['sub'];
+            }
+        }
+
+        if ($refreshToken !== null && $refreshToken !== '') {
+            $claims = $this->jwt->decode($refreshToken);
+            if ($claims !== null && ($claims['typ'] ?? null) === 'refresh'
+                && $this->sessionActive((int) $claims['sub'], $this->jwt->hashToken($refreshToken))) {
+                return (int) $claims['sub'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sessao ativa = usuario ativo, nao excluido, e sid igual ao hash do
+     * refresh token gravado em user_manager.token. Usado pelo JwtAuthFilter.
+     */
+    public function sessionActive(int $userId, string $sid): bool
+    {
+        if ($userId <= 0 || $sid === '') {
+            return false;
+        }
+
+        $user = $this->findActiveById($userId);
+
+        return $user !== null
+            && $user['status'] === 'active'
+            && !empty($user['token'])
+            && hash_equals((string) $user['token'], $sid);
     }
 
     /**
@@ -113,20 +161,25 @@ class AuthService
     {
         $role = $roleId !== null ? $this->findRole($roleId) : null;
 
+        // Refresh primeiro: o hash dele vira o sid do access token e o valor
+        // gravado em user_manager.token (os dois tokens nascem pareados).
+        $refreshToken = $this->jwt->issueRefreshToken(['sub' => $userId]);
+        $sid          = $this->jwt->hashToken($refreshToken);
+
         $accessToken = $this->jwt->issueAccessToken([
             'sub'         => $userId,
             'username'    => $username,
             'role_id'     => $roleId,
             'role_slug'   => $role['slug'] ?? null,
             'remote_addr' => $ip,
+            'sid'         => $sid,
         ]);
-
-        $refreshToken = $this->jwt->issueRefreshToken(['sub' => $userId]);
 
         return [
             'access_token'  => $accessToken,
             'refresh_token' => $refreshToken,
             'expires_in'    => $this->jwt->accessTtlSeconds(),
+            'sid'           => $sid,
         ];
     }
 

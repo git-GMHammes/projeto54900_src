@@ -130,7 +130,7 @@ export default function GetPage() {
   return (
     <>
       <PageHeader title={`Usuario #${id ?? ''}`} subtitle="api/v1/user-manager-view">
-        <Link className="btn btn-outline-secondary" to={paths.v1.user.list}>
+        <Link className="btn btn-outline-secondary" to={paths.v1.user.profilesList}>
           Voltar
         </Link>
         <Link className="btn btn-primary" to={paths.v1.user.update(id ?? '')}>

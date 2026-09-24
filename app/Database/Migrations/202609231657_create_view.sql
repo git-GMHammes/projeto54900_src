@@ -1,9 +1,9 @@
--- =============================================================================
+--  
 -- Views do banco codeigniter54900_db — dump formatado em 2026-09-20.
 -- Fonte: SHOW CREATE VIEW de cada uma (estado real do banco nesta data).
 -- Ordem: view_calendar_manager, view_form_manager, view_upload_manager,
 -- view_user_manager.
--- =============================================================================
+--  
 SET NAMES utf8mb4;
 -- -----------------------------------------------------------------------------
 -- view_calendar_manager

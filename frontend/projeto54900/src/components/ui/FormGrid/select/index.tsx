@@ -110,6 +110,15 @@ export interface SelectFieldSchema {
    * personalizado) continua exibido — o próprio valor vira o texto e a cor.
    */
   colorKey?: string
+
+  /**
+   * Ao escolher uma opção (modo single), copia valores do item para outros
+   * campos do mesmo `<form>`: { name_do_campo_destino: chave_do_item }
+   * (ex.: { email: 'uc_email', display_name: 'uc_name' }). Chave vazia no item
+   * não sobrescreve o destino; limpar a seleção (✕) esvazia os destinos.
+   * Configurável em `select_config_json.fillFields`.
+   */
+  fillFields?: Record<string, string>
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -180,6 +189,20 @@ function extrairItem(json: unknown): SelectOptionItem | null {
   if (Array.isArray(data)) return (data[0] as SelectOptionItem | undefined) ?? null
   if (data && typeof data === 'object') return data as SelectOptionItem
   return rec
+}
+
+/**
+ * Escreve `value` no campo `name` do formulário que contém `origin` — pelo setter
+ * nativo + evento 'input', para o onChange do React do campo destino (que guarda
+ * o valor em estado interno) enxergar a mudança.
+ */
+function writeFormField(origin: HTMLElement | null, name: string, value: string): void {
+  const form = origin?.closest('form')
+  const el = form?.elements.namedItem(name)
+  if (!(el instanceof HTMLInputElement) && !(el instanceof HTMLTextAreaElement)) return
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+  Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(el, value)
+  el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -380,7 +403,19 @@ export function SelectField({ field }: SelectFieldProps) {
     setSearchText(lbl)
     setIsOpen(false)
     setErro(null)
+    if (field.fillFields) {
+      for (const [target, key] of Object.entries(field.fillFields)) {
+        const fill = asText(item[key])
+        if (fill) writeFormField(containerRef.current, target, fill)
+      }
+    }
     field.onChange?.(val, item)
+  }
+
+  /** Destinos de fillFields ficam órfãos sem a seleção (podem ser read_only) — esvazia. */
+  function clearFillTargets() {
+    if (!field.fillFields) return
+    for (const target of Object.keys(field.fillFields)) writeFormField(containerRef.current, target, '')
   }
 
   function clearSelection() {
@@ -399,6 +434,7 @@ export function SelectField({ field }: SelectFieldProps) {
     setSearchText('')
     setIsOpen(true)
     setErro(null)
+    clearFillTargets()
     field.onChange?.('', null)
     setTimeout(() => searchRef.current?.focus(), 0)
   }
@@ -434,6 +470,7 @@ export function SelectField({ field }: SelectFieldProps) {
     if (!field.multiple && effectiveValue) {
       if (!isControlled) setSelectedValue('')
       setSelectedLabel('')
+      clearFillTargets()
       field.onChange?.('', null)
     }
     setIsOpen(true)

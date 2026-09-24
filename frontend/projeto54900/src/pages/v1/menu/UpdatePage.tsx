@@ -5,7 +5,8 @@
 // proprio efeito reativo (recarrega sempre que a URL muda), por isso "Item
 // pai" muda de `src` (com ?nav_manager_id=) sempre que o nav muda. roles usa
 // o par toStringList/parseStringList (README_campo_json_montado.md). Preload
-// via menuManagerTable.get(id); status so entra no update.
+// via menuManagerTable.get(id); status so entra no update. placement
+// (Navbar/Offcanvas) ausente no registro = 'navbar'.
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -26,9 +27,14 @@ import { toText } from '@/utils/format';
 import { toStringList, parseStringList } from '@/utils/jsonList';
 import { env } from '@/config/env';
 import { paths } from '@/routes/paths';
+import type { MenuPlacement } from '@/types/menu';
 
 const NAV_SRC = `${env.apiBaseUrl}/v1/nav-manager/get-no-pagination`;
 const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
+const PLACEMENT_OPTIONS = [
+  { id: 'placement_navbar', value: 'navbar', label: 'Navbar' },
+  { id: 'placement_offcanvas', value: 'offcanvas', label: 'Offcanvas' },
+];
 const parentSrc = (navManagerId: string): string =>
   `${env.apiBaseUrl}/v1/menu-manager/get-no-pagination?nav_manager_id=${navManagerId}`;
 
@@ -45,6 +51,7 @@ export default function UpdatePage() {
   const [parentId, setParentId] = useState('');
   const [title, setTitle] = useState('');
   const [reactRoute, setReactRoute] = useState('');
+  const [placement, setPlacement] = useState<MenuPlacement>('navbar');
   const [roles, setRoles] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('0');
   const [status, setStatus] = useState('active');
@@ -68,6 +75,7 @@ export default function UpdatePage() {
         setParentId(row.parent_id !== null && row.parent_id !== undefined ? toText(row.parent_id, '') : '');
         setTitle(toText(row.title, ''));
         setReactRoute(toText(row.react_route, ''));
+        setPlacement(row.placement === 'offcanvas' ? 'offcanvas' : 'navbar');
         setRoles(parseStringList(typeof row.roles === 'string' ? row.roles : ''));
         setSortOrder(toText(row.sort_order, '0'));
         setStatus(toText(row.status, 'active'));
@@ -116,18 +124,29 @@ export default function UpdatePage() {
       {
         fields: [
           {
-            col: 6,
+            col: 4,
             label: 'Titulo',
             required: true,
             value: title,
             onChange: (e) => setTitle(e.target.value),
           },
           {
-            col: 6,
+            col: 4,
             label: 'Rota (react_route)',
             value: reactRoute,
             onChange: (e) => setReactRoute(e.target.value),
             placeholder: '/v1/...',
+          },
+          {
+            type: 'radio',
+            col: 4,
+            label: 'Local',
+            name: 'placement',
+            title: 'Item de topo: onde ele (e seus filhos) aparece. Filhos seguem o pai.',
+            inline: true,
+            value: placement,
+            options: PLACEMENT_OPTIONS,
+            onChange: (value) => setPlacement(value === 'offcanvas' ? 'offcanvas' : 'navbar'),
           },
         ],
       },
@@ -182,6 +201,7 @@ export default function UpdatePage() {
         nav_manager_id: Number(navManagerId),
         title: title.trim(),
         react_route: reactRoute.trim() || null,
+        placement,
         roles: toStringList(roles) || null,
         sort_order: sortOrder ? Number(sortOrder) : 0,
         status,
@@ -203,7 +223,7 @@ export default function UpdatePage() {
         setSubmitting(false);
       }
     },
-    [id, navManagerId, title, parentId, reactRoute, roles, sortOrder, status, navigate, toast],
+    [id, navManagerId, title, parentId, reactRoute, placement, roles, sortOrder, status, navigate, toast],
   );
 
   return (

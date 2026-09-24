@@ -80,6 +80,15 @@ Todas as FKs são `ON DELETE CASCADE`. Todas as tabelas têm
 A regra **1 a 12 campos por linha** (contagem **e** soma dos `col` ≤ 12) é
 aplicada pelo `Form/FormCampos/Processor` quando o campo é vinculado.
 
+**Campo oculto (`is_hidden = 1`) também conta** na contagem e na soma dos
+`col`, embora não ocupe espaço na tela. Campo oculto que a tela preenche
+(ex.: FK do registro pai) vai numa **linha própria no fim do grupo**
+(`note = 'Campos ocultos (preenchidos pela tela)'`, `col = 12`), nunca
+dividindo linha com campos visíveis. Com a soma estourada, qualquer `PUT` em
+campo daquela linha é recusado (409 `a soma das colunas (col) da linha excede
+12`). Origem: 2026-09-24, `cadastro-convidado` (Evento 8 oculto + Usuário 8 +
+Status 4 = 20) — ver [`form/calendar/calendar_event_attendees.md`](form/calendar/calendar_event_attendees.md).
+
 ### 2.4 `form_fields` (atributos do FormGrid — híbrido)
 
 - **Colunas explícitas:** `form_row_id` (FK), `sort_order`, `field_type` (ENUM
@@ -129,7 +138,7 @@ form_fields.help_text → view (fc_help_text) → formSchema.ts buildField()
   tem a coluna fixa **Tooltip (`help_text`)**; não se gera `INSERT` com
   essa coluna vazia. Modelo: [`form/calendar/calendar_manager.md`](form/calendar/calendar_manager.md).
 - Gravar/corrigir `help_text` com acento via API do app (`PUT
-  /api/v1/form-fields/update/{id}`), não por SQL cru (charset).
+  /api/v1/form-campos/update/{id}`), não por SQL cru (charset).
 - Espelho no frontend:
   [`README_alerta_padroes_ui.md`](../../../frontend/projeto54900/src/markdown/geral/README_alerta_padroes_ui.md)
   (item 8). Origem: 2026-09-20 (form `calendario` publicado sem tooltip) e

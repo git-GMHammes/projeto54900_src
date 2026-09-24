@@ -280,7 +280,66 @@ tratamento de graça** (foi assim que `FormConstructorListPage.tsx` herdou
 
 Aplicado hoje em `form-manager` (`format: 'code'` no `slug`,
 `format: 'status-badge'` no `status` — mesmo `<code>`/badge colorido do
-`FormConstructorListPage.tsx` original, `STATUS_BADGE_CLASS` agora no motor).
+`FormConstructorListPage.tsx` original, `STATUS_BADGE_CLASS` agora no motor)
+e em `user-manager` (`format: 'email-break'` no `uc_email`, `list_columns`
+id 35 — insere `<wbr>` antes do último `@`, então a coluna encolhe para
+`max(parte local, @domínio)` sem scroll horizontal; o texto copiado continua
+íntegro e valor sem `@` (fallback `—`) sai como texto puro).
+
+**Formato `phone` + detecção automática por `field_key`**: o renderer `phone`
+reaproveita `aplicarMascara` de `components/ui/FormGrid/phone/mask.ts` (mesma máscara
+do formulário: 10 dígitos → `(NN) NNNN-NNNN`, 11 → `(NN) NNNNN-NNNN`; fora
+disso, ex. com DDI, sai o valor cru). Além de poder ser setado explicitamente,
+é aplicado **sozinho** quando a coluna está em `format: 'text'` e o
+`field_key` casa com `AUTO_FORMAT_BY_FIELD_KEY` (hoje só `/whatsapp/i` →
+`phone`) — por isso `uc_whatsapp` do `user-manager` (id 36) sai mascarado sem
+UPDATE no banco. Format explícito diferente de `text` sempre prevalece.
+
+**Ações só-ícone (`user-profiles/GetAllPage.tsx`)**: o `ActionButton` desenha
+`bi bi-{list_actions.icon}` (sem ícone cadastrado → volta ao `label`) dentro
+de `.icon-action-tooltip`, mesmo padrão do `CalendarActionButton`. Texto do
+tooltip/`aria-label`: `{label}: {valor da 1ª coluna}` (ex.: `Editar:
+gustavo.hammes`), com sufixo `(indisponível)` quando `business_rule_json`
+desabilita a ação. **Armadilha**: dentro do `.table-responsive` a bolha
+padrão (centrada acima do botão) vaza pela borda direita — mesmo escondida
+(`visibility: hidden`) ela conta como overflow e gera barra de rolagem
+horizontal. Por isso a lista usa a variante `.icon-action-tooltip-bubble--start`
+(`styles/_custom.scss`), que abre a bolha à esquerda do botão, centrada na
+vertical, sempre dentro da tabela.
+
+**Busca ao digitar (`user-profiles/GetAllPage.tsx`)**: `input-group` acima da
+tabela, debounce de 400 ms (`useDebounce`). Com termo, a lista consulta
+`list_manager.api_search_endpoint` (`?q=` + page/limit/sort/order — OR LIKE
+nos `$searchFields` da view: hoje usuário, nome, e-mail, whatsapp, e também
+CPF, telefone, endereço e perfil); vazio, volta ao `api_get_endpoint`. Termo
+novo recomeça da página 1 e resposta de requisição antiga é descartada
+(contador `requestSeq`). **Máscara**: termo só com dígitos e `( ) - +`/espaço
+(ex.: `(41) 96208-0752`) é enviado só com dígitos (`normalizeSearchTerm`),
+porque whatsapp/telefone estão gravados crus; termo com letra ou ponto segue
+como digitado. O termo fica no estado da tela (não vai para a URL).
+
+**Parte `icon` no `concat_json` — ícone com cor condicional**: além de
+`field`/`literal`, o `concat_json` aceita
+`{"type":"icon","icon":"<bootstrap-icon>","rule":{field,op,value},"classTrue":"…","classFalse":"…","title":"…"}`.
+`rule` usa o mesmo formato/avaliador de `business_rule_json`
+(`evalBusinessRule`, compara numérico quando possível); verdadeira →
+`classTrue`, falsa → `classFalse`, sem `rule` → sempre `classTrue`. Ícones
+antes da 1ª parte de texto ficam à esquerda, os demais à direita. A parte
+`icon` **não entra no texto** da célula (`cellValue`/`resolveConcat` — usado
+em tooltip, ordenação etc.), só no desenho (`renderCell`), e combina com
+qualquer `format`. Aplicado em `user-manager`, coluna Usuário (`list_columns`
+id 3): `people-circle` `text-danger` quando `um_user_role_id = 1` (Admin),
+`text-success` nos demais.
+
+**Filtro de status (mesma página)**: `<select>` ao lado da busca (grid
+`col-md-8` + `col-md-4` = 100% da largura; empilha no mobile). Opções =
+`enum_values` de `user_manager.status` via `dbSchema.describe('user_manager')`
+(nada fixo no código) + "Todos os status". Havendo termo **ou** status, a
+lista usa o `search` com `q` e `filters[um_status]=valor`; o backend só aplica
+filtro de campo listado em `$filterFields` do `SqlViewModel` (whitelist —
+ver `app/markdown/geral/ROADMAP_padrao_modulo.md`). Trocar status volta à
+página 1.
+
 Próximo candidato natural: `bootstrap-icons.name` com o ícone renderizado ao
 lado do nome (`format: 'icon-name'`) — ainda não feito, é só registrar mais
 uma entrada em `CUSTOM_CELL_RENDERERS` + atualizar o `format` daquela coluna.
@@ -465,6 +524,28 @@ e os `href_template`/`icon` já salvos no banco (ações "Editar" de
 `user-manager` e "Build"/"Editar" de `form-manager`) — atualizados via API
 (`PUT list-actions/update/{id}`), sem recriar os registros (evita trocar o
 `id` de listas que já estavam sendo editadas).
+
+### Ações `modal` por `data_action` — lista de segurança (2026-09-24)
+
+A lista que era `user-manager` (dados de perfil + editar perfil) virou
+`user-profiles` (`pages/v1/user/user-profiles/GetAllPage.tsx`, menu "Dados
+Usuário"). O slug `user-manager` (list_manager id 18) passou a ser a **lista de
+segurança** (`pages/v1/user/user-manager/GetAllPage.tsx`, menu "Listar"),
+sobre a mesma `view_user_manager`.
+
+As 3 ações são `action_type = 'modal'`; o banco guarda rótulo/ícone/endpoint e
+**`list_actions.data_action`** diz à página qual comportamento aplicar
+(`toAction` expõe o campo como `dataAction`):
+
+| `data_action`    | Ícone                       | Comportamento                                                                 |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| `toggle-status`  | `lock-fill` / `unlock-fill` | Botão único: `blocked` → `active`; `active`/`inactive` → `blocked` (confirma) |
+| `reset-password` | `key-fill`                  | `ResetPasswordModal`: nova senha + confirmação (mín. 6) → `{ password_hash }` |
+| `change-role`    | `person-badge`              | `ChangeRoleModal`: select de `user_roles` → `{ user_role_id }`                |
+
+Todas usam `PUT /api/v1/user-manager/update/{id}` (hash bcrypt e checagem de
+FK no `UserManager\Processor`). `data_action` sem tratamento na página → toast
+de erro. `status-badge` ganhou a cor de `blocked` (`text-bg-danger`).
 
 ## Próximos passos (fora deste desafio)
 

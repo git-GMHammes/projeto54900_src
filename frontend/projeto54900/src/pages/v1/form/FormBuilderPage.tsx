@@ -252,7 +252,7 @@ const CAMPOS_POR_TIPO: Record<string, string[]> = {
     'sel_multiple', 'options_json',
     'sel_src', 'sel_value_key', 'sel_label_key', 'sel_label_template',
     'sel_max_visible', 'sel_rows', 'sel_auth_token',
-    'sel_find_src', 'sel_find_column', 'sel_get_src',
+    'sel_find_src', 'sel_find_column', 'sel_get_src', 'sel_fill_fields',
   ],
   radio: ['options_json', 'inline'],
   checkbox: ['options_json', 'inline'],
@@ -763,7 +763,7 @@ function colunaField(
     campo:
       | 'sel_src' | 'sel_value_key' | 'sel_label_key' | 'sel_label_template'
       | 'sel_max_visible' | 'sel_rows' | 'sel_auth_token' | 'sel_find_src'
-      | 'sel_find_column' | 'sel_get_src',
+      | 'sel_find_column' | 'sel_get_src' | 'sel_fill_fields',
     label: string,
     col: 3 | 4 | 6 | 12 = 4,
     numeric = false,
@@ -854,6 +854,8 @@ function colunaField(
       return txt('sel_find_column', 'findColumn', 6);
     case 'sel_get_src':
       return txt('sel_get_src', 'getSrc (GET por id)', 6);
+    case 'sel_fill_fields':
+      return txt('sel_fill_fields', 'fillFields (destino:chave, destino:chave)', 12);
     default:
       return null;
   }
