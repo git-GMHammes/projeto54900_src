@@ -44,7 +44,8 @@ cadastro-menu
    ├─ Linha 2
    │  └─ Título
    ├─ Linha 3
-   │  └─ Rota no React
+   │  ├─ Rota no React
+   │  └─ Local
    ├─ Linha 4
    │  └─ Perfis
    └─ Linha 5
@@ -61,7 +62,8 @@ _slug `item` · icon `list-nested`_
 | 1     | Nav           | `nav_manager_id` | select | 6   | sim    | remoto: `GET /api/v1/nav-manager/get-no-pagination`, `valueKey=id`, `labelTemplate="{title} #{id}"`; help: "A qual Nav este item pertence."                                                                               |
 | 1     | Item pai      | `parent_id`      | select | 6   | não    | remoto: `GET /api/v1/menu-manager/get-no-pagination`, `valueKey=id`, `labelTemplate="{title} #{id}"`; help: "Vazio = item de topo. Preenchido = vira submenu (hoje só aparece na tela de gestão, não na navbar pública)." |
 | 2     | Título        | `title`          | text   | 12  | sim    | placeholder "Ex: Usuários"                                                                                                                                                                                                |
-| 3     | Rota no React | `react_route`    | text   | 12  | não    | placeholder `/v1/user-manager`; help: "Vazio = item organizacional (só agrupa filhos), também some da navbar pública hoje."                                                                                               |
+| 3     | Rota no React | `react_route`    | text   | 8   | não    | placeholder `/v1/user-manager`; help: "Vazio = item organizacional (só agrupa filhos), também some da navbar pública hoje."                                                                                               |
+| 3     | Local         | `placement`      | radio  | 4   | não    | `inline=1`, padrão `navbar`; opções: Navbar (`navbar`), Offcanvas (`offcanvas`); help: "Item de topo: onde ele (e seus filhos) aparece. Filhos seguem o pai." — seed `202609241701_seed_table.sql` |
 | 4     | Perfis        | `roles`          | text   | 12  | não    | `datalist_json`: `["admin","editor","viewer","rh","financeiro"]`; coluna real é `json`                                                                                                                                    |
 | 5     | Ordem         | `sort_order`     | text   | 4   | não    | `input_mode=numeric`; help: "`<100` navbar real · `>=1000` catálogo extra · `>=2000` árvore admin."                                                                                                                       |
 | 5     | Status        | `status`         | radio  | 8   | não    | `inline=1`; opções: Rascunho (`draft`), Ativo (`active`), Inativo (`inactive`)                                                                                                                                            |

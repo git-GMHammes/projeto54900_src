@@ -197,7 +197,7 @@ abstract class BaseViewService
     /**
      * GET /search — Busca textual paginada (view).
      */
-    public function searchView(string $term, array $params): array
+    public function searchView(string $term, array $params, array $filters = []): array
     {
         $p = $this->buildPaginationParams($params);
 
@@ -206,7 +206,8 @@ abstract class BaseViewService
             $p['page'],
             $p['limit'],
             $p['sort'],
-            $p['order']
+            $p['order'],
+            $filters
         );
     }
 

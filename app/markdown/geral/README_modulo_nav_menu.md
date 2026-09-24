@@ -37,6 +37,7 @@ Processor + Model + Migration, 18 rotas de tabela cada — ver
 | `parent_id`        | BIGINT NULL FK → `menu_manager.id` (self, CASCADE) | submenu; `NULL` = raiz            |
 | `title`            | VARCHAR(255) NOT NULL                | rótulo exibido                                       |
 | `react_route`      | VARCHAR(255) NULL                    | destino no frontend; `NULL` = item só organizacional (agrupador sem link) |
+| `placement`        | ENUM('navbar','offcanvas') DEFAULT 'navbar' | onde o item de topo (e todo o seu grupo de filhos) aparece: barra superior ou painel Offcanvas. Só vale no item de topo — filhos seguem o pai. Migrations `AlterTable20260924MenuPlacement` / `SeedTable20260924MenuPlacement` (2026-09-24) |
 | `roles`            | JSON NULL                            | lista de slugs de `user_roles` com acesso — **hoje só cadastro, sem enforcement no frontend** (não há sessão/auth de usuário) |
 | `sort_order`       | INT DEFAULT 0                        | ver convenção de faixas abaixo                       |
 | `status`           | ENUM('active','draft','inactive')    | nasce `draft` (default da coluna; `create()` ignora status enviado no body) |
@@ -100,8 +101,11 @@ via API antes da descoberta do bug.
 - **Navbar real** (`components/layout/Navbar.tsx` + `hooks/useSiteMenu.ts`):
   busca `nav_manager` com `status=active`, depois `menu_manager` com
   `nav_manager_id` + `status=active`, filtra `parent_id` nulo e
-  `sort_order < 100`, ordena e mapeia para `{to,label,end}`. Fallback para um
-  array estático (`FALLBACK_NAV`) se a API falhar ou vier vazia.
+  `sort_order < 100`, ordena e separa pelo `placement` do item de topo em
+  `{ navbar, offcanvas }`. Itens `offcanvas` vão para o painel lateral aberto
+  pelo botão com ícone antes de Home (botão só aparece se houver item
+  offcanvas). Fallback para um array estático (`FALLBACK_NAV`) se a API
+  falhar ou vier vazia.
 - **Tela de gestão** (`pages/v1/menu/GetAllPage.tsx`): com `?nav_manager_id=`
   na URL, busca **todos** os itens desse nav (sem paginação) e renderiza como
   árvore indentada (componente local `MenuTreeRow`, expand/collapse em estado

@@ -279,6 +279,7 @@ hooks:
 | `$likeFields`            | campos de texto que usam `LIKE %v%` no `find`                              |
 | `$sortableFields`        | whitelist de `ORDER BY` (anti-SQL-injection) — inclui `id` e os timestamps |
 | `$searchFields` (public) | campos varridos pelo `GET /search`                                         |
+| `$filterFields` (public) | só view: whitelist de filtro exato no `GET /search?filters[campo]=valor`   |
 
 Métodos de conveniência do módulo: aliases semânticos sobre `existsByField`
 (ex.: `existsByUsername($username, $excludeId = null)`).
@@ -286,7 +287,9 @@ Métodos de conveniência do módulo: aliases semânticos sobre `existsByField`
 ### `SqlViewModel extends BaseViewModel`
 
 `$DBGroup`, `$table` (nome da view), `$primaryKey`, `$likeFields`,
-`$sortableFields`, `$searchFields`. Colunas da view usam prefixo de origem
+`$sortableFields`, `$searchFields` e, opcionalmente, `$filterFields`
+(filtros exatos aceitos junto da busca: `GET /search?q=&filters[campo]=valor`,
+AND com o OR LIKE; campo fora da lista é ignorado; default `[]`). Colunas da view usam prefixo de origem
 (`um_`, `uc_`); o `id` e os timestamps expostos são os da tabela principal.
 
 ## 9. Migrations — convenções

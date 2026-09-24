@@ -12,7 +12,7 @@ use App\Models\V1\BaseViewModel;
  * Prefixos na view:
  *   um_ = user_manager  (username, status, user_role_id, last_login_at)
  *   uc_ = user_profiles (name, email, phone, whatsapp, cpf, cep, address, uuid)
- *   ur_ = user_roles    (role_slug, role_name — perfil 1:1 ligado por user_role_id)
+ *   ur_ = user_roles    (role_slug, role_name, role_id, role_description — perfil 1:1 ligado por user_role_id)
  *
  * O campo deleted_at reflete user_manager.deleted_at.
  *
@@ -38,6 +38,7 @@ class SqlViewModel extends BaseViewModel
         'uc_address',
         'ur_role_slug',
         'ur_role_name',
+        'ur_role_description',
     ];
 
     /** Campos válidos para ordenação */
@@ -51,6 +52,7 @@ class SqlViewModel extends BaseViewModel
         'uc_email',
         'uc_cpf',
         'ur_role_slug',
+        'ur_role_id',
         'created_at',
         'updated_at',
     ];
@@ -66,5 +68,11 @@ class SqlViewModel extends BaseViewModel
         'uc_address',
         'ur_role_slug',
         'ur_role_name',
+        'ur_role_description',
+    ];
+
+    /** Filtros exatos aceitos junto da busca (GET /search?filters[um_status]=active) */
+    public array $filterFields = [
+        'um_status',
     ];
 }

@@ -119,7 +119,10 @@ específico), para agilizar teste manual sem digitar campo por campo.
    dupla condição do `ApiDebugPanel`.
 5. Montado em **`pages/v1/form/FormRendererPage.tsx`**, só enquanto o modal
    do formulário está aberto (`showFormModal && form`) — os campos só
-   existem no DOM nesse momento.
+   existem no DOM nesse momento. Também em
+   **`pages/v1/user/user-profiles/CreatePage.tsx`** (slug `dados-do-usuario`,
+   script `dev/fakeFill/dadosDoUsuario.ts`), montado quando o formulário da
+   etapa 2 do cadastro de usuário está carregado.
 
 **Como registrar o próximo formulário:** copiar `calendario.ts` como base,
 levantar as regras de negócio reais do novo formulário (API + Model +

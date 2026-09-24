@@ -10,10 +10,12 @@ use App\Models\V1\BaseTableModel;
  * Tabela: calendar_event_attendees
  * DDL: id (BIGINT PK auto),
  *      calendar_event_id (BIGINT NOT NULL, FK -> calendar_events.id, CASCADE),
+ *      user_manager_id (BIGINT NULL, FK -> user_manager.id, SET NULL — obrigatorio no create;
+ *                       NULL so apos excluir o usuario),
  *      email (VARCHAR(255) NOT NULL), display_name (VARCHAR(255) NULL),
  *      is_organizer / is_self / is_resource / is_optional (TINYINT(1) default 0),
  *      response_status (ENUM needsAction/declined/tentative/accepted, default needsAction),
- *      comment (VARCHAR(500) NULL),
+ *      comment (TEXT NULL),
  *      created_at, updated_at, deleted_at.
  */
 class SqlTableModel extends BaseTableModel
@@ -28,6 +30,7 @@ class SqlTableModel extends BaseTableModel
 
     protected $allowedFields = [
         'calendar_event_id',
+        'user_manager_id',
         'email',
         'display_name',
         'is_organizer',
@@ -46,6 +49,7 @@ class SqlTableModel extends BaseTableModel
     protected array $sortableFields = [
         'id',
         'calendar_event_id',
+        'user_manager_id',
         'email',
         'display_name',
         'response_status',
@@ -69,6 +73,24 @@ class SqlTableModel extends BaseTableModel
         $builder = $this->db->table($this->table)
             ->where('calendar_event_id', $calendarEventId)
             ->where('email', $email)
+            ->where($this->deletedField . ' IS NULL', null, false);
+
+        if ($excludeId !== null) {
+            $builder->where($this->primaryKey . ' !=', $excludeId);
+        }
+
+        return $builder->countAllResults() > 0;
+    }
+
+    /**
+     * O usuario ja e convidado deste evento? (unicidade escopada em
+     * calendar_event_id, ignorando soft-deletes).
+     */
+    public function existsByUserInEvent(int $calendarEventId, int $userManagerId, ?int $excludeId = null): bool
+    {
+        $builder = $this->db->table($this->table)
+            ->where('calendar_event_id', $calendarEventId)
+            ->where('user_manager_id', $userManagerId)
             ->where($this->deletedField . ' IS NULL', null, false);
 
         if ($excludeId !== null) {

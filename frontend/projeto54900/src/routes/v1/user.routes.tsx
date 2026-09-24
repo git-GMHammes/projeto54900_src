@@ -10,9 +10,11 @@
  * (ver `README_paginas_modulo.md`).
  *
  * MAPA DAS ROTAS (path relativo ao pai "/v1"):
- *   user-manager            -> GetAllPage      lista de usuários (motor do Construtor
- *                                              de Listas, definição de slug
- *                                              'user-manager' + busca com debounce)
+ *   user-manager            -> GetAllPage      stub: futura lista de segurança (slug
+ *                                              'user-manager', ações próprias)
+ *   user-profiles           -> ProfilesGetAllPage lista de dados de usuários, menu
+ *                                              "Dados Usuário" (motor do Construtor de
+ *                                              Listas, slug 'user-profiles' + busca)
  *   user-manager/create     -> CreatePage      ETAPA 1 do cadastro: build 'cadastro-usuario'
  *                                              (user_manager); ao criar, redireciona para
  *                                              user-profiles/create?user_manager_id={id}
@@ -61,6 +63,7 @@ const GetPage = lazy(() => import('@/pages/v1/user/user-manager/GetPage'));
 const CreatePage = lazy(() => import('@/pages/v1/user/user-manager/CreatePage'));
 const UpdatePage = lazy(() => import('@/pages/v1/user/user-manager/UpdatePage'));
 const ProfilesCreatePage = lazy(() => import('@/pages/v1/user/user-profiles/CreatePage'));
+const ProfilesGetAllPage = lazy(() => import('@/pages/v1/user/user-profiles/GetAllPage'));
 
 /**
  * =========================================================================
@@ -84,6 +87,7 @@ export const userRoutes: RouteObject[] = [
   { path: 'user-manager/create', element: <CreatePage /> },
   { path: 'user-manager/:id', element: <GetPage /> },
   { path: 'user-manager/update/:id', element: <UpdatePage /> },
+  { path: 'user-profiles', element: <ProfilesGetAllPage /> },
   { path: 'user-profiles/create', element: <ProfilesCreatePage /> },
 ];
 

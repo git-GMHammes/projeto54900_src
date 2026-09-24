@@ -23,7 +23,19 @@ import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
 import { env } from '@/config/env';
 import { http, ApiError, hasAccessToken } from '@/services/http';
-import { calendarManagerView, formManagerView, listManagerTable, listActionsTable, listColumnsTable, userManagerTable } from '@/services/v1';
+import {
+  calendarManagerView,
+  calendarEventAttendeesTable,
+  calendarEventRemindersTable,
+  calendarEventAttachmentsTable,
+  uploadManagerTable,
+  uploadManagerUpload,
+  formManagerView,
+  listManagerTable,
+  listActionsTable,
+  listColumnsTable,
+  userManagerTable,
+} from '@/services/v1';
 import { groupCalendarView } from '@/services/calendarSchema';
 import type { CalendarEventRow, CalendarGroup, CalendarManagerRow } from '@/services/calendarSchema';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
@@ -39,6 +51,23 @@ import type { ListActionRow, ListColumnRow } from '@/utils/listConstructor';
 const CALENDAR_FORM_SLUG = 'calendario'; // form_manager: criar calendário (POST)
 const EDIT_FORM_SLUG = 'editar-calendario'; // form_manager: editar calendário (PUT)
 const EVENT_FORM_SLUG = 'cadastro-evento'; // form_manager: criar evento (POST)
+const ATTENDEE_FORM_SLUG = 'cadastro-convidado'; // form_manager: convidar para o evento (POST calendar-event-attendees)
+const REMINDER_FORM_SLUG = 'cadastro-lembrete'; // form_manager: lembrete do evento (POST calendar-event-reminders)
+const ATTACHMENT_FORM_SLUG = 'cadastro-anexo-evento'; // form_manager: anexo do evento (POST calendar-event-attachments)
+// `uploads.module` dos anexos — espelho de CalendarEventAttachments\Processor::UPLOAD_MODULE
+// (arquivo em writable/uploads/calendar_events/<evento>/).
+const ATTACHMENT_UPLOAD_MODULE = 'calendar_events';
+// Extensões aceitas no seletor — espelho de app/Config/Upload.php ($allowedExt); o backend revalida.
+const ATTACHMENT_ACCEPT = [
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff',
+  'mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac',
+  'mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v',
+  'doc', 'docx', 'odt', 'rtf', 'txt', 'md',
+  'xls', 'xlsx', 'ods', 'csv',
+  'ppt', 'pptx', 'odp',
+  'pdf',
+  'zip', 'rar', '7z', 'tar', 'gz',
+].map((ext) => `.${ext}`).join(',');
 const ACTIONS_LIST_SLUG = 'calendar-manager'; // list_manager: ações da linha (list_actions)
 const EVENTS_LIST_SLUG = 'calendar-events-view'; // list_manager: colunas do modal "Ver eventos"
 const PAGE_SIZE = 10;
@@ -101,7 +130,7 @@ function RowActionButton({
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
-  onOpenModal?: (targetSlug: string) => void;
+  onOpenModal?: ((targetSlug: string) => void) | undefined;
   onExecuted: (action: ListActionRow) => void;
 }) {
   const toast = useToast();
@@ -161,6 +190,125 @@ function RowActionButton({
       <i className={`bi bi-${action.icon}`} />
     </button>,
   );
+}
+
+/** Convidado de um evento (calendar_event_attendees), como vem da API própria da tabela. */
+interface AttendeeRow {
+  id: number;
+  userManagerId: number | null;
+  email: string;
+  displayName: string;
+  responseStatus: string;
+  isOrganizer: boolean;
+  isSelf: boolean;
+  isResource: boolean;
+  isOptional: boolean;
+}
+
+/** Checkboxes do convite exibidos como badge na lista — só os marcados aparecem (rótulos do form 'cadastro-convidado'). */
+const ATTENDEE_FLAGS: { key: 'isOrganizer' | 'isSelf' | 'isResource' | 'isOptional'; label: string; icon: string }[] = [
+  { key: 'isOrganizer', label: 'Organizador', icon: 'star' },
+  { key: 'isSelf', label: 'Próprio usuário', icon: 'person' },
+  { key: 'isResource', label: 'Recurso', icon: 'door-closed' },
+  { key: 'isOptional', label: 'Opcional', icon: 'question-circle' },
+];
+
+/** Rótulo pt-BR do ENUM response_status (mesmos textos das opções do form 'cadastro-convidado'). */
+const RESPONSE_STATUS_LABEL: Record<string, string> = {
+  needsAction: 'Sem resposta',
+  accepted: 'Aceitou',
+  declined: 'Recusou',
+  tentative: 'Talvez',
+};
+
+function toAttendee(r: Record<string, unknown>): AttendeeRow {
+  const text = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+  const userId = Number(r.user_manager_id);
+  return {
+    id: Number(r.id),
+    userManagerId: Number.isFinite(userId) && userId > 0 ? userId : null,
+    email: text(r.email),
+    displayName: text(r.display_name),
+    responseStatus: text(r.response_status),
+    isOrganizer: text(r.is_organizer) === '1',
+    isSelf: text(r.is_self) === '1',
+    isResource: text(r.is_resource) === '1',
+    isOptional: text(r.is_optional) === '1',
+  };
+}
+
+/** Lembrete de um evento (calendar_event_reminders), como vem da API própria da tabela. */
+interface ReminderRow {
+  id: number;
+  method: string;
+  minutes: number;
+}
+
+/** Rótulos pt-BR do ENUM method (mesmos textos das opções do form 'cadastro-lembrete'). */
+const REMINDER_METHOD: Record<string, { label: string; icon: string }> = {
+  popup: { label: 'Notificação', icon: 'bell' },
+  email: { label: 'E-mail', icon: 'envelope' },
+};
+
+/** Antecedência em texto — espelho da lista fixa do form (5/10/30 min, 1 h, 1 dia, 1 semana); fora dela, em minutos. */
+function reminderMinutesLabel(minutes: number): string {
+  if (minutes === 10080) return '1 semana antes';
+  if (minutes === 1440) return '1 dia antes';
+  if (minutes === 60) return '1 hora antes';
+  return `${minutes} minutos antes`;
+}
+
+function toReminder(r: Record<string, unknown>): ReminderRow {
+  return {
+    id: Number(r.id),
+    method: typeof r.method === 'string' ? r.method : '',
+    minutes: Number(r.minutes) || 0,
+  };
+}
+
+/** Anexo de um evento (calendar_event_attachments) — o arquivo em si está em `uploads` (fileId). */
+interface AttachmentRow {
+  id: number;
+  fileId: number;
+  title: string;
+  mimeType: string;
+}
+
+function toAttachment(r: Record<string, unknown>): AttachmentRow {
+  const text = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '');
+  return {
+    id: Number(r.id),
+    fileId: Number(r.file_id) || 0,
+    title: text(r.title),
+    mimeType: text(r.mime_type),
+  };
+}
+
+/** Ícone bootstrap-icons pelo MIME do anexo (PDF, imagem, planilha...). */
+function attachmentIcon(mime: string): string {
+  if (mime === 'application/pdf') return 'file-earmark-pdf';
+  if (mime.startsWith('image/')) return 'file-earmark-image';
+  if (mime.startsWith('video/')) return 'file-earmark-play';
+  if (mime.startsWith('audio/')) return 'file-earmark-music';
+  if (/sheet|excel|csv/.test(mime)) return 'file-earmark-spreadsheet';
+  if (/presentation|powerpoint/.test(mime)) return 'file-earmark-slides';
+  if (/word|opendocument\.text|rtf/.test(mime)) return 'file-earmark-word';
+  if (/zip|rar|7z|tar|gzip/.test(mime)) return 'file-earmark-zip';
+  if (mime.startsWith('text/')) return 'file-earmark-text';
+  return 'file-earmark';
+}
+
+/** Bytes em texto curto pt-BR (ex.: "34 B", "1,2 MB"). */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ['KB', 'MB', 'GB'];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${units[unit]}`;
 }
 
 /** Início/fim do evento como texto ISO — data pura (evento de dia inteiro) ou data+hora. */
@@ -250,6 +398,40 @@ export default function CalendarManagerGetAllPage() {
   const [creatingEventFor, setCreatingEventFor] = useState<CalendarGroup | null>(null);
   const [eventSubmitting, setEventSubmitting] = useState(false);
 
+  // Convidados de um evento (API própria calendar-event-attendees + form 'cadastro-convidado').
+  // O modal substitui o "Ver eventos" enquanto aberto; ao fechar, volta para o calendário de origem.
+  const [attendeeForm, setAttendeeForm] = useState<RenderForm | null>(null);
+  const [attendeeFormError, setAttendeeFormError] = useState<string | null>(null);
+  const [attendeesFor, setAttendeesFor] = useState<{ event: CalendarEventRow; group: CalendarGroup | null } | null>(null);
+  const [attendees, setAttendees] = useState<AttendeeRow[]>([]);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+  const [attendeeSubmitting, setAttendeeSubmitting] = useState(false);
+  // Troca a `key` do <FormGrid> após cada convite gravado — limpa o formulário para o próximo.
+  const [attendeeFormKey, setAttendeeFormKey] = useState(0);
+
+  // Lembretes de um evento (API própria calendar-event-reminders + form 'cadastro-lembrete') — mesmo
+  // desenho do modal "Convidados": substitui o "Ver eventos" e, ao fechar, volta a ele.
+  const [reminderForm, setReminderForm] = useState<RenderForm | null>(null);
+  const [reminderFormError, setReminderFormError] = useState<string | null>(null);
+  const [remindersFor, setRemindersFor] = useState<{ event: CalendarEventRow; group: CalendarGroup | null } | null>(null);
+  const [reminders, setReminders] = useState<ReminderRow[]>([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [reminderSubmitting, setReminderSubmitting] = useState(false);
+  const [reminderFormKey, setReminderFormKey] = useState(0);
+
+  // Anexos de um evento: arquivo sobe pela API de uploads (module 'calendar_events', reference_id =
+  // evento) e o registro vai para calendar-event-attachments (file_id) — form 'cadastro-anexo-evento'.
+  const [attachmentForm, setAttachmentForm] = useState<RenderForm | null>(null);
+  const [attachmentFormError, setAttachmentFormError] = useState<string | null>(null);
+  const [attachmentsFor, setAttachmentsFor] = useState<{ event: CalendarEventRow; group: CalendarGroup | null } | null>(null);
+  const [attachments, setAttachments] = useState<AttachmentRow[]>([]);
+  // Tamanho por id de upload (vem de uploads.file_size, não da tabela de anexos).
+  const [attachmentSizes, setAttachmentSizes] = useState<Record<number, number>>({});
+  const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+  const [attachmentSubmitting, setAttachmentSubmitting] = useState(false);
+  const [attachmentFormKey, setAttachmentFormKey] = useState(0);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+
   // Agenda escolhida no select abaixo da lista + collapses "Mês atual" / "Ano".
   const [selectedCalendarId, setSelectedCalendarId] = useState('');
   const [showMonth, setShowMonth] = useState(false);
@@ -326,6 +508,97 @@ export default function CalendarManagerGetAllPage() {
         : fallbackOwners.guest;
   const loadEditForm = useCallback(() => fetchForm(EDIT_FORM_SLUG, setEditForm, setEditFormError), [fetchForm]);
   const loadEventForm = useCallback(() => fetchForm(EVENT_FORM_SLUG, setEventForm, setEventFormError), [fetchForm]);
+  const loadAttendeeForm = useCallback(
+    () => fetchForm(ATTENDEE_FORM_SLUG, setAttendeeForm, setAttendeeFormError),
+    [fetchForm],
+  );
+
+  const loadReminderForm = useCallback(
+    () => fetchForm(REMINDER_FORM_SLUG, setReminderForm, setReminderFormError),
+    [fetchForm],
+  );
+
+  /** Lembretes ativos de um evento — POST find por calendar_event_id, do mais próximo do início ao mais distante. */
+  const loadReminders = useCallback(
+    async (eventId: number) => {
+      setRemindersLoading(true);
+      try {
+        const raw = await calendarEventRemindersTable.find(
+          { calendar_event_id: eventId },
+          { sort: 'minutes', order: 'ASC', limit: 500 },
+        );
+        setReminders(normalizeList<Record<string, unknown>>(raw).rows.map(toReminder));
+      } catch (err) {
+        setReminders([]);
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao carregar os lembretes.', { title: 'Lembretes' });
+      } finally {
+        setRemindersLoading(false);
+      }
+    },
+    [toast],
+  );
+
+  const loadAttachmentForm = useCallback(
+    () => fetchForm(ATTACHMENT_FORM_SLUG, setAttachmentForm, setAttachmentFormError),
+    [fetchForm],
+  );
+
+  /**
+   * Anexos ativos de um evento (API calendar-event-attachments) + tamanho de cada arquivo
+   * (API de uploads, filtrada por module/reference_id do evento). Tamanho é opcional: se a
+   * segunda chamada falhar, a lista sai sem ele.
+   */
+  const loadAttachments = useCallback(
+    async (eventId: number) => {
+      setAttachmentsLoading(true);
+      try {
+        const raw = await calendarEventAttachmentsTable.find(
+          { calendar_event_id: eventId },
+          { sort: 'id', order: 'ASC', limit: 500 },
+        );
+        setAttachments(normalizeList<Record<string, unknown>>(raw).rows.map(toAttachment));
+      } catch (err) {
+        setAttachments([]);
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao carregar os anexos.', { title: 'Anexos' });
+      } finally {
+        setAttachmentsLoading(false);
+      }
+      try {
+        const rawUploads = await uploadManagerTable.find(
+          { module: ATTACHMENT_UPLOAD_MODULE, reference_id: eventId },
+          { limit: 500 },
+        );
+        const sizes: Record<number, number> = {};
+        for (const u of normalizeList<Record<string, unknown>>(rawUploads).rows) {
+          sizes[Number(u.id)] = Number(u.file_size) || 0;
+        }
+        setAttachmentSizes(sizes);
+      } catch {
+        setAttachmentSizes({});
+      }
+    },
+    [toast],
+  );
+
+  /** Convidados ativos de um evento — POST find por calendar_event_id na API da própria tabela. */
+  const loadAttendees = useCallback(
+    async (eventId: number) => {
+      setAttendeesLoading(true);
+      try {
+        const raw = await calendarEventAttendeesTable.find(
+          { calendar_event_id: eventId },
+          { sort: 'id', order: 'ASC', limit: 500 },
+        );
+        setAttendees(normalizeList<Record<string, unknown>>(raw).rows.map(toAttendee));
+      } catch (err) {
+        setAttendees([]);
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao carregar os convidados.', { title: 'Convidados' });
+      } finally {
+        setAttendeesLoading(false);
+      }
+    },
+    [toast],
+  );
 
   /** Acha um list_manager pela slug (getNoPagination + filtro local — mesmo padrao de FormConstructorListPage.tsx). */
   const findListManager = useCallback(async (slug: string) => {
@@ -373,10 +646,24 @@ export default function CalendarManagerGetAllPage() {
     void loadForm();
     void loadEditForm();
     void loadEventForm();
+    void loadAttendeeForm();
+    void loadReminderForm();
+    void loadAttachmentForm();
     void loadActions();
     void loadEventColumns();
     void loadFallbackOwners();
-  }, [load, loadForm, loadEditForm, loadEventForm, loadActions, loadEventColumns, loadFallbackOwners]);
+  }, [
+    load,
+    loadForm,
+    loadEditForm,
+    loadEventForm,
+    loadAttendeeForm,
+    loadReminderForm,
+    loadAttachmentForm,
+    loadActions,
+    loadEventColumns,
+    loadFallbackOwners,
+  ]);
 
   // O modal "Ver eventos" guarda uma cópia do grupo: ao recarregar a listagem
   // (ex.: após excluir um evento) troca pela versão nova do mesmo calendário.
@@ -432,6 +719,8 @@ export default function CalendarManagerGetAllPage() {
           ? `Eventos a partir de ${formatIsoBr(rangeStart)}`
           : `Eventos até ${formatIsoBr(rangeEnd)}`;
   const cardsEmptyText = rangeMode ? 'Nenhum compromisso no período.' : 'Esta agenda não tem eventos.';
+  // Nos cards só entram as ações que abrem modal (sem exclusão por clique acidental).
+  const cardEventActions = useMemo(() => eventActions.filter((a) => a.actionType === 'modal'), [eventActions]);
 
   // Âncora: clique num dia leva o navegador até o início dos cards.
   useEffect(() => {
@@ -525,6 +814,237 @@ export default function CalendarManagerGetAllPage() {
       setCreatingEventFor(group);
     }
   }, []);
+
+  /**
+   * Ramo 'modal' das ações de um evento (list_actions de 'calendar-events-view').
+   * `group` = calendário do "Ver eventos" de origem (fechar volta a ele); `null` = aberto
+   * pelos cards da agenda (fechar só fecha).
+   */
+  const handleOpenEventModal = useCallback(
+    (targetSlug: string, event: CalendarEventRow, group: CalendarGroup | null) => {
+      if (targetSlug === ATTENDEE_FORM_SLUG) {
+        setViewingGroup(null);
+        setAttendees([]);
+        setAttendeeFormKey((k) => k + 1);
+        setAttendeesFor({ event, group });
+        void loadAttendees(event.id);
+        return;
+      }
+      if (targetSlug === REMINDER_FORM_SLUG) {
+        setViewingGroup(null);
+        setReminders([]);
+        setReminderFormKey((k) => k + 1);
+        setRemindersFor({ event, group });
+        void loadReminders(event.id);
+        return;
+      }
+      if (targetSlug === ATTACHMENT_FORM_SLUG) {
+        setViewingGroup(null);
+        setAttachments([]);
+        setAttachmentSizes({});
+        setAttachmentFile(null);
+        setAttachmentFormKey((k) => k + 1);
+        setAttachmentsFor({ event, group });
+        void loadAttachments(event.id);
+      }
+    },
+    [loadAttendees, loadReminders, loadAttachments],
+  );
+
+  /** Fecha "Anexos" e, se veio do "Ver eventos", reabre o do calendário de origem. */
+  const closeAttachments = useCallback(() => {
+    const origin = attachmentsFor?.group ?? null;
+    setAttachmentsFor(null);
+    setAttachmentFile(null);
+    setViewingGroup(origin);
+  }, [attachmentsFor]);
+
+  /**
+   * Envio em 2 chamadas, cada uma na API da própria tabela:
+   * 1) POST upload-manager/upload (arquivo físico em writable/uploads/calendar_events/<evento>/);
+   * 2) POST calendar-event-attachments/create com file_id = id do upload.
+   * Se (2) falhar, apaga o upload de (1) — não deixa arquivo órfão no disco.
+   */
+  const handleAttachmentSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!attachmentsFor) return;
+      if (!attachmentForm?.meta.submitEndpoint) {
+        toast.error('Este formulario nao tem submit_endpoint definido.', { title: 'Sem destino' });
+        return;
+      }
+      if (!attachmentFile) {
+        toast.error('Escolha um arquivo para anexar.', { title: 'Anexos' });
+        return;
+      }
+
+      const payload = formDataToPayload(event.currentTarget);
+      const send = senderFor(attachmentForm.meta.httpMethod);
+      const path = resolveEndpoint(attachmentForm.meta.submitEndpoint);
+      const eventId = attachmentsFor.event.id;
+
+      setAttachmentSubmitting(true);
+      let uploadId = 0;
+      try {
+        const rawUpload = await uploadManagerUpload.upload({
+          file: attachmentFile,
+          fields: {
+            module: ATTACHMENT_UPLOAD_MODULE,
+            reference_id: String(eventId),
+            collection: 'attachments',
+          },
+        });
+        uploadId = Number((rawUpload as { data?: { id?: unknown } } | null)?.data?.id) || 0;
+        if (uploadId < 1) throw new Error('Upload sem id na resposta.');
+
+        await send(path, { ...payload, calendar_event_id: eventId, file_id: uploadId });
+        toast.success('Anexo enviado.', { title: attachmentForm.meta.title });
+        setAttachmentFile(null);
+        setAttachmentFormKey((k) => k + 1);
+        void loadAttachments(eventId);
+      } catch (err) {
+        if (uploadId > 0) {
+          await uploadManagerTable.deleteHard(uploadId).catch(() => undefined);
+        }
+        if (err instanceof ApiError) {
+          toast.error(`${err.message}${errorDetail(err)}`, { title: 'Erro ao enviar' });
+        } else {
+          toast.error('Falha inesperada ao enviar o anexo.', { title: 'Erro ao enviar' });
+        }
+      } finally {
+        setAttachmentSubmitting(false);
+      }
+    },
+    [attachmentForm, attachmentsFor, attachmentFile, loadAttachments, toast],
+  );
+
+  /** Remove o anexo (soft delete na API da própria tabela — o arquivo físico fica, restaurável). */
+  const removeAttachment = useCallback(
+    async (attachment: AttachmentRow) => {
+      if (!attachmentsFor) return;
+      if (!window.confirm(`Remover o anexo "${attachment.title}"?`)) return;
+      try {
+        await calendarEventAttachmentsTable.deleteSoft(attachment.id);
+        toast.success('Anexo removido.', { title: 'Anexos' });
+        void loadAttachments(attachmentsFor.event.id);
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao remover o anexo.', { title: 'Anexos' });
+      }
+    },
+    [attachmentsFor, loadAttachments, toast],
+  );
+
+  /** Fecha "Convidados" e, se veio do "Ver eventos", reabre o do calendário de origem. */
+  const closeAttendees = useCallback(() => {
+    const origin = attendeesFor?.group ?? null;
+    setAttendeesFor(null);
+    setViewingGroup(origin);
+  }, [attendeesFor]);
+
+  /** Fecha "Lembretes" e, se veio do "Ver eventos", reabre o do calendário de origem. */
+  const closeReminders = useCallback(() => {
+    const origin = remindersFor?.group ?? null;
+    setRemindersFor(null);
+    setViewingGroup(origin);
+  }, [remindersFor]);
+
+  const handleReminderSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!remindersFor) return;
+      if (!reminderForm?.meta.submitEndpoint) {
+        toast.error('Este formulario nao tem submit_endpoint definido.', { title: 'Sem destino' });
+        return;
+      }
+
+      const payload = formDataToPayload(event.currentTarget);
+      const send = senderFor(reminderForm.meta.httpMethod);
+      const path = resolveEndpoint(reminderForm.meta.submitEndpoint);
+
+      setReminderSubmitting(true);
+      try {
+        await send(path, payload);
+        toast.success('Lembrete adicionado.', { title: reminderForm.meta.title });
+        setReminderFormKey((k) => k + 1);
+        void loadReminders(remindersFor.event.id);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          toast.error(`${err.message}${errorDetail(err)}`, { title: 'Erro ao enviar' });
+        } else {
+          toast.error('Falha inesperada ao enviar.', { title: 'Erro ao enviar' });
+        }
+      } finally {
+        setReminderSubmitting(false);
+      }
+    },
+    [reminderForm, remindersFor, loadReminders, toast],
+  );
+
+  /** Remove o lembrete (soft delete na API da própria tabela) e recarrega a lista. */
+  const removeReminder = useCallback(
+    async (reminder: ReminderRow) => {
+      if (!remindersFor) return;
+      const what = `${REMINDER_METHOD[reminder.method]?.label ?? reminder.method} ${reminderMinutesLabel(reminder.minutes)}`;
+      if (!window.confirm(`Remover o lembrete "${what}"?`)) return;
+      try {
+        await calendarEventRemindersTable.deleteSoft(reminder.id);
+        toast.success('Lembrete removido.', { title: 'Lembretes' });
+        void loadReminders(remindersFor.event.id);
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao remover o lembrete.', { title: 'Lembretes' });
+      }
+    },
+    [remindersFor, loadReminders, toast],
+  );
+
+  const handleAttendeeSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!attendeesFor) return;
+      if (!attendeeForm?.meta.submitEndpoint) {
+        toast.error('Este formulario nao tem submit_endpoint definido.', { title: 'Sem destino' });
+        return;
+      }
+
+      const payload = formDataToPayload(event.currentTarget);
+      const send = senderFor(attendeeForm.meta.httpMethod);
+      const path = resolveEndpoint(attendeeForm.meta.submitEndpoint);
+
+      setAttendeeSubmitting(true);
+      try {
+        await send(path, payload);
+        toast.success('Convidado adicionado.', { title: attendeeForm.meta.title });
+        setAttendeeFormKey((k) => k + 1);
+        void loadAttendees(attendeesFor.event.id);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          toast.error(`${err.message}${errorDetail(err)}`, { title: 'Erro ao enviar' });
+        } else {
+          toast.error('Falha inesperada ao enviar.', { title: 'Erro ao enviar' });
+        }
+      } finally {
+        setAttendeeSubmitting(false);
+      }
+    },
+    [attendeeForm, attendeesFor, loadAttendees, toast],
+  );
+
+  /** Remove o convite (soft delete na API da própria tabela) e recarrega a lista. */
+  const removeAttendee = useCallback(
+    async (attendee: AttendeeRow) => {
+      if (!attendeesFor) return;
+      const who = attendee.displayName || attendee.email;
+      if (!window.confirm(`Remover ${who} dos convidados?`)) return;
+      try {
+        await calendarEventAttendeesTable.deleteSoft(attendee.id);
+        toast.success('Convidado removido.', { title: 'Convidados' });
+        void loadAttendees(attendeesFor.event.id);
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao remover o convidado.', { title: 'Convidados' });
+      }
+    },
+    [attendeesFor, loadAttendees, toast],
+  );
 
   const handleEditSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>, group: CalendarGroup) => {
@@ -855,6 +1375,21 @@ export default function CalendarManagerGetAllPage() {
                         </div>
                         {ev.description && <p className="card-text small mb-0">{ev.description}</p>}
                       </div>
+                      {/* Ações 'modal' do evento (list_actions de 'calendar-events-view': Convidados, Lembretes,
+                          Anexos...) — 'Excluir evento' (api_call) fica só no "Ver eventos". */}
+                      {cardEventActions.length > 0 && (
+                        <div className="card-footer bg-transparent d-flex justify-content-end gap-1 py-2">
+                          {cardEventActions.map((a) => (
+                            <RowActionButton
+                              key={a.id}
+                              action={a}
+                              row={ev as unknown as Record<string, unknown>}
+                              onOpenModal={(slug) => handleOpenEventModal(slug, ev, null)}
+                              onExecuted={handleEventActionExecuted}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -994,10 +1529,18 @@ export default function CalendarManagerGetAllPage() {
               displayEnd: ev.endDatetime ?? ev.endDate ?? '',
             },
           }));
-          const actionsFor = (row: Record<string, unknown>) =>
-            eventActions.map((a) => (
-              <RowActionButton key={a.id} action={a} row={row} onExecuted={handleEventActionExecuted} />
+          const actionsFor = (row: Record<string, unknown>) => {
+            const ev = viewingGroup.events.find((e) => e.id === row.id);
+            return eventActions.map((a) => (
+              <RowActionButton
+                key={a.id}
+                action={a}
+                row={row}
+                onOpenModal={ev ? (slug) => handleOpenEventModal(slug, ev, viewingGroup) : undefined}
+                onExecuted={handleEventActionExecuted}
+              />
             ));
+          };
           const [titleColumn, ...detailColumns] = eventColumns;
 
           return (
@@ -1088,6 +1631,305 @@ export default function CalendarManagerGetAllPage() {
               </button>
               <button type="button" className="btn btn-outline-secondary" onClick={() => setCreatingEventFor(null)}>
                 Cancelar
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal "Convidados" — lista via API calendar-event-attendees (find por calendar_event_id) +
+          form_manager 'cadastro-convidado' com calendar_event_id pré-preenchido (campo oculto). */}
+
+      <Modal
+        open={!!attendeesFor}
+        title={attendeesFor ? `Convidados — ${attendeesFor.event.summary}` : 'Convidados'}
+        onClose={closeAttendees}
+        size="lg"
+      >
+        {attendeesFor && (
+          <>
+            {attendeesLoading && <p className="text-body-secondary small mb-3">Carregando convidados...</p>}
+
+            {!attendeesLoading && attendees.length === 0 && (
+              <EmptyState
+                variant="warning"
+                title="Nenhum convidado"
+                description="Este evento ainda nao tem convidados. Use o formulario abaixo."
+              />
+            )}
+
+            {!attendeesLoading && attendees.length > 0 && (() => {
+              // Badges dos checkboxes marcados + status — mesmas no desktop e no card mobile.
+              const badgesFor = (a: AttendeeRow) => (
+                <>
+                  {ATTENDEE_FLAGS.filter((f) => a[f.key]).map((f) => (
+                    <span key={f.key} className="badge text-bg-light border">
+                      <i className={`bi bi-${f.icon} me-1`} aria-hidden="true" />
+                      {f.label}
+                    </span>
+                  ))}
+                  <span className="badge text-bg-secondary">
+                    {RESPONSE_STATUS_LABEL[a.responseStatus] ?? a.responseStatus}
+                  </span>
+                </>
+              );
+              const removeButton = (a: AttendeeRow) => (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  aria-label={`Remover ${a.displayName || a.email}`}
+                  onClick={() => void removeAttendee(a)}
+                >
+                  <i className="bi bi-trash" />
+                </button>
+              );
+
+              return (
+                <>
+                  {/* Desktop (md+): 1 linha por convidado. */}
+                  <ul className="list-group mb-3 d-none d-md-flex">
+                    {attendees.map((a) => (
+                      <li key={a.id} className="list-group-item d-flex align-items-center gap-2">
+                        <i className="bi bi-person-check text-body-secondary" aria-hidden="true" />
+                        <div className="flex-grow-1 text-truncate">
+                          <div className="fw-semibold text-truncate">{a.displayName || a.email}</div>
+                          {a.displayName && <div className="small text-body-secondary text-truncate">{a.email}</div>}
+                        </div>
+                        <div className="d-flex flex-wrap justify-content-end gap-1">{badgesFor(a)}</div>
+                        {removeButton(a)}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Mobile (< md): 1 card por convidado — nome no título, e-mail inteiro, badges quebrando linha. */}
+                  <div className="d-md-none d-flex flex-column gap-2 mb-3">
+                    {attendees.map((a) => (
+                      <div className="card shadow-sm" key={a.id}>
+                        <div className="card-body p-3">
+                          <div className="fw-semibold">{a.displayName || a.email}</div>
+                          {a.displayName && <div className="small text-body-secondary text-break mb-2">{a.email}</div>}
+                          <div className="d-flex flex-wrap gap-1">{badgesFor(a)}</div>
+                        </div>
+                        <div className="card-footer bg-transparent d-flex justify-content-end py-2">{removeButton(a)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+          </>
+        )}
+
+        {attendeeFormError && !attendeeForm && <EmptyState title="Formulario indisponivel" description={attendeeFormError} />}
+
+        {attendeeForm && !isFormPublished(attendeeForm) && (
+          <EmptyState
+            title="Formulario indisponivel"
+            description={`Status "${attendeeForm.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
+          />
+        )}
+
+        {attendeeForm && isFormPublished(attendeeForm) && attendeesFor && (
+          <form onSubmit={(e) => void handleAttendeeSubmit(e)} noValidate className="border-top pt-3">
+            <FormGrid
+              key={`${attendeesFor.event.id}-${attendeeFormKey}`}
+              schema={withDefaultValues(attendeeForm.schema, { calendar_event_id: String(attendeesFor.event.id) })}
+            />
+            <div className="d-flex gap-2 mt-4 pt-3 border-top">
+              <button type="submit" className="btn btn-primary" disabled={attendeeSubmitting}>
+                {attendeeSubmitting ? 'Enviando...' : 'Convidar'}
+              </button>
+              <button type="button" className="btn btn-outline-secondary" onClick={closeAttendees}>
+                {attendeesFor.group ? 'Voltar aos eventos' : 'Fechar'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal "Lembretes" — lista via API calendar-event-reminders (find por calendar_event_id) +
+          form_manager 'cadastro-lembrete' com calendar_event_id pré-preenchido (campo oculto).
+          Só grava a configuração: ainda não há agendador que dispare o aviso. */}
+      <Modal
+        open={!!remindersFor}
+        title={remindersFor ? `Lembretes — ${remindersFor.event.summary}` : 'Lembretes'}
+        onClose={closeReminders}
+        size="lg"
+      >
+        {remindersFor && (
+          <>
+            {remindersLoading && <p className="text-body-secondary small mb-3">Carregando lembretes...</p>}
+
+            {!remindersLoading && reminders.length === 0 && (
+              <EmptyState
+                variant="warning"
+                title="Nenhum lembrete"
+                description="Este evento ainda nao tem lembretes. Use o formulario abaixo."
+              />
+            )}
+
+            {!remindersLoading && reminders.length > 0 && (
+              <div className="d-flex flex-column gap-2 mb-3">
+                {reminders.map((r) => {
+                  const method = REMINDER_METHOD[r.method];
+                  return (
+                    <div key={r.id} className="card shadow-sm">
+                      <div className="card-body p-2 ps-3 d-flex align-items-center gap-2">
+                        <i className={`bi bi-${method?.icon ?? 'bell'} text-body-secondary`} aria-hidden="true" />
+                        <div className="flex-grow-1">
+                          <span className="fw-semibold">{method?.label ?? r.method}</span>
+                          <span className="text-body-secondary"> · {reminderMinutesLabel(r.minutes)}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          aria-label={`Remover lembrete ${method?.label ?? r.method} ${reminderMinutesLabel(r.minutes)}`}
+                          onClick={() => void removeReminder(r)}
+                        >
+                          <i className="bi bi-trash" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {reminderFormError && !reminderForm && <EmptyState title="Formulario indisponivel" description={reminderFormError} />}
+
+        {reminderForm && !isFormPublished(reminderForm) && (
+          <EmptyState
+            title="Formulario indisponivel"
+            description={`Status "${reminderForm.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
+          />
+        )}
+
+        {reminderForm && isFormPublished(reminderForm) && remindersFor && (
+          <form onSubmit={(e) => void handleReminderSubmit(e)} noValidate className="border-top pt-3">
+            <FormGrid
+              key={`${remindersFor.event.id}-${reminderFormKey}`}
+              schema={withDefaultValues(reminderForm.schema, { calendar_event_id: String(remindersFor.event.id) })}
+            />
+            <div className="d-flex gap-2 mt-4 pt-3 border-top">
+              <button type="submit" className="btn btn-primary" disabled={reminderSubmitting}>
+                {reminderSubmitting ? 'Enviando...' : 'Adicionar lembrete'}
+              </button>
+              <button type="button" className="btn btn-outline-secondary" onClick={closeReminders}>
+                {remindersFor.group ? 'Voltar aos eventos' : 'Fechar'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal "Anexos" — lista via API calendar-event-attachments; arquivo físico via API de uploads
+          (writable/uploads/calendar_events/<evento>/), com Visualizar (serve) e Baixar (download). */}
+      <Modal
+        open={!!attachmentsFor}
+        title={attachmentsFor ? `Anexos — ${attachmentsFor.event.summary}` : 'Anexos'}
+        onClose={closeAttachments}
+        size="lg"
+      >
+        {attachmentsFor && (
+          <>
+            {attachmentsLoading && <p className="text-body-secondary small mb-3">Carregando anexos...</p>}
+
+            {!attachmentsLoading && attachments.length === 0 && (
+              <EmptyState
+                variant="warning"
+                title="Nenhum anexo"
+                description="Este evento ainda nao tem anexos. Use o formulario abaixo."
+              />
+            )}
+
+            {!attachmentsLoading && attachments.length > 0 && (
+              <div className="d-flex flex-column gap-2 mb-3">
+                {attachments.map((a) => {
+                  const size = attachmentSizes[a.fileId];
+                  return (
+                    <div key={a.id} className="card shadow-sm">
+                      <div className="card-body p-2 ps-3 d-flex flex-wrap align-items-center gap-2">
+                        <i className={`bi bi-${attachmentIcon(a.mimeType)} fs-4 text-body-secondary`} aria-hidden="true" />
+                        <div className="flex-grow-1 text-break" style={{ minWidth: '10rem' }}>
+                          <div className="fw-semibold">{a.title}</div>
+                          <div className="small text-body-secondary">
+                            {[a.mimeType, size !== undefined ? formatBytes(size) : ''].filter(Boolean).join(' · ')}
+                          </div>
+                        </div>
+                        <div className="d-flex gap-1 ms-auto">
+                          <a
+                            className="btn btn-sm btn-outline-secondary"
+                            href={uploadManagerUpload.serveUrl(a.fileId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Visualizar ${a.title}`}
+                          >
+                            <i className="bi bi-eye" />
+                          </a>
+                          <a
+                            className="btn btn-sm btn-outline-secondary"
+                            href={uploadManagerUpload.downloadUrl(a.fileId)}
+                            aria-label={`Baixar ${a.title}`}
+                          >
+                            <i className="bi bi-download" />
+                          </a>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            aria-label={`Remover ${a.title}`}
+                            onClick={() => void removeAttachment(a)}
+                          >
+                            <i className="bi bi-trash" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {attachmentFormError && !attachmentForm && (
+          <EmptyState title="Formulario indisponivel" description={attachmentFormError} />
+        )}
+
+        {attachmentForm && !isFormPublished(attachmentForm) && (
+          <EmptyState
+            title="Formulario indisponivel"
+            description={`Status "${attachmentForm.meta.status ?? 'draft'}" — este formulario ainda nao foi publicado (status "active").`}
+          />
+        )}
+
+        {attachmentForm && isFormPublished(attachmentForm) && attachmentsFor && (
+          <form onSubmit={(e) => void handleAttachmentSubmit(e)} noValidate className="border-top pt-3">
+            {/* Seletor de arquivo fora do FormGrid: field_type não tem 'file' (mesmo padrão de UploadListPage). */}
+            <div className="mb-3">
+              <label htmlFor={`anexo-arquivo-${attachmentFormKey}`} className="form-label fw-semibold">
+                Arquivo<span className="text-danger ms-1">*</span>
+              </label>
+              <input
+                key={attachmentFormKey}
+                id={`anexo-arquivo-${attachmentFormKey}`}
+                type="file"
+                className="form-control"
+                accept={ATTACHMENT_ACCEPT}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setAttachmentFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
+            <FormGrid
+              key={`${attachmentsFor.event.id}-${attachmentFormKey}`}
+              schema={withDefaultValues(attachmentForm.schema, { calendar_event_id: String(attachmentsFor.event.id) })}
+            />
+            <div className="d-flex gap-2 mt-4 pt-3 border-top">
+              <button type="submit" className="btn btn-primary" disabled={attachmentSubmitting || !attachmentFile}>
+                {attachmentSubmitting ? 'Enviando...' : 'Enviar anexo'}
+              </button>
+              <button type="button" className="btn btn-outline-secondary" onClick={closeAttachments}>
+                {attachmentsFor.group ? 'Voltar aos eventos' : 'Fechar'}
               </button>
             </div>
           </form>

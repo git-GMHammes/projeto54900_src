@@ -6,6 +6,22 @@
 
 ## Modelo ativo: Migrate REMAKE (desde 2026-09-23)
 
+> ⛔ **REGRA DO USUÁRIO (2026-09-24) — NENHUMA MIGRATION NOVA SEM AUTORIZAÇÃO**
+>
+> - **PROIBIDO** criar migration ou SQL nova por conta própria — nem
+>   `alter_table`, nem `seed_table` avulso, nem `create_view`, nem REMAKE.
+>   Criar sem autorização **atrapalha** o usuário.
+> - **Quem decide quando um novo REMAKE deve ser feito é o usuário — ele
+>   avisa.** Até lá, mudanças de schema/dados ficam só no banco DEV e na
+>   documentação do módulo, sem arquivo em `app/Database/Migrations/`.
+> - **Todo migrate SOBRESCREVE o anterior: DESTRÓI TUDO e REFAZ TUDO.** Não
+>   existe migration incremental neste projeto.
+> - Contraexemplo (o que **não** fazer): os arquivos criados sem autorização em
+>   2026-09-24 — `202609241230_create_view.sql`, `202609241300_alter_table.sql`,
+>   `202609241301_seed_table.sql`, `202609241400_alter_table.sql`,
+>   `202609241500_seed_table.sql`, `202609241600_seed_table.sql`,
+>   `202609241700_alter_table.sql`, `202609241701_seed_table.sql`.
+
 **Decisão do usuário (2026-09-23):** substitui a pausa de 2026-09-22. Não se
 escreve migration incremental (Forge, `ALTER TABLE` à mão, `spark
 make:migration` por tabela). **Sempre que for preciso rodar os migrates, gera-se
@@ -46,6 +62,30 @@ Regras do REMAKE:
   ver [`README_form.md`](README_form.md). O REMAKE só captura o estado.
 - Credenciais do banco DEV nunca gravadas em arquivo versionado (regra global
   de segredos, `CLAUDE.md`).
+
+### Comentários no SQL de view (`*_create_view.sql`) — à prova do formatador
+
+**Pedido do usuário (2026-09-24):** ao criar um SQL de view a pedido do
+usuário, os comentários `--` devem sobreviver ao formatador de SQL do editor.
+O formatador quebrou o `202609241714_create_view.sql` assim:
+
+- **Divisor `-- =====` vira `-- =  =  =  =`** — e o `SET NAMES utf8mb4;` da
+  linha seguinte foi colado dentro do comentário (desativado).
+- **Palavra-chave SQL dentro de comentário é jogada para uma linha nova, fora
+  do `--`** — ex.: `-- Fonte: SHOW CREATE VIEW de cada uma` virou
+  `-- Fonte: SHOW` + `CREATE VIEW de cada uma` solto; `-- cm LEFT JOIN ce`
+  virou `LEFT JOIN ce` solto. O MySQL tenta executar essas linhas → erro.
+
+Regras:
+
+- **PROIBIDO divisor com `=`** (`-- =====`). Usar só `-- -----`, que o
+  formatador preserva.
+- **Nenhuma palavra-chave SQL em comentário** (`SELECT`, `JOIN`, `LEFT JOIN`,
+  `CREATE`, `SHOW`, `DROP`, `FROM`, `WHERE`, `NULL`, ...). Descrever em
+  português: "junção à esquerda", "sem junção", "vazio", "definição real de
+  cada view no banco".
+- `SET NAMES utf8mb4;` sempre em linha própria, fora de comentário.
+- Espelho: `202609241714_create_view.sql`.
 
 As seções "Criar migration", "Seeds" e o `$DBGroup` abaixo continuam válidos
 como referência do CI4, mas o caminho ativo para o `codeigniter54900_db` é o

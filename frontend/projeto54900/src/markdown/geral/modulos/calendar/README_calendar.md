@@ -92,6 +92,56 @@ recursos têm FK para `calendar_events`. Todo o endpoint-set segue o mesmo
 contrato canônico do resto do projeto (`find`/`get`/`get-all`/`create`/
 `update`/`delete-soft`/etc.) — ver `README_rotas_swagger.md` do backend.
 
+## Convidados do evento — modal "Convidados" (2026-09-24)
+
+- **Onde:** `/v1/calendar-manager` → "Ver eventos" → ação **Convidados** (ícone
+  `people`, `list_actions` do list_manager `calendar-events-view`, tipo `modal`,
+  `href_template='cadastro-convidado'`). O modal substitui o "Ver eventos";
+  fechar volta a ele.
+- **Lista:** `POST /api/v1/calendar-event-attendees/find` com
+  `{ calendar_event_id }`; remover = `DELETE .../delete-soft/{id}`. Serviço
+  `services/v1/calendarEventAttendees.table.ts`.
+- **Formulário:** form_manager `cadastro-convidado` (FormGrid), `calendar_event_id`
+  oculto e pré-preenchido. Select **Usuário** (`user_manager_id`, fonte
+  `user-manager-view`) usa `fillFields` para preencher E-mail/Nome exibido.
+- **`fillFields` (genérico do FormGrid):** `select_config_json.fillFields =
+  { campo_destino: chave_do_item }` — ao escolher uma opção (select single),
+  copia os valores para outros campos do mesmo `<form>`. Editável no Construtor
+  de Formulários (`sel_fill_fields`, formato `destino:chave, destino:chave`).
+- **Banco:** `calendar_event_attendees.user_manager_id` (obrigatório no create —
+  sem convidado externo; e-mail/nome sempre do perfil) e `comment` TEXT. Arquivos
+  `202609241300_alter_table.sql`, `202609241301_seed_table.sql` e
+  `202609241400_alter_table.sql`.
+
+## Lembretes do evento — modal "Lembretes" (2026-09-24)
+
+- **Onde:** "Ver eventos" → ação **Lembretes** (ícone `bell`, `list_actions` de
+  `calendar-events-view`, `href_template='cadastro-lembrete'`). Mesmo desenho do
+  modal "Convidados": substitui o "Ver eventos" e volta a ele ao fechar.
+- **Lista:** `POST /api/v1/calendar-event-reminders/find` com `{ calendar_event_id }`,
+  ordenada por `minutes`; remover = `delete-soft`. Serviço
+  `services/v1/calendarEventReminders.table.ts`. Um card por lembrete
+  ("Notificação · 30 minutos antes"), igual em desktop e mobile.
+- **Formulário:** `cadastro-lembrete` — Método (padrão Notificação) + Minutos
+  antes (lista fixa 5/10/30 min, 1 h, 1 dia, 1 semana; padrão 30); Evento oculto.
+- **Limite do MVP:** só grava a configuração — não existe agendador que dispare
+  o aviso (nem por e-mail, nem por notificação). Destino natural: mensageria interna.
+
+## Anexos do evento — modal "Anexos" (2026-09-24)
+
+- **Onde:** "Ver eventos" → ação **Anexos** (ícone `paperclip`,
+  `href_template='cadastro-anexo-evento'`). Mesmo desenho dos outros modais.
+- **Envio (2 APIs, cada uma da sua tabela):** 1) `uploadManagerUpload.upload`
+  (`module=calendar_events`, `reference_id=<evento>`) grava em
+  `writable/uploads/calendar_events/<evento>/`; 2) `calendarEventAttachmentsTable`
+  cria o anexo com `file_id`. Se (2) falhar, apaga o upload de (1).
+- **Lista:** card por anexo com ícone pelo MIME, título, MIME · tamanho (tamanho vem
+  de `upload-manager/find` por `module`/`reference_id`) e botões **Visualizar**
+  (`uploadManagerUpload.serveUrl`, nova aba), **Baixar** (`downloadUrl`) e Remover
+  (`delete-soft` do anexo **e** do upload: link responde 404, arquivo fica no disco;
+  `delete-restore` reativa os dois; `delete-hard`/`clear-deleted` apagam o arquivo).
+- **Segurança pendente:** `serve`/`download` não exigem login (aguarda sessão).
+
 ## Roadmap — próximos passos
 
 1. **Criar o primeiro calendário de verdade**, pelo modal já existente em
@@ -109,8 +159,9 @@ contrato canônico do resto do projeto (`find`/`get`/`get-all`/`create`/
    real abre modal de criar/editar `calendar_events` (mesmo padrão `Modal` +
    `FormGrid` já usado para `calendar_manager`).
 4. **Sub-recursos do evento** (attendees, reminders, attachments, extended
-   properties) — provavelmente abas ou modais aninhados dentro do modal do
-   evento; ainda não desenhado.
+   properties) — cada um com a **própria API** (nada via `calendar-events` nem
+   via `view_calendar_manager`). **Convidados, Lembretes e Anexos: feitos
+   (2026-09-24)** — ver seções abaixo. Extended properties: pendente.
 5. **Lista de calendários**: quando existir mais de 1 `calendar`, uma tela
    `pages/v1/calendar/calendar-manager/GetAllPage.tsx` (padrão `list_manager` já
    usado no resto do projeto) para escolher qual visualizar/editar.
@@ -134,7 +185,7 @@ ganha o próprio `README_<modulo>.md` quando entrar em desenvolvimento:
 
 - **`networking`** — mensagens: lista pública, mensagem privada, mensagens em
   grupo.
-- **`map`** — mapas (IBGE + Google Maps): pontos, rotas, distância.
+- **`map`** — mapas (SVG + Google Maps): pontos, rotas, distância.
 - **`document_manager`** (SGD — Sistema Gerencial de Documentos, futuro mais
   distante) — lotes de documentos, arquivamento com locais físicos, formulário
   que cadastra qualquer documento (virtual ou anexo de físico), desarquivamento,

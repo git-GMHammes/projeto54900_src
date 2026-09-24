@@ -107,6 +107,9 @@ no host com `podman compose exec php php spark ...` (o container tem PHP 8.2).
 `-g mapa|agenda|chat` para os módulos. Cobre `make:migration`, `migrate:status`,
 `rollback`, `migrate:refresh` (destrutivo), seeds e o fluxo de montar o banco do
 zero. Alerta: as migrations atuais não declaram `$DBGroup`.
+**Proibido criar migration/SQL nova (ALTER, SEED, REMAKE) sem autorização do
+usuário** — ele avisa quando fazer novo REMAKE; todo migrate destrói tudo e
+refaz tudo (2026-09-24).
 
 [`geral/README_migrate.md`](geral/README_migrate.md) — comandos de migration do CodeIgniter por módulo.
 

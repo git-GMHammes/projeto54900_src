@@ -1,5 +1,5 @@
-// Pagina /v1/ibge-map (modulo ibgeMap): mapa SVG dos 92 municipios do RJ
-// (malha IBGE simplificada, <path id="CD_MUN">) com tooltip de nome no hover
+// Pagina /v1/svg-map (modulo svgMap): mapa SVG dos 92 municipios do RJ
+// (malha SVG simplificada, <path id="CD_MUN">) com tooltip de nome no hover
 // e checklist de municipios sincronizado com o mapa nos 2 sentidos:
 //   - marcar/desmarcar o checkbox -> pinta/limpa o municipio no SVG
 //   - clicar no municipio do SVG  -> marca/desmarca o checkbox
@@ -9,9 +9,10 @@
 // Origem: projeto CakePHP diarias — templates/Web/V1A/Mapa/Page/index.php +
 // webroot/js/sad/v1a/pages/mapa/mapa_rj_tooltip.js e mapa_rj_checklist.js.
 // O checklist usa o CheckboxField do FormGrid (controlado) no lugar do
-// field_checkbox.js do Cake.
+// field_checkbox.js do Cake e fica num Offcanvas (Bootstrap), aberto pelo
+// botao bi-card-checklist no canto superior esquerdo.
 //
-// Arquivos estaticos em public/ibge-map/:
+// Arquivos estaticos em public/svg-map/:
 //   - rj_municipios.svg         — mapa (inserido inline para permitir hover/clique por path)
 //   - rj_municipios_nomes.json  — [{CD_MUN, NM_MUN}] (fonte dos nomes; obrigatorio)
 //   - rj_municipios_cores.json  — [{CD_MUN, NM_MUN, cor}] (cor por municipio, vizinhos
@@ -23,9 +24,9 @@ import PageHeader from '@/components/global/PageHeader';
 import { CheckboxField } from '@/components/ui/FormGrid/checkbox';
 import { env } from '@/config/env';
 
-const ASSET_BASE = `${env.basePath}/ibge-map`;
+const ASSET_BASE = `${env.basePath}/svg-map`;
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const LABELS_GROUP_ID = 'ibgeMapLabels';
+const LABELS_GROUP_ID = 'svgMapLabels';
 const TENTATIVAS_AUTOMATICAS = 1; // 1 nova tentativa silenciosa antes de pedir acao do usuario
 const TOOLTIP_PADRAO = 'Passe o mouse sobre um município.';
 const TODOS = 'todos';
@@ -152,7 +153,7 @@ interface MapaDados {
   cores: Record<string, string>;
 }
 
-export default function IbgeMapPage() {
+export default function SvgMapPage() {
   const [dados, setDados] = useState<MapaDados | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [selecionados, setSelecionados] = useState<string[]>([]);
@@ -171,7 +172,7 @@ export default function IbgeMapPage() {
       })
       .catch((err: unknown) => {
         if (signal.aborted) return;
-        console.error(`[IbgeMap] Falha ao carregar o mapa (tentativa ${tentativa + 1}):`, err);
+        console.error(`[SvgMap] Falha ao carregar o mapa (tentativa ${tentativa + 1}):`, err);
         if (tentativa < TENTATIVAS_AUTOMATICAS) {
           setTimeout(() => { if (!signal.aborted) carregar(tentativa + 1, signal); }, 800);
           return;
@@ -207,7 +208,7 @@ export default function IbgeMapPage() {
   }, [dados]);
 
   const options = useMemo(
-    () => (dados?.municipios ?? []).map((m) => ({ id: `ibge-mun-${m.CD_MUN}`, value: m.CD_MUN, label: m.NM_MUN })),
+    () => (dados?.municipios ?? []).map((m) => ({ id: `svg-mun-${m.CD_MUN}`, value: m.CD_MUN, label: m.NM_MUN })),
     [dados],
   );
 
@@ -268,69 +269,91 @@ export default function IbgeMapPage() {
 
   return (
     <>
-      <PageHeader title="IBGE — Mapa do Rio de Janeiro" subtitle="Municípios (malha IBGE)" />
+      <PageHeader title="SVG — Mapa do Rio de Janeiro" subtitle="Municípios (malha SVG)" />
 
-      <div className="row justify-content-center">
-        <div className="col-12 col-xl-10">
-          <div className="card shadow-sm border-0">
-            <div className="card-header text-bg-primary py-3">
-              <h6 className="mb-0 fw-semibold">Mapa do Rio de Janeiro — Municípios</h6>
-            </div>
-            <div className="card-body position-relative">
-              <div id="ibgeMapChecklist">
-                {erro ? (
-                  <>
-                    <div className="small text-danger mb-2">{erro}</div>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => setTentativaManual((n) => n + 1)}
-                    >
-                      Tentar novamente
-                    </button>
-                  </>
-                ) : !dados ? (
-                  <div className="text-center text-muted small py-3">
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                    Carregando municípios...
-                  </div>
-                ) : (
-                  <>
-                    <div className="border-bottom mb-2">
-                      <CheckboxField
-                        field={{
-                          type: 'checkbox',
-                          col: 12,
-                          name: 'ibge_map_todos',
-                          className: 'fw-semibold',
-                          options: [{ id: 'ibge-mun-toggle-todos', value: TODOS, label: 'Selecione' }],
-                          value: todosMarcados ? [TODOS] : [],
-                          onChange: (values) => setSelecionados(values.includes(TODOS) ? options.map((o) => o.value) : []),
-                        }}
-                      />
-                    </div>
-                    <CheckboxField
-                      field={{
-                        type: 'checkbox',
-                        col: 12,
-                        label: `Municípios (${options.length})`,
-                        name: 'ibge_map_municipios',
-                        className: 'small',
-                        options,
-                        value: selecionados,
-                        onChange: setSelecionados,
-                      }}
-                    />
-                  </>
-                )}
-              </div>
+      {/* Botao do checklist: sticky abaixo do menu, sempre visivel ao rolar. */}
+      <div className="sticky-top py-2">
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#svgMapOffcanvas"
+          aria-controls="svgMapOffcanvas"
+          title="Municípios"
+        >
+          <i className="bi bi-card-checklist" aria-hidden="true" />
+          <span className="visually-hidden">Municípios</span>
+        </button>
+      </div>
 
-              {/* SVG estatico do proprio projeto (public/ibge-map), inline para hover/clique por path. */}
-              {svgHtml && <div id="ibgeMapWrapper" ref={wrapperRef} dangerouslySetInnerHTML={svgHtml} />}
-              <div className="small text-muted mt-2">{tooltip}</div>
-            </div>
-          </div>
+      {/* Checklist em Offcanvas sem backdrop: o mapa segue clicavel com a lista aberta. */}
+      <div
+        className="offcanvas offcanvas-start bg-white"
+        tabIndex={-1}
+        id="svgMapOffcanvas"
+        aria-labelledby="svgMapOffcanvasLabel"
+        data-bs-backdrop="false"
+        data-bs-scroll="true"
+      >
+        <div className="offcanvas-header border-bottom">
+          <h5 className="offcanvas-title" id="svgMapOffcanvasLabel">
+            Municípios
+          </h5>
+          <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar" />
         </div>
+        <div className="offcanvas-body" id="svgMapChecklist">
+          {erro ? (
+            <>
+              <div className="small text-danger mb-2">{erro}</div>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => setTentativaManual((n) => n + 1)}
+              >
+                Tentar novamente
+              </button>
+            </>
+          ) : !dados ? (
+            <div className="text-center text-muted small py-3">
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+              Carregando municípios...
+            </div>
+          ) : (
+            <>
+              <div className="border-bottom mb-2">
+                <CheckboxField
+                  field={{
+                    type: 'checkbox',
+                    col: 12,
+                    name: 'svg_map_todos',
+                    className: 'fw-semibold',
+                    options: [{ id: 'svg-mun-toggle-todos', value: TODOS, label: 'Selecione' }],
+                    value: todosMarcados ? [TODOS] : [],
+                    onChange: (values) => setSelecionados(values.includes(TODOS) ? options.map((o) => o.value) : []),
+                  }}
+                />
+              </div>
+              <CheckboxField
+                field={{
+                  type: 'checkbox',
+                  col: 12,
+                  label: `Municípios (${options.length})`,
+                  name: 'svg_map_municipios',
+                  className: 'small',
+                  options,
+                  value: selecionados,
+                  onChange: setSelecionados,
+                }}
+              />
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="text-center">
+        {/* SVG estatico do proprio projeto (public/svg-map), inline para hover/clique por path. */}
+        {svgHtml && <div id="svgMapWrapper" ref={wrapperRef} dangerouslySetInnerHTML={svgHtml} />}
+        <div className="small text-muted mt-2">{tooltip}</div>
       </div>
     </>
   );

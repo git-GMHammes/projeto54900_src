@@ -16,7 +16,7 @@ class UpdateRequest
         return [
             'calendar_event_id' => 'permit_empty|is_natural_no_zero',
             'method'            => 'permit_empty|in_list[email,popup]',
-            'minutes'           => 'permit_empty|is_natural',
+            'minutes'           => 'permit_empty|in_list[' . CreateRequest::MINUTES_OPTIONS . ']',
         ];
     }
 
@@ -30,7 +30,7 @@ class UpdateRequest
                 'in_list' => 'O campo method deve ser email ou popup',
             ],
             'minutes' => [
-                'is_natural' => 'O campo minutes deve ser um inteiro maior ou igual a zero',
+                'in_list' => 'minutes deve ser um de: ' . CreateRequest::MINUTES_OPTIONS,
             ],
         ];
     }

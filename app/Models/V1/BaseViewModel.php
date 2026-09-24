@@ -28,6 +28,9 @@ abstract class BaseViewModel extends Model
     /** Campos usados na busca textual (searchByTermView). */
     public array $searchFields = [];
 
+    /** Whitelist de filtros exatos aceitos junto da busca (GET /search?filters[campo]=valor). */
+    public array $filterFields = [];
+
     // -------------------------------------------------------------------------
     // Helpers internos
     // -------------------------------------------------------------------------
@@ -106,10 +109,18 @@ abstract class BaseViewModel extends Model
 
     /**
      * Busca textual paginada com OR LIKE nos campos de $searchFields.
+     * $filters (opcional): WHERE exato (AND) só para campos de $filterFields;
+     * campo fora da whitelist ou valor vazio é ignorado.
      */
-    public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order): array
+    public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order, array $filters = []): array
     {
         $builder = $this->db->table($this->table);
+
+        foreach ($filters as $field => $value) {
+            if (\in_array($field, $this->filterFields, true) && \is_scalar($value) && (string) $value !== '') {
+                $builder->where($field, (string) $value);
+            }
+        }
 
         if ($term !== '' && !empty($this->searchFields)) {
             $builder->groupStart();

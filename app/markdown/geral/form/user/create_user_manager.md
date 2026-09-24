@@ -48,7 +48,7 @@ _slug `criacao-de-seguranca` · icon `lock-fill`_
 | Linha | Rótulo  | `field_name`    | Tipo  | col | Obrig. | Observação                                                                                                                                                           |
 | ----- | ------- | --------------- | ----- | --- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | Usuário | `username`      | text  | 4   | sim    | —                                                                                                                                                                    |
-| 2     | Senha   | `password_hash` | senha | 4   | sim    | `max_length=6`, `min_length=3`, `strong_password=1` — fiel ao dump; `min_length=3` parece curto pra "senha forte", mas mantive como estava (revisar se quiser mudar) |
+| 2     | Senha   | `password_hash` | senha | 4   | sim    | `min_length=8`, `max_length=72` (limite do bcrypt), `strong_password=1`, `double_field=1` — o 2º campo sai como `password_hash_confirm` e é validado também no backend (`CreateRequest`: `required\|matches[password_hash]`) |
 
 ## Próximo passo
 

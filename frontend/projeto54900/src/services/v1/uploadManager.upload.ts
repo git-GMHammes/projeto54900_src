@@ -91,5 +91,16 @@ export function downloadUrl(id: string | number): string {
   return `${env.apiBaseUrl}${base}/download/${id}`;
 }
 
-export const uploadManagerUpload = { upload, uploadMultiple, downloadUrl };
+/**
+ * Monta a URL absoluta de visualizacao (inline no navegador) de um upload —
+ * par de downloadUrl para `<a href target="_blank">`. Preferir a
+ * `uploads.file_url`, que sai com o baseURL interno do backend (ex.:
+ * localhost:8080) e pode nao ser alcancavel pelo navegador.
+ * @param id id do registro em uploads
+ */
+export function serveUrl(id: string | number): string {
+  return `${env.apiBaseUrl}${base}/serve/${id}`;
+}
+
+export const uploadManagerUpload = { upload, uploadMultiple, downloadUrl, serveUrl };
 export default uploadManagerUpload;

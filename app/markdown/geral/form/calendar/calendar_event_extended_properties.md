@@ -45,12 +45,12 @@ cadastro-propriedade-evento
 
 *slug `propriedade` · icon `tags`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Evento | `calendar_event_id` | select | 8 | sim | remoto: `GET /api/v1/calendar-events/get-no-pagination`, `valueKey=id`, `labelTemplate="{summary} #{id}"` |
-| 1 | Escopo | `scope` | select | 4 | não | opções (coluna `enum`): Privado (`private`), Compartilhado (`shared`) |
-| 2 | Chave | `property_key` | text | 4 | sim | — |
-| 2 | Valor | `property_value` | text | 8 | sim | `max_length=1024` |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Evento | `calendar_event_id` | select | 8 | sim | Evento ao qual a propriedade pertence. | remoto: `GET /api/v1/calendar-events/get-no-pagination`, `valueKey=id`, `labelTemplate="{summary} #{id}"` |
+| 1 | Escopo | `scope` | select | 4 | não | Privado: só na cópia de quem gravou. Compartilhado: visível para todos os convidados. | opções (coluna `enum`): Privado (`private`), Compartilhado (`shared`) |
+| 2 | Chave | `property_key` | text | 4 | sim | Nome da propriedade (ex.: pedido_id). Uso interno de integrações. | — |
+| 2 | Valor | `property_value` | text | 8 | sim | Valor da propriedade (até 1024 caracteres). | `max_length=1024` |
 
 ## Próximo passo
 

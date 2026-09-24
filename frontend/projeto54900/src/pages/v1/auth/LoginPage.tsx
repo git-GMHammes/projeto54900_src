@@ -33,10 +33,10 @@
  *   - não guarda token, não chama `authService` e não decide onde a sessão
  *     fica: isso é do `AuthProvider` (`@/context/AuthContext`);
  *   - não verifica se o usuário JÁ está logado. O contexto publica `user`,
- *     `isAuthenticated` e `bootstrapping`, mas hoje NENHUMA tela os consome
- *     (não há guarda de rota) — e `logout()` não é chamado por ninguém.
- *     Consequência prática: ao evoluir autenticação, o trabalho tende a começar
- *     no contexto (guarda de rota, botão "Sair"), não aqui.
+ *     `isAuthenticated` e `bootstrapping`; hoje só o `Navbar` os consome
+ *     (oculta "Entrar" e mostra "Sair", que chama `logout()`) — não há guarda
+ *     de rota. Consequência prática: ao evoluir autenticação, o trabalho tende
+ *     a começar no contexto/rotas (guarda de rota), não aqui.
  *
  * DEPENDÊNCIAS (arquivos deste projeto que esta página consome):
  *   - `@/context/AuthContext` (`useAuth`) — a única fonte de `login`.

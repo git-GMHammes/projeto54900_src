@@ -10,7 +10,9 @@ use App\Models\V1\BaseTableModel;
  * Tabela: menu_manager (arvore de itens navegaveis do Menu)
  * DDL: id (BIGINT PK auto), nav_manager_id (FK -> nav_manager, CASCADE),
  *      parent_id (FK -> menu_manager, self, CASCADE, nullable),
- *      title, react_route (nullable), roles (JSON, nullable - lista de slugs
+ *      title, react_route (nullable),
+ *      placement (ENUM navbar/offcanvas, default navbar - destino do item de
+ *      topo e de seus filhos), roles (JSON, nullable - lista de slugs
  *      de user_roles com acesso ao item),
  *      sort_order (default 0), status (ENUM active/draft/inactive, default draft),
  *      created_at, updated_at, deleted_at.
@@ -30,6 +32,7 @@ class SqlTableModel extends BaseTableModel
         'parent_id',
         'title',
         'react_route',
+        'placement',
         'roles',
         'sort_order',
         'status',
@@ -45,6 +48,7 @@ class SqlTableModel extends BaseTableModel
         'nav_manager_id',
         'parent_id',
         'title',
+        'placement',
         'sort_order',
         'status',
         'created_at',

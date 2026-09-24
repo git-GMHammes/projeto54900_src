@@ -14,9 +14,11 @@
  * auth/me e auth/logout (unico grupo protegido).
  *
  * DEPENDENCIAS: services/v1/auth.service.ts (login/refresh/logout),
- * services/http (setAccessTokenGetter) e types/auth (AuthUser).
+ * services/http (setAccessTokenGetter), services/apiDebugLog (clear no
+ * logout) e types/auth (AuthUser).
  * CONSUMIDORES: App.tsx monta <AuthProvider> na raiz da arvore;
- * pages/v1/auth/LoginPage.tsx chama login(); qualquer componente pode
+ * pages/v1/auth/LoginPage.tsx chama login(); components/layout/Navbar.tsx
+ * chama logout() no botao "Sair"; qualquer componente pode
  * consumir useAuth() para ler user/isAuthenticated/bootstrapping ou disparar
  * logout().
  *
@@ -30,6 +32,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import { authService } from '@/services/v1/auth.service';
 import { setAccessTokenGetter } from '@/services/http';
+import { clear as clearApiDebugLog } from '@/services/apiDebugLog';
 import type { AuthUser } from '@/types/auth';
 
 const REFRESH_TOKEN_KEY = 'projeto54900.refresh_token';
@@ -111,15 +114,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(payload.user);
   }, []);
 
-  /** Encerra a sessao no backend (best-effort) e sempre limpa a sessao local. */
+  /**
+   * Encerra a sessao no backend (best-effort, com Bearer + refresh_token) e
+   * sempre faz a limpeza local completa: access_token em memoria,
+   * refresh_token do sessionStorage, user e o store do painel de debug (que
+   * guarda o ultimo token e o historico de respostas). O menu dinamico e
+   * descartado pelo useSiteMenu ao ver isAuthenticated=false.
+   */
   const logout = useCallback(async () => {
     try {
-      await authService.logout();
+      await authService.logout(readStoredRefreshToken());
     } catch {
       // best-effort — mesmo se a chamada falhar, a sessao local e limpa abaixo.
     }
     accessTokenRef.current = null;
     storeRefreshToken(null);
+    clearApiDebugLog();
     setUser(null);
   }, []);
 

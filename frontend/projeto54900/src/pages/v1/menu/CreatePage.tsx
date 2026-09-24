@@ -6,6 +6,7 @@
 // o proprio efeito reativo (recarrega sempre que a URL muda), por isso
 // "Item pai" muda de `src` (com ?nav_manager_id=) sempre que o nav muda.
 // roles usa o par toStringList/parseStringList (README_campo_json_montado.md).
+// placement (Navbar/Offcanvas) nasce 'navbar'; so pesa no item de topo.
 // status nao entra aqui: nasce 'draft' pelo DEFAULT da coluna.
 
 import { useCallback, useState } from 'react';
@@ -24,9 +25,14 @@ import { errorDetail } from '@/utils/formSubmit';
 import { toStringList } from '@/utils/jsonList';
 import { env } from '@/config/env';
 import { paths } from '@/routes/paths';
+import type { MenuPlacement } from '@/types/menu';
 
 const NAV_SRC = `${env.apiBaseUrl}/v1/nav-manager/get-no-pagination`;
 const USER_ROLES_SRC = `${env.apiBaseUrl}/v1/user-roles/get-no-pagination`;
+const PLACEMENT_OPTIONS = [
+  { id: 'placement_navbar', value: 'navbar', label: 'Navbar' },
+  { id: 'placement_offcanvas', value: 'offcanvas', label: 'Offcanvas' },
+];
 const parentSrc = (navManagerId: string): string =>
   `${env.apiBaseUrl}/v1/menu-manager/get-no-pagination?nav_manager_id=${navManagerId}`;
 
@@ -40,6 +46,7 @@ export default function CreatePage() {
   const [parentId, setParentId] = useState('');
   const [title, setTitle] = useState('');
   const [reactRoute, setReactRoute] = useState('');
+  const [placement, setPlacement] = useState<MenuPlacement>('navbar');
   const [roles, setRoles] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('0');
   const [submitting, setSubmitting] = useState(false);
@@ -78,18 +85,29 @@ export default function CreatePage() {
       {
         fields: [
           {
-            col: 6,
+            col: 4,
             label: 'Titulo',
             required: true,
             value: title,
             onChange: (e) => setTitle(e.target.value),
           },
           {
-            col: 6,
+            col: 4,
             label: 'Rota (react_route)',
             value: reactRoute,
             onChange: (e) => setReactRoute(e.target.value),
             placeholder: '/v1/...',
+          },
+          {
+            type: 'radio',
+            col: 4,
+            label: 'Local',
+            name: 'placement',
+            title: 'Item de topo: onde ele (e seus filhos) aparece. Filhos seguem o pai.',
+            inline: true,
+            value: placement,
+            options: PLACEMENT_OPTIONS,
+            onChange: (value) => setPlacement(value === 'offcanvas' ? 'offcanvas' : 'navbar'),
           },
         ],
       },
@@ -128,6 +146,7 @@ export default function CreatePage() {
       const payload: Record<string, unknown> = {
         nav_manager_id: Number(navManagerId),
         title: title.trim(),
+        placement,
       };
       if (parentId) payload.parent_id = Number(parentId);
       if (reactRoute.trim()) payload.react_route = reactRoute.trim();
@@ -151,7 +170,7 @@ export default function CreatePage() {
         setSubmitting(false);
       }
     },
-    [navManagerId, title, parentId, reactRoute, roles, sortOrder, navigate, toast],
+    [navManagerId, title, parentId, reactRoute, placement, roles, sortOrder, navigate, toast],
   );
 
   return (

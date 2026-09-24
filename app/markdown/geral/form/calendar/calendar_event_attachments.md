@@ -41,11 +41,10 @@ um upload de verdade, o caminho é enviar via `uploads` primeiro e colar a
 cadastro-anexo-evento
 └─ Anexo
    ├─ Linha 1
-   │  ├─ Evento
    │  └─ Título
-   ├─ Linha 2
-   │  └─ URL do arquivo
-   └─ Linha 3
+   └─ Linha 2 (campos ocultos — preenchidos pela tela)
+      ├─ Evento
+      ├─ URL do arquivo
       ├─ Tipo MIME
       ├─ Ícone
       └─ ID do arquivo
@@ -55,18 +54,36 @@ cadastro-anexo-evento
 
 *slug `anexo` · icon `paperclip`*
 
-| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Evento | `calendar_event_id` | select | 8 | sim | remoto: `GET /api/v1/calendar-events/get-no-pagination`, `valueKey=id`, `labelTemplate="{summary} #{id}"` |
-| 1 | Título | `title` | text | 4 | não | — |
-| 2 | URL do arquivo | `file_url` | text | 12 | sim | placeholder `https://...` |
-| 3 | Tipo MIME | `mime_type` | text | 4 | não | placeholder `application/pdf` |
-| 3 | Ícone | `icon_link` | text | 4 | não | placeholder `https://.../icon.png` |
-| 3 | ID do arquivo | `file_id` | text | 4 | não | help: "ID externo (ex.: Google Drive), se aplicável." |
+| Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Tooltip (`help_text`) | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Título | `title` | text | 12 | não | Nome exibido do anexo. Vazio = nome original do arquivo. | único campo visível; a API grava o nome original quando vazio |
+| 2 | Evento | `calendar_event_id` | select | 3 | sim | Evento ao qual o anexo pertence. | **oculto** — pré-preenchido com o evento clicado |
+| 2 | URL do arquivo | `file_url` | text | 3 | não | Link de visualização do arquivo enviado. Preenchido pela API a partir do upload. | **oculto**; a API grava `uploads.file_url` (serve) |
+| 2 | Tipo MIME | `mime_type` | text | 2 | não | Tipo do arquivo (ex.: application/pdf). Opcional. | **oculto**; a API grava `uploads.mime_type` |
+| 2 | Ícone | `icon_link` | text | 2 | não | Link do ícone exibido ao lado do anexo. Opcional. | **oculto**; sem uso — a tela escolhe o ícone pelo MIME |
+| 2 | ID do arquivo | `file_id` | text | 2 | sim (API) | Id do upload (tabela uploads). Preenchido após o envio do arquivo. | **oculto**; a tela envia o id retornado por `POST /api/v1/upload-manager/upload` |
 
-## Próximo passo
+## Alteração 2026-09-24 — upload físico (modal "Anexos")
 
-Revisar e então gerar o `INSERT` a partir exatamente desta tabela.
+- **Arquivo:** `POST /api/v1/upload-manager/upload` com `module=calendar_events`,
+  `reference_id=<evento>`, `collection=attachments` → gravado em
+  `writable/uploads/calendar_events/<evento>/`. Seletor `<input type="file">` na
+  tela (o FormGrid não tem `field_type` `file`); extensões = `Config/Upload.php`.
+- **Anexo:** `POST /api/v1/calendar-event-attachments/create` com `file_id`. O
+  `Processor` exige upload ativo do mesmo evento (422), único por anexo (409), e
+  regrava `file_url`/`mime_type` do upload. Falhou o anexo → a tela apaga o upload.
+- **Visualizar / Baixar:** `GET /api/v1/upload-manager/serve/{file_id}` (inline) e
+  `.../download/{file_id}` (attachment) — URLs montadas com `env.apiBaseUrl`
+  (`uploads.file_url` sai com o baseURL interno do backend).
+- **Exclusão (o upload acompanha o anexo — padrão lógico do projeto):**
+
+  | Ação no anexo | Anexo | Upload | Arquivo em `writable/uploads/calendar_events/<evento>/` |
+  | --- | --- | --- | --- |
+  | `delete-soft` (Remover na tela) | lógica | lógica → `serve`/`download` 404 | fica |
+  | `delete-restore` | restaurado | restaurado → link volta | fica |
+  | `delete-hard` / `clear-deleted` | física | física | apagado |
+
+- Seed: `202609241600_seed_table.sql` (migration `SeedTable20260924Attachments`).
 
 ---
 

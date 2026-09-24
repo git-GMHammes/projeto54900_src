@@ -17,7 +17,9 @@
  * DEPENDENCIAS: config/envHost (isDevHost), dev/fakeFill/registry
  * (getFakeFillScript), hooks/useToast (feedback de sucesso/erro).
  * CONSUMIDORES: pages/v1/form/FormRendererPage.tsx (montado so enquanto o
- * modal do formulario esta aberto).
+ * modal do formulario esta aberto), components/global/FormBuild.tsx,
+ * pages/v1/calendar/calendar-manager/GetAllPage.tsx e
+ * pages/v1/user/user-profiles/CreatePage.tsx (slug 'dados-do-usuario').
  *
  * COMO REAPROVEITAR PARA OUTRA TELA: renderizar <FakeFillButton slug="..."/>
  * junto do formulario em questao, depois de registrar o script em

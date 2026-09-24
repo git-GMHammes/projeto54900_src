@@ -257,6 +257,8 @@ export interface CampoLocal {
   sel_find_src: string;
   sel_find_column: string;
   sel_get_src: string;
+  /** `fillFields` em texto: "destino:chave, destino:chave" (ex.: "email:uc_email, display_name:uc_name"). */
+  sel_fill_fields: string;
 }
 
 /** Chuta o `field_type` a partir do `data_type` da coluna. */
@@ -317,6 +319,7 @@ export function campoInicial(coluna: ColunaInfo, sortOrder: number): CampoLocal 
     sel_find_src: '',
     sel_find_column: '',
     sel_get_src: '',
+    sel_fill_fields: '',
   };
 }
 
@@ -326,7 +329,7 @@ export function campoInicial(coluna: ColunaInfo, sortOrder: number): CampoLocal 
  * resto de `CampoLocal` mapeia 1:1 nas colunas.
  */
 export function camposParaPayload(c: CampoLocal): { select_config_json: string } {
-  const sel: Record<string, string | number | boolean> = {};
+  const sel: Record<string, string | number | boolean | Record<string, string>> = {};
   if (c.sel_multiple) sel.multiple = true;
   if (c.sel_src) sel.src = c.sel_src;
   if (c.sel_value_key) sel.valueKey = c.sel_value_key;
@@ -338,6 +341,8 @@ export function camposParaPayload(c: CampoLocal): { select_config_json: string }
   if (c.sel_find_src) sel.findSrc = c.sel_find_src;
   if (c.sel_find_column) sel.findColumn = c.sel_find_column;
   if (c.sel_get_src) sel.getSrc = c.sel_get_src;
+  const fill = parseFillFields(c.sel_fill_fields);
+  if (Object.keys(fill).length > 0) sel.fillFields = fill;
 
   return {
     select_config_json: Object.keys(sel).length > 0 ? JSON.stringify(sel) : '',
@@ -522,6 +527,25 @@ function normalizeRoles(raw: unknown): string {
   return toStringList([s]);
 }
 
+/** "email:uc_email, display_name:uc_name" → { email: 'uc_email', display_name: 'uc_name' } (pares incompletos ignorados). */
+export function parseFillFields(text: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const part of text.split(',')) {
+    const [target, key] = part.split(':').map((x) => x.trim());
+    if (target && key) out[target] = key;
+  }
+  return out;
+}
+
+/** Inverso de parseFillFields: objeto `fillFields` → texto "destino:chave, destino:chave". */
+function fillFieldsToText(raw: unknown): string {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return '';
+  return Object.entries(raw as Record<string, unknown>)
+    .filter((e): e is [string, string] => typeof e[1] === 'string' && e[1] !== '')
+    .map(([target, key]) => `${target}:${key}`)
+    .join(', ');
+}
+
 /** Reverte `select_config_json` → chaves `sel_*` de `CampoLocal`. */
 function selConfigToCampo(raw: unknown): Partial<CampoLocal> {
   let cfg: Record<string, unknown> | null = null;
@@ -549,6 +573,7 @@ function selConfigToCampo(raw: unknown): Partial<CampoLocal> {
     sel_find_src: s('findSrc'),
     sel_find_column: s('findColumn'),
     sel_get_src: s('getSrc'),
+    sel_fill_fields: fillFieldsToText(cfg.fillFields),
   };
 }
 

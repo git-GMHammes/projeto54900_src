@@ -1,7 +1,9 @@
 // Formulario de dados do usuario — ETAPA 2 (build 'dados-do-usuario', tabela
 // user_profiles). Le ?user_manager_id= da querystring (vem da etapa 1,
 // pages/v1/user/user-manager/CreatePage.tsx), pre-preenche o campo FK
-// obrigatorio (read-only) e submete. Ao concluir, manda para /v1/login.
+// obrigatorio (read-only), gera o uuid no frontend (campo hidden no build,
+// form_fields.is_hidden=1 — o input segue no <form> e vai no payload) e
+// submete. Ao concluir, manda para /v1/login.
 // Mesmo pipeline de FormRendererPage.tsx: formManagerView.getGrouped ->
 // buildRenderSchema -> FormGrid -> submit para o submit_endpoint do build.
 
@@ -14,6 +16,7 @@ import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import { formManagerView } from '@/services/v1';
@@ -25,8 +28,20 @@ import { paths } from '@/routes/paths';
 
 const SLUG = 'dados-do-usuario';
 const FK_FIELD = 'user_manager_id';
+const UUID_FIELD = 'uuid';
 
-function prefillFkField(schema: FormGridSchema, fieldName: string, value: string): FormGridSchema {
+// UUID v4 nativo. crypto.randomUUID so existe em contexto seguro (https ou
+// localhost) — fallback com getRandomValues para dev acessado por IP via http.
+function generateUuid(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = ((b[6] ?? 0) & 0x0f) | 0x40;
+  b[8] = ((b[8] ?? 0) & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
+function prefillReadOnlyField(schema: FormGridSchema, fieldName: string, value: string): FormGridSchema {
   return {
     rows: schema.rows.map((row) => ({
       ...row,
@@ -49,6 +64,8 @@ export default function CreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Gerado uma vez por carregamento da tela — re-render nao troca o valor.
+  const [uuid] = useState(generateUuid);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,7 +131,9 @@ export default function CreatePage() {
   );
 
   const schema =
-    form && userManagerId ? prefillFkField(form.schema, FK_FIELD, userManagerId) : form?.schema;
+    form && userManagerId
+      ? prefillReadOnlyField(prefillReadOnlyField(form.schema, FK_FIELD, userManagerId), UUID_FIELD, uuid)
+      : form?.schema;
 
   return (
     <>
@@ -144,6 +163,8 @@ export default function CreatePage() {
           </div>
         </form>
       )}
+
+      {!loading && !error && userManagerId && form && <FakeFillButton slug={SLUG} />}
     </>
   );
 }

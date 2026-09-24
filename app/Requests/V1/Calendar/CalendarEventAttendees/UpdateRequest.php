@@ -15,6 +15,7 @@ class UpdateRequest
     {
         return [
             'calendar_event_id' => 'permit_empty|is_natural_no_zero',
+            'user_manager_id'   => 'permit_empty|is_natural_no_zero',
             'email'             => 'permit_empty|valid_email|max_length[255]',
             'display_name'      => 'permit_empty|string|max_length[255]',
             'is_organizer'      => 'permit_empty|in_list[0,1]',
@@ -22,7 +23,7 @@ class UpdateRequest
             'is_resource'       => 'permit_empty|in_list[0,1]',
             'is_optional'       => 'permit_empty|in_list[0,1]',
             'response_status'   => 'permit_empty|in_list[needsAction,declined,tentative,accepted]',
-            'comment'           => 'permit_empty|string|max_length[500]',
+            'comment'           => 'permit_empty|string|max_length[16383]',
         ];
     }
 
@@ -31,6 +32,9 @@ class UpdateRequest
         return [
             'calendar_event_id' => [
                 'is_natural_no_zero' => 'O campo calendar_event_id deve ser um inteiro maior que zero',
+            ],
+            'user_manager_id' => [
+                'is_natural_no_zero' => 'O campo user_manager_id deve ser um inteiro maior que zero',
             ],
             'email' => [
                 'valid_email' => 'O campo email deve ser um endereco valido',

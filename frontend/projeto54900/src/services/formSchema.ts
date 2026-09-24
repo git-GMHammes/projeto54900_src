@@ -216,7 +216,7 @@ function clampCol(v: unknown): number {
  *                  caractere (`noNumbers`, `noLetters`, `noSpecialChars`);
  *      senha    -> limites e `strongPassword`/`doubleField`;
  *      select   -> lê `fc_select_config_json` (`src`, `valueKey`, `maxVisible`,
- *                  `labelTemplate`, `labelKey`, `colorKey`); se NÃO houver `src`, cai nas
+ *                  `labelTemplate`, `labelKey`, `colorKey`, `fillFields`); se NÃO houver `src`, cai nas
  *                  opções inline de `fc_options_json` com `valueKey`/`labelKey`
  *                  fixos em 'value'/'label';
  *      radio / checkbox -> opções (lista vazia é aceita) e `inline`;
@@ -290,6 +290,14 @@ function buildField(row: ApiRow): AnyFieldSchema {
       if (typeof rec.labelTemplate === 'string') set('labelTemplate', rec.labelTemplate);
       if (Array.isArray(rec.labelKey) || typeof rec.labelKey === 'string') {
         set('labelKey', rec.labelKey);
+      }
+      if (rec.fillFields && typeof rec.fillFields === 'object' && !Array.isArray(rec.fillFields)) {
+        const fill = Object.fromEntries(
+          Object.entries(rec.fillFields as Record<string, unknown>).filter(
+            (e): e is [string, string] => typeof e[1] === 'string' && e[1] !== '',
+          ),
+        );
+        if (Object.keys(fill).length > 0) set('fillFields', fill);
       }
     }
     const opts = optionList(row.fc_options_json);

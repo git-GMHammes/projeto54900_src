@@ -45,7 +45,7 @@ grupo `api/v1` do backend (`app/Config/Routes.php`).
 
 | Path  | Elemento              | Observação                                                 |
 | ----- | --------------------- | ---------------------------------------------------------- |
-| `/v1` | _(loader → redirect)_ | Redireciona para `paths.v1.user.list` (`/v1/user-manager`) |
+| `/v1` | _(loader → redirect)_ | Redireciona para `paths.v1.user.profilesList` (`/v1/user-profiles`) |
 
 ### user-manager
 
@@ -55,7 +55,8 @@ Páginas organizadas por ação, seguindo [`README_paginas_modulo.md`](README_pa
 
 | Path                          | Elemento (lazy)                              | Observação                                                                           |
 | ----------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `/v1/user-manager`            | `pages/v1/user/user-manager/GetAllPage`       | Listagem — **stub em branco**, aguardando a fábrica de listas                        |
+| `/v1/user-manager`            | `pages/v1/user/user-manager/GetAllPage`       | Lista de segurança (menu "Listar"), slug `user-manager` — ações só-ícone `modal` por `data_action`: bloquear/desbloquear, reset de senha (`ResetPasswordModal`), perfil/role (`ChangeRoleModal`) |
+| `/v1/user-profiles`           | `pages/v1/user/user-profiles/GetAllPage`      | Lista de dados de usuários (menu "Dados Usuário"), slug `user-profiles` no Construtor de Listas — movida de `/v1/user-manager` em 2026-09-24 |
 | `/v1/user-manager/create`     | `pages/v1/user/user-manager/CreatePage`       | **Stub em branco** — aguardando a fábrica de formulários (ver CLAUDE.md do frontend) |
 | `/v1/user-manager/:id`        | `pages/v1/user/user-manager/GetPage`          | Detalhe                                                                              |
 | `/v1/user-manager/:id/update` | `pages/v1/user/user-manager/UpdatePage`       | **Stub em branco**, mesmo motivo acima                                               |
@@ -141,19 +142,19 @@ redirecionar). Ver detalhe em
 | ---------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `/v1/calendar-manager` | `pages/v1/calendar/calendar-manager/GetAllPage` | Lista calendários com seus eventos (`view_calendar_manager`, agrupada no cliente); busca/paginação no cliente; botão "Novo Calendário" reaproveita o form `calendario` (mesmo de `/v1/form/calendario`) |
 
-### ibgeMap — Mapa IBGE dos municípios do RJ (rota estática)
+### svgMap — Mapa SVG dos municípios do RJ (rota estática)
 
-Fonte: `routes/v1/ibgeMap.routes.tsx` — **não espelha API**: a página só
-consome arquivos estáticos de `public/ibge-map/` (`rj_municipios.svg`,
+Fonte: `routes/v1/svgMap.routes.tsx` — **não espelha API**: a página só
+consome arquivos estáticos de `public/svg-map/` (`rj_municipios.svg`,
 `rj_municipios_nomes.json`, `rj_municipios_cores.json`). Portado em 2026-09-23
 do CakePHP `diarias` (`Web/V1A/Mapa/Page/index.php` + `mapa_rj_tooltip.js` +
-`mapa_rj_checklist.js`). Item "IBGE" no navbar via `menu_manager`
+`mapa_rj_checklist.js`). Item "SVG" no navbar via `menu_manager`
 (`sort_order` 85). Não portados: `modal_mapa_rj.php` e `mapa_rj_highlight.js`
 (atendem telas do Cake que não existem aqui).
 
 | Path           | Elemento (lazy)                     | Observação                                                                                         |
 | -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `/v1/ibge-map` | `pages/v1/ibge-map/IbgeMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
+| `/v1/svg-map` | `pages/v1/svg-map/SvgMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
 
 ---
 
@@ -180,7 +181,7 @@ string solta.
 | Label            | Path                                                         |
 | ---------------- | ------------------------------------------------------------ |
 | Inicio           | `paths.home` (`/`)                                           |
-| Usuarios         | `paths.v1.user.list` (`/v1/user-manager`)                    |
+| Usuarios         | `paths.v1.user.profilesList` (`/v1/user-profiles`)           |
 | Uploads          | `paths.v1.upload.list` (`/v1/upload-manager`)                |
 | Formularios      | `paths.v1.form.list` (`/v1/form-constructor`)                |
 | Nav              | `paths.v1.nav.list` (`/v1/nav-manager`)                       |

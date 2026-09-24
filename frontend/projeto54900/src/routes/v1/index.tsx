@@ -6,7 +6,7 @@
  * O QUE FAZ: agrega as subrotas de TODOS os módulos da versão v1 sob o prefixo
  * "/v1", espelhando o grupo `api/v1` do backend (`app/Config/Routes.php`). O
  * path "/v1" (index) NÃO tem página própria: um loader com `redirect` manda o
- * usuário para a primeira listagem útil (`paths.v1.user.list`).
+ * usuário para a primeira listagem útil (`paths.v1.user.profilesList`).
  *
  * MAPA DOS MÓDULOS (esta é a ordem do array `children`; cada módulo é um arquivo
  * que exporta um array de `RouteObject` e é espalhado aqui):
@@ -20,12 +20,12 @@
  *   nav.routes.tsx    -> navRoutes     nav-manager (a "casca" do app)
  *   menu.routes.tsx   -> menuRoutes    menu-manager (itens de menu)
  *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
- *   ibgeMap.routes.tsx  -> ibgeMapRoutes   ibge-map (mapa SVG dos municipios do RJ, rota estatica)
+ *   svgMap.routes.tsx -> svgMapRoutes  svg-map (mapa SVG dos municipios do RJ, rota estatica)
  *
  * DEPENDÊNCIAS (arquivos próprios do projeto):
  *   - `routes/v1/*.routes.tsx` — um arquivo por módulo, cada um exportando seu
  *     próprio array de `RouteObject` (é esse o padrão que este agregador junta).
- *   - `routes/paths` (`paths.v1.user.list`) — destino do redirect do index.
+ *   - `routes/paths` (`paths.v1.user.profilesList`) — destino do redirect do index.
  *   - `react-router-dom` (`redirect` e o tipo `RouteObject`).
  *
  * CONSUMIDORES: `routes/index.tsx` importa `v1Routes` e o registra como FILHO
@@ -70,7 +70,7 @@ import { listRoutes } from './list.routes';
 import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
 import { calendarRoutes } from './calendar.routes';
-import { ibgeMapRoutes } from './ibgeMap.routes';
+import { svgMapRoutes } from './svgMap.routes';
 
 /**
  * =========================================================================
@@ -102,7 +102,7 @@ export const v1Routes: RouteObject = {
   path: 'v1',
   children: [
     // /v1 -> não tem página: redireciona para a primeira listagem útil.
-    { index: true, loader: () => redirect(paths.v1.user.list) },
+    { index: true, loader: () => redirect(paths.v1.user.profilesList) },
     ...authRoutes,
     ...userRoutes,
     ...uploadRoutes,
@@ -111,7 +111,7 @@ export const v1Routes: RouteObject = {
     ...navRoutes,
     ...menuRoutes,
     ...calendarRoutes,
-    ...ibgeMapRoutes,
+    ...svgMapRoutes,
   ],
 };
 

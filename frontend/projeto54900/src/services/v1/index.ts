@@ -40,4 +40,7 @@ export { listActionsTable } from './listActions.table';
 export { navManagerTable } from './navManager.table';
 export { menuManagerTable } from './menuManager.table';
 export { calendarManagerView } from './calendarManager.view';
+export { calendarEventAttendeesTable } from './calendarEventAttendees.table';
+export { calendarEventRemindersTable } from './calendarEventReminders.table';
+export { calendarEventAttachmentsTable } from './calendarEventAttachments.table';
 export { dbSchema } from './dbSchema';

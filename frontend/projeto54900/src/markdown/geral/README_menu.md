@@ -17,8 +17,8 @@ Duas tabelas, ligadas por FK. Nenhuma delas é "o menu" sozinha.
 
 | Arquivo                            | Papel                                                                                                 |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `hooks/useSiteMenu.ts`             | busca os dados na API e monta a lista `{to, label, end}`                                              |
-| `components/layout/Navbar.tsx`     | renderiza a lista como `<NavLink>`; tem o fallback estático `FALLBACK_NAV`                            |
+| `hooks/useSiteMenu.ts`             | busca os dados na API e monta `{ navbar, offcanvas }` (listas de `{label, link, children}`)           |
+| `components/layout/Navbar.tsx`     | renderiza `navbar` na barra e `offcanvas` no painel lateral; tem o fallback estático `FALLBACK_NAV`   |
 | `services/v1/navManager.table.ts`  | recurso REST de `nav_manager`                                                                         |
 | `services/v1/menuManager.table.ts` | recurso REST de `menu_manager`                                                                        |
 | `constants/api.ts`                 | nomes dos grupos (`API_GROUPS.navManager` = `nav-manager`, `API_GROUPS.menuManager` = `menu-manager`) |
@@ -34,6 +34,27 @@ Duas tabelas, ligadas por FK. Nenhuma delas é "o menu" sozinha.
 4. Se a lista final tiver 0 itens (erro de rede, nav inativo, tabela vazia),
    o `Navbar.tsx` usa `FALLBACK_NAV` (array fixo no código) em vez de mostrar
    navbar vazia.
+
+## Destino do item — `placement` (Navbar / Offcanvas, 2026-09-24)
+
+Coluna `menu_manager.placement ENUM('navbar','offcanvas') DEFAULT 'navbar'`.
+
+- **Só o item de topo decide.** `useSiteMenu.ts` separa os itens de topo
+  (`parent_id NULL`, `sort_order < 100`) em duas listas pelo `placement`;
+  os filhos seguem o pai — o `placement` gravado num filho é ignorado.
+- `navbar` → barra superior (dropdown se tiver filhos), como antes.
+- `offcanvas` → painel `offcanvas-start` do Bootstrap (`#siteMenuOffcanvas`),
+  com `list-group`; grupo com filhos vira `collapse`. Links levam
+  `data-bs-dismiss="offcanvas"` para fechar o painel ao navegar.
+- Botão de abertura: ícone `bi-grid-3x3-gap-fill`, primeiro `<li>` da barra
+  (antes de Home). **Sempre visível**; sem item `offcanvas` o painel mostra um aviso.
+- Tudo por `data-attributes` do Bootstrap (sem API JS — ver `types/vendor.d.ts`).
+- Forms: `pages/v1/menu/{CreatePage,UpdatePage}.tsx` têm o radio "Local".
+- Listagem `/v1/menu-manager` (`GetAllPage.tsx`, árvore e tabela): ações só
+  ícone com tooltip (`.icon-action-tooltip`). Item de topo tem 2 ícones de
+  destino — Navbar (`bi-menu-button-wide-fill`) e Offcanvas
+  (`bi-layout-sidebar-inset`); o ativo fica preenchido/desabilitado. O clique
+  grava `placement` no item e em todos os descendentes (PUT por item).
 
 ## Convenção de faixas de `sort_order` (não é constraint de banco, é convenção)
 
@@ -136,7 +157,7 @@ Entrar
 | Listar             | `/v1/user-manager`            |
 | Login              | `/v1/login`                   |
 | Cadastro Usuário   | `/v1/user-manager/create`     |
-| Dados Usuário      | `/v1/user-profiles/create`    |
+| Dados Usuário      | `/v1/user-profiles`           |
 | Calendário         | ``                            |
 | Novo Calendário    | `/v1/form/calendario`         |
 | Admin Calendário   | `/v1/calendar-manager`        |

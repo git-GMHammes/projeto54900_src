@@ -18,7 +18,8 @@
  * compartilhado.
  *
  * DEPENDENCIAS: utils/jsonList (parseStringList, usado pelo renderer
- * 'roles-badges').
+ * 'roles-badges'); components/ui/FormGrid/phone/mask (aplicarMascara, usado pelo
+ * renderer 'phone').
  * CONSUMIDORES: pages/v1/list/ListBuilderPage.tsx (edita as definicoes),
  * pages/v1/list/ListConstructorPage.tsx (consumidor original, renderiza a
  * grid de verdade), pages/v1/form/FormBuilderPage.tsx e
@@ -33,6 +34,8 @@
  */
 
 import type { ReactNode } from 'react';
+
+import { aplicarMascara } from '@/components/ui/FormGrid/phone/mask';
 
 import { parseStringList } from './jsonList';
 
@@ -73,6 +76,8 @@ export interface ListActionRow {
   label: string;
   icon: string;
   actionType: 'link' | 'api_call' | 'modal';
+  /** list_actions.data_action — identifica o handler de acoes 'modal' na pagina (ex.: 'reset-password'). */
+  dataAction: string;
   hrefTemplate: string;
   apiEndpoint: string;
   httpMethod: string;
@@ -82,7 +87,22 @@ export interface ListActionRow {
   businessRule: BusinessRule | null;
 }
 
-export type ConcatPart = { type: 'field'; key: string } | { type: 'literal'; value: string };
+/**
+ * Parte 'icon': icone Bootstrap Icons na celula, com cor condicional —
+ * `rule` (mesmo formato de business_rule_json) verdadeira -> `classTrue`,
+ * falsa -> `classFalse`; sem `rule`, sempre `classTrue`. Nao entra no texto
+ * da celula (cellValue), so no desenho (renderCell).
+ */
+export interface ConcatIconPart {
+  type: 'icon';
+  icon: string;
+  rule?: BusinessRule | null;
+  classTrue?: string;
+  classFalse?: string;
+  title?: string;
+}
+
+export type ConcatPart = { type: 'field'; key: string } | { type: 'literal'; value: string } | ConcatIconPart;
 export interface BusinessRule {
   field: string;
   op: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
@@ -152,6 +172,7 @@ export function toAction(raw: Record<string, unknown>): ListActionRow {
     label: str(raw.label),
     icon: str(raw.icon),
     actionType: raw.action_type === 'api_call' ? 'api_call' : raw.action_type === 'modal' ? 'modal' : 'link',
+    dataAction: str(raw.data_action),
     hrefTemplate: str(raw.href_template),
     apiEndpoint: str(raw.api_endpoint),
     httpMethod: str(raw.http_method) || 'GET',
@@ -169,7 +190,9 @@ export function toAction(raw: Record<string, unknown>): ListActionRow {
 /** Monta o texto de uma coluna "concat" juntando literais e campos da linha, na ordem definida em concat_json. */
 export function resolveConcat(parts: ConcatPart[], row: Record<string, unknown>): string {
   return parts
-    .map((part) => (part.type === 'literal' ? part.value : str(row[part.key])))
+    .map((part) =>
+      part.type === 'literal' ? str(part.value) : part.type === 'field' ? str(row[part.key]) : '',
+    )
     .join('');
 }
 
@@ -198,6 +221,7 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   active: 'text-bg-success',
   draft: 'text-bg-secondary',
   inactive: 'text-bg-warning',
+  blocked: 'text-bg-danger',
 };
 
 const CUSTOM_CELL_RENDERERS: Record<
@@ -224,7 +248,41 @@ const CUSTOM_CELL_RENDERERS: Record<
       </div>
     );
   },
+  // Ponto de quebra opcional (<wbr>) antes do '@': a coluna encolhe para
+  // max(local, @dominio) sem alterar o texto copiado. Sem '@' (ex.: fallback) -> texto puro.
+  'email-break': (value) => {
+    const at = value.lastIndexOf('@');
+    if (at <= 0) return value;
+    return (
+      <>
+        {value.slice(0, at)}
+        <wbr />
+        {value.slice(at)}
+      </>
+    );
+  },
+  // Mesma mascara do campo de formulario (FormGrid/phone). So formata 10/11
+  // digitos (DDD + numero); fora disso (DDI, fallback) devolve o valor cru.
+  phone: (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length !== 10 && digits.length !== 11) return value;
+    return <span className="text-nowrap">{aplicarMascara(digits)}</span>;
+  },
 };
+
+/**
+ * Deteccao automatica de format pelo field_key: coluna ainda em 'text' cujo
+ * campo e reconhecido (ex.: *whatsapp*) ganha o tratamento sem precisar
+ * setar list_columns.format. Format explicito no banco sempre prevalece.
+ */
+const AUTO_FORMAT_BY_FIELD_KEY: readonly { pattern: RegExp; format: string }[] = [
+  { pattern: /whatsapp/i, format: 'phone' },
+];
+
+function effectiveFormat(column: ListColumnRow): string {
+  if (column.format !== 'text') return column.format;
+  return AUTO_FORMAT_BY_FIELD_KEY.find((a) => a.pattern.test(column.fieldKey))?.format ?? column.format;
+}
 
 /**
  * Renderiza uma celula da grid: usa o renderer customizado de
@@ -233,8 +291,40 @@ const CUSTOM_CELL_RENDERERS: Record<
  */
 export function renderCell(column: ListColumnRow, row: Record<string, unknown>): ReactNode {
   const value = cellValue(column, row);
-  const custom = CUSTOM_CELL_RENDERERS[column.format];
-  return custom ? custom(value, column, row) : value;
+  const custom = CUSTOM_CELL_RENDERERS[effectiveFormat(column)];
+  const body = custom ? custom(value, column, row) : value;
+
+  // Partes 'icon' do concat_json: as que vem antes da 1a parte de texto
+  // ficam a esquerda do conteudo, as demais a direita.
+  const parts = Array.isArray(column.concat) ? column.concat : [];
+  if (!parts.some(isIconPart)) return body;
+  const firstText = parts.findIndex((p) => !isIconPart(p));
+  const leading = parts.filter((p, i) => isIconPart(p) && (firstText === -1 || i < firstText));
+  const trailing = parts.filter((p, i) => isIconPart(p) && firstText !== -1 && i > firstText);
+
+  return (
+    <span className="d-inline-flex align-items-center gap-1">
+      {leading.map((p, i) => renderIconPart(p as ConcatIconPart, row, `l${i}`))}
+      <span>{body}</span>
+      {trailing.map((p, i) => renderIconPart(p as ConcatIconPart, row, `t${i}`))}
+    </span>
+  );
+}
+
+function isIconPart(part: ConcatPart): part is ConcatIconPart {
+  return part.type === 'icon' && typeof part.icon === 'string' && part.icon !== '';
+}
+
+function renderIconPart(part: ConcatIconPart, row: Record<string, unknown>, key: string): ReactNode {
+  const cls = evalBusinessRule(part.rule ?? null, row) ? part.classTrue : part.classFalse;
+  return (
+    <i
+      key={key}
+      className={`bi bi-${part.icon}${cls ? ` ${cls}` : ''}`}
+      title={part.title || undefined}
+      aria-hidden={part.title ? undefined : true}
+    />
+  );
 }
 
 /**

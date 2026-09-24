@@ -19,6 +19,8 @@ export const paths = {
       // Etapa 2 do cadastro (user_profiles), encadeada pelo user_manager_id
       // retornado na etapa 1 (user.create)
       profilesCreate: '/v1/user-profiles/create',
+      // Lista de dados (user_profiles) — menu "Dados Usuário"
+      profilesList: '/v1/user-profiles',
     },
     upload: {
       list: '/v1/upload-manager',
@@ -59,9 +61,9 @@ export const paths = {
     calendar: {
       list: '/v1/calendar-manager',
     },
-    // ibgeMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
-    ibgeMap: {
-      view: '/v1/ibge-map',
+    // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
+    svgMap: {
+      view: '/v1/svg-map',
     },
     // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
     menu: {
