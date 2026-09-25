@@ -36,6 +36,7 @@ export const API_GROUPS = {
   auth: 'auth',
   userManager: 'user-manager',
   userManagerView: 'user-manager-view',
+  userProfiles: 'user-profiles',
   userRoles: 'user-roles',
   uploadManager: 'upload-manager',
   uploadManagerView: 'upload-manager-view',

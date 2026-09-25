@@ -25,6 +25,7 @@
 export { authService } from './auth.service';
 export { userManagerTable } from './userManager.table';
 export { userManagerView } from './userManager.view';
+export { userProfilesTable, userProfilesMe } from './userProfiles.table';
 export { userRolesTable } from './userRoles.table';
 export { uploadManagerTable } from './uploadManager.table';
 export { uploadManagerView } from './uploadManager.view';
@@ -40,7 +41,7 @@ export { listActionsTable } from './listActions.table';
 export { navManagerTable } from './navManager.table';
 export { menuManagerTable } from './menuManager.table';
 export { calendarManagerView } from './calendarManager.view';
-export { calendarEventAttendeesTable } from './calendarEventAttendees.table';
+export { calendarEventAttendeesTable, respondToEvent } from './calendarEventAttendees.table';
 export { calendarEventRemindersTable } from './calendarEventReminders.table';
 export { calendarEventAttachmentsTable } from './calendarEventAttachments.table';
 export { dbSchema } from './dbSchema';

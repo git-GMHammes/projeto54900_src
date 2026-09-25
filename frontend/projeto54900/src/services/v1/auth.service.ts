@@ -69,6 +69,26 @@ async function me(): Promise<AuthUser | null> {
   return normalizeItem<AuthUser>(raw);
 }
 
-export const authService = { login, refresh, logout, me };
+/**
+ * Troca a propria senha (tela Seguranca). Backend invalida o token atual ao
+ * trocar (user_manager.token NULL) — o chamador deve tratar isso como um
+ * logout (a proxima chamada autenticada falha e precisa de novo login).
+ * @throws ApiError (via http.ts) se a senha atual estiver incorreta (401) ou
+ * a nova senha nao passar na validacao (422)
+ */
+async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await http.put(`${base}/change-password`, { current_password: currentPassword, new_password: newPassword });
+}
+
+/**
+ * Bloqueia a propria conta (self-service) — disparado pela ForbiddenPage
+ * apos tentativas repetidas de acesso negado. Sem corpo: o backend usa
+ * CurrentUser::id(), nunca um id vindo do cliente.
+ */
+async function selfBlock(): Promise<void> {
+  await http.patch(`${base}/self-block`);
+}
+
+export const authService = { login, refresh, logout, me, changePassword, selfBlock };
 
 export default authService;

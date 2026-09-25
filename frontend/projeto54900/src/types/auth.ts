@@ -48,6 +48,10 @@
  * `AuthUser`:
  *   id            -> identificador do usuário;
  *   username      -> login usado na autenticação;
+ *   full_name     -> nome completo (user_profiles.name), ou `null` quando o
+ *                    usuário ainda não tem perfil (user_profiles) cadastrado —
+ *                    telas que exibem o nome tratam esse caso (fallback pro
+ *                    username);
  *   status        -> estado do usuário como texto; quem interpreta é a tela;
  *   last_login_at -> ÚLTIMO ACESSO, ou `null` quando o usuário nunca entrou —
  *                    aqui o nulo é informativo, não erro;
@@ -68,6 +72,7 @@ export interface AuthRole {
 export interface AuthUser {
   id: number;
   username: string;
+  full_name: string | null;
   status: string;
   last_login_at: string | null;
   role: AuthRole | null;

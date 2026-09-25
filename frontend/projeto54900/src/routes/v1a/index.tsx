@@ -5,12 +5,19 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireAuth from '@/routes/RequireAuth';
 
 const VersionPlaceholderPage = lazy(() => import('@/pages/errors/VersionPlaceholderPage'));
 
+// Nao e Home/Login/Cadastro -> fica sob o mesmo guard usado em routes/v1/index.tsx.
 export const v1aRoutes: RouteObject = {
   path: 'v1a',
-  children: [{ index: true, element: <VersionPlaceholderPage version="v1a" /> }],
+  children: [
+    {
+      element: <RequireAuth />,
+      children: [{ index: true, element: <VersionPlaceholderPage version="v1a" /> }],
+    },
+  ],
 };
 
 export default v1aRoutes;

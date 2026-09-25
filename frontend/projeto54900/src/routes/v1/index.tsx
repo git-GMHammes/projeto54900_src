@@ -13,7 +13,8 @@
  *
  *   arquivo              exporta       rotas que registra
  *   auth.routes.tsx   -> authRoutes    login (só a tela de login)
- *   user.routes.tsx   -> userRoutes    user-manager (CRUD) + register (fluxo composto)
+ *   user.routes.tsx   -> userPublicRoutes (cadastro, público) +
+ *                         userProtectedRoutes (user-manager/user-profiles, sob RequireAuth)
  *   upload.routes.tsx -> uploadRoutes  upload-manager (somente leitura)
  *   form.routes.tsx   -> formRoutes    construtor de formulários + renderer (/form/:slug)
  *   list.routes.tsx   -> listRoutes    construtor de listagens
@@ -62,8 +63,10 @@
 import { redirect } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { paths } from '@/routes/paths';
+import RequireAuth from '@/routes/RequireAuth';
 import { authRoutes } from './auth.routes';
-import { userRoutes } from './user.routes';
+import { userPublicRoutes, userProtectedRoutes } from './user.routes';
+import { accountRoutes } from './account.routes';
 import { uploadRoutes } from './upload.routes';
 import { formRoutes } from './form.routes';
 import { listRoutes } from './list.routes';
@@ -103,15 +106,24 @@ export const v1Routes: RouteObject = {
   children: [
     // /v1 -> não tem página: redireciona para a primeira listagem útil.
     { index: true, loader: () => redirect(paths.v1.user.profilesList) },
+    // Público: login e as duas etapas do Cadastro de Usuário — únicas telas
+    // deste bloco acessíveis sem sessão. Todo o resto vive sob <RequireAuth/>.
     ...authRoutes,
-    ...userRoutes,
-    ...uploadRoutes,
-    ...formRoutes,
-    ...listRoutes,
-    ...navRoutes,
-    ...menuRoutes,
-    ...calendarRoutes,
-    ...svgMapRoutes,
+    ...userPublicRoutes,
+    {
+      element: <RequireAuth />,
+      children: [
+        ...userProtectedRoutes,
+        ...accountRoutes,
+        ...uploadRoutes,
+        ...formRoutes,
+        ...listRoutes,
+        ...navRoutes,
+        ...menuRoutes,
+        ...calendarRoutes,
+        ...svgMapRoutes,
+      ],
+    },
   ],
 };
 

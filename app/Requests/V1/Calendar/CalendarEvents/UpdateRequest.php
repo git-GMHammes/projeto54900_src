@@ -16,6 +16,7 @@ class UpdateRequest
     {
         return [
             'calendar_id'                 => 'permit_empty|is_natural_no_zero',
+            'user_manager_id'             => 'permit_empty|is_natural_no_zero',
             'google_event_id'             => 'permit_empty|string|max_length[512]',
             'ical_uid'                    => 'permit_empty|string|max_length[255]',
             'status'                      => 'permit_empty|in_list[confirmed,tentative,cancelled]',

@@ -28,6 +28,11 @@ executado no banco.
 Etapas 1 e 2 se ligam por `user_manager_id` — ver "A chave que liga as duas
 etapas" em `create_user_profiles.md`.
 
+[`user_directory_view.md`](form/user/user_directory_view.md) — não é form:
+documenta o módulo de API `user-directory-view` (diretório mínimo de usuários,
+liberado a qualquer usuário logado — não `adminonly` como `user-manager*`),
+criado para o picker "Usuário" do convite de calendário.
+
 ## `form/roules/` — perfis de acesso
 
 | Arquivo                                      | slug            | `table_name` |

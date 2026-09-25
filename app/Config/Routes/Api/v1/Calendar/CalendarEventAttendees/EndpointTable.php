@@ -26,6 +26,9 @@ $routes->get('get-all-with-deleted', 'Api\V1\Calendar\CalendarEventAttendees\Res
 $routes->post('create', 'Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::create');
 // PUT  {{www}}/index.php/api/v1/calendar-event-attendees/update/{id}
 $routes->put('update/(:num)', 'Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::update/$1');
+// PUT  {{www}}/index.php/api/v1/calendar-event-attendees/respond/{calendar_event_id} — self-service,
+// aceita/recusa o proprio convite (CurrentUser::id(), nao um id de attendee vindo do cliente)
+$routes->put('respond/(:num)', 'Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::respond/$1');
 // DELETE {{www}}/index.php/api/v1/calendar-event-attendees/delete-soft/{id}
 $routes->delete('delete-soft/(:num)', 'Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::deleteSoft/$1');
 // PATCH  {{www}}/index.php/api/v1/calendar-event-attendees/delete-restore/{id}

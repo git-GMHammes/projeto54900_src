@@ -45,7 +45,7 @@ class JwtService
             'typ'         => 'access',
             'sub'         => $claims['sub'],
             'username'    => $claims['username'],
-            'role'        => $claims['role_slug'],
+            'role_slug'   => $claims['role_slug'],
             'remote_addr' => $claims['remote_addr'],
             'sid'         => $claims['sid'],
             // Enigma de ofuscacao (distracao ao curioso), sem uso em validacao.

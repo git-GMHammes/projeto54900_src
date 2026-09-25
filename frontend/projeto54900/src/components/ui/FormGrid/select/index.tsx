@@ -30,9 +30,11 @@
  * de combobox com busca); multiple usa values/onChangeMultiple e mantem o
  * listbox sempre visivel (sem dropdown que fecha ao selecionar).
  *
- * DEPENDENCIAS: nenhuma (fetch nativo direto — nao usa services/http.ts,
- * pois `src`/`findSrc`/`getSrc` podem apontar para qualquer endpoint,
- * inclusive fora do grupo de recursos padrao).
+ * DEPENDENCIAS: fetch nativo direto — nao usa o wrapper `request()` de
+ * services/http.ts, pois `src`/`findSrc`/`getSrc` podem apontar para
+ * qualquer endpoint, inclusive fora do grupo de recursos padrao. Importa
+ * so `getAuthToken()` de services/http para o fallback de sessao (ver
+ * `buildAuthHeaders`).
  * COMO CRIAR UM COMPONENTE DE CAMPO SIMILAR: ver README_comenta-codigo-didatico.md
  * secao 5 (Bloco C) — mas para um combobox remoto novo, preferir copiar este
  * arquivo como base em vez de partir do zero, dada a complexidade dos 3
@@ -42,6 +44,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ChangeEvent, FocusEvent, FocusEventHandler, KeyboardEvent } from 'react'
+import { getAuthToken } from '@/services/http'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -169,8 +172,19 @@ function contrastText(hex: string): string {
   return lum > 0.6 ? '#000' : '#fff'
 }
 
-function buildAuthHeaders(authToken?: string): Record<string, string> {
-  return authToken ? { Authorization: `Bearer ${authToken}` } : {}
+/** Path relativo (mesma origem) — únicos casos em que o token de sessão entra como fallback automático. */
+function isSameOriginPath(url: string): boolean {
+  return url.startsWith('/')
+}
+
+/**
+ * `explicitToken` (field.authToken) sempre vence. Sem ele, cai no token de
+ * sessão registrado em services/http.ts — mas só para `url` relativa, para
+ * nunca vazar o Bearer para um endpoint de outra origem.
+ */
+function buildAuthHeaders(url: string, explicitToken?: string): Record<string, string> {
+  const token = explicitToken ?? (isSameOriginPath(url) ? getAuthToken() ?? undefined : undefined)
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 /** Extrai uma lista de itens de uma resposta JSON (array direto ou { data|items: [...] }). */
@@ -239,7 +253,7 @@ export function SelectField({ field }: SelectFieldProps) {
     const src = field.src
     if (!src) return
     setIsLoading(true)
-    fetch(src, { headers: buildAuthHeaders(field.authToken) })
+    fetch(src, { headers: buildAuthHeaders(src, field.authToken) })
       .then(r => r.json() as Promise<unknown>)
       .then(json => setAllData(extrairLista(json)))
       .catch((e: unknown) => console.warn('[SelectField] Falha ao carregar src:', src, e))
@@ -270,8 +284,9 @@ export function SelectField({ field }: SelectFieldProps) {
 
     const getSrc = field.getSrc
     if (getSrc) {
-      fetch(`${getSrc}/${encodeURIComponent(effectiveValue)}`, {
-        headers: buildAuthHeaders(field.authToken),
+      const url = `${getSrc}/${encodeURIComponent(effectiveValue)}`
+      fetch(url, {
+        headers: buildAuthHeaders(url, field.authToken),
       })
         .then(r => r.json() as Promise<unknown>)
         .then(json => applyFetchedItem(extrairItem(json)))
@@ -283,7 +298,7 @@ export function SelectField({ field }: SelectFieldProps) {
     if (findSrc) {
       fetch(findSrc, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...buildAuthHeaders(field.authToken) },
+        headers: { 'Content-Type': 'application/json', ...buildAuthHeaders(findSrc, field.authToken) },
         body: JSON.stringify({ [field.valueKey ?? 'id']: effectiveValue }),
       })
         .then(r => r.json() as Promise<unknown>)
@@ -310,15 +325,16 @@ export function SelectField({ field }: SelectFieldProps) {
     )
     if (missing.length === 0) return
     void Promise.all(
-      missing.map(v =>
-        fetch(`${getSrc}/${encodeURIComponent(v)}`, { headers: buildAuthHeaders(field.authToken) })
+      missing.map(v => {
+        const url = `${getSrc}/${encodeURIComponent(v)}`
+        return fetch(url, { headers: buildAuthHeaders(url, field.authToken) })
           .then(r => r.json() as Promise<unknown>)
           .then(json => extrairItem(json))
           .catch((e: unknown) => {
             console.warn('[SelectField] getSrc (múltiplo) falhou:', getSrc, e)
             return null
-          }),
-      ),
+          })
+      }),
     ).then(fetched => {
       const novos = fetched.filter((x): x is SelectOptionItem => x != null)
       if (novos.length === 0) return
@@ -348,7 +364,7 @@ export function SelectField({ field }: SelectFieldProps) {
     const timer = setTimeout(() => {
       fetch(findSrc, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...buildAuthHeaders(field.authToken) },
+        headers: { 'Content-Type': 'application/json', ...buildAuthHeaders(findSrc, field.authToken) },
         body: JSON.stringify({ [findColumn]: query }),
       })
         .then(r => r.json() as Promise<unknown>)

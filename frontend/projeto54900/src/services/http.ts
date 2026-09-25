@@ -85,6 +85,11 @@ export function hasAccessToken(): boolean {
   return Boolean(getAccessToken?.());
 }
 
+/** O access_token atual (ou null) — para quem monta headers fora de `request()`, ex.: FormGrid/select. */
+export function getAuthToken(): string | null {
+  return getAccessToken?.() ?? null;
+}
+
 /**
  * =============================================================================
  * BLOCO 2 — `ApiError`: O ERRO TIPADO DA CAMADA

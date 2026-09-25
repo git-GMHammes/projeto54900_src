@@ -111,7 +111,7 @@ abstract class BaseTableModel extends Model
     /**
      * Executa COUNT + resultado paginado sobre o builder recebido.
      */
-    private function paginateBuilder(object $builder, int $page, int $limit, string $sort, string $order): array
+    protected function paginateBuilder(object $builder, int $page, int $limit, string $sort, string $order): array
     {
         $total = $builder->countAllResults(false);
 
@@ -135,7 +135,7 @@ abstract class BaseTableModel extends Model
     /**
      * Aplica o filtro de soft delete (WHERE deleted_at IS NULL) quando habilitado.
      */
-    private function applyActiveScopeToBuilder(object $builder): object
+    protected function applyActiveScopeToBuilder(object $builder): object
     {
         if ($this->useSoftDeletes) {
             $builder->where($this->deletedField . ' IS NULL', null, false);
@@ -160,6 +160,20 @@ abstract class BaseTableModel extends Model
         return $builder;
     }
 
+    /**
+     * Restringe o builder a um subconjunto de IDs (WHERE IN), quando informado.
+     * Usado pelos Processors para aplicar regras de dono/convite/organizador
+     * sobre os métodos genéricos de leitura e exclusão em massa.
+     */
+    private function applyIdRestriction(object $builder, ?array $restrictToIds): object
+    {
+        if ($restrictToIds !== null) {
+            $builder->whereIn($this->primaryKey, $restrictToIds);
+        }
+
+        return $builder;
+    }
+
     // -------------------------------------------------------------------------
     // Leitura paginada (registros ativos)
     // -------------------------------------------------------------------------
@@ -168,11 +182,12 @@ abstract class BaseTableModel extends Model
      * Consulta paginada com filtros exatos (ou LIKE para campos em $likeFields).
      * Respeita soft delete quando habilitado.
      */
-    public function findPaginated(array $filters, int $page, int $limit, string $sort, string $order): array
+    public function findPaginated(array $filters, int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
         $builder = $this->db->table($this->table);
         $this->applyActiveScopeToBuilder($builder);
         $this->applyFilters($builder, $filters);
+        $this->applyIdRestriction($builder, $restrictToIds);
 
         return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
@@ -201,7 +216,7 @@ abstract class BaseTableModel extends Model
      *
      * @param array $searchFields Campos para busca (normalmente $this->tableModel->searchFields)
      */
-    public function searchByTerm(string $term, array $searchFields, int $page, int $limit, string $sort, string $order): array
+    public function searchByTerm(string $term, array $searchFields, int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
         $builder = $this->db->table($this->table);
         $this->applyActiveScopeToBuilder($builder);
@@ -218,16 +233,19 @@ abstract class BaseTableModel extends Model
             $builder->groupEnd();
         }
 
+        $this->applyIdRestriction($builder, $restrictToIds);
+
         return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
 
     /**
      * Lista paginada de registros soft-deleted.
      */
-    public function findDeletedPaginated(int $page, int $limit, string $sort, string $order): array
+    public function findDeletedPaginated(int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
         $builder = $this->db->table($this->table)
             ->where($this->deletedField . ' IS NOT NULL', null, false);
+        $this->applyIdRestriction($builder, $restrictToIds);
 
         return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
@@ -235,9 +253,12 @@ abstract class BaseTableModel extends Model
     /**
      * Lista paginada de todos os registros (ativos + soft-deleted).
      */
-    public function findAllWithDeletedPaginated(int $page, int $limit, string $sort, string $order): array
+    public function findAllWithDeletedPaginated(int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
-        return $this->paginateBuilder($this->db->table($this->table), $page, $limit, $sort, $order);
+        $builder = $this->db->table($this->table);
+        $this->applyIdRestriction($builder, $restrictToIds);
+
+        return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
 
     // -------------------------------------------------------------------------
@@ -249,10 +270,11 @@ abstract class BaseTableModel extends Model
      * Se $limit for informado (>= 1), aplica LIMIT no SQL; caso contrário retorna tudo.
      * Respeita soft delete quando habilitado.
      */
-    public function getOrdered(string $sort, string $order, ?int $limit = null): array
+    public function getOrdered(string $sort, string $order, ?int $limit = null, ?array $restrictToIds = null): array
     {
         $builder = $this->db->table($this->table);
         $this->applyActiveScopeToBuilder($builder);
+        $this->applyIdRestriction($builder, $restrictToIds);
 
         $builder->orderBy($this->safeSort($sort), $this->safeOrder($order));
 
@@ -314,7 +336,7 @@ abstract class BaseTableModel extends Model
      *
      * @return int Número de linhas afetadas
      */
-    public function clearDeleted(?int $id = null): int
+    public function clearDeleted(?int $id = null, ?array $restrictToIds = null): int
     {
         $builder = $this->db->table($this->table)
             ->where($this->deletedField . ' IS NOT NULL', null, false);
@@ -322,6 +344,7 @@ abstract class BaseTableModel extends Model
         if ($id !== null) {
             $builder->where($this->primaryKey, $id);
         }
+        $this->applyIdRestriction($builder, $restrictToIds);
 
         $builder->delete();
 

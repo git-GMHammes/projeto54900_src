@@ -2,6 +2,7 @@
 
 namespace App\Services\V1\Calendar\CalendarEventAttendees;
 
+use App\Libraries\Auth\CurrentUser;
 use App\Models\V1\Calendar\CalendarEvents\SqlTableModel as CalendarEventsModel;
 use App\Models\V1\Calendar\CalendarEventAttendees\SqlTableModel;
 use App\Models\V1\User\UserManager\SqlTableModel as UserManagerModel;
@@ -62,6 +63,36 @@ class Processor extends BaseTableService
         $data['display_name'] = $profile['name'];
 
         return parent::create($data);
+    }
+
+    /**
+     * PUT /respond/{calendar_event_id} — o proprio convidado (CurrentUser::id(),
+     * nunca um id de attendee vindo do cliente — evita o IDOR do update/{id}
+     * generico, que ainda nao checa dono/convite) aceita/recusa o proprio
+     * convite. So altera response_status; is_organizer/comment/demais campos
+     * ficam intocados. Recusar NAO remove o attendee (deleted_at continua
+     * NULL) — o calendario segue na lista do convidado até o dono excluir o
+     * convite (ver 'Convidados' -> lixeira).
+     *
+     * @return array{success: bool, data?: array, message?: string, code?: int}
+     */
+    public function respond(int $calendarEventId, string $responseStatus): array
+    {
+        $allowed = ['needsAction', 'declined', 'tentative', 'accepted'];
+        if (!\in_array($responseStatus, $allowed, true)) {
+            return ['success' => false, 'message' => 'response_status invalido', 'code' => 422];
+        }
+
+        $userId  = (int) CurrentUser::id();
+        $current = $this->tableModel->findByUserInEvent($calendarEventId, $userId);
+
+        if ($current === null) {
+            return ['success' => false, 'message' => 'Você não foi convidado para este evento', 'code' => 404];
+        }
+
+        $this->tableModel->update((int) $current['id'], ['response_status' => $responseStatus]);
+
+        return ['success' => true, 'data' => $this->tableModel->find((int) $current['id'])];
     }
 
     // -------------------------------------------------------------------------

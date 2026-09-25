@@ -284,6 +284,8 @@ function buildField(row: ApiRow): AnyFieldSchema {
     if (cfg && typeof cfg === 'object') {
       const rec = cfg as Record<string, unknown>;
       set('src', str(rec.src));
+      set('findSrc', str(rec.findSrc));
+      set('findColumn', str(rec.findColumn));
       set('valueKey', str(rec.valueKey));
       set('maxVisible', int(rec.maxVisible));
       set('colorKey', str(rec.colorKey));

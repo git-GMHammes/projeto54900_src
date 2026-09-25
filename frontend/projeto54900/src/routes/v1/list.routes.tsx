@@ -54,6 +54,7 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireRole from '@/routes/RequireRole';
 
 const ListConstructorPage = lazy(() => import('@/pages/v1/list/ListConstructorPage'));
 const ListBuilderPage = lazy(() => import('@/pages/v1/list/ListBuilderPage'));
@@ -71,10 +72,19 @@ const ListBuilderPage = lazy(() => import('@/pages/v1/list/ListBuilderPage'));
  * baixado só quando visitada.
  * -------------------------------------------------------------------------
  */
+// SOMENTE ADMIN (menu_manager.roles=["admin"] para /v1/list-constructor) —
+// nao confundir com a LEITURA de list-manager/list-columns/list-actions que
+// toda tela de listagem do app faz (inclusive as de usuario comum) pra saber
+// suas proprias colunas/acoes: essa leitura nao passa por esta rota.
 export const listRoutes: RouteObject[] = [
-  { path: 'list-constructor', element: <ListConstructorPage /> },
-  { path: 'list-constructor/create', element: <ListBuilderPage /> },
-  { path: 'list-constructor/update/:id', element: <ListBuilderPage /> },
+  {
+    element: <RequireRole role="admin" />,
+    children: [
+      { path: 'list-constructor', element: <ListConstructorPage /> },
+      { path: 'list-constructor/create', element: <ListBuilderPage /> },
+      { path: 'list-constructor/update/:id', element: <ListBuilderPage /> },
+    ],
+  },
 ];
 
 export default listRoutes;

@@ -31,6 +31,13 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/User/UserManager/EndPointView.php';
     });
 
+    // Diretorio minimo de usuarios (id/username/nome/email) — liberado a
+    // qualquer usuario logado (jwtauth), ao contrario de user-manager-view
+    // (adminonly). Usado por selects de "convidar usuario" (ex.: calendario).
+    $routes->group('user-directory-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/User/UserDirectory/EndPointView.php';
+    });
+
     $routes->group('user-roles', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/User/UserRoles/EndpointTable.php';
     });

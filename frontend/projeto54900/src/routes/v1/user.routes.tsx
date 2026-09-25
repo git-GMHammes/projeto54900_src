@@ -11,15 +11,17 @@
  *
  * MAPA DAS ROTAS (path relativo ao pai "/v1"):
  *   user-manager            -> GetAllPage      stub: futura lista de segurança (slug
- *                                              'user-manager', ações próprias)
+ *                                              'user-manager', ações próprias) — SOMENTE
+ *                                              ADMIN (<RequireRole role="admin"/>)
  *   user-profiles           -> ProfilesGetAllPage lista de dados de usuários, menu
  *                                              "Dados Usuário" (motor do Construtor de
- *                                              Listas, slug 'user-profiles' + busca)
+ *                                              Listas, slug 'user-profiles' + busca) —
+ *                                              SOMENTE ADMIN (<RequireRole role="admin"/>)
  *   user-manager/create     -> CreatePage      ETAPA 1 do cadastro: build 'cadastro-usuario'
  *                                              (user_manager); ao criar, redireciona para
  *                                              user-profiles/create?user_manager_id={id}
- *   user-manager/:id        -> GetPage         detalhe SOMENTE LEITURA (via -view)
- *   user-manager/update/:id -> UpdatePage      formulário do build 'atualizar-usuario'
+ *   user-manager/:id        -> GetPage         detalhe SOMENTE LEITURA (via -view) — SOMENTE ADMIN
+ *   user-manager/update/:id -> UpdatePage      formulário do build 'atualizar-usuario' — SOMENTE ADMIN
  *   user-profiles/create    -> ProfilesCreatePage ETAPA 2 do cadastro: build 'dados-do-usuario'
  *                                              (user_profiles), lê ?user_manager_id= da
  *                                              querystring; ao concluir, vai para /v1/login
@@ -57,6 +59,7 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireRole from '@/routes/RequireRole';
 
 const GetAllPage = lazy(() => import('@/pages/v1/user/user-manager/GetAllPage'));
 const GetPage = lazy(() => import('@/pages/v1/user/user-manager/GetPage'));
@@ -82,13 +85,34 @@ const ProfilesGetAllPage = lazy(() => import('@/pages/v1/user/user-profiles/GetA
  * baixado só quando a rota é visitada.
  * -------------------------------------------------------------------------
  */
-export const userRoutes: RouteObject[] = [
-  { path: 'user-manager', element: <GetAllPage /> },
+/**
+ * Rotas PUBLICAS: as duas etapas do Cadastro de Usuario (unica parte deste
+ * modulo acessivel sem sessao — ver RequireAuth em routes/v1/index.tsx).
+ */
+export const userPublicRoutes: RouteObject[] = [
   { path: 'user-manager/create', element: <CreatePage /> },
-  { path: 'user-manager/:id', element: <GetPage /> },
-  { path: 'user-manager/update/:id', element: <UpdatePage /> },
-  { path: 'user-profiles', element: <ProfilesGetAllPage /> },
   { path: 'user-profiles/create', element: <ProfilesCreatePage /> },
 ];
 
-export default userRoutes;
+/**
+ * Rotas PROTEGIDAS: administracao de usuarios (listagem, detalhe, edicao) —
+ * ficam sob o guard <RequireAuth/> montado em routes/v1/index.tsx. As quatro
+ * rotas abaixo (dados de login/senha E dados pessoais de OUTROS usuarios)
+ * exigem ADEMAIS o papel admin via <RequireRole role="admin"/> — confirmado
+ * por menu_manager.roles (roles=["admin"] para /v1/user-manager e
+ * /v1/user-profiles). O self-service (editar o PROPRIO perfil) vive em rota
+ * separada (`/v1/account/profile`, ver account.routes.tsx), fora deste guard.
+ */
+export const userProtectedRoutes: RouteObject[] = [
+  {
+    element: <RequireRole role="admin" />,
+    children: [
+      { path: 'user-manager', element: <GetAllPage /> },
+      { path: 'user-manager/:id', element: <GetPage /> },
+      { path: 'user-manager/update/:id', element: <UpdatePage /> },
+      { path: 'user-profiles', element: <ProfilesGetAllPage /> },
+    ],
+  },
+];
+
+export default userProtectedRoutes;

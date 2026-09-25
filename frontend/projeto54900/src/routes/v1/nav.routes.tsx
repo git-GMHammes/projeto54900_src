@@ -48,6 +48,7 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireRole from '@/routes/RequireRole';
 
 const GetAllPage = lazy(() => import('@/pages/v1/nav/GetAllPage'));
 const CreatePage = lazy(() => import('@/pages/v1/nav/CreatePage'));
@@ -69,11 +70,18 @@ const UpdatePage = lazy(() => import('@/pages/v1/nav/UpdatePage'));
  * O `element` recebe o componente por lazy import.
  * -------------------------------------------------------------------------
  */
+// SOMENTE ADMIN (menu_manager.roles=["admin"] para /v1/nav-manager) — config
+// do app/navbar, nao ha uso de usuario comum aqui.
 export const navRoutes: RouteObject[] = [
-  { path: 'nav-manager', element: <GetAllPage /> },
-  { path: 'nav-manager/create', element: <CreatePage /> },
-  { path: 'nav-manager/:id', element: <GetPage /> },
-  { path: 'nav-manager/update/:id', element: <UpdatePage /> },
+  {
+    element: <RequireRole role="admin" />,
+    children: [
+      { path: 'nav-manager', element: <GetAllPage /> },
+      { path: 'nav-manager/create', element: <CreatePage /> },
+      { path: 'nav-manager/:id', element: <GetPage /> },
+      { path: 'nav-manager/update/:id', element: <UpdatePage /> },
+    ],
+  },
 ];
 
 export default navRoutes;

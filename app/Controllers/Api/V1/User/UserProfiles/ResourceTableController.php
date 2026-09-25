@@ -14,7 +14,8 @@ use Psr\Log\LoggerInterface;
  * Controller de recurso para operações diretas na tabela user_profiles.
  *
  * Todos os endpoints REST estão implementados em BaseResourceTableController.
- * Este controller declara apenas o Processor e as regras de validação do módulo.
+ * Este controller declara apenas o Processor, as regras de validação do
+ * módulo e o endpoint extra "me" (self-service).
  */
 class ResourceTableController extends BaseResourceTableController
 {
@@ -35,5 +36,25 @@ class ResourceTableController extends BaseResourceTableController
     protected function getUpdateRules(): array
     {
         return (new UpdateRequest())->rules();
+    }
+
+    /**
+     * GET .../me — perfil (user_profiles) do usuário autenticado.
+     */
+    public function me(): ResponseInterface
+    {
+        try {
+            /** @var Processor $processor */
+            $processor = $this->processor;
+            $record    = $processor->getMine();
+
+            if (!$record) {
+                return $this->respondNotFound('Perfil não encontrado para o usuário autenticado');
+            }
+
+            return $this->respondSuccess($record, 'Perfil encontrado com sucesso');
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
     }
 }

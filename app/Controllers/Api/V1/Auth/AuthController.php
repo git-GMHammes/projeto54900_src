@@ -4,6 +4,7 @@ namespace App\Controllers\Api\V1\Auth;
 
 use App\Controllers\Api\V1\BaseResourceViewController;
 use App\Libraries\Auth\CurrentUser;
+use App\Requests\V1\Auth\ChangePasswordRequest;
 use App\Requests\V1\Auth\LoginRequest;
 use App\Requests\V1\Auth\RefreshRequest;
 use App\Services\V1\Auth\AuthService;
@@ -129,5 +130,58 @@ class AuthController extends BaseResourceViewController
         }
 
         return $this->respondSuccess($result['data'], 'Usuário autenticado');
+    }
+
+    /**
+     * PUT auth/change-password — { current_password, new_password }. Exige
+     * 'jwtauth'; troca a própria senha do usuário autenticado e invalida a
+     * sessão atual (token NULL), forçando novo login.
+     */
+    public function changePassword(): ResponseInterface
+    {
+        $userId = CurrentUser::id();
+        if ($userId === null) {
+            return $this->respondError('Usuário não autenticado', 401);
+        }
+
+        $rules = new ChangePasswordRequest();
+        if (!$this->validate($rules->rules(), $rules->messages())) {
+            return $this->respondValidationError($this->validator->getErrors());
+        }
+
+        $body = $this->getRequestBody();
+        $result = $this->service->changePassword(
+            $userId,
+            (string) $body['current_password'],
+            (string) $body['new_password']
+        );
+
+        if (!$result['success']) {
+            return $this->respondError($result['message'], $result['code'] ?? 401);
+        }
+
+        return $this->respondSuccess(null, 'Senha alterada com sucesso');
+    }
+
+    /**
+     * PATCH auth/self-block — sem corpo. Exige 'jwtauth'; bloqueia a PROPRIA
+     * conta do usuário autenticado (status='blocked'), sempre via
+     * CurrentUser::id() — nunca recebe id de fora. Usado pelo frontend quando
+     * o usuário insiste em acessar uma rota sem permissão (ver ForbiddenPage).
+     */
+    public function selfBlock(): ResponseInterface
+    {
+        $userId = CurrentUser::id();
+        if ($userId === null) {
+            return $this->respondError('Usuário não autenticado', 401);
+        }
+
+        $result = $this->service->selfBlock($userId);
+
+        if (!$result['success']) {
+            return $this->respondError($result['message'], $result['code'] ?? 404);
+        }
+
+        return $this->respondSuccess(null, 'Conta bloqueada');
     }
 }
