@@ -8,8 +8,12 @@
 // Hierarquia: um item de topo (parent_id null) pode ter filhos (parent_id =
 // id do pai) — vira dropdown no Navbar. Um item de topo sem react_route
 // propria (organizacional, so agrupa filhos) tambem vira dropdown, so que sem
-// link no proprio toggle. Enforcement de roles fica fora desta fase — ver
-// src/frontend/projeto54900/CLAUDE.md.
+// link no proprio toggle.
+//
+// Roles: menu_manager.roles (string[] | null) filtra os itens pelo role do
+// usuario logado (user.role.slug) antes de montar a arvore — roles null
+// libera para qualquer autenticado; um pai fora do role esconde os filhos
+// junto (nao ha checagem independente por filho).
 //
 // Destino (placement): so o item de topo decide — 'navbar' (barra superior) ou
 // 'offcanvas' (painel lateral aberto pelo botao antes de Home). Os filhos
@@ -59,7 +63,13 @@ function toLink(item: MenuManagerItem): SiteMenuLink | null {
   return { to: item.react_route, label: item.title, end: true };
 }
 
-async function fetchSiteMenu(signal: AbortSignal): Promise<SiteMenu> {
+/** roles null = liberado para qualquer autenticado; senao, precisa do slug do usuario na lista. */
+function isRoleAllowed(roles: string[] | null, roleSlug: string | null): boolean {
+  if (roles === null) return true;
+  return roleSlug !== null && roles.includes(roleSlug);
+}
+
+async function fetchSiteMenu(signal: AbortSignal, roleSlug: string | null): Promise<SiteMenu> {
   const navPayload = await navManagerTable.find({ status: 'active' }, { limit: 1 }, { signal });
   const { rows: navRows } = normalizeList<NavManagerItem>(navPayload);
   const nav = navRows[0];
@@ -70,7 +80,8 @@ async function fetchSiteMenu(signal: AbortSignal): Promise<SiteMenu> {
     { limit: 100 },
     { signal },
   );
-  const { rows: menuRows } = normalizeList<MenuManagerItem>(menuPayload);
+  const { rows: allMenuRows } = normalizeList<MenuManagerItem>(menuPayload);
+  const menuRows = allMenuRows.filter((item) => isRoleAllowed(item.roles, roleSlug));
 
   const byParent = new Map<string, MenuManagerItem[]>();
   for (const item of menuRows) {
@@ -106,8 +117,11 @@ export interface UseSiteMenuResult {
 }
 
 export function useSiteMenu(): UseSiteMenuResult {
-  const { isAuthenticated } = useAuth();
-  const { data, loading, error, run, reset }: UseApiResult<SiteMenu> = useApi(fetchSiteMenu);
+  const { isAuthenticated, user } = useAuth();
+  const roleSlug = user?.role?.slug ?? null;
+  const { data, loading, error, run, reset }: UseApiResult<SiteMenu> = useApi(
+    (signal) => fetchSiteMenu(signal, roleSlug),
+  );
 
   useEffect(() => {
     if (isAuthenticated) void run();

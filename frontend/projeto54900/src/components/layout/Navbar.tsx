@@ -14,10 +14,14 @@
 // Sessao: sem usuario autenticado a barra mostra so GUEST_NAV (Home + Entrar);
 // botao e painel do Offcanvas nem entram no DOM e useSiteMenu nao consulta a
 // API. Durante o refresh silencioso inicial (bootstrapping) mostra so Home,
-// para "Entrar" nao piscar antes da sessao ser restaurada. Com sessao, "Entrar"
-// some (inclusive se cadastrado no menu_manager — withoutLogin) e aparece o
-// botao "Sair": logout() do AuthContext (revoga no backend + limpeza local) e
-// volta para a Home com replace.
+// para "Entrar" nao piscar antes da sessao ser restaurada. Com sessao, o menu
+// dinamico aparece tal como cadastrado em menu_manager (so filtrado por role,
+// em useSiteMenu.ts), com uma excecao: um item de TOPO (raiz, sem pai) cuja
+// rota seja a de login some — nao faz sentido oferecer "entrar" pra quem ja
+// esta logado. Dentro de um submenu (filho de outro item) a rota de login
+// continua aparecendo normalmente — withoutRootLogin() so filtra o nivel raiz.
+// Aparece tambem o botao "Sair": logout() do AuthContext (revoga no backend +
+// limpeza local) e volta para a Home com replace.
 
 import { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -41,17 +45,9 @@ const GUEST_NAV: SiteMenuItem[] = [
 
 const OFFCANVAS_ID = 'siteMenuOffcanvas';
 
-// Remove a rota de login (item ou filho) do menu dinamico — com sessao ativa
-// "Entrar" nunca aparece, mesmo que esteja cadastrado no menu_manager.
-function withoutLogin(items: SiteMenuItem[]): SiteMenuItem[] {
-  const login = paths.v1.auth.login;
-  return items
-    .map((item) => ({
-      ...item,
-      link: item.link?.to === login ? null : item.link,
-      children: item.children.filter((child) => child.to !== login),
-    }))
-    .filter((item) => item.link !== null || item.children.length > 0);
+/** Remove do NIVEL RAIZ o item cuja rota seja a de login — filhos (submenu) nunca sao tocados. */
+function withoutRootLogin(items: SiteMenuItem[]): SiteMenuItem[] {
+  return items.filter((item) => item.link?.to !== paths.v1.auth.login);
 }
 
 export default function Navbar() {
@@ -65,9 +61,9 @@ export default function Navbar() {
   const closeOffcanvas = () => closeRef.current?.click();
   const hasMenu = menu !== null && (menu.navbar.length > 0 || menu.offcanvas.length > 0);
   let nav: SiteMenuItem[] = GUEST_NAV;
-  if (isAuthenticated) nav = hasMenu ? withoutLogin(menu.navbar) : FALLBACK_NAV;
+  if (isAuthenticated) nav = hasMenu ? withoutRootLogin(menu.navbar) : FALLBACK_NAV;
   else if (bootstrapping) nav = FALLBACK_NAV;
-  const offcanvas: SiteMenuItem[] = isAuthenticated && hasMenu ? withoutLogin(menu.offcanvas) : [];
+  const offcanvas: SiteMenuItem[] = isAuthenticated && hasMenu ? withoutRootLogin(menu.offcanvas) : [];
 
   /** Sair: revoga no backend + limpeza local (AuthContext) e volta para a Home. */
   const handleLogout = async () => {
