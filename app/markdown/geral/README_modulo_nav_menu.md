@@ -156,9 +156,11 @@ não mexer sem autorização explícita.
 - [ ] **Navbar com dropdown real**: hoje só a tela de gestão mostra a árvore;
       o site continua com 7 links fixos sem submenu. Decidir se/quando
       implementar (Fase 2, adiada por decisão do usuário).
-- [ ] **Enforcement de `roles`**: campo existe e é validado, mas nada no
-      frontend filtra por perfil do usuário logado — não há sessão/auth no
-      frontend hoje. Depende de um sistema de login existir primeiro.
+- [x] **Enforcement de `roles`**: implementado em
+      `src/frontend/projeto54900/src/hooks/useSiteMenu.ts` — cada item é
+      filtrado contra `user.role.slug` (de `useAuth()`) antes de montar a
+      árvore; `roles: null` libera para qualquer autenticado, um pai fora do
+      role esconde os filhos junto.
 - [ ] **Nomes provisórios**: "Buld Form" (grafia informal de "Build Form",
       mapeado para o módulo Formulários) — considerar renomear para algo mais
       claro quando o bug de acento for corrigido.
