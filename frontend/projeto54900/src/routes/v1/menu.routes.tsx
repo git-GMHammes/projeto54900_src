@@ -47,6 +47,7 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireRole from '@/routes/RequireRole';
 
 const GetAllPage = lazy(() => import('@/pages/v1/menu/GetAllPage'));
 const CreatePage = lazy(() => import('@/pages/v1/menu/CreatePage'));
@@ -69,11 +70,20 @@ const UpdatePage = lazy(() => import('@/pages/v1/menu/UpdatePage'));
  * O `element` recebe o componente por lazy import.
  * -------------------------------------------------------------------------
  */
+// SOMENTE ADMIN (menu_manager.roles=["admin"] para /v1/menu-manager) — esta
+// e a TELA de edicao da arvore; nao confundir com a LEITURA que
+// hooks/useSiteMenu.ts faz direto do service (fora do router) pra montar a
+// navbar de qualquer autenticado — essa leitura nao passa por aqui.
 export const menuRoutes: RouteObject[] = [
-  { path: 'menu-manager', element: <GetAllPage /> },
-  { path: 'menu-manager/create', element: <CreatePage /> },
-  { path: 'menu-manager/:id', element: <GetPage /> },
-  { path: 'menu-manager/update/:id', element: <UpdatePage /> },
+  {
+    element: <RequireRole role="admin" />,
+    children: [
+      { path: 'menu-manager', element: <GetAllPage /> },
+      { path: 'menu-manager/create', element: <CreatePage /> },
+      { path: 'menu-manager/:id', element: <GetPage /> },
+      { path: 'menu-manager/update/:id', element: <UpdatePage /> },
+    ],
+  },
 ];
 
 export default menuRoutes;

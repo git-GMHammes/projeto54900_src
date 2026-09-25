@@ -29,4 +29,17 @@ class CurrentUser
 
         return $sub !== null ? (int) $sub : null;
     }
+
+    /**
+     * Slug do perfil (admin/user/guest), emitido pelo login em AuthService::issueTokenPair.
+     */
+    public static function roleSlug(): ?string
+    {
+        return self::$claims['role_slug'] ?? null;
+    }
+
+    public static function isAdmin(): bool
+    {
+        return self::roleSlug() === 'admin';
+    }
 }

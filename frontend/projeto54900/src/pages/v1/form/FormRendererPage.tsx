@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
 import MonthCalendar from '@/components/ui/MonthCalendar';
@@ -20,6 +20,7 @@ import LoadingOverlay from '@/components/global/LoadingOverlay';
 import Modal from '@/components/global/Modal';
 import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/http';
 import { formManagerView } from '@/services/v1';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
@@ -28,8 +29,14 @@ import { normalizeList } from '@/utils/apiResult';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 
+// Slug com guard proprio: SOMENTE ADMIN (menu_manager.roles=["admin"] para
+// /v1/form/calendario) — os demais slugs deste renderizador generico
+// continuam abertos a qualquer autenticado (ex.: 'cadastro-usuario').
+const ADMIN_ONLY_SLUGS = ['calendario'];
+
 export default function FormRendererPage() {
   const { slug = '' } = useParams();
+  const { user } = useAuth();
   const toast = useToast();
   const [form, setForm] = useState<RenderForm | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +104,10 @@ export default function FormRendererPage() {
     },
     [form, toast],
   );
+
+  if (ADMIN_ONLY_SLUGS.includes(slug) && user?.role?.slug !== 'admin') {
+    return <Navigate to={paths.forbidden} replace />;
+  }
 
   return (
     <>

@@ -96,6 +96,33 @@ class AuthService
     }
 
     /**
+     * Bloqueia a PROPRIA conta (status='blocked', mesmo valor usado pelo botao
+     * de bloqueio do admin em user-manager). Chamado pelo frontend quando o
+     * usuario insiste em acessar uma rota sem permissao (ver ForbiddenPage) --
+     * so aceita o id do CurrentUser, nunca um id arbitrario. status='blocked'
+     * ja derruba a sessao na proxima checagem (AuthService::sessionActive exige
+     * status='active'), entao nao precisa zerar o token aqui.
+     *
+     * @return array{success:bool,message?:string,code?:int}
+     */
+    public function selfBlock(int $userId): array
+    {
+        $user = $this->findActiveById($userId);
+
+        if ($user === null) {
+            return ['success' => false, 'message' => 'Usuário não encontrado', 'code' => 404];
+        }
+
+        $this->db()->table('user_manager')
+            ->where('id', $userId)
+            ->update(['status' => 'blocked']);
+
+        log_message('warning', "[auth] auto-bloqueio (tentativas repetidas de acesso negado) para user_id={$userId}");
+
+        return ['success' => true];
+    }
+
+    /**
      * Identifica de quem e a sessao a encerrar. Tenta o access token (Bearer)
      * com sessao ainda ativa; se ausente/expirado, cai para o refresh token do
      * corpo, que precisa conferir com o hash gravado. Null = nada a revogar.
@@ -153,6 +180,37 @@ class AuthService
         return ['success' => true, 'data' => $this->userPublicData($user)];
     }
 
+    /**
+     * Troca a própria senha do usuário autenticado. Exige a senha atual
+     * correta; ao trocar, invalida o token atual (user_manager.token NULL),
+     * forçando novo login — mesmo efeito de logout().
+     *
+     * @return array{success:bool,message?:string,code?:int}
+     */
+    public function changePassword(int $userId, string $currentPassword, string $newPassword): array
+    {
+        $user = $this->findActiveById($userId);
+
+        if ($user === null) {
+            return ['success' => false, 'message' => 'Usuário não encontrado', 'code' => 404];
+        }
+
+        if (!password_verify($currentPassword, (string) $user['password_hash'])) {
+            return ['success' => false, 'message' => 'Senha atual incorreta', 'code' => 401];
+        }
+
+        $this->db()->table('user_manager')
+            ->where('id', $userId)
+            ->update([
+                'password_hash' => password_hash($newPassword, PASSWORD_BCRYPT),
+                'token'         => null,
+            ]);
+
+        log_message('info', "[auth] senha alterada para user_id={$userId}");
+
+        return ['success' => true];
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -204,6 +262,7 @@ class AuthService
         return [
             'id'            => (int) $user['id'],
             'username'      => $user['username'],
+            'full_name'     => $this->findProfileName((int) $user['id']),
             'status'        => $user['status'],
             'last_login_at' => $user['last_login_at'],
             'role'          => $role !== null ? [
@@ -212,6 +271,19 @@ class AuthService
                 'slug' => $role['slug'],
             ] : null,
         ];
+    }
+
+    /** Nome completo (user_profiles.name) do user_manager informado, ou null se não tiver perfil. */
+    private function findProfileName(int $userManagerId): ?string
+    {
+        $profile = $this->db()->table('user_profiles')
+            ->select('name')
+            ->where('user_manager_id', $userManagerId)
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
+
+        return $profile['name'] ?? null;
     }
 
     private function findActiveByUsername(string $username): ?array

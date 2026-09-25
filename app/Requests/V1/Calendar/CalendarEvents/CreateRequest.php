@@ -7,6 +7,7 @@ namespace App\Requests\V1\Calendar\CalendarEvents;
  *
  * DDL de referencia (resumo):
  *   calendar_id        BIGINT       NOT NULL  FK -> calendar_manager.id
+ *   user_manager_id    BIGINT       NULL      FK -> user_manager.id (dono/criador da tarefa)
  *   google_event_id    VARCHAR(512) NULL      (unico)
  *   ical_uid           VARCHAR(255) NULL
  *   status             ENUM(confirmed,tentative,cancelled) DEFAULT 'confirmed' (nasce do DEFAULT)
@@ -42,6 +43,7 @@ class CreateRequest
     {
         return [
             'calendar_id'                 => 'required|is_natural_no_zero',
+            'user_manager_id'             => 'permit_empty|is_natural_no_zero',
             'google_event_id'             => 'permit_empty|string|max_length[512]',
             'ical_uid'                    => 'permit_empty|string|max_length[255]',
             'summary'                     => 'required|string|max_length[255]',

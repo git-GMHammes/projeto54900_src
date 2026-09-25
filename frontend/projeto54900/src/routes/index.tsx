@@ -42,6 +42,7 @@ import RootLayout from '@/layouts/RootLayout';
 import HomePage from '@/pages/Home/HomePage';
 import RouteErrorPage from '@/pages/errors/RouteErrorPage';
 import NotFoundPage from '@/pages/errors/NotFoundPage';
+import ForbiddenPage from '@/pages/errors/ForbiddenPage';
 
 import { v1Routes } from '@/routes/v1';
 import { v1aRoutes } from '@/routes/v1a';
@@ -54,6 +55,7 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorPage />,
       children: [
         { index: true, element: <HomePage /> },
+        { path: 'acesso-negado', element: <ForbiddenPage /> },
         v1Routes,
         v1aRoutes,
         { path: '*', element: <NotFoundPage /> },

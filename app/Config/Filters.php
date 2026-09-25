@@ -13,6 +13,7 @@ use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\JwtAuthFilter;
+use App\Filters\AdminOnlyFilter;
 
 class Filters extends BaseFilters
 {
@@ -36,6 +37,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'jwtauth'       => JwtAuthFilter::class,
+        'adminonly'     => AdminOnlyFilter::class,
     ];
 
     /**
@@ -106,7 +108,66 @@ class Filters extends BaseFilters
      * Example:
      * 'isLoggedIn' => ['before' => ['account/*', 'profiles/*']]
      *
+     * jwtauth aqui cobre os grupos de api/v1 SEM nenhuma rota publica (tudo
+     * exige sessao). auth/* e form-manager-view/* ficam de fora (publicos por
+     * decisao de produto). user-manager e user-profiles tambem ficam de fora
+     * deste wildcard porque cada um tem UMA rota publica (create, cadastro de
+     * usuario) misturada com rotas administrativas — a protecao deles e feita
+     * rota a rota em Config/Routes/Api/v1/User/{UserManager,UserProfiles}/EndpointTable.php,
+     * com ['filter' => 'jwtauth'] igual ao usado em auth/me.
+     *
+     * adminonly SEMPRE depois de jwtauth (precisa de CurrentUser ja populado):
+     * hoje cobre o modulo user-manager (dados de login/senha de outros
+     * usuarios) — api/v1/user-manager-view/* aqui por wildcard (grupo sem
+     * rota publica) e api/v1/user-manager/* rota a rota no proprio
+     * EndpointTable.php (['filter' => ['jwtauth', 'adminonly']]), pelo mesmo
+     * motivo do jwtauth acima: nao pode vazar pra rota publica 'create'.
+     *
+     * api/v1/user-directory-view/* (2026-09-25) e EXCECAO DELIBERADA a
+     * adminonly: view_user_directory so tem id/um_username/uc_name/uc_email
+     * (sem senha/status/role/CPF/telefone/endereco), entao qualquer usuario
+     * logado pode listar/buscar — usado pelo select de "convidar usuario" do
+     * calendario, que precisa achar qualquer usuario do sistema, nao so os
+     * que um admin cadastrou. NUNCA adicionar este prefixo ao array
+     * 'adminonly' abaixo nem trocar a view por view_user_manager/user_manager
+     * (essas tem colunas sensiveis de outros usuarios).
+     *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'jwtauth' => [
+            'before' => [
+                'api/v1/user-manager-view/*',
+                'api/v1/user-directory-view/*',
+                'api/v1/user-roles/*',
+                'api/v1/upload-manager/*',
+                'api/v1/upload-manager-view/*',
+                'api/v1/form-manager/*',
+                'api/v1/form-groups/*',
+                'api/v1/form-rows/*',
+                'api/v1/form-campos/*',
+                'api/v1/list-manager/*',
+                'api/v1/list-columns/*',
+                'api/v1/list-actions/*',
+                'api/v1/bootstrap-icons/*',
+                'api/v1/aux-cor/*',
+                'api/v1/calendar-manager/*',
+                'api/v1/calendar-manager-view/*',
+                'api/v1/calendar-events/*',
+                'api/v1/calendar-event-attendees/*',
+                'api/v1/calendar-event-reminders/*',
+                'api/v1/calendar-event-attachments/*',
+                'api/v1/calendar-event-extended-properties/*',
+                'api/v1/nav-manager/*',
+                'api/v1/menu-manager/*',
+                'api/v1/db-schema/*',
+                'api/v1/route-manager/*',
+            ],
+        ],
+        'adminonly' => [
+            'before' => [
+                'api/v1/user-manager-view/*',
+            ],
+        ],
+    ];
 }

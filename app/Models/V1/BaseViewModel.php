@@ -76,9 +76,13 @@ abstract class BaseViewModel extends Model
     /**
      * Consulta paginada com filtros exatos (ou LIKE para campos em $likeFields).
      */
-    public function findPaginatedView(array $filters, int $page, int $limit, string $sort, string $order): array
+    public function findPaginatedView(array $filters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
 
         foreach ($filters as $field => $value) {
             if (\in_array($field, $this->likeFields, true)) {
@@ -96,9 +100,13 @@ abstract class BaseViewModel extends Model
      *
      * @param array $multiFilters Mapa [campo => array_de_valores]
      */
-    public function findGroupedView(array $multiFilters, int $page, int $limit, string $sort, string $order): array
+    public function findGroupedView(array $multiFilters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
 
         foreach ($multiFilters as $field => $values) {
             $builder->whereIn($field, $values);
@@ -112,9 +120,13 @@ abstract class BaseViewModel extends Model
      * $filters (opcional): WHERE exato (AND) só para campos de $filterFields;
      * campo fora da whitelist ou valor vazio é ignorado.
      */
-    public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order, array $filters = []): array
+    public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order, array $filters = [], ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
 
         foreach ($filters as $field => $value) {
             if (\in_array($field, $this->filterFields, true) && \is_scalar($value) && (string) $value !== '') {
@@ -140,9 +152,13 @@ abstract class BaseViewModel extends Model
     /**
      * Lista paginada de registros com deleted_at IS NOT NULL.
      */
-    public function findDeletedPaginatedView(int $page, int $limit, string $sort, string $order): array
+    public function findDeletedPaginatedView(int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table)->where('deleted_at IS NOT NULL', null, false);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
 
         return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
@@ -150,9 +166,15 @@ abstract class BaseViewModel extends Model
     /**
      * Lista paginada de todos os registros (ativos + soft-deleted).
      */
-    public function findAllWithDeletedPaginatedView(int $page, int $limit, string $sort, string $order): array
+    public function findAllWithDeletedPaginatedView(int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
-        return $this->paginateBuilder($this->db->table($this->table), $page, $limit, $sort, $order);
+        $builder = $this->db->table($this->table);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
+
+        return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
     }
 
     // -------------------------------------------------------------------------
@@ -194,10 +216,15 @@ abstract class BaseViewModel extends Model
      * Retorna registros ordenados, sem paginação.
      * Se $limit for informado (>= 1), aplica LIMIT no SQL; caso contrário retorna tudo.
      */
-    public function findAllView(string $sort, string $order, ?int $limit = null): array
+    public function findAllView(string $sort, string $order, ?int $limit = null, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table)
-            ->orderBy($this->safeSort($sort), $this->safeOrder($order));
+        $builder = $this->db->table($this->table);
+
+        if ($scope !== null) {
+            $scope($builder);
+        }
+
+        $builder->orderBy($this->safeSort($sort), $this->safeOrder($order));
 
         if ($limit !== null && $limit >= 1) {
             $builder->limit($limit);

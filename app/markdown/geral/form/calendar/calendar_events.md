@@ -19,6 +19,41 @@ preenchidos por uma futura sincronização com o Google Calendar — não fazem
 sentido como campo digitado por humano num evento criado localmente. Ficam
 fora do formulário.
 
+`user_manager_id` também fica fora do formulário: é preenchido
+automaticamente pelo backend com o usuário autenticado que cria a tarefa
+(`CalendarEvents\Processor::create()`), nunca escolhido pelo usuário final —
+mesmo raciocínio de `created_at`/`status`.
+
+## Coluna `user_manager_id` — adicionada em 2026-09-25 (SQL direto, sem migration)
+
+`calendar_events` não tinha nenhuma coluna própria de usuário — o "criador" da
+tarefa era só inferido por `is_organizer=1` em `calendar_event_attendees`
+(convenção de negócio, sem constraint de banco). A pedido explícito do
+usuário ("IMPORTANTÍSSIMO id do usuário estar nas duas tabelas"), foi
+adicionada uma coluna própria, espelhando exatamente `calendar_manager.user_manager_id`:
+
+```sql
+ALTER TABLE calendar_events
+  ADD COLUMN user_manager_id BIGINT DEFAULT NULL AFTER calendar_id,
+  ADD KEY calendar_events_user_manager_id_index (user_manager_id),
+  ADD CONSTRAINT calendar_events_user_manager_id_foreign
+    FOREIGN KEY (user_manager_id) REFERENCES user_manager(id)
+    ON DELETE SET NULL ON UPDATE CASCADE;
+```
+
+Aplicado direto no banco DEV (não via migration/REMAKE — ver
+[`README_migrate.md`](../../README_migrate.md), regra do usuário de
+2026-09-24: só ele decide quando gerar um REMAKE novo). Eventos existentes
+foram preenchidos por backfill (organizador do evento, ou dono do calendário
+quando não havia organizador — alguns registros de teste ficaram `NULL` por
+falta de ambos).
+
+Uso: dono/criador da tarefa para fins de segurança — `update`,
+`delete-soft`, `delete-restore`, `delete-hard` e `clear-deleted` só afetam a
+tarefa se `user_manager_id` for do usuário autenticado (perfil Admin
+irrestrito). Leitura continua por convite (`calendar_event_attendees`), sem
+mudança. Entra no próximo REMAKE quando o usuário decidir gerar um.
+
 ## O registro `form_manager` (o formulário em si)
 
 | Coluna | Valor |

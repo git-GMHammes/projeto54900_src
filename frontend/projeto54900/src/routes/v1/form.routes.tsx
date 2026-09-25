@@ -23,8 +23,17 @@
 // react-router os prioriza sobre o dinamico ':slug' automaticamente — mas
 // mantenha 'create'/'update/:id' declarados ANTES de ':slug' aqui por clareza.
 
+// SOMENTE ADMIN (menu_manager.roles=["admin"]): form-constructor* inteiro e
+// form-constructor-claude (o AUTOR dos formularios). form/:slug continua
+// generico e SEM guard de rota — e o renderizador usado por usuario comum
+// (ex.: autocadastro preenche a build 'cadastro-usuario' por aqui); dar
+// RequireRole pro path inteiro quebraria isso. A excecao pontual do slug
+// 'calendario' (tambem admin-only no menu) e resolvida DENTRO de
+// FormRendererPage.tsx (checa slug+role, nao da pra fazer por rota estatica
+// sem perder o useParams().slug que o componente depende).
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import RequireRole from '@/routes/RequireRole';
 
 const FormConstructorListPage = lazy(() => import('@/pages/v1/form/FormConstructorListPage'));
 const FormBuilderPage = lazy(() => import('@/pages/v1/form/FormBuilderPage'));
@@ -33,11 +42,16 @@ const FormConstructorPage = lazy(() => import('@/pages/v1/form/FormConstructorPa
 const FormRendererPage = lazy(() => import('@/pages/v1/form/FormRendererPage'));
 
 export const formRoutes: RouteObject[] = [
-  { path: 'form-constructor', element: <FormConstructorListPage /> },
-  { path: 'form-constructor/create', element: <FormBuilderPage /> },
-  { path: 'form-constructor/update/:id', element: <FormBuilderPage /> },
-  { path: 'form-constructor/:table/:id', element: <FormConstructorBuildPage /> },
-  { path: 'form-constructor-claude', element: <FormConstructorPage /> },
+  {
+    element: <RequireRole role="admin" />,
+    children: [
+      { path: 'form-constructor', element: <FormConstructorListPage /> },
+      { path: 'form-constructor/create', element: <FormBuilderPage /> },
+      { path: 'form-constructor/update/:id', element: <FormBuilderPage /> },
+      { path: 'form-constructor/:table/:id', element: <FormConstructorBuildPage /> },
+      { path: 'form-constructor-claude', element: <FormConstructorPage /> },
+    ],
+  },
   { path: 'form/:slug', element: <FormRendererPage /> },
 ];
 

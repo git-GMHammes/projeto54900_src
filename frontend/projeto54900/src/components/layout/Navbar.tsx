@@ -20,8 +20,11 @@
 // rota seja a de login some — nao faz sentido oferecer "entrar" pra quem ja
 // esta logado. Dentro de um submenu (filho de outro item) a rota de login
 // continua aparecendo normalmente — withoutRootLogin() so filtra o nivel raiz.
-// Aparece tambem o botao "Sair": logout() do AuthContext (revoga no backend +
-// limpeza local) e volta para a Home com replace.
+// Ultimo item da barra (autenticado): dropdown do usuario — icone
+// bi-person-circle colorido por role (vermelho admin, verde demais), username
+// no toggle; menu com nome completo (cabecalho), Editar Perfil, Seguranca e
+// Sair. "Sair" chama logout() do AuthContext (revoga no backend + limpeza
+// local) e volta para a Home com replace.
 
 import { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -52,7 +55,7 @@ function withoutRootLogin(items: SiteMenuItem[]): SiteMenuItem[] {
 
 export default function Navbar() {
   const { appName, apiVersion } = useAppConfig();
-  const { isAuthenticated, bootstrapping, logout } = useAuth();
+  const { isAuthenticated, user, bootstrapping, logout } = useAuth();
   const { menu } = useSiteMenu();
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
@@ -64,6 +67,7 @@ export default function Navbar() {
   if (isAuthenticated) nav = hasMenu ? withoutRootLogin(menu.navbar) : FALLBACK_NAV;
   else if (bootstrapping) nav = FALLBACK_NAV;
   const offcanvas: SiteMenuItem[] = isAuthenticated && hasMenu ? withoutRootLogin(menu.offcanvas) : [];
+  const isAdmin = user?.role?.slug === 'admin';
 
   /** Sair: revoga no backend + limpeza local (AuthContext) e volta para a Home. */
   const handleLogout = async () => {
@@ -158,17 +162,48 @@ export default function Navbar() {
                   </li>
                 ),
               )}
-              {isAuthenticated && (
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className="nav-link btn btn-link"
-                    onClick={() => void handleLogout()}
-                    disabled={leaving}
+              {isAuthenticated && user && (
+                <li className="nav-item dropdown">
+                  <a
+                    className="nav-link dropdown-toggle d-flex align-items-center gap-1"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    onClick={(e) => e.preventDefault()}
                   >
-                    <i className="bi bi-box-arrow-right me-1" aria-hidden="true" />
-                    {leaving ? 'Saindo...' : 'Sair'}
-                  </button>
+                    <i className={`bi bi-person-circle ${isAdmin ? 'text-danger' : 'text-success'}`} aria-hidden="true" />
+                    {user.username}
+                  </a>
+                  <ul className="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <h6 className="dropdown-header">{user.full_name ?? user.username}</h6>
+                    </li>
+                    <li>
+                      <NavLink className="dropdown-item" to={paths.v1.account.profile}>
+                        Editar Perfil
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink className="dropdown-item" to={paths.v1.account.security}>
+                        Segurança
+                      </NavLink>
+                    </li>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={() => void handleLogout()}
+                        disabled={leaving}
+                      >
+                        <i className="bi bi-box-arrow-right me-1" aria-hidden="true" />
+                        {leaving ? 'Saindo...' : 'Sair'}
+                      </button>
+                    </li>
+                  </ul>
                 </li>
               )}
             </ul>

@@ -55,12 +55,26 @@ Páginas organizadas por ação, seguindo [`README_paginas_modulo.md`](README_pa
 
 | Path                          | Elemento (lazy)                              | Observação                                                                           |
 | ----------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `/v1/user-manager`            | `pages/v1/user/user-manager/GetAllPage`       | Lista de segurança (menu "Listar"), slug `user-manager` — ações só-ícone `modal` por `data_action`: bloquear/desbloquear, reset de senha (`ResetPasswordModal`), perfil/role (`ChangeRoleModal`) |
+| `/v1/user-manager`            | `pages/v1/user/user-manager/GetAllPage`       | Lista de segurança (menu "Listar"), slug `user-manager` — ações só-ícone `modal` por `data_action`: bloquear/desbloquear, reset de senha (`ResetPasswordModal`), perfil/role (`ChangeRoleModal`). **SOMENTE ADMIN** (`RequireRole role="admin"`, ver `routes/RequireRole.tsx`) — mesmo restrito no backend (`AdminOnlyFilter`) |
 | `/v1/user-profiles`           | `pages/v1/user/user-profiles/GetAllPage`      | Lista de dados de usuários (menu "Dados Usuário"), slug `user-profiles` no Construtor de Listas — movida de `/v1/user-manager` em 2026-09-24 |
 | `/v1/user-manager/create`     | `pages/v1/user/user-manager/CreatePage`       | **Stub em branco** — aguardando a fábrica de formulários (ver CLAUDE.md do frontend) |
-| `/v1/user-manager/:id`        | `pages/v1/user/user-manager/GetPage`          | Detalhe                                                                              |
-| `/v1/user-manager/:id/update` | `pages/v1/user/user-manager/UpdatePage`       | **Stub em branco**, mesmo motivo acima                                               |
+| `/v1/user-manager/:id`        | `pages/v1/user/user-manager/GetPage`          | Detalhe. **SOMENTE ADMIN**                                                           |
+| `/v1/user-manager/:id/update` | `pages/v1/user/user-manager/UpdatePage`       | **Stub em branco**, mesmo motivo acima. **SOMENTE ADMIN**                            |
 | `/v1/register`                | `pages/v1/user/register/RegisterPage`         | Fluxo composto (não é ação de 1 tabela só): cria login em `user-manager`, depois perfil em `user-profiles`, ligados por `user_manager_id`. Wizard de 2 cards (não abas) sobre os builds `seguranca-novo` e `cadastro` |
+
+### account — Self-service do usuário logado
+
+Fonte: `routes/v1/account.routes.tsx` — não espelha um grupo único da API:
+`profile` fala com `user-profiles/me` (leitura) + `user-profiles/update/:id`
+(escrita, restrita ao próprio registro — ver `Services/V1/User/UserProfiles/Processor.php::update()`)
+e `security` fala com `auth/change-password`. Acessadas pelo dropdown do
+usuário no fim da Navbar (ícone `bi-person-circle`, vermelho se admin/verde
+demais + username), nunca por um item do menu dinâmico. Adicionado em 2026-09-25.
+
+| Path                    | Elemento (lazy)                          | Observação                                                                                   |
+| ------------------------ | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/v1/account/profile`   | `pages/v1/account/profile/UpdatePage`    | Edita o próprio `user_profiles` (nome, telefone, whatsapp, email, cpf, cep, endereço)          |
+| `/v1/account/security`  | `pages/v1/account/security/UpdatePage`   | Troca a própria senha; backend invalida o token atual ao trocar — a página faz logout local e redireciona para `/v1/login` |
 
 ### upload-manager
 
@@ -187,6 +201,14 @@ string solta.
 | Nav              | `paths.v1.nav.list` (`/v1/nav-manager`)                       |
 | Menus            | `paths.v1.menu.list` (`/v1/menu-manager`)                     |
 | Google Calendars | `paths.v1.form.render('calendario')` (`/v1/form/calendario`) |
+
+Dropdown do usuário (fim da barra, só autenticado):
+
+| Label          | Path                              |
+| -------------- | ---------------------------------- |
+| Editar Perfil  | `paths.v1.account.profile` (`/v1/account/profile`)   |
+| Segurança      | `paths.v1.account.security` (`/v1/account/security`) |
+| Sair           | `logout()` (`AuthContext`), sem rota própria         |
 
 [◄ Índice da base de conhecimento](../README.md)
 

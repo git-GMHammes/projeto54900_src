@@ -99,4 +99,22 @@ class SqlTableModel extends BaseTableModel
 
         return $builder->countAllResults() > 0;
     }
+
+    /**
+     * Linha de convite ativa do usuario informado neste evento, ou null.
+     * Usado em PUT /respond/{calendar_event_id} — self-service (o proprio
+     * convidado responde ao proprio convite, resolvido por CurrentUser::id(),
+     * nunca por um id de attendee vindo do cliente).
+     */
+    public function findByUserInEvent(int $calendarEventId, int $userManagerId): ?array
+    {
+        $row = $this->db->table($this->table)
+            ->where('calendar_event_id', $calendarEventId)
+            ->where('user_manager_id', $userManagerId)
+            ->where($this->deletedField . ' IS NULL', null, false)
+            ->get()
+            ->getRowArray();
+
+        return $row ?: null;
+    }
 }

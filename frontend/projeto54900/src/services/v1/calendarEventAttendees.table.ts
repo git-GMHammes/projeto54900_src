@@ -23,9 +23,26 @@
  */
 
 import { createResource } from '@/services/resourceFactory';
-import { API_GROUPS } from '@/constants/api';
+import { http } from '@/services/http';
+import { API_GROUPS, DEFAULT_API_VERSION } from '@/constants/api';
 
 /** Instancia do recurso — metodos REST padrao sobre calendar_event_attendees. */
 export const calendarEventAttendeesTable = createResource(API_GROUPS.calendarEventAttendees, 'v1');
+
+/**
+ * PUT respond/{calendarEventId} — endpoint exclusivo deste modulo (fora do
+ * endpoint-set padrao da factory): o proprio usuario logado aceita/recusa o
+ * convite do evento informado. Nao recebe id de attendee — o back-end resolve
+ * pelo usuario da sessao (CurrentUser::id()), entao so responde ao PROPRIO
+ * convite, nunca ao de outra pessoa.
+ */
+export function respondToEvent(
+  calendarEventId: string | number,
+  responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction',
+): Promise<unknown> {
+  return http.put(`/${DEFAULT_API_VERSION}/${API_GROUPS.calendarEventAttendees}/respond/${calendarEventId}`, {
+    response_status: responseStatus,
+  });
+}
 
 export default calendarEventAttendeesTable;

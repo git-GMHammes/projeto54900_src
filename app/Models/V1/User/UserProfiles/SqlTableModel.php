@@ -76,4 +76,10 @@ class SqlTableModel extends BaseTableModel
     {
         return $this->existsByField('email', $email, $excludeId);
     }
+
+    /** Registro ativo (não excluído) para o user_manager_id informado, ou null. */
+    public function findByUserManagerId(int $userManagerId): ?array
+    {
+        return $this->where('user_manager_id', $userManagerId)->first();
+    }
 }

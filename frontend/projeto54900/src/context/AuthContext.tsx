@@ -4,9 +4,11 @@
  * =========================================================================
  *
  * PROPOSITO: sessao do usuario — access_token em memoria (useRef, nunca
- * persistido) e refresh_token em sessionStorage (sobrevive a F5, some ao
- * fechar a aba). Ao montar, tenta um refresh silencioso se houver
- * refresh_token salvo, para restaurar a sessao sem pedir login de novo.
+ * persistido) e refresh_token em localStorage (sobrevive a F5 e a abas
+ * novas da mesma origem, some so no logout). Ao montar, tenta um refresh
+ * silencioso se houver refresh_token salvo, para restaurar a sessao sem
+ * pedir login de novo — inclusive numa aba recem-aberta com outra aba ja
+ * logada.
  *
  * Registra o getter do access_token em services/http.ts
  * (setAccessTokenGetter) para toda chamada HTTP incluir
@@ -44,33 +46,35 @@ export interface AuthApi {
   bootstrapping: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Recarrega o usuario autenticado (auth/me) — usado apos editar o proprio perfil, para o full_name exibido na Navbar acompanhar a troca. */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthApi | null>(null);
 
-/** Le o refresh_token salvo em sessionStorage; null se ausente ou storage indisponivel. */
+/** Le o refresh_token salvo em localStorage; null se ausente ou storage indisponivel. */
 function readStoredRefreshToken(): string | null {
   try {
-    return sessionStorage.getItem(REFRESH_TOKEN_KEY);
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
   } catch {
     return null;
   }
 }
 
-/** Grava (ou remove, se null) o refresh_token em sessionStorage. */
+/** Grava (ou remove, se null) o refresh_token em localStorage. */
 function storeRefreshToken(token: string | null): void {
   try {
-    if (token) sessionStorage.setItem(REFRESH_TOKEN_KEY, token);
-    else sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+    if (token) localStorage.setItem(REFRESH_TOKEN_KEY, token);
+    else localStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch {
-    // sessionStorage indisponivel (modo privado etc.) — sessao vira so-em-memoria.
+    // localStorage indisponivel (modo privado etc.) — sessao vira so-em-memoria.
   }
 }
 
 /**
  * Provider da sessao: guarda o access_token em ref (memoria, nunca
  * persistido) e tenta restaurar a sessao ao montar via refresh silencioso
- * (se houver refresh_token em sessionStorage).
+ * (se houver refresh_token em localStorage).
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -133,9 +137,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  /** Recarrega o usuario autenticado (auth/me) — mesma sessao, dado atualizado. */
+  const refreshUser = useCallback(async () => {
+    const fresh = await authService.me();
+    setUser(fresh);
+  }, []);
+
   const value = useMemo<AuthApi>(
-    () => ({ user, isAuthenticated: user !== null, bootstrapping, login, logout }),
-    [user, bootstrapping, login, logout],
+    () => ({ user, isAuthenticated: user !== null, bootstrapping, login, logout, refreshUser }),
+    [user, bootstrapping, login, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -88,4 +88,61 @@ class SqlTableModel extends BaseTableModel
     {
         return $this->existsByField('google_calendar_id', $googleCalendarId, $excludeId);
     }
+
+    /**
+     * IDs dos calendarios que sao pai de ao menos uma tarefa (calendar_events)
+     * em que o usuario consta como convidado (calendar_event_attendees). Usado
+     * pelo perfil Guest em todos os endpoints de leitura: ele nao e dono do
+     * calendario, mas precisa enxergar o calendario-pai das tarefas para as
+     * quais foi convidado. Retornado pronto para uso em restrictToIds
+     * (BaseTableModel::applyIdRestriction).
+     */
+    public function findGuestInvitedCalendarIds(int $userId): array
+    {
+        $rows = $this->db->table('calendar_events')
+            ->select('calendar_events.calendar_id')
+            ->join('calendar_event_attendees', 'calendar_event_attendees.calendar_event_id = calendar_events.id')
+            ->where('calendar_event_attendees.user_manager_id', $userId)
+            ->where('calendar_events.deleted_at IS NULL', null, false)
+            ->where('calendar_event_attendees.deleted_at IS NULL', null, false)
+            ->groupBy('calendar_events.calendar_id')
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn (array $row): int => (int) $row['calendar_id'], $rows);
+    }
+
+    /**
+     * Existe, no calendario informado, ao menos uma tarefa (calendar_events)
+     * em que o usuario consta como convidado (calendar_event_attendees)?
+     * Usado na checagem de visibilidade do perfil Guest em get/{id}.
+     */
+    public function hasInvitedEventForCalendar(int $calendarId, int $userId): bool
+    {
+        return $this->db->table('calendar_events')
+            ->join('calendar_event_attendees', 'calendar_event_attendees.calendar_event_id = calendar_events.id')
+            ->where('calendar_events.calendar_id', $calendarId)
+            ->where('calendar_event_attendees.user_manager_id', $userId)
+            ->where('calendar_events.deleted_at IS NULL', null, false)
+            ->where('calendar_event_attendees.deleted_at IS NULL', null, false)
+            ->countAllResults() > 0;
+    }
+
+    /**
+     * IDs de todos os calendarios cujo dono e o usuario informado, independente
+     * de estarem ativos ou soft-deleted (o filtro de soft-delete e feito pelo
+     * metodo generico que consumir este resultado via restrictToIds — ver
+     * BaseTableModel::applyIdRestriction). Usado pelo perfil User em todos os
+     * endpoints de leitura/exclusao de calendar-manager.
+     */
+    public function findOwnerIds(int $userId): array
+    {
+        $rows = $this->db->table($this->table)
+            ->select('id')
+            ->where('user_manager_id', $userId)
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
 }

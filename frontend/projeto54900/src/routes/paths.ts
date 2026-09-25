@@ -6,6 +6,9 @@ type RouteId = string | number;
 
 export const paths = {
   home: '/',
+  // Pagina dedicada de Acesso Negado (RequireRole redireciona pra ca) — sem
+  // nenhum controle funcional, so aviso + link pra Home.
+  forbidden: '/acesso-negado',
 
   v1: {
     auth: {
@@ -64,6 +67,14 @@ export const paths = {
     // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
     svgMap: {
       view: '/v1/svg-map',
+    },
+    // account — self-service do proprio usuario logado (dropdown da Navbar):
+    // Editar Perfil (user-profiles/me) e Seguranca (troca da propria senha).
+    // Sem espelho de grupo unico na API — profile usa user-profiles/me e
+    // security usa auth/change-password (ver services/v1/index.ts).
+    account: {
+      profile: '/v1/account/profile',
+      security: '/v1/account/security',
     },
     // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
     menu: {

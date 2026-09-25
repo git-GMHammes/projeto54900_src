@@ -55,6 +55,28 @@ Fonte: `Config/Routes/Api/v1/User/UserManager/EndPointView.php` — consulta da 
 | GET    | `/user-manager-view/get-all-with-deleted` | `Api\V1\User\UserManager\ResourceViewController::getAllWithDeleted` |
 | GET    | `/user-manager-view/get-deleted-all`      | `Api\V1\User\UserManager\ResourceViewController::getDeletedAll`     |
 
+### user-directory-view
+
+Fonte: `Config/Routes/Api/v1/User/UserDirectory/EndPointView.php` — consulta da
+view `view_user_directory` (somente leitura). **Diferente de
+`user-manager-view`: filtro é só `jwtauth`, sem `adminonly`** — a view só tem
+`id`/`um_username`/`uc_name`/`uc_email` (sem senha/status/role/CPF/telefone/
+endereço), então é seguro liberar para qualquer usuário logado. Usado por
+pickers de "convidar usuário" (ex.: campo Usuário do convite de calendário).
+Detalhe: [`form/user/user_directory_view.md`](form/user/user_directory_view.md).
+
+| Método | Rota                                          | Controller::method                                                     |
+| ------ | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| POST   | `/user-directory-view/find`                    | `Api\V1\User\UserDirectory\ResourceViewController::find`              |
+| POST   | `/user-directory-view/get-grouped`             | `Api\V1\User\UserDirectory\ResourceViewController::getGrouped`        |
+| GET    | `/user-directory-view/search`                  | `Api\V1\User\UserDirectory\ResourceViewController::search`            |
+| GET    | `/user-directory-view/get/{id}`                | `Api\V1\User\UserDirectory\ResourceViewController::get/$1`            |
+| GET    | `/user-directory-view/get-all`                 | `Api\V1\User\UserDirectory\ResourceViewController::getAll`            |
+| GET    | `/user-directory-view/get-no-pagination`       | `Api\V1\User\UserDirectory\ResourceViewController::getNoPagination`   |
+| GET    | `/user-directory-view/get-deleted/{id}`        | `Api\V1\User\UserDirectory\ResourceViewController::getDeleted/$1`     |
+| GET    | `/user-directory-view/get-all-with-deleted`    | `Api\V1\User\UserDirectory\ResourceViewController::getAllWithDeleted` |
+| GET    | `/user-directory-view/get-deleted-all`         | `Api\V1\User\UserDirectory\ResourceViewController::getDeletedAll`     |
+
 ### user-roles
 
 Fonte: `Config/Routes/Api/v1/User/UserRoles/EndpointTable.php` — módulo **somente leitura** (perfis de acesso), sem create/update/delete.
@@ -343,6 +365,7 @@ Fonte: `Config/Routes/Api/v1/Calendar/CalendarEventAttendees/EndpointTable.php`
 | GET    | `/calendar-event-attendees/get-all-with-deleted`      | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::getAllWithDeleted`    |
 | POST   | `/calendar-event-attendees/create`                    | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::create`               |
 | PUT    | `/calendar-event-attendees/update/{id}`               | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::update/$1`            |
+| PUT    | `/calendar-event-attendees/respond/{calendar_event_id}` | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::respond/$1` — self-service, aceita/recusa o próprio convite (não é do endpoint-set padrão) |
 | DELETE | `/calendar-event-attendees/delete-soft/{id}`          | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::deleteSoft/$1`        |
 | PATCH  | `/calendar-event-attendees/delete-restore/{id}`       | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::deleteRestore/$1`     |
 | DELETE | `/calendar-event-attendees/delete-hard/{id}`          | `Api\V1\Calendar\CalendarEventAttendees\ResourceTableController::deleteHard/$1`        |

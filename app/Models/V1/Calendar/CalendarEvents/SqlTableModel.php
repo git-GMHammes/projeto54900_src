@@ -10,6 +10,9 @@ use App\Models\V1\BaseTableModel;
  * Tabela: calendar_events
  * DDL (resumo): id (BIGINT PK auto),
  *   calendar_id (BIGINT NOT NULL, FK -> calendar_manager.id, CASCADE),
+ *   user_manager_id (BIGINT NULL, FK -> user_manager.id, SET NULL — dono/criador
+ *   da tarefa; coluna adicionada em 2026-09-25 via SQL direto no banco DEV,
+ *   fora do fluxo de migration deste projeto — ver README_migrate.md),
  *   google_event_id (VARCHAR(512) NULL, unico), ical_uid (VARCHAR(255) NULL),
  *   status (ENUM confirmed/tentative/cancelled, default confirmed),
  *   summary (VARCHAR(255) NOT NULL), description (TEXT NULL),
@@ -45,6 +48,7 @@ class SqlTableModel extends BaseTableModel
 
     protected $allowedFields = [
         'calendar_id',
+        'user_manager_id',
         'google_event_id',
         'ical_uid',
         'status',
@@ -81,6 +85,7 @@ class SqlTableModel extends BaseTableModel
     protected array $sortableFields = [
         'id',
         'calendar_id',
+        'user_manager_id',
         'status',
         'summary',
         'start_date',
@@ -106,5 +111,42 @@ class SqlTableModel extends BaseTableModel
     public function existsByGoogleEventId(string $googleEventId, ?int $excludeId = null): bool
     {
         return $this->existsByField('google_event_id', $googleEventId, $excludeId);
+    }
+
+    /**
+     * IDs das tarefas (eventos) em que o usuario consta como convidado,
+     * qualquer que seja o papel (calendar_event_attendees.user_manager_id).
+     * Usado pelos perfis User e Guest em TODOS os endpoints de LEITURA:
+     * tarefas nao compartilhadas com o usuario permanecem privadas. Retornado
+     * pronto para uso em restrictToIds (BaseTableModel::applyIdRestriction).
+     */
+    public function findInvitedIds(int $userId): array
+    {
+        $rows = $this->db->table('calendar_event_attendees')
+            ->select('calendar_event_attendees.calendar_event_id')
+            ->where('calendar_event_attendees.user_manager_id', $userId)
+            ->where('calendar_event_attendees.deleted_at IS NULL', null, false)
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn (array $row): int => (int) $row['calendar_event_id'], $rows);
+    }
+
+    /**
+     * IDs de todas as tarefas cujo dono/criador e o usuario informado
+     * (coluna propria user_manager_id, mesmo padrao de
+     * CalendarManager::findOwnerIds), independente de estarem ativas ou
+     * soft-deleted. Usado nas checagens de ESCRITA (update, delete-soft,
+     * delete-restore, delete-hard, clear-deleted) do perfil User.
+     */
+    public function findOwnerIds(int $userId): array
+    {
+        $rows = $this->db->table($this->table)
+            ->select('id')
+            ->where('user_manager_id', $userId)
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
     }
 }
