@@ -45,6 +45,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ChangeEvent, FocusEvent, FocusEventHandler, KeyboardEvent } from 'react'
 import { getAuthToken } from '@/services/http'
+import { CLEARED_FIELD_VALUE } from '@/utils/formSubmit'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -122,6 +123,18 @@ export interface SelectFieldSchema {
    * Configurável em `select_config_json.fillFields`.
    */
   fillFields?: Record<string, string>
+
+  /**
+   * Rótulo da opção "vazio" no topo do dropdown (modo single), ex.:
+   * '— Nenhum (item de topo) —'. Quando presente, o próprio dropdown permite
+   * DESVINCULAR o campo — mesmo efeito do ✕: no modo controlado dispara
+   * `onChange?.('', null)`; no não controlado grava CLEARED_FIELD_VALUE no
+   * hidden input (o submit converte em `null`, ver utils/formSubmit.ts).
+   * Ignorada no modo múltiplo e em campo obrigatório (limpar um required
+   * seria erro garantido na validação). Configurável em
+   * `select_config_json.emptyLabel`.
+   */
+  emptyLabel?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -233,6 +246,10 @@ export function SelectField({ field }: SelectFieldProps) {
   const [selectedValues, setSelectedValues] = useState<string[]>(field.values ?? field.defaultValues ?? [])
   const [selectedItems, setSelectedItems] = useState<SelectOptionItem[]>([])
   const [erro, setErro] = useState<string | null>(null)
+  // true so quando o usuario clica no X (single-select) — distingue "limpou
+  // de proposito" de "nunca teve valor", pra mandar null explicito no submit
+  // em vez de omitir a chave (ver CLEARED_FIELD_VALUE em utils/formSubmit).
+  const [wasCleared, setWasCleared] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -415,6 +432,7 @@ export function SelectField({ field }: SelectFieldProps) {
     const val = getValue(item, field)
     const lbl = getLabel(item, field)
     if (!isControlled) setSelectedValue(val)
+    setWasCleared(false)
     setSelectedLabel(lbl)
     setSearchText(lbl)
     setIsOpen(false)
@@ -434,25 +452,32 @@ export function SelectField({ field }: SelectFieldProps) {
     for (const target of Object.keys(field.fillFields)) writeFormField(containerRef.current, target, '')
   }
 
-  function clearSelection() {
+  /**
+   * Limpa a seleção (✕ ou a opção "vazio" do dropdown).
+   * `keepOpen = false` fecha o dropdown — usado quando o vazio vem de uma OPÇÃO
+   * escolhida (ex.: "Nenhum"); o ✕ mantém o padrão (reabre e foca a busca, para
+   * o usuário escolher outro item).
+   */
+  function clearSelection(keepOpen = true) {
     if (field.multiple) {
       if (!isControlledMulti) setSelectedValues([])
       setSelectedItems([])
       setSearchText('')
-      setIsOpen(true)
+      setIsOpen(keepOpen)
       setErro(null)
       field.onChangeMultiple?.([], [])
-      setTimeout(() => searchRef.current?.focus(), 0)
+      if (keepOpen) setTimeout(() => searchRef.current?.focus(), 0)
       return
     }
     if (!isControlled) setSelectedValue('')
+    setWasCleared(true)
     setSelectedLabel('')
     setSearchText('')
-    setIsOpen(true)
+    setIsOpen(keepOpen)
     setErro(null)
     clearFillTargets()
     field.onChange?.('', null)
-    setTimeout(() => searchRef.current?.focus(), 0)
+    if (keepOpen) setTimeout(() => searchRef.current?.focus(), 0)
   }
 
   function handleMultiChange(e: ChangeEvent<HTMLSelectElement>) {
@@ -501,6 +526,9 @@ export function SelectField({ field }: SelectFieldProps) {
     field.onBlur?.(e)
   }
 
+  // Opção "vazio" no topo do dropdown: só no single e fora de campo obrigatório
+  // (limpar um required cairia na validação garantidamente).
+  const emptyLabel = !field.multiple && !field.required ? field.emptyLabel : undefined
   const maxVisible = field.maxVisible ?? 150
   const rows = field.rows ?? 8
   const filtered = filterData(allData, searchText, field)
@@ -532,7 +560,9 @@ export function SelectField({ field }: SelectFieldProps) {
     <>
       <select
         multiple={field.multiple}
-        value={field.multiple ? effectiveValues : undefined}
+        // Com `emptyLabel`, o select passa a ser controlado no single: a opção
+        // vazia (value="") é a que aparece marcada quando não há valor.
+        value={field.multiple ? effectiveValues : (emptyLabel ? effectiveValue : undefined)}
         size={rows}
         className="form-select border-0 rounded-0"
         style={{ overflowY: 'auto', cursor: 'pointer', width: '100%' }}
@@ -542,11 +572,17 @@ export function SelectField({ field }: SelectFieldProps) {
             return
           }
           const val = e.target.value
+          // Opção vazia ("— Nenhum —"): desvincula o campo (submit manda null).
+          if (emptyLabel && val === '') {
+            clearSelection(false)
+            return
+          }
           if (isOptionDisabled(val)) return
           const found = allData.find(item => getValue(item, field) === val)
           if (found) selectItem(found)
         }}
       >
+        {emptyLabel && !field.multiple && <option value="">{emptyLabel}</option>}
         {visible.map((item, idx) => {
           const val = getValue(item, field)
           const lbl = getLabel(item, field)
@@ -627,7 +663,7 @@ export function SelectField({ field }: SelectFieldProps) {
         {hasAnyValue && !field.disabled && (
           <button
             type="button"
-            onClick={clearSelection}
+            onClick={() => clearSelection()}
             title="Limpar seleção"
             style={{
               position: 'absolute', right: '0.5rem', top: '50%',
@@ -656,7 +692,9 @@ export function SelectField({ field }: SelectFieldProps) {
               </div>
             )}
       </div>
-      {nm && !field.multiple && <input type="hidden" name={nm} value={effectiveValue} />}
+      {nm && !field.multiple && (
+        <input type="hidden" name={nm} value={wasCleared ? CLEARED_FIELD_VALUE : effectiveValue} />
+      )}
       {nm && field.multiple && effectiveValues.map(v => (
         <input key={v} type="hidden" name={nm} value={v} />
       ))}

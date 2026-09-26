@@ -57,9 +57,6 @@ Regras do REMAKE:
   depois do dump se perde — tirar backup antes se houver dado novo.
 - Em banco vazio, `spark migrate` roda **todos** os REMAKEs pendentes em ordem;
   o último sobrescreve os anteriores (resultado final correto, só mais lento).
-- Dado de linha avulsa no dia a dia continua entrando pela API/Processor
-  (`form_manager`/`list_manager`/`menu_manager`/etc.), nunca `INSERT` cru —
-  ver [`README_form.md`](README_form.md). O REMAKE só captura o estado.
 - Credenciais do banco DEV nunca gravadas em arquivo versionado (regra global
   de segredos, `CLAUDE.md`).
 

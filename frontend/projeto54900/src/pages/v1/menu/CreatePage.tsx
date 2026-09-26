@@ -78,6 +78,9 @@ export default function CreatePage() {
             src: parentSrc(navManagerId),
             valueKey: 'id',
             labelKey: 'title',
+            // Opcao no topo do dropdown para criar o item JA como item de TOPO
+            // (equivalente a deixar o campo vazio).
+            emptyLabel: '— Nenhum (item de topo) —',
             onChange: (value) => setParentId(value),
           },
         ],

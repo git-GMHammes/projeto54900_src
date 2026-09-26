@@ -53,7 +53,21 @@ abstract class BaseViewService
     /**
      * Sanitiza um array de dados:
      *  - Remove tags e espaços extras em strings
-     *  - Remove chaves cujo valor seja null ou string vazia
+     *  - Remove chaves cujo valor seja string vazia
+     *  - PRESERVA null explícito (ver nota abaixo) — só remove a chave
+     *    inteira quando o valor for ''
+     *
+     * Null explícito no payload é o único jeito de um campo opcional (FK
+     * nullable, select com botão de limpar) ser de fato zerado num update:
+     * campo NUNCA enviado (chave ausente) = "não mexe"; campo enviado como
+     * null = "limpa". Se este método descartasse null aqui, as duas
+     * intenções virariam a mesma coisa e nenhum campo opcional conseguiria
+     * voltar a NULL via update genérico (bug corrigido em 2026-09-26 — ver
+     * markdown/geral/README_migrate.md ou o Processor de UserManager,
+     * normalizeUserRole(), que já checava `$valor === null` esperando
+     * receber isso). '' continua sendo removido porque o frontend nunca
+     * envia '' de propósito (formDataToPayload omite campos vazios comuns e
+     * só manda null explícito via CLEARED_FIELD_VALUE do FormGrid/select).
      *
      * @param array $data Dados brutos recebidos da requisição
      * @return array Dados limpos, prontos para persistência
@@ -63,7 +77,7 @@ abstract class BaseViewService
         $sanitized = [];
 
         foreach ($data as $key => $value) {
-            if ($value === null || $value === '') {
+            if ($value === '') {
                 continue;
             }
 

@@ -27,6 +27,7 @@ class UpdateRequest
             'access_role'           => 'permit_empty|in_list[freeBusyReader,reader,writer,owner]',
             'is_primary'            => 'permit_empty|in_list[0,1]',
             'status'                => 'permit_empty|in_list[active,inactive]',
+            'sort_order'            => 'permit_empty|integer',
             'user_manager_id'       => 'permit_empty|is_natural_no_zero',
             'document_manager_id'   => 'permit_empty|is_natural_no_zero',
             'map_manager_id'        => 'permit_empty|is_natural_no_zero',

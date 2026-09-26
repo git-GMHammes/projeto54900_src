@@ -225,6 +225,7 @@ redirecionar). Ver detalhe em
 | Path                   | Elemento (lazy)                                | Observação                                                                                                    |
 | ---------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `/v1/calendar-manager` | `pages/v1/calendar/calendar-manager/GetAllPage` | Lista calendários com seus eventos (`view_calendar_manager`, agrupada no cliente); busca/paginação no cliente; botão "Novo Calendário" reaproveita o form `calendario` (mesmo de `/v1/form/calendario`) |
+| `/v1/calendar-list` | `pages/v1/calendar/calendar-list/GetAllPage` | Lista **simples** de `calendar_manager` (sem eventos, sem ações) — motor `list_manager`/`list_columns` (slug `calendar-list`), busca + paginação de servidor |
 | `/v1/convite/aceitar` | `pages/v1/calendar/calendar-event-invites/AceitarConvitePage` | **PÚBLICA** (exportada em `calendarInvitePublicRoutes`, fora do `<RequireAuth/>`) — destino do link de e-mail do convite de evento; lê `?token=` e chama `POST api/v1/calendar-event-invites/accept-token`. Ver [`README_modulo_calendar_event_invites.md`](../../../../../app/markdown/geral/README_modulo_calendar_event_invites.md) do backend |
 
 ### svgMap — Mapa SVG dos municípios do RJ (rota estática)

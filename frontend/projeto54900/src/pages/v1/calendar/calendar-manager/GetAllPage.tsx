@@ -57,7 +57,7 @@ import {
   EVENTS_LIST_SLUG,
   PAGE_SIZE,
 } from './constants';
-import { matchesSearch } from './helpers';
+import { eventStart, matchesSearch } from './helpers';
 import RowActionButton from './RowActionButton';
 import AgendaViewer from './AgendaViewer';
 // Ordem dos modais = ordem em que aparecem no JSX abaixo (calendário -> ver eventos -> criar evento -> sub-recursos do evento).
@@ -113,9 +113,16 @@ export default function CalendarManagerGetAllPage() {
     setLoading(true);
     setError(null);
     try {
-      const raw = await calendarManagerView.getNoPagination({ sort: 'cm_id', order: 'ASC' });
+      // Calendarios na ordem manual (sort_order, "Ordem" no form Editar — menor
+      // primeiro; todos nascem em 0). Eventos de cada calendario vem da data de
+      // inicio, do mais recente/futuro para o mais antigo (pedido do usuario).
+      const raw = await calendarManagerView.getNoPagination({ sort: 'cm_sort_order', order: 'ASC' });
       const { rows } = normalizeList(raw);
-      setGroups(groupCalendarView(rows));
+      const grouped = groupCalendarView(rows).map((g) => ({
+        ...g,
+        events: [...g.events].sort((a, b) => eventStart(b).localeCompare(eventStart(a))),
+      }));
+      setGroups(grouped);
     } catch (err) {
       setGroups(null);
       setError(err instanceof ApiError ? err.message : 'Falha ao carregar os calendarios.');

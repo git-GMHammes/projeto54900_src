@@ -55,6 +55,8 @@ export interface CalendarManagerRow {
   accessRole?: string;
   isPrimary: boolean;
   status?: string;
+  /** Ordem manual de exibição na listagem — menor valor aparece primeiro. Padrão 0. */
+  sortOrder: number;
   userManagerId?: number;
 }
 
@@ -84,6 +86,7 @@ function readCalendar(row: ApiRow, id: number): CalendarManagerRow {
     id,
     summary: str(row.cm_summary) ?? '',
     isPrimary: bool(row.cm_is_primary),
+    sortOrder: int(row.cm_sort_order) ?? 0,
   };
   const set = <K extends keyof CalendarManagerRow>(key: K, value: CalendarManagerRow[K] | undefined): void => {
     if (value !== undefined) draft[key] = value;

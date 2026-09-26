@@ -15,6 +15,7 @@ export function calendarToFieldValues(c: CalendarManagerRow): Record<string, str
     foreground_color: c.foregroundColor ?? '',
     time_zone: c.timeZone ?? '',
     status: c.status ?? '',
+    sort_order: String(c.sortOrder),
   };
 }
 
