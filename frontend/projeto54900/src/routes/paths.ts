@@ -63,6 +63,8 @@ export const paths = {
     // Calendar — listagem de calendarios (view_calendar_manager: calendario -> eventos)
     calendar: {
       list: '/v1/calendar-manager',
+      // Destino do link de e-mail do convite de evento (?token=...). Publica.
+      acceptInvite: '/v1/convite/aceitar',
     },
     // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
     svgMap: {

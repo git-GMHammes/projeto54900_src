@@ -42,6 +42,7 @@ export { navManagerTable } from './navManager.table';
 export { menuManagerTable } from './menuManager.table';
 export { calendarManagerView } from './calendarManager.view';
 export { calendarEventAttendeesTable, respondToEvent } from './calendarEventAttendees.table';
+export { calendarEventInvitesTable } from './calendarEventInvites.table';
 export { calendarEventRemindersTable } from './calendarEventReminders.table';
 export { calendarEventAttachmentsTable } from './calendarEventAttachments.table';
 export { dbSchema } from './dbSchema';

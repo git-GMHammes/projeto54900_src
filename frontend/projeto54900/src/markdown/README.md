@@ -312,12 +312,17 @@ rotas juntos quando divergir.
 
 Mapa textual de todas as rotas React registradas no data router
 (`react-router-dom`), espelhando o `README_rotas_swagger.md` do backend mas com
-o eixo **Path → Página**. Cobre a raiz (`/`, `*`, `RouteErrorPage`), o grupo
-`v1` (`user-manager` por ação — `create`/`update`/`get-all`/`get` —, o wizard
-`/v1/register`, `upload-manager`, `form` — incluindo o renderizador genérico
-`/v1/form/:slug`), o stub `v1a` e os links da navbar. Registra também lacunas
-encontradas (ex.: `paths.v1.upload.new` sem rota registrada). Ver [`paginas`](#paginas)
-para a convenção de pastas por trás dessas rotas.
+o eixo **Path → Página**. Cobre a raiz (`/`, `/acesso-negado`, `*`,
+`RouteErrorPage`), o grupo `v1` (`auth`/login, `user-manager` por ação
+— `create`/`update/:id`/`:id`/lista —, `user-profiles` e as duas rotas públicas
+do Cadastro de Usuário, `account`, `upload-manager`, `form` — incluindo
+`/v1/form/:slug` e `/v1/form-constructor/:table/:id` —, `list-constructor`,
+`nav-manager`, `menu-manager`, `calendar-manager` e `svg-map`), as **guardas**
+(`RequireAuth` no bloco v1 e `RequireRole role="admin"` nos módulos
+administrativos), o stub `v1a` e o dropdown do usuário na navbar — que é
+dinâmica, alimentada por `menu_manager`. Registra também lacunas encontradas
+(ex.: `paths.v1.upload.new` sem rota registrada). Ver [`paginas`](#paginas) para
+a convenção de pastas por trás dessas rotas.
 
 [`geral/README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend.
 
