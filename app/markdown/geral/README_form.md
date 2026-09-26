@@ -7,8 +7,8 @@
 Todo `form_manager` deste banco nasce assim: markdown revisado aqui primeiro,
 depois vira `INSERT` (nunca migration, nunca seed — motivo e histórico
 completo em [`README_modulo_form.md`](README_modulo_form.md)). Esta página
-lista, por pasta, os 17 formulários já desenhados — os 17 já com `INSERT`
-executado no banco.
+lista, por pasta, os 22 formulários já desenhados — 17 com `INSERT` executado
+no banco e 5 do módulo Messages/Timeline (2026-09-26) ainda sem aplicação.
 
 ## `form/modelo_ia/` — meta-formulários (dogfooding)
 
@@ -89,6 +89,22 @@ A tabela órfã `calendars` (sem código associado; a FK de
 `calendar_events.calendar_id` apontava errado pra ela) foi corrigida e
 removida do banco antes deste `INSERT` — ver nota em
 `README_modulo_form.md`.
+
+## `form/timeline/` — módulo Messages / Timeline (desenhado em 2026-09-26)
+
+| Arquivo | slug | `table_name` |
+| --- | --- | --- |
+| [`timeline_manager.md`](form/timeline/timeline_manager.md) | `timeline-settings` | `timeline_manager` |
+| [`timeline_posts.md`](form/timeline/timeline_posts.md) | `timeline-post` | `timeline_posts` |
+| [`timeline_post_comments.md`](form/timeline/timeline_post_comments.md) | `timeline-comment` | `timeline_post_comments` |
+| [`timeline_post_reports.md`](form/timeline/timeline_post_reports.md) | `timeline-report` | `timeline_post_reports` || [`timeline_post_attachments.md`](form/timeline/timeline_post_attachments.md) | `timeline-attachment` | `timeline_post_attachments` |
+
+Módulo inteiro (tabelas, view do feed, regras e roadmap) em
+[`README_modulo_timeline.md`](README_modulo_timeline.md). **Estes 5 ainda não
+têm `INSERT`** — a estrutura do módulo já está no banco DEV (aplicada em
+2026-09-26); falta a Etapa C (as definições). `timeline_post_reactions` e
+`timeline_post_ratings` não têm formulário de propósito: reação e estrela são
+ação, não tela.
 
 ## Próximo formulário
 

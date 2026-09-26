@@ -287,6 +287,9 @@ function buildField(row: ApiRow): AnyFieldSchema {
       set('findSrc', str(rec.findSrc));
       set('findColumn', str(rec.findColumn));
       set('valueKey', str(rec.valueKey));
+      // Opcao "vazio" do dropdown (ex.: '— Nenhum (item de topo) —'): permite
+      // desvincular um FK opcional pela propria lista, nao so pelo botao ✕.
+      set('emptyLabel', str(rec.emptyLabel));
       set('maxVisible', int(rec.maxVisible));
       set('colorKey', str(rec.colorKey));
       if (typeof rec.labelTemplate === 'string') set('labelTemplate', rec.labelTemplate);

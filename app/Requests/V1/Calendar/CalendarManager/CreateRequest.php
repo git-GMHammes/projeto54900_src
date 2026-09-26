@@ -16,6 +16,8 @@ namespace App\Requests\V1\Calendar\CalendarManager;
  *   access_role        ENUM(freeBusyReader,reader,writer,owner) DEFAULT 'owner'
  *   is_primary         TINYINT(1)   NOT NULL DEFAULT 0
  *   status             ENUM(active,inactive) DEFAULT 'active'  (nasce do DEFAULT)
+ *   sort_order         INT NOT NULL DEFAULT 0  (ordem manual de exibicao;
+ *                      menor valor aparece primeiro na listagem)
  *   user_manager_id        BIGINT NULL FK -> user_manager.id
  *   document_manager_id    BIGINT NULL sem FK ainda (modulo futuro)
  *   map_manager_id         BIGINT NULL sem FK ainda (modulo futuro)
@@ -40,6 +42,7 @@ class CreateRequest
             'foreground_color'      => 'permit_empty|string|max_length[7]',
             'access_role'           => 'permit_empty|in_list[freeBusyReader,reader,writer,owner]',
             'is_primary'            => 'permit_empty|in_list[0,1]',
+            'sort_order'            => 'permit_empty|integer',
             'user_manager_id'       => 'permit_empty|is_natural_no_zero',
             'document_manager_id'   => 'permit_empty|is_natural_no_zero',
             'map_manager_id'        => 'permit_empty|is_natural_no_zero',

@@ -45,6 +45,7 @@ class SqlViewModel extends BaseViewModel
         'cm_id',
         'cm_summary',
         'cm_status',
+        'cm_sort_order',
         'ce_id',
         'ce_summary',
         'ce_status',

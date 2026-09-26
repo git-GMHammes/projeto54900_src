@@ -117,6 +117,9 @@ export default function UpdatePage() {
             src: parentSrc(navManagerId),
             valueKey: 'id',
             labelKey: 'title',
+            // Opcao no topo do dropdown para DESVINCULAR o item do pai (volta a
+            // ser item de TOPO): escolher grava '' -> payload parent_id: null.
+            emptyLabel: '— Nenhum (item de topo) —',
             onChange: (value) => setParentId(value),
           },
         ],

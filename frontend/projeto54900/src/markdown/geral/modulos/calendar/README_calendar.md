@@ -76,6 +76,86 @@ agrupada por calendário — mesma ideia de `view_form_manager` +
   calendários/eventos; se o volume crescer, precisa de um redesenho de
   paginação de verdade sobre dados agrupados (fora de escopo por ora).
 
+### Ordenação (2026-09-26)
+
+- **Calendários**: nova coluna `calendar_manager.sort_order` (INT NOT NULL
+  DEFAULT 0 — criada direto no banco DEV, sem migration, mesma regra de
+  `README_migrate.md`; propagada para `view_calendar_manager` como
+  `cm_sort_order`). `GetAllPage.tsx::load()` busca
+  `getNoPagination({ sort: 'cm_sort_order', order: 'ASC' })` — menor valor
+  aparece primeiro; todos nascem em `0`. Campo "Ordem" adicionado ao form
+  `editar-calendario` (form_manager_id=18) em 2026-09-26 — grupo "Status"
+  (`form_groups.id=39`), linha nova (`form_rows.id=128`), campo
+  `field_id=215` (`field_name=sort_order`, `field_type=text`, `col=4`,
+  `no_letters=1`, `no_special_chars=1`, `input_mode=numeric`,
+  `default_value=0`). Inserido direto via SQL (`form_rows`/`form_fields`),
+  autorizado explicitamente pelo usuário para este caso específico — a regra
+  padrão continua sendo alterar dado de `form_manager` pela API, não por
+  `INSERT` cru.
+- **Eventos**: dentro de cada calendário, `group.events` é ordenado no
+  cliente por `startDatetime`/`startDate` **decrescente** (mais recente/futuro
+  primeiro, mais antigo por último) logo após `groupCalendarView(rows)` em
+  `GetAllPage.tsx::load()` — afeta a tabela/cards do modal "Ver eventos"
+  (`ViewEventsModal.tsx`, que antes não ordenava nada). Os cards de "Próximos
+  eventos" (`AgendaViewer.tsx`) continuam com sua própria ordenação
+  **crescente** (via `eventsInRange`, em `helpers.ts`) — é intencional: aquele
+  bloco existe para navegar cronologicamente para frente (mês/ano, evento
+  anterior/próximo) e depende dessa ordem.
+
+## Lista simples — `/v1/calendar-list` (2026-09-26)
+
+Segunda listagem, deliberadamente **sem nada além de busca + paginação
+padrão** (sem eventos agrupados, sem ações, sem criar/editar) — pedido
+explícito do usuário como "primeira parte" de uma tarefa maior. Consome
+`calendar_manager` cru (não a view com eventos) via o motor do "Construtor de
+Listas".
+
+- **`list_manager`** novo, slug `calendar-list` (id `19`), `table_name` =
+  `calendar_manager`, `api_get_endpoint` = `/api/v1/calendar-manager/get-all`,
+  `api_search_endpoint` = `/api/v1/calendar-manager/search`, `default_sort` =
+  `sort_order`/`asc`. **5 colunas** (`list_columns`, ids `73`–`77`): Nome
+  (`summary`), Local (`location`), Fuso horário (`time_zone`), Status
+  (`status`, format `status-badge`), Ordem (`sort_order`) — todas exceto
+  Local são `sortable`. **Sem `list_actions`** (pedido explícito: "sem mais
+  nada").
+- **Frontend**: `pages/v1/calendar/calendar-list/GetAllPage.tsx` — fork
+  simplificado de `pages/v1/user/user-profiles/GetAllPage.tsx` (mesmo motor
+  `list_manager`/`list_columns`, paginação de servidor via `usePagination`),
+  sem o filtro de status extra e sem coluna de ações. Rota
+  `/v1/calendar-list` (`routes/v1/calendar.routes.tsx`, dentro do
+  `<RequireAuth/>`, igual a `/v1/calendar-manager`).
+- **Menu**: item "Lista de Calendários" (`menu_manager.id=27`), sob o mesmo
+  pai "Calendário" (`parent_id=7`) do item "Admin Calendário" (`id=8`),
+  `sort_order=2`.
+- **Desvio de processo**: `list_manager`/`list_columns`/`menu_manager` foram
+  inseridos **direto no banco** (não pela API, que exige `jwtauth` e esta
+  sessão não tinha login) — autorizado explicitamente pelo usuário (mesmo
+  precedente do campo "Ordem" do form `editar-calendario`, ver seção acima).
+
+### Arrastar para reordenar (2026-09-26)
+
+Coluna extra com ícone de grip (`bi-grip-vertical`), **fixa no componente**
+`GetAllPage.tsx` — não é uma coluna de `list_columns`, decisão de arquitetura
+deliberada: colocar isso no motor genérico do Construtor de Listas exigiria
+inventar um tipo de coluna novo + convenção de endpoint de reordenação para
+uma necessidade hoje exclusiva desta lista; quebraria a simplicidade do motor
+para as outras ~10 listagens do projeto. Se outra lista precisar do mesmo no
+futuro, generalizar então.
+
+- **Só o ícone inicia o arrasto** (`draggable`) — o resto da linha só recebe
+  o `drop`, nunca "pega" ao clicar em outro lugar.
+- **Só funciona ordenado por "Ordem" crescente e sem busca ativa**
+  (`canDrag`); fora disso o ícone fica visualmente inativo (opacidade
+  reduzida, cursor `not-allowed`) com tooltip explicando o motivo. A página
+  força esse sort como padrão no primeiro carregamento (sem `?sort=` na URL)
+  porque o default global da app é `id`, não `sort_order`.
+- **Ao soltar**: os calendários da **página exibida** (não a tabela inteira)
+  são renumerados sequencialmente pela posição absoluta
+  (`offset = (page-1)*limit`, `sort_order = offset + índice + 1`) e gravados
+  via `PUT calendar-manager/update/{id}` **silencioso** — sem `LoadingOverlay`,
+  sem recarregar a lista (atualização otimista local). Nenhum registro fora
+  da página é tocado.
+
 ## Backend disponível (contrato já pronto para o frontend consumir)
 
 | Recurso                            | Tabela                               | Endpoint-set REST (18 rotas cada)              |

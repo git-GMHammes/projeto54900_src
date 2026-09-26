@@ -9,8 +9,9 @@
 > deixaram de ser criadas/versionadas por `Database/Migrations/`. Fonte de
 > verdade agora: dump (`doc/sql/dump/`) + markdown da árvore de dados (mesmo
 > padrão de [`README_menu.md`](../../../frontend/projeto54900/src/markdown/geral/README_menu.md))
-> → `INSERT` revisado antes de rodar. **Índice completo dos 16 formulários
-> já desenhados (todos com `INSERT` executado)**:
+> → `INSERT` revisado antes de rodar. **Índice completo dos 22 formulários
+> já desenhados (17 com `INSERT` executado; os 5 do módulo Messages/Timeline
+> desenhados em 2026-09-26, ainda sem aplicação no banco)**:
 > [`README_form.md`](README_form.md) — não duplicar a lista aqui, manter
 > num lugar só.
 >

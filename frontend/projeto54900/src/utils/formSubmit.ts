@@ -23,11 +23,25 @@ export function senderFor(method: string): (path: string, body: unknown) => Prom
   return (p, b) => http.post(p, b);
 }
 
+// Sentinela para "campo select opcional limpo de propósito" (botão ✕ do
+// FormGrid/select). Um <input type="hidden"> vazio de um campo NUNCA TOCADO
+// (create, ou edit sem mudança) e um campo EXPLICITAMENTE LIMPO (edit, X
+// clicado) são indistinguíveis em HTML puro — os dois viram value=''. Sem
+// essa distinção, formDataToPayload omitia a chave nos dois casos, e o
+// backend (BaseViewService::sanitizeData) também descarta null/'' — logo um
+// FK opcional (ex.: menu_manager.parent_id) nunca podia ser zerado via PUT
+// update. O componente SelectField (FormGrid/select/index.tsx) escreve esse
+// valor no hidden input só quando o usuário clica no ✕; aqui viramos null
+// de verdade no payload, em vez de omitir. Ver BaseViewService::sanitizeData
+// (só descarta '', preserva null explícito).
+export const CLEARED_FIELD_VALUE = '@@cleared@@';
+
 // FormData -> corpo JSON. Chaves "campo[]" (checkbox multiplo) viram array;
-// escalares viram string; vazios sao omitidos (a API e permit_empty).
-// Checkbox de opcao unica (1 so <input> com aquele name[]) e booleano: vai
-// como escalar ("1"), e desmarcado com valor "1" vai "0" — sem isso a API
-// recebe ["1"] e reprova `in_list[0,1]`, e um default 1 nunca vira 0.
+// escalares viram string; vazios sao omitidos (a API e permit_empty);
+// CLEARED_FIELD_VALUE vira null explicito (ver acima). Checkbox de opcao
+// unica (1 so <input> com aquele name[]) e booleano: vai como escalar ("1"),
+// e desmarcado com valor "1" vai "0" — sem isso a API recebe ["1"] e reprova
+// `in_list[0,1]`, e um default 1 nunca vira 0.
 export function formDataToPayload(form: HTMLFormElement): Record<string, unknown> {
   const fd = new FormData(form);
   const payload: Record<string, unknown> = {};
@@ -39,6 +53,11 @@ export function formDataToPayload(form: HTMLFormElement): Record<string, unknown
     if (rawKey.endsWith('[]')) {
       const key = rawKey.slice(0, -2);
       (arrays[key] ??= []).push(value);
+      continue;
+    }
+
+    if (value === CLEARED_FIELD_VALUE) {
+      payload[rawKey] = null;
       continue;
     }
 

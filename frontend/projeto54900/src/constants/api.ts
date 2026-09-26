@@ -50,6 +50,7 @@ export const API_GROUPS = {
   listActions: 'list-actions',
   navManager: 'nav-manager',
   menuManager: 'menu-manager',
+  calendarManager: 'calendar-manager',
   calendarManagerView: 'calendar-manager-view',
   calendarEventAttendees: 'calendar-event-attendees',
   calendarEventInvites: 'calendar-event-invites',

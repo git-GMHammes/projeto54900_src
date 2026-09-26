@@ -7,6 +7,11 @@
 //                           SEM redirect — rota propria (ver
 //                           src/markdown/geral/modulos/calendar/README_calendar.md).
 //
+// - /v1/calendar-list -> CalendarListGetAllPage: lista SIMPLES de todos os
+//                        calendarios (calendar_manager cru, sem agrupar com
+//                        eventos) — so busca + paginacao, via list_manager
+//                        slug 'calendar-list'. Sem acoes.
+//
 // - /v1/convite/aceitar -> AceitarConvitePage: destino do link de e-mail do
 //                          convite de evento (token na querystring). PUBLICA
 //                          (sem sessao) — exportada separada em
@@ -18,10 +23,12 @@ import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
 const CalendarManagerGetAllPage = lazy(() => import('@/pages/v1/calendar/calendar-manager/GetAllPage'));
+const CalendarListGetAllPage = lazy(() => import('@/pages/v1/calendar/calendar-list/GetAllPage'));
 const AceitarConvitePage = lazy(() => import('@/pages/v1/calendar/calendar-event-invites/AceitarConvitePage'));
 
 export const calendarRoutes: RouteObject[] = [
   { path: 'calendar-manager', element: <CalendarManagerGetAllPage /> },
+  { path: 'calendar-list', element: <CalendarListGetAllPage /> },
 ];
 
 export const calendarInvitePublicRoutes: RouteObject[] = [

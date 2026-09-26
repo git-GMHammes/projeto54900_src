@@ -19,6 +19,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
 | [`composer`](#composer)       | PHP Composer proibido sem autorização   |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
+| [`deepseek`](#deepseek)       | Análise de entendimento do sistema      |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
@@ -26,6 +27,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`rotas`](#rotas)             | Mapa de todas as rotas REST             |
 | [`schema`](#schema)           | Introspecção do banco por API            |
 | [`seed`](#seed)               | Popular tabelas com dados iniciais      |
+| [`timeline`](#timeline)       | Módulo de publicações e timeline        |
 | [`upload`](#upload)           | Módulo de anexos para outros módulos     |
 
 ---
@@ -75,6 +77,19 @@ classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
 novo módulo/banco.
 
 [`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
+
+### `deepseek`
+
+Análise de entendimento do sistema antes do novo módulo, gravada a pedido do
+usuário para conferência. Cobre os três pedidos: como o sistema é desenvolvido
+(backend por módulo, frontend por página/`FormGrid`/motor de listagem, base de
+conhecimento e fluxo de plano), o que é o BUILD de Form/List/Menu (definição no
+banco renderizada por Build, com a ação `Build` em `list_actions` do
+`form-manager` e a rota `/v1/form-constructor/:table/:id`) e o modelo de migrate
+REMAKE (destrutivo, só sob autorização; estrutura e dados alterados direto no
+banco DEV). Fecha com as lacunas observadas e os pontos em aberto.
+
+[`geral/README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento do sistema antes do novo módulo.
 
 ### `formulario`
 
@@ -190,6 +205,15 @@ Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
 
 [`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.
 
+### `timeline`
+
+Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
+Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais a view `view_timeline_posts` do feed.
+Anexo em tabela própria, isolada do módulo Upload e do Calendar; reação e estrela são ação, não formulário.
+Tabelas e view aplicadas no banco DEV em 2026-09-26; os 5 formulários e a listagem do feed ainda são desenho (Etapa C).
+
+[`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, view do feed e regras.
+
 ### `upload`
 
 Módulo `Upload/UploadManager` da API V1: recurso REST polimórfico que armazena
@@ -229,12 +253,14 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
+- [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
 - [`README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo Calendar/CalendarEventInvites: convite de evento por e-mail com token temporário.
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
 - [`README_modulo_form.md`](geral/README_modulo_form.md) — módulo Form: formulários dinâmicos persistidos no banco.
 - [`README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu: config do app e árvore de navegação.
+- [`README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: 6 tabelas, view do feed, regras de negócio e roadmap.
 - [`README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo Upload/UploadManager: anexos polimórficos da API V1.
 - [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.
 - [`README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1, por módulo.
