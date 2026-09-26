@@ -52,6 +52,7 @@ export const API_GROUPS = {
   menuManager: 'menu-manager',
   calendarManagerView: 'calendar-manager-view',
   calendarEventAttendees: 'calendar-event-attendees',
+  calendarEventInvites: 'calendar-event-invites',
   calendarEventReminders: 'calendar-event-reminders',
   calendarEventAttachments: 'calendar-event-attachments',
   dbSchema: 'db-schema',

@@ -143,12 +143,19 @@ título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
 ### `rotas`
 
 Mapa textual de todas as rotas REST da API V1 (`app/Config/Routes/Api/v1`),
-agrupadas por módulo (User, Upload, Form, Calendar, Meta) na mesma ordem em
-que são registradas em `Config/Routes.php`. Cada módulo lista o arquivo
+agrupadas por módulo (Auth, User, Upload, Form, List, BootstrapIcons, AuxCor,
+Calendar, Nav, Menu, Meta) na mesma ordem em que são registradas em
+`Config/Routes.php`. Cada módulo lista o arquivo
 `EndpointTable.php`/`EndPointView.php` de origem e a tabela completa
-Método/Rota/Controller::method (18 rotas canônicas de tabela, 9 de view).
-Espelha, do lado do backend, o `README_rotas_frontend.md` do frontend
-(lá o eixo é Path React → Página; aqui é Método HTTP → Controller).
+Método/Rota/Controller::method (18 rotas canônicas de tabela, 9 de view, mais os
+desvios sancionados de contagem: `auth` com 6, `db-schema` com 3, `upload`
+multipart/streaming com 3, `user-profiles/me`, `calendar-event-attendees/respond`
+e `calendar-event-invites/accept-token`).
+Traz também a **legenda de filtros** (`jwtauth`/`adminonly` — por wildcard de URI
+ou rota a rota) e a observação de que `nav-manager`/`menu-manager` aparecem
+duplicados em `Config/Routes.php`. Espelha, do lado do backend, o
+`README_rotas_frontend.md` do frontend (lá o eixo é Path React → Página; aqui é
+Método HTTP → Controller).
 
 [`geral/README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1.
 
@@ -197,6 +204,23 @@ como outro módulo anexa/lista/exibe arquivos.
 
 [`geral/README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo de upload/anexos da API V1.
 
+### `calendar-event-invites`
+
+Convite de evento por e-mail com token temporário de uso único (72h). Modo A:
+convidado já cadastrado (`user_manager_id` ou e-mail que já existe em
+`user_profiles`). Modo B: convidado sem conta (só `email`) — o `accept-token`
+faz auto-cadastro na hora (`UserManager`/`UserProfiles::Processor::create()`
+já existentes; username/senha = parte local do e-mail) e envia um segundo
+e-mail com usuário/senha/login. `POST create` (organizador, autenticado) gera
+o token e envia o e-mail 1 (`Libraries/Mail/MailerService`); `POST
+accept-token` (única rota pública do módulo) valida o token e chama o
+`create()` já existente de `CalendarEventAttendees` para adicionar o
+convidado. Depois disso, aceitar/recusar segue o `respond` já existente,
+exigindo login normal. Tabela `calendar_event_invites` criada/alterada direto
+no banco DEV (sem migration — ver regra em `README_migrate.md`).
+
+[`geral/README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo de convite de evento por e-mail/token da API V1.
+
 ---
 
 ## Conteúdo
@@ -207,6 +231,7 @@ como outro módulo anexa/lista/exibe arquivos.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
+- [`README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo Calendar/CalendarEventInvites: convite de evento por e-mail com token temporário.
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
 - [`README_modulo_form.md`](geral/README_modulo_form.md) — módulo Form: formulários dinâmicos persistidos no banco.
 - [`README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu: config do app e árvore de navegação.

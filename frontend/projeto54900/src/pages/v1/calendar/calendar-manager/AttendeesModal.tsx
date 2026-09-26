@@ -6,7 +6,7 @@ import EmptyState from '@/components/global/EmptyState';
 import Modal from '@/components/global/Modal';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
-import { calendarEventAttendeesTable, formManagerView } from '@/services/v1';
+import { calendarEventAttendeesTable, calendarEventInvitesTable, formManagerView } from '@/services/v1';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import type { CalendarEventRow } from '@/services/calendarSchema';
@@ -87,6 +87,13 @@ export default function AttendeesModal({
   // Troca a `key` do <FormGrid> após cada convite gravado — limpa o formulário para o próximo.
   const [formKey, setFormKey] = useState(0);
 
+  // Convite por e-mail (calendar-event-invites/create) — cadastrado ou não.
+  // Ação fixa, fora do form dinâmico 'cadastro-convidado' (que exige usuário
+  // já existente); não vira attendee agora, só quando o convidado aceitar o
+  // link recebido por e-mail.
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [invitingByEmail, setInvitingByEmail] = useState(false);
+
   useEffect(() => {
     formManagerView
       .getGrouped({ fm_slug: [ATTENDEE_FORM_SLUG] }, { limit: 1000, sort: 'fc_sort_order', order: 'ASC' })
@@ -158,6 +165,32 @@ export default function AttendeesModal({
       }
     },
     [form, event, loadAttendees, toast],
+  );
+
+  /** Envia o convite por e-mail (calendar-event-invites/create) — cadastrado ou não. */
+  const handleInviteByEmail = useCallback(
+    async (submitEvent: FormEvent<HTMLFormElement>) => {
+      submitEvent.preventDefault();
+      if (!event) return;
+      const email = inviteEmail.trim();
+      if (!email) return;
+
+      setInvitingByEmail(true);
+      try {
+        await calendarEventInvitesTable.create({ calendar_event_id: event.id, email });
+        toast.success('Convite enviado por e-mail.', { title: 'Convidados' });
+        setInviteEmail('');
+      } catch (err) {
+        if (err instanceof ApiError) {
+          toast.error(`${err.message}${errorDetail(err)}`, { title: 'Erro ao convidar' });
+        } else {
+          toast.error('Falha inesperada ao enviar o convite.', { title: 'Erro ao convidar' });
+        }
+      } finally {
+        setInvitingByEmail(false);
+      }
+    },
+    [event, inviteEmail, toast],
   );
 
   /** Remove o convite (soft delete na API da própria tabela) e recarrega a lista. */
@@ -251,6 +284,32 @@ export default function AttendeesModal({
             );
           })()}
         </>
+      )}
+
+      {event && (
+        <form onSubmit={(e) => void handleInviteByEmail(e)} noValidate className="border-top pt-3 mb-3">
+          <label htmlFor="invite-by-email" className="form-label fw-semibold">
+            Convidar por e-mail (com ou sem cadastro)
+          </label>
+          <div className="d-flex gap-2">
+            <input
+              id="invite-by-email"
+              type="email"
+              className="form-control"
+              placeholder="usuario@dominio.com.br"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              required
+            />
+            <button type="submit" className="btn btn-outline-primary text-nowrap" disabled={invitingByEmail}>
+              {invitingByEmail ? 'Enviando...' : 'Convidar por e-mail'}
+            </button>
+          </div>
+          <div className="form-text">
+            Envia um link de convite por e-mail. Se a pessoa ainda não tiver conta, uma conta é criada
+            automaticamente quando ela aceitar o convite.
+          </div>
+        </form>
       )}
 
       {formError && !form && <EmptyState title="Formulario indisponivel" description={formError} />}

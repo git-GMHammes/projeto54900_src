@@ -123,4 +123,23 @@ class Email extends BaseConfig
      * Enable notify message from server
      */
     public bool $DSN = false;
+
+    /**
+     * Credenciais e host SMTP vem do ambiente do container (chaves MAIL_* no
+     * docker-compose.yml, servico php), lidas via env() -- mesmo padrao usado
+     * em Config/Database.php. Nunca hardcoded no codigo-fonte.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->protocol  = 'smtp';
+        $this->SMTPHost  = (string) env('MAIL_SMTP_HOST', '');
+        $this->SMTPPort  = (int) env('MAIL_SMTP_PORT', 587);
+        $this->SMTPCrypto = 'tls';
+        $this->SMTPUser  = (string) env('MAIL_NOREPLY_USER', '');
+        $this->SMTPPass  = (string) env('MAIL_NOREPLY_PASS', '');
+        $this->fromEmail = (string) env('MAIL_NOREPLY_USER', '');
+        $this->mailType  = 'html';
+    }
 }

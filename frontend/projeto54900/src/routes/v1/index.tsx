@@ -72,7 +72,7 @@ import { formRoutes } from './form.routes';
 import { listRoutes } from './list.routes';
 import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
-import { calendarRoutes } from './calendar.routes';
+import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
 
 /**
@@ -110,6 +110,8 @@ export const v1Routes: RouteObject = {
     // deste bloco acessíveis sem sessão. Todo o resto vive sob <RequireAuth/>.
     ...authRoutes,
     ...userPublicRoutes,
+    // Convite de evento por e-mail: destino do link, sem sessao ativa.
+    ...calendarInvitePublicRoutes,
     {
       element: <RequireAuth />,
       children: [

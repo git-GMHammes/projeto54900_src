@@ -157,6 +157,13 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventExtendedProperties/EndpointTable.php';
     });
 
+    // Convite de evento por e-mail com token temporario. 'accept-token' e a
+    // unica rota publica do grupo (filtro por rota no EndpointTable.php, nao
+    // por wildcard em Config/Filters.php), igual ao padrao de user-manager.
+    $routes->group('calendar-event-invites', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Calendar/CalendarEventInvites/EndpointTable.php';
+    });
+
     // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.
