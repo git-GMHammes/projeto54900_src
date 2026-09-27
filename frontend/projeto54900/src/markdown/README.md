@@ -36,6 +36,7 @@ cada resumo termina com o link para o conteúdo completo.
 | [`render`](#render)                | Renderizar formulário só via FormGrid    |
 | [`rota`](#rota)                    | Campo de rota vira select                |
 | [`rotas`](#rotas)                  | Mapa de todas as rotas React             |
+| [`timeline`](#timeline)            | Feed social: pronto, com pendências      |
 
 ---
 
@@ -326,6 +327,24 @@ a convenção de pastas por trás dessas rotas.
 
 [`geral/README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend.
 
+### `timeline`
+
+Módulo `timeline` (feed social), segundo da pasta `geral/modulos/`. Backend
+completo e testado (7 tabelas/views, 189 rotas + rota extra `home-feed` com o
+algoritmo do feed misto). Frontend com duas telas: listagem clássica
+(`/v1/timeline-posts`, motor `list_manager`) e Home Feed (`/v1/timeline`,
+scroll infinito, card único, botão flutuante de novo post) — os 5 formulários
+do módulo já funcionam pelo renderizador genérico `/v1/form/<slug>`, sem
+página própria. Dois componentes globais novos:
+[`hooks/useInfiniteScroll.ts`](../hooks/useInfiniteScroll.ts) (1º hook de
+scroll infinito do projeto) e
+[`components/global/MediaPreview.tsx`](../components/global/MediaPreview.tsx)
+(imagem/vídeo inline, demais categorias em ícone). Pendências: upload de
+anexo não ligado no backend, curtir/avaliar "write-only", sem página de
+detalhe/edição de post, falta a listagem agrupada por usuário criador.
+
+[`geral/modulos/timeline/README_plano.md`](geral/modulos/timeline/README_plano.md) — módulo timeline, estado atual e pendências.
+
 ---
 
 ## Conteúdo
@@ -354,3 +373,4 @@ a convenção de pastas por trás dessas rotas.
 ### `geral/modulos/`
 
 - [`calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo `calendar` (espelho do Google Calendar): estado atual (só visualização) e roadmap.
+- [`timeline/README_plano.md`](geral/modulos/timeline/README_plano.md) — módulo `timeline` (feed social): backend completo, duas telas de frontend prontas, pendências para continuar depois.

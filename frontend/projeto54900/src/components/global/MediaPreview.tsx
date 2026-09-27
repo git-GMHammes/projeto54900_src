@@ -1,0 +1,112 @@
+/**
+ * =========================================================================
+ * FILE HEADER — components/global/MediaPreview.tsx
+ * =========================================================================
+ *
+ * PROPOSITO: componente GLOBAL de carregamento/preview de anexo — imagem e
+ * vídeo tocam INLINE; qualquer outra categoria (PDF, Office, planilha,
+ * áudio, arquivo compactado, "outro") vira um ÍCONE Bootstrap num card médio
+ * (tamanho de card de celular), clicável, abrindo o arquivo em nova aba.
+ * Pedido explícito do usuário: "COMPONENTE GLOBAL de CARREGAMENTO (no post)
+ * de Imagem, Vídeo, Documentos Office" — este é ESSE componente, reaproveitável
+ * por qualquer tela que precise mostrar anexo, não só a Timeline.
+ *
+ *   <MediaPreview attachments={attachments} />
+ *
+ * NÃO faz chamada de rede: recebe os anexos JÁ carregados pelo componente
+ * pai (ex.: `PostCard.tsx`, via `timelinePostAttachmentsTable.find(...)`) —
+ * mantém este componente puro e reaproveitável fora do módulo Timeline.
+ *
+ * FORMATO ESPERADO DE CADA ANEXO (`MediaAttachment`): campos mínimos comuns a
+ * qualquer tabela de anexo do projeto (`category`, `file_url`, nome) — não é
+ * o tipo exato de `timeline_post_attachments`, é um subconjunto, para o
+ * componente não ficar acoplado a UM módulo específico.
+ *
+ * DEPENDÊNCIAS: nenhuma (Bootstrap Icons já carregado globalmente pelo
+ * projeto — `bootstrap-icons`, ver `bootstrap.ts`).
+ * CONSUMIDORES: `pages/v1/timeline/home-feed/PostCard.tsx`. Qualquer módulo
+ * futuro com anexo (Upload, Calendar) pode importar daqui em vez de escrever
+ * a própria lógica de categoria → ícone.
+ *
+ * COMO REAPROVEITAR EM OUTRO MÓDULO: mapeie o registro de anexo do seu
+ * módulo para `MediaAttachment` (mesma forma de `category`/`fileUrl`/`name`)
+ * antes de passar para este componente — não precisa ser exatamente
+ * `timeline_post_attachments`.
+ * -------------------------------------------------------------------------
+ */
+
+export type MediaCategory =
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'document'
+  | 'spreadsheet'
+  | 'presentation'
+  | 'pdf'
+  | 'archive'
+  | 'other';
+
+export interface MediaAttachment {
+  id: number | string;
+  category: MediaCategory;
+  fileUrl: string;
+  name: string;
+}
+
+/** Ícone Bootstrap por categoria — só para as categorias que NÃO tocam inline (tudo, exceto image/video). */
+const ICON_BY_CATEGORY: Record<Exclude<MediaCategory, 'image' | 'video'>, string> = {
+  audio: 'file-earmark-music',
+  document: 'file-earmark-word',
+  spreadsheet: 'file-earmark-excel',
+  presentation: 'file-earmark-ppt',
+  pdf: 'file-earmark-pdf',
+  archive: 'file-earmark-zip',
+  other: 'file-earmark',
+};
+
+/** Um anexo: imagem/vídeo inline, os demais um card com ícone + nome, clicável (abre em nova aba). */
+function AttachmentItem({ attachment }: { attachment: MediaAttachment }) {
+  if (attachment.category === 'image') {
+    return (
+      <img
+        src={attachment.fileUrl}
+        alt={attachment.name}
+        className="img-fluid rounded"
+        style={{ maxHeight: '420px', width: '100%', objectFit: 'cover' }}
+      />
+    );
+  }
+
+  if (attachment.category === 'video') {
+    return <video src={attachment.fileUrl} controls className="w-100 rounded" style={{ maxHeight: '420px' }} />;
+  }
+
+  const icon = ICON_BY_CATEGORY[attachment.category];
+
+  return (
+    <a
+      href={attachment.fileUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="d-flex flex-column align-items-center justify-content-center text-decoration-none border rounded bg-body-tertiary p-3 mx-auto"
+      style={{ width: '220px', height: '220px' }}
+      title={attachment.name}
+    >
+      <i className={`bi bi-${icon}`} style={{ fontSize: '3.5rem' }} />
+      <span className="small text-truncate w-100 text-center mt-2 text-body">{attachment.name}</span>
+    </a>
+  );
+}
+
+/** Preview de 1 ou mais anexos de um post/registro — imagem/vídeo inline, demais em ícone. Sem anexo, não renderiza nada. */
+export default function MediaPreview({ attachments }: { attachments: MediaAttachment[] }) {
+  if (attachments.length === 0) return null;
+
+  return (
+    <div className={attachments.length > 1 ? 'd-flex flex-wrap gap-2 mb-3' : 'mb-3'}>
+      {attachments.map((a) => (
+        <AttachmentItem key={a.id} attachment={a} />
+      ))}
+    </div>
+  );
+}

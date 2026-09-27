@@ -199,7 +199,7 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
 Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais as 7 views: a do feed (`view_timeline_posts`) e uma de apoio por tabela.
 Anexo em tabela própria, isolada do módulo Upload e do Calendar; reação e estrela são ação, não formulário.
-Tabelas, views e as **189 rotas** (7 tabelas × 18 + 7 views × 9) aplicadas no banco DEV e no `Config/Routes.php`/`route_manager` em 2026-09-26 — os controllers da Etapa D ainda não existem; os 5 formulários e a listagem do feed ainda são desenho (Etapa C).
+Tabelas, views e as **189 rotas** (7 tabelas × 18 + 7 views × 9) aplicadas no banco DEV e no `Config/Routes.php`/`route_manager` em 2026-09-26; backend PHP (Controller/Request/Processor/Model) implementado e testado rota a rota, e os 5 `form_manager` + o `list_manager` do feed inseridos, em 2026-09-27 — backend completo. Fase 2 do frontend também concluída em 2026-09-27 (listagem clássica do feed em `/v1/timeline-posts`, criação via renderizador genérico, curtir/avaliar/republicar funcionando, menu ativo); falta só a Fase 3 (Home Feed com feed misto/scroll infinito) e as páginas de detalhe/edição de post.
 
 [`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, views (feed e apoio) e regras.
 

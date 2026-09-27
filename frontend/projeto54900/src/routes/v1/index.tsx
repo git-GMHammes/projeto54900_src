@@ -22,6 +22,7 @@
  *   menu.routes.tsx   -> menuRoutes    menu-manager (itens de menu)
  *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
  *   svgMap.routes.tsx -> svgMapRoutes  svg-map (mapa SVG dos municipios do RJ, rota estatica)
+ *   timeline.routes.tsx -> timelineRoutes  timeline-posts (listagem classica do feed)
  *
  * DEPENDÊNCIAS (arquivos próprios do projeto):
  *   - `routes/v1/*.routes.tsx` — um arquivo por módulo, cada um exportando seu
@@ -74,6 +75,7 @@ import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
+import { timelineRoutes } from './timeline.routes';
 
 /**
  * =========================================================================
@@ -124,6 +126,7 @@ export const v1Routes: RouteObject = {
         ...menuRoutes,
         ...calendarRoutes,
         ...svgMapRoutes,
+        ...timelineRoutes,
       ],
     },
   ],
