@@ -135,8 +135,7 @@ não mexer sem autorização explícita.
 
 ## Seeders
 
-`app/Database/Seeds/NavManagerSeeder.php` e `MenuManagerSeeder.php` — ver
-[`README_seed.md`](README_seed.md) para os comandos. Resumo:
+`app/Database/Seeds/NavManagerSeeder.php` e `MenuManagerSeeder.php`. Resumo:
 
 - `NavManagerSeeder`: idempotente por `title` ("Menu Teste") — se existe, faz
   `deleteHard` (CASCADE apaga os itens de menu) e recria via `Processor`.

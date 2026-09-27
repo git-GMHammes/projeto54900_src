@@ -2,6 +2,95 @@
 
 ---
 
+## Prompt padrão — pedir um REMAKE novo à IA
+
+> Copiar o bloco JSON abaixo, preencher `"timestamp"` com o `AAAAMMDDHHMM` do
+> momento e colar como prompt. A IA deve **apenas gerar os 6 arquivos** (3
+> `.sql` + 3 classes PHP) em `app/Database/Migrations/`, no formato fixo
+> descrito no campo `"formato"` do próprio prompt (que é o padrão revisado
+> pelo usuário e prevalece sobre a tabela "Modelo ativo: Migrate REMAKE"
+> abaixo). **Não roda `spark migrate`.**
+
+```json
+{
+  "tarefa": "gerar_remake_migrations",
+  "projeto": "projeto54900",
+  "conexao": "default (codeigniter54900_db)",
+  "timestamp": "AAAAMMDDHHMM",
+  "instrucoes": "Gerar um REMAKE completo a partir do estado ATUAL do banco DEV: 3 arquivos .sql (dump) + 3 classes PHP (consumo), TODOS OS 6 com o MESMO timestamp, em app/Database/Migrations/. As 3 classes PHP são TÃO OBRIGATÓRIAS quanto os 3 .sql — a tarefa NÃO está completa com só os .sql. O campo 'formato' abaixo é o padrão revisado pelo usuário: ele prevalece sobre 'mais simples', sobre o que o mysqldump escreve e sobre os REMAKEs anteriores.",
+  "fonte_de_dados": [
+    "Tabelas, colunas, views e DADOS vêm do banco DEV lido nesta execução.",
+    "PROIBIDO montar qualquer um dos 3 .sql reaproveitando, copiando ou 'completando' arquivos .sql de REMAKEs anteriores: o conteúdo deles fica velho e o REMAKE sai com dados errados.",
+    "Antes de gerar: listar as tabelas base e as views do banco e contar os registros por tabela.",
+    "Antes de escrever cada INSERT: consultar DESCRIBE/SHOW CREATE TABLE da tabela real e usar exatamente esse nome de tabela e essa ordem de colunas — NUNCA supor, adivinhar ou copiar de memória.",
+    "Depois de gerar: conferir, tabela por tabela, se a quantidade de tuplas geradas bate com a contagem feita no banco."
+  ],
+  "formato": {
+    "cabecalho_e_rodape": "Cada .sql abre com as 8 linhas /*!40101 ... */ usadas nos REMAKEs anteriores (entre elas /*!40101 SET NAMES utf8 */; e /*!50503 SET NAMES utf8mb4 */;) e fecha com as 5 linhas de restauração (TIME_ZONE, SQL_MODE, FOREIGN_KEY_CHECKS, CHARACTER_SET_CLIENT, SQL_NOTES). Blocos separados por linha em branco.",
+    "replace_table": "Por tabela: DROP TABLE IF EXISTS `t`; e CREATE TABLE IF NOT EXISTS `t` (...) ENGINE=...; — sempre com IF NOT EXISTS.",
+    "replace_view": "Divisória de 77 hífens precedidos de '-- ' (80 colunas, igual aos REMAKEs anteriores); comentários em português, sem palavra-chave SQL e sem '=' na divisória (regra anti-formatador deste README); SET NAMES utf8mb4; em linha própria; por view: DROP VIEW IF EXISTS `v`; e CREATE VIEW `v` AS com o SELECT alinhado.",
+    "seed_bloco": "Por tabela: DELETE FROM `t`; e, na linha seguinte, INSERT INTO `t` (`col1`, `col2`, ...) VALUES — sem linha em branco entre o DELETE e o INSERT.",
+    "seed_tuplas": "UMA TUPLA POR LINHA, indentada com TAB (\\t, NUNCA espaços — nem 4, nem 2, nenhum) — igual ao dump real do banco — cada uma terminando em vírgula, a última em ponto e vírgula. Tabela sem registros: fica só o DELETE FROM.",
+    "seed_valores": "Espaço depois de cada vírgula entre os valores. Texto entre aspas simples, com aspas simples internas escapadas por barra invertida e aspas duplas internas normais (sem barra invertida antes delas). Nulo é NULL, sem aspas.",
+    "seed_exemplo": [
+      "DELETE FROM `tabela`;",
+      "INSERT INTO `tabela` (`id`, `name`, `hexadecimal`, `created_at`) VALUES",
+      "\t(1, 'Black', '#000000', '2026-09-23 17:00:07'),",
+      "\t(2, 'grey11', '#1C1C1C', '2026-09-23 17:00:07');"
+    ],
+    "seed_proibido": "Tuplas separadas apenas por vírgula, sem espaço depois dela, todas na mesma linha, assim: ...) VALUES (1,'Black',...),(2,'grey11',...); — formato padrão do mysqldump. Se usar mysqldump, reformatar o arquivo antes de salvar. Também PROIBIDO indentar as tuplas com espaços (ex.: 4 espaços) — o único caractere correto é TAB (\\t)."
+  },
+  "arquivos": [
+    {
+      "ordem": 1,
+      "sql": "AAAAMMDDHHMM_replace_table.sql",
+      "classe_php": "AAAA-MM-DD-HHMM00_ReplaceTable<AAAAMMDD>.php",
+      "conteudo": "DROP TABLE IF EXISTS + CREATE TABLE IF NOT EXISTS de TODAS as tabelas base do banco DEV atual, como em formato.replace_table"
+    },
+    {
+      "ordem": 2,
+      "sql": "AAAAMMDDHHMM_seed_table.sql",
+      "classe_php": "AAAA-MM-DD-HHMM00_SeedTable<AAAAMMDD>.php",
+      "conteudo": "DELETE FROM + INSERT com a lista de colunas e UMA TUPLA POR LINHA (indentação com TAB, ver formato.seed_tuplas), como em formato.seed_exemplo, de TODOS os dados atuais do banco DEV"
+    },
+    {
+      "ordem": 3,
+      "sql": "AAAAMMDDHHMM_replace_view.sql",
+      "classe_php": "AAAA-MM-DD-HHMM00_ReplaceView<AAAAMMDD>.php",
+      "conteudo": "DROP VIEW IF EXISTS + CREATE VIEW de TODAS as views atuais do banco DEV"
+    }
+  ],
+  "regras": [
+    "Cada classe PHP é cópia da classe do REMAKE anterior: só lê o .sql ao lado e executa statement por statement (executeSqlFile), sem Forge; nome do arquivo e nome da classe levam o sufixo AAAAMMDD para não colidir no namespace",
+    "down() do ReplaceTable e SeedTable vazio; ReplaceView faz DROP VIEW IF EXISTS de cada view",
+    "NÃO rodar 'spark migrate' nem qualquer comando que aplique o REMAKE no banco",
+    "Apenas CRIAR os 6 arquivos; a aplicação (spark migrate) fica por conta do usuário, após revisão prévia",
+    "UM SÓ timestamp por execução. PROIBIDO gerar um timestamp novo se o anterior ficou incompleto: complete o mesmo timestamp, ou apague os arquivos incompletos dele antes de tentar de novo. NUNCA deixar dois conjuntos parciais na pasta",
+    "A resposta termina com: nº de tabelas base, nº de views e, por arquivo .sql, o total de bytes e de statements (INSERT/DELETE por tabela, CREATE/DROP por tabela ou view)",
+    "Repetir ao final da resposta, sem executar, o comando fixo indicado abaixo deste prompt"
+  ],
+  "checklist_final": [
+    "Antes de dar a tarefa como concluída, listar os 6 caminhos esperados com o timestamp usado nesta execução:",
+    "app/Database/Migrations/<timestamp>_replace_table.sql",
+    "app/Database/Migrations/<AAAA-MM-DD-HHMM00>_ReplaceTable<AAAAMMDD>.php",
+    "app/Database/Migrations/<timestamp>_seed_table.sql",
+    "app/Database/Migrations/<AAAA-MM-DD-HHMM00>_SeedTable<AAAAMMDD>.php",
+    "app/Database/Migrations/<timestamp>_replace_view.sql",
+    "app/Database/Migrations/<AAAA-MM-DD-HHMM00>_ReplaceView<AAAAMMDD>.php",
+    "Confirmar CADA um dos 6 como criado. Se QUALQUER um estiver faltando, a tarefa NÃO está concluída — não afirmar sucesso; completar o que falta antes de responder, ou avisar explicitamente o que não foi possível gerar e por quê"
+  ]
+}
+```
+
+**Comando de aplicação — SEMPRE por conta do usuário, após revisão. Repetir
+esta linha em toda resposta ao prompt acima; NÃO executar automaticamente:**
+
+```
+podman compose exec php php spark migrate
+```
+
+---
+
 # Migrations — comandos diretos (CodeIgniter 4)
 
 ## Modelo ativo: Migrate REMAKE (desde 2026-09-23)
@@ -35,7 +124,13 @@ recria tudo do zero.
 | ----- | ------------------------------------ | -------------------------------------------- | --------------------------------------------------- |
 | 1     | `AAAAMMDDHHMM_replace_table.sql`     | `AAAA-MM-DD-HHMM00_ReplaceTable<AAAAMMDD>.php` | `DROP TABLE IF EXISTS` + `CREATE TABLE` de todas    |
 | 2     | `AAAAMMDDHHMM_seed_table.sql`        | `AAAA-MM-DD-HHMM00_SeedTable<AAAAMMDD>.php`    | `DELETE` + `INSERT` de todos os dados               |
-| 3     | `AAAAMMDDHHMM_create_view.sql`       | `AAAA-MM-DD-HHMM00_CreateView<AAAAMMDD>.php`   | `DROP VIEW IF EXISTS` + `CREATE VIEW` de todas      |
+| 3     | `AAAAMMDDHHMM_replace_view.sql`      | `AAAA-MM-DD-HHMM00_ReplaceView<AAAAMMDD>.php`  | `DROP VIEW IF EXISTS` + `CREATE VIEW` de todas      |
+
+> **Mudança de sufixo (2026-09-27):** a 3ª migration passa de
+> `create_view.sql`/`CreateView` para **`replace_view.sql`/`ReplaceView`** —
+> mesmo padrão semântico de `replace_table` (destrói e recria). REMAKEs
+> criados **antes** de 2026-09-27 continuam com o nome antigo
+> (`*_create_view.sql` / `CreateView<AAAAMMDD>`); não foram renomeados.
 
 Regras do REMAKE:
 
@@ -51,7 +146,8 @@ Regras do REMAKE:
   do ReplaceTable — o banco vem da conexão (`default`), não do nome cravado no
   `.sql`.
 - `down()` do ReplaceTable/SeedTable fica vazio (sem inverso genérico);
-  CreateView faz `DROP VIEW IF EXISTS` de cada view.
+  ReplaceView (antes de 2026-09-27: CreateView) faz `DROP VIEW IF EXISTS` de
+  cada view.
 - **Destrutivo:** `spark migrate` com um REMAKE pendente dropa todas as tabelas
   (inclusive `migrations`) e recarrega os dados do dump. Tudo gravado no banco
   depois do dump se perde — tirar backup antes se houver dado novo.
@@ -60,7 +156,7 @@ Regras do REMAKE:
 - Credenciais do banco DEV nunca gravadas em arquivo versionado (regra global
   de segredos, `CLAUDE.md`).
 
-### Comentários no SQL de view (`*_create_view.sql`) — à prova do formatador
+### Comentários no SQL de view (`*_replace_view.sql`, antes `*_create_view.sql`) — à prova do formatador
 
 **Pedido do usuário (2026-09-24):** ao criar um SQL de view a pedido do
 usuário, os comentários `--` devem sobreviver ao formatador de SQL do editor.
