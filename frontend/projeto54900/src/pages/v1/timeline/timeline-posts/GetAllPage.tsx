@@ -1,124 +1,170 @@
-// Lista de configs de nav (nav_manager) — api/v1/nav-manager
-//
-// Consumidor do MOTOR DE LISTAGENS (list_manager/list_columns/list_actions,
-// slug 'nav'): colunas, rotulos, ordenacao e acoes vem do BANCO — nao existe
-// <thead> fixo no codigo. Regra e receita completas em
-// src/markdown/geral/README_render_via_list_constructor.md.
-//
-// Padrao visual espelhado de pages/v1/user/user-manager/GetAllPage.tsx:
-//   busca  -> input-group com bi-search (q no api_search_endpoint)
-//   acoes  -> botao so-icone (list_actions.icon) + tooltip custom
-//   rodape -> "{total} registro(s) · Por pagina" + limite + paginationWindow
-//
-// Acoes cadastradas em list_actions para este slug:
-//   link      Ver     -> /v1/nav-manager/{id}
-//   link      Itens   -> /v1/menu-manager?nav_manager_id={id}
-//   api_call  Excluir -> DELETE /api/v1/nav-manager/delete-soft/{id}
-//                        (window.confirm com o confirm_message do banco)
+/**
+ * =============================================================================
+ * FILE HEADER — pages/v1/timeline/timeline-posts/GetAllPage.tsx
+ * =============================================================================
+ *
+ * O QUE FAZ:
+ *   Página `/v1/timeline-posts`: lista o feed da Timeline (`view_timeline_posts`,
+ *   todas as publicações, mais recentes primeiro) e dá acesso às ações por
+ *   linha (`list_actions`, slug `timeline-feed`). É a "listagem clássica" do
+ *   módulo — a página inicial com feed misto/scroll infinito pedida pelo
+ *   usuário é OUTRA tela (Home Feed, ainda não construída — ver
+ *   `README_modulo_timeline.md` seção 9).
+ *
+ *   Espelha DOIS padrões já usados no projeto, combinados:
+ *     - `pages/v1/calendar/calendar-list/GetAllPage.tsx` — lista simples com
+ *       busca + paginação de SERVIDOR, sem agrupamento no cliente.
+ *     - `pages/v1/form/FormConstructorListPage.tsx` — coluna de Ações a partir
+ *       de `list_actions`, com `ActionButton` LOCAL (não é componente
+ *       compartilhado — o projeto não tem um hoje; cada página de listagem
+ *       escreve o seu, do jeito que Calendar e Form já fazem).
+ *
+ * CORPO DO `api_call` (lacuna resolvida aqui — ver README_modulo_timeline.md
+ *   seção 8, decisão "corpo do api_call em aberto"): o motor genérico
+ *   (`utils/listConstructor.tsx`) só resolve `{campo}` na URL — nenhuma
+ *   página do projeto envia corpo em `api_call`. Como Curtir/Avaliar/
+ *   Republicar são POST que EXIGEM corpo (`timeline_post_id` +
+ *   `reaction_type`/`rating`/`repost_of_id`), o `ActionButton` desta página
+ *   reconhece `action.dataAction` (`list_actions.data_action`, gravado na
+ *   Fase 2) e monta o corpo certo antes de chamar `http.post`. Ações sem
+ *   `data_action` reconhecido continuam no padrão sem corpo (Excluir).
+ *
+ * LACUNA CONHECIDA (documentada em `routes/v1/timeline.routes.tsx` e
+ *   `README_rotas_frontend.md`, NÃO corrigida aqui): "Ver", "Comentar" e
+ *   "Editar" apontam para rotas que ainda não existem (sem página de
+ *   detalhe/comentários nem formulário de edição de post) — clicar cai no
+ *   `NotFoundPage`. "Denunciar" já foi corrigido para o renderizador
+ *   genérico real (`/v1/form/timeline-report`).
+ *
+ * DE ONDE VEM CADA COISA:
+ *   definição -> `list_manager` (slug `timeline-feed`) + `list_columns` +
+ *               `list_actions`, normalizados por `@/utils/listConstructor`
+ *   dados     -> `api_get_endpoint`/`api_search_endpoint` do próprio manager
+ *   paginação -> a URL (`page`/`limit`/`sort`/`order`), via `usePagination`;
+ *               ordenação padrão (`tp_published_at`/`desc`) aplicada uma vez,
+ *               a partir do próprio `manager`, se a URL não trouxer `sort`
+ *   ação      -> `list_actions` (`link` navega; `api_call` faz HTTP de
+ *               verdade, com corpo quando `data_action` é reconhecido)
+ *
+ * DEPENDÊNCIAS: `@/services/v1` (`listManagerTable`/`listColumnsTable`/
+ *   `listActionsTable`), `@/utils/listConstructor` (motor), `@/services/http`,
+ *   `@/hooks/{usePagination,useDebounce,useToast}`, `@/utils/{apiResult,
+ *   formSubmit,pagination}`, `@/components/global` (`PageHeader`,
+ *   `EmptyState`, `LoadingOverlay`).
+ *
+ * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-posts'`,
+ *   lazy). Item de navbar "Feed" (`menu_manager.id=29`) aponta para cá.
+ * =============================================================================
+ */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import { useToast } from '@/hooks/useToast';
+import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
 import { http, ApiError } from '@/services/http';
 import { listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
-import { usePagination } from '@/hooks/usePagination';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useToast } from '@/hooks/useToast';
 import { paginationWindow } from '@/utils/pagination';
-import { paths } from '@/routes/paths';
-import type { QueryParams } from '@/types/api';
 import {
   str,
   toManager,
   toColumn,
   toAction,
-  cellValue,
   renderCell,
   evalBusinessRule,
   resolveHrefTemplate,
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
+import type { QueryParams } from '@/types/api';
 
-/** Slug do list_manager que descreve esta tela (o resto da lista vem do banco). */
-const MANAGER_SLUG = 'nav';
+/** Único dado de configuração fixo no código — o slug do `list_manager` desta tela. */
+const MANAGER_SLUG = 'timeline-feed';
 
 /**
- * Botao de UMA acao de list_actions na linha: 'link' navega pelo react-router
- * (href_template com {campos} da linha) e 'api_call' executa HTTP de verdade no
- * api_endpoint, com confirmacao opcional. 'modal' nao existe neste slug hoje —
- * se aparecer, avisa em vez de falhar em silencio.
+ * `list_actions.data_action` reconhecidos por este `ActionButton` — os únicos
+ * três `api_call` deste módulo que exigem corpo. Qualquer outro valor (ou
+ * `null`) cai no comportamento padrão do motor (sem corpo).
+ */
+const DATA_ACTION_REACTION_LIKE = 'reaction-like';
+const DATA_ACTION_RATING = 'rating';
+const DATA_ACTION_REPOST = 'repost';
+
+/** Sinaliza que o usuário cancelou o prompt da nota (Avaliar) — aborta sem chamar a API, sem toast de erro. */
+const RATING_CANCELLED = Symbol('rating-cancelled');
+
+/**
+ * Monta o corpo da chamada `api_call` a partir de `data_action` + a linha
+ * clicada. `undefined` = comportamento padrão do motor (sem corpo).
+ */
+function buildActionBody(
+  dataAction: string,
+  row: Record<string, unknown>,
+  toast: ReturnType<typeof useToast>,
+): Record<string, unknown> | undefined | typeof RATING_CANCELLED {
+  const postId = Number(row.id);
+
+  if (dataAction === DATA_ACTION_REACTION_LIKE) {
+    return { timeline_post_id: postId, reaction_type: 'like' };
+  }
+
+  if (dataAction === DATA_ACTION_REPOST) {
+    return { repost_of_id: postId };
+  }
+
+  if (dataAction === DATA_ACTION_RATING) {
+    const raw = window.prompt('Sua nota para esta publicação (1 a 5):', '5');
+    if (raw === null) return RATING_CANCELLED;
+    const rating = Number(raw);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      toast.error('Informe um número inteiro de 1 a 5.', { title: 'Avaliar' });
+      return RATING_CANCELLED;
+    }
+    return { timeline_post_id: postId, rating };
+  }
+
+  return undefined;
+}
+
+/**
+ * Ação de linha: `link` navega (rota do próprio front, inclusive o
+ * renderizador genérico `/v1/form/:slug`); `api_call` executa de verdade,
+ * com corpo quando `data_action` é reconhecido (ver `buildActionBody`).
+ * Mesmo padrão de `FormConstructorListPage.tsx` (`ActionButton` local, não
+ * compartilhado — este projeto ainda não tem esse componente global).
  */
 function ActionButton({
   action,
   row,
-  subject,
   disabled,
   onExecuted,
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
-  /** Valor da 1a coluna da linha (ex.: titulo) — compoe o texto do tooltip. */
-  subject: string;
   disabled: boolean;
   onExecuted: () => void;
 }) {
   const toast = useToast();
 
-  // Botao so-icone (list_actions.icon); sem icone cadastrado, cai no rotulo.
-  const content = action.icon ? <i className={`bi bi-${action.icon}`} aria-hidden="true" /> : action.label;
-  const tip = `${action.label}${subject ? `: ${subject}` : ''}${disabled ? ' (indisponivel)' : ''}`;
-
-  // Tooltip custom (bolha CSS, styles/_custom.scss) em vez do `title` nativo —
-  // o wrapper recebe o hover mesmo com o botao desabilitado. Variante --start
-  // (bolha a esquerda): a coluna de acoes fica na borda direita da tabela.
-  const withTooltip = (button: ReactNode) => (
-    <span className="icon-action-tooltip ms-2">
-      {button}
-      <span className="icon-action-tooltip-bubble icon-action-tooltip-bubble--start" role="tooltip">
-        {tip}
-      </span>
-    </span>
-  );
-
   if (action.actionType === 'link') {
     const href = resolveHrefTemplate(action.hrefTemplate, row);
-    return withTooltip(
+    return (
       <Link
-        className={`btn btn-sm btn-outline-primary${disabled ? ' disabled' : ''}`}
+        className={`btn btn-sm btn-outline-primary ms-2${disabled ? ' disabled' : ''}`}
         to={href}
-        aria-label={tip}
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : undefined}
         onClick={(e) => {
           if (disabled) e.preventDefault();
         }}
       >
-        {content}
-      </Link>,
-    );
-  }
-
-  if (action.actionType === 'modal') {
-    return withTooltip(
-      <button
-        type="button"
-        className="btn btn-sm btn-outline-primary"
-        aria-label={tip}
-        disabled={disabled}
-        onClick={() =>
-          toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
-            title: action.label,
-          })
-        }
-      >
-        {content}
-      </button>,
+        {action.label}
+      </Link>
     );
   }
 
@@ -126,46 +172,42 @@ function ActionButton({
     if (action.confirm && !window.confirm(action.confirmMessage || `Confirma ${action.label}?`)) {
       return;
     }
+
+    const body = buildActionBody(action.dataAction, row, toast);
+    if (body === RATING_CANCELLED) return;
+
     try {
-      // O endpoint do banco vem como "/api/v1/...": resolveEndpoint tira o
-      // prefixo que o wrapper http ja adiciona.
       const path = resolveEndpoint(resolveHrefTemplate(action.apiEndpoint, row));
       const method = action.httpMethod.toUpperCase();
       if (method === 'DELETE') await http.delete(path);
-      else if (method === 'PUT') await http.put(path);
-      else if (method === 'PATCH') await http.patch(path);
-      else if (method === 'POST') await http.post(path);
+      else if (method === 'PUT') await http.put(path, body);
+      else if (method === 'PATCH') await http.patch(path, body);
+      else if (method === 'POST') await http.post(path, body);
       else await http.get(path);
       onExecuted();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
-  return withTooltip(
-    <button
-      type="button"
-      className="btn btn-sm btn-outline-danger"
-      aria-label={tip}
-      disabled={disabled}
-      onClick={() => void execute()}
-    >
-      {content}
-    </button>,
+  return (
+    <button type="button" className="btn btn-sm btn-outline-secondary ms-2" disabled={disabled} onClick={() => void execute()}>
+      {action.label}
+    </button>
   );
 }
 
-export default function GetAllPage() {
-  const { params, setPage, setLimit, toggleSort } = usePagination();
+export default function TimelinePostsGetAllPage() {
+  const { params, setPage, setLimit, toggleSort, patch } = usePagination();
 
-  // GRUPO 1 — DEFINICAO (o que a lista e), carregada uma vez no mount.
+  // GRUPO 1 — definição (o que a lista é; carregada uma vez no mount).
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
   const [actions, setActions] = useState<ListActionRow[]>([]);
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
 
-  // GRUPO 2 — DADOS listados (recarrega a cada mudanca de URL, busca ou acao).
+  // GRUPO 2 — dados listados (o conteúdo; recarrega a cada mudança de página/busca/ordenação/ação).
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
   const [dataLoading, setDataLoading] = useState(false);
@@ -183,7 +225,7 @@ export default function GetAllPage() {
 
       if (!found) {
         setManager(null);
-        setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
+        setDefsError(`Listagem '${MANAGER_SLUG}' não encontrada em list_manager.`);
         return;
       }
       setManager(found);
@@ -196,7 +238,7 @@ export default function GetAllPage() {
       setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
       setManager(null);
-      setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
+      setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definição da listagem.');
     } finally {
       setDefsLoading(false);
     }
@@ -206,12 +248,24 @@ export default function GetAllPage() {
     void loadDefinition();
   }, [loadDefinition]);
 
-  // Busca ao digitar: com termo, consulta o api_search_endpoint (?q=, LIKE em
-  // title/system_version); vazio, volta ao api_get_endpoint.
+  // Ordenação padrão (tp_published_at/desc, do próprio `manager`) aplicada
+  // UMA vez, só se a URL ainda não trouxer `?sort=` — mesmo truque de
+  // calendar-list/GetAllPage.tsx, adaptado porque aqui o campo de ordenação
+  // não é conhecido em tempo de compilação (vem do banco).
+  const [rawSearchParams] = useSearchParams();
+  const didInitSort = useRef(false);
+  useEffect(() => {
+    if (didInitSort.current || !manager) return;
+    didInitSort.current = true;
+    if (!rawSearchParams.has('sort')) {
+      patch({ sort: manager.defaultSort, order: manager.defaultOrder.toUpperCase() });
+    }
+  }, [manager, rawSearchParams, patch]);
+
+  // Busca ao digitar: com termo, consulta `api_search_endpoint` (?q=); vazio, volta ao `api_get_endpoint`.
   const [searchInput, setSearchInput] = useState('');
   const term = useDebounce(searchInput, 400).trim();
 
-  // Termo novo sempre recomeca da pagina 1.
   const prevTerm = useRef(term);
   useEffect(() => {
     if (prevTerm.current === term) return;
@@ -219,11 +273,9 @@ export default function GetAllPage() {
     if (params.page !== 1) setPage(1);
   }, [term, params.page, setPage]);
 
-  // Descarta resposta de requisicao antiga (digitacao rapida / troca de pagina).
   const requestSeq = useRef(0);
 
   const loadData = useCallback(async () => {
-    // Sequenciador: so existe dado a buscar quando a definicao ja chegou.
     if (!manager?.apiGetEndpoint) return;
     const seq = ++requestSeq.current;
     const searching = term !== '' && manager.apiSearchEndpoint !== '';
@@ -241,7 +293,7 @@ export default function GetAllPage() {
       if (seq !== requestSeq.current) return;
       setRows([]);
       setTotal(0);
-      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os navs.');
+      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar o feed.');
     } finally {
       if (seq === requestSeq.current) setDataLoading(false);
     }
@@ -255,13 +307,10 @@ export default function GetAllPage() {
 
   return (
     <>
-      <PageHeader title={manager?.title || 'Nav'} subtitle={manager?.apiGetEndpoint || 'api/v1/nav-manager'}>
-        <button className="btn btn-outline-secondary me-2" onClick={() => void loadData()} disabled={dataLoading}>
+      <PageHeader title={manager?.title || 'Feed da Timeline'} subtitle={manager?.apiGetEndpoint || 'api/v1/timeline-posts-view'}>
+        <button className="btn btn-outline-secondary" onClick={() => void loadData()} disabled={dataLoading}>
           Recarregar
         </button>
-        <Link className="btn btn-primary" to={paths.v1.nav.create}>
-          Novo nav
-        </Link>
       </PageHeader>
 
       {defsLoading && <LoadingOverlay />}
@@ -275,8 +324,8 @@ export default function GetAllPage() {
             <input
               type="text"
               className="form-control"
-              placeholder="Buscar por titulo ou versao"
-              aria-label="Buscar navs por titulo ou versao"
+              placeholder="Buscar publicações"
+              aria-label="Buscar publicações"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -294,19 +343,16 @@ export default function GetAllPage() {
         </div>
       )}
 
-      {error && !defsLoading && <EmptyState title="Lista indisponivel" description={error} variant="danger" />}
+      {error && !defsLoading && <EmptyState title="Feed indisponível" description={error} variant="danger" />}
 
-      {!defsLoading && !error && !dataLoading && rows.length === 0 &&
-        (term !== '' ? (
-          <EmptyState
-            variant="warning"
-            eyebrow="Busca"
-            title="Nenhum nav encontrado"
-            description={`Nada corresponde a '${searchInput.trim()}'.`}
-          />
-        ) : (
-          <EmptyState title="Nenhum nav cadastrado" description="Crie o primeiro nav para comecar." />
-        ))}
+      {!defsLoading && !error && !dataLoading && rows.length === 0 && (
+        <EmptyState
+          variant="warning"
+          eyebrow={term !== '' ? 'Busca' : 'Feed vazio'}
+          title="Nenhuma publicação encontrada"
+          description={term !== '' ? `Nada corresponde a '${searchInput.trim()}'.` : 'Ninguém publicou nada ainda.'}
+        />
+      )}
 
       {!defsLoading && !error && (dataLoading || rows.length > 0) && (
         <div className="card border-0 shadow-sm position-relative">
@@ -329,7 +375,7 @@ export default function GetAllPage() {
                       )}
                     </th>
                   ))}
-                  {actions.length > 0 && <th className="text-end">Acoes</th>}
+                  {actions.length > 0 && <th className="text-end">Ações</th>}
                 </tr>
               </thead>
               <tbody>
@@ -345,7 +391,6 @@ export default function GetAllPage() {
                             key={a.id}
                             action={a}
                             row={row}
-                            subject={columns[0] ? cellValue(columns[0], row) : ''}
                             disabled={!evalBusinessRule(a.businessRule, row)}
                             onExecuted={() => void loadData()}
                           />
@@ -360,7 +405,7 @@ export default function GetAllPage() {
 
           <div className="card-footer bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div className="d-flex align-items-center gap-2 small text-body-secondary">
-              <span>{total} registro(s) · Por página</span>
+              <span>{total} publicação(ões) · Por página</span>
               <select
                 className="form-select form-select-sm w-auto"
                 value={params.limit}

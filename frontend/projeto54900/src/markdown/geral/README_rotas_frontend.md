@@ -39,7 +39,7 @@ Fora da árvore de paths, capturado pelo `errorElement` do nó raiz:
 
 ---
 
-## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário e svg-map
+## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário, svg-map e timeline
 
 Fonte: `routes/v1/index.tsx` — agrupa tudo sob o prefixo `/v1`, espelhando o
 grupo `api/v1` do backend (`app/Config/Routes.php`).
@@ -243,6 +243,32 @@ Guarda: apenas `RequireAuth` (sem `RequireRole`).
 | Path           | Elemento (lazy)                     | Observação                                                                                         |
 | -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/v1/svg-map` | `pages/v1/svg-map/SvgMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
+
+### timeline — Listagem clássica do feed (view_timeline_posts)
+
+Fonte: `routes/v1/timeline.routes.tsx` — espelha `api/v1/timeline-posts-view`
+(+ `api/v1/timeline-posts` para as ações de escrita). Guarda: apenas
+`RequireAuth` (sem `RequireRole`). Backend completo e testado (7 recursos,
+189 rotas) — ver
+[`README_modulo_timeline.md`](../../../../../app/markdown/geral/README_modulo_timeline.md)
+do backend. Criação dos 5 recursos do módulo usa o renderizador genérico
+(`/v1/form/timeline-post`, `/v1/form/timeline-settings`, …), não rota própria.
+
+Esta é a listagem **clássica** (Fase 2); a página inicial com feed
+misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela, ainda não
+construída (Fase 3).
+
+| Path                | Elemento (lazy)                                | Observação                                                                                                   |
+| ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `/v1/timeline` | `pages/v1/timeline/home-feed/GetAllPage` | **Home Feed** (Fase 3b) — feed misto (`GET .../timeline-posts-view/home-feed`, algoritmo no backend, `README_modulo_timeline.md` §5.1), scroll infinito 10 em 10 (`useInfiniteScroll`), card único por post (`PostCard.tsx`: mídia via `MediaPreview` global, curtir/avaliar/comentar/denunciar, 3 comentários + "ver mais" com scroll infinito próprio), botão flutuante de novo post (`NewPostModal.tsx`, reaproveita a técnica do `FormRendererPage`) |
+| `/v1/timeline-posts` | `pages/v1/timeline/timeline-posts/GetAllPage` | Listagem **clássica** (Fase 2) — feed completo (`view_timeline_posts`), mais recentes primeiro — motor `list_manager`/`list_columns`/`list_actions` (slug `timeline-feed`), busca + paginação de servidor, mesmo padrão de `calendar-list/GetAllPage`. Ações Curtir/Avaliar/Republicar chamam a API de verdade (corpo montado por `list_actions.data_action`, ver header do arquivo) |
+
+**Lacuna conhecida (não corrigida nesta fase, mesmo padrão de
+`upload.routes.tsx`):** as ações "Ver" (`/v1/timeline-posts/{id}`), "Comentar"
+(`/v1/timeline-post-comments?timeline_post_id={id}`) e "Editar"
+(`/v1/timeline-posts/update/{id}`) apontam para rotas que ainda não existem —
+clicar cai no `NotFoundPage`. Ficam para quando a página de
+detalhe/comentários e o formulário de edição de post existirem.
 
 ---
 

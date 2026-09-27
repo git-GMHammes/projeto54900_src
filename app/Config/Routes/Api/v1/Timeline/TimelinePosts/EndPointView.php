@@ -22,3 +22,10 @@ $routes->get('get-deleted/(:num)', 'Api\V1\Timeline\TimelinePosts\ResourceViewCo
 $routes->get('get-all-with-deleted', 'Api\V1\Timeline\TimelinePosts\ResourceViewController::getAllWithDeleted');
 // GET  {{www}}/index.php/api/v1/timeline-posts-view/get-deleted-all?page=1&limit=20&sort=id&order=ASC
 $routes->get('get-deleted-all', 'Api\V1\Timeline\TimelinePosts\ResourceViewController::getDeletedAll');
+
+// Rota EXTRA (fora do contrato canonico de 9), mesmo padrao de
+// calendar-event-attendees/respond e calendar-event-invites/accept-token: o
+// feed misto da Home Feed (cotas de hoje/outros usuarios aleatorio + mais
+// curtidas/avaliadas ranking) — ver Services/V1/Timeline/TimelinePosts/Processor::homeFeed.
+// GET  {{www}}/index.php/api/v1/timeline-posts-view/home-feed?seed=123&page=1&limit=10
+$routes->get('home-feed', 'Api\V1\Timeline\TimelinePosts\ResourceViewController::homeFeed');

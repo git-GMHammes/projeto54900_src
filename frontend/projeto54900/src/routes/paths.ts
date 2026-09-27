@@ -72,6 +72,14 @@ export const paths = {
     svgMap: {
       view: '/v1/svg-map',
     },
+    // Timeline — listagem classica do feed (view_timeline_posts, slug list_manager 'timeline-feed').
+    // Criacao/edicao dos 5 recursos do modulo usa o renderizador generico
+    // paths.v1.form.render('timeline-post' | 'timeline-settings' | ...), nao rota propria.
+    timeline: {
+      // Home Feed (feed misto: hoje/outros usuários aleatório + mais curtidos/avaliados).
+      home: '/v1/timeline',
+      list: '/v1/timeline-posts',
+    },
     // account — self-service do proprio usuario logado (dropdown da Navbar):
     // Editar Perfil (user-profiles/me) e Seguranca (troca da propria senha).
     // Sem espelho de grupo unico na API — profile usa user-profiles/me e

@@ -9,12 +9,23 @@ própria (a tabela pai, criada automaticamente na primeira publicação) e publi
 posts com texto e anexos. O feed mistura as publicações de todas as timelines e é
 visível para qualquer usuário autenticado.
 
-> **Estado (2026-09-26): as 7 tabelas e as 7 views já estão APLICADAS no banco
-> DEV** (`codeigniter54900_db`). As tabelas e a view do feed vieram do script
-> `doc/sql/insert/20260926183935_timeline_tables.sql`; as **6 views de apoio**
-> (uma por tabela que ainda não tinha view) foram criadas direto no banco, sem
-> arquivo `.sql` e sem migration — ver §3.1. Os **5 formulários e a
-> listagem do feed ainda são só desenho (Etapa C)**.
+> **Estado (2026-09-27): módulo COMPLETO no backend.** As 7 tabelas e as 7
+> views já estão APLICADAS no banco DEV (`codeigniter54900_db`) desde
+> 2026-09-26 (script `doc/sql/insert/20260926183935_timeline_tables.sql` +
+> §3.1). As classes PHP (Controller/Request/Processor/Model) dos 7 recursos
+> foram implementadas e testadas em 2026-09-27 (commit `bcbc808`; as 189 rotas
+> testadas uma a uma em `src/writable/claude/timeline_api_testes_resultado.json`,
+> todas passando) — **Etapa D backend concluída**. Os 5 `form_manager` e o
+> `list_manager` do feed (`timeline-feed`) também foram inseridos em
+> 2026-09-27 (`doc/sql/insert/20260927161741_timeline_form_list_menu_seed.sql`)
+> — **Etapa C concluída**. **Fase 2 (frontend) concluída em 2026-09-27:**
+> listagem clássica do feed em `/v1/timeline-posts`. **Fase 3a (backend)
+> concluída em 2026-09-27:** rota extra `home-feed` com o algoritmo do feed
+> misto (§5.1). **Fase 3b (frontend) concluída em 2026-09-27:** página
+> `/v1/timeline` (Home Feed) — scroll infinito, card único, componente
+> global de mídia, botão flutuante de novo post. **Módulo completo** —
+> restam só as lacunas conhecidas registradas na §8 (upload de anexo,
+> reação/nota "write-only", páginas de detalhe/edição de post).
 > Caminho do módulo: [`README_form.md`](README_form.md) — markdown revisado (este
 > arquivo) → SQL revisado → aplicação direta no banco DEV. **Sem
 > migration** — ver [`README_migrate.md`](README_migrate.md).
@@ -444,9 +455,56 @@ rota**: nas 3 rotas de exclusão definitiva (`delete-hard/{id}`, `clear-deleted`
 denunciar). O filtro de rota roda depois do filtro de URI, com `CurrentUser` já
 populado.
 
-> As rotas já estão registradas, mas as classes `Api\V1\Timeline\*`
-> (Controller/Request/Processor/Model) ainda **não existem** — é a Etapa D. Até
-> lá, cada rota responde erro em runtime.
+> **Concluído em 2026-09-27:** as classes `Api\V1\Timeline\*`
+> (Controller/Request/Processor/Model) dos 7 recursos existem e as 189 rotas
+> foram testadas uma a uma (`src/writable/claude/timeline_api_testes_resultado.json`),
+> todas com o HTTP esperado (create, upsert de reação/avaliação, denúncia
+> duplicada → 409, nota fora de 1..5 → 422, etc.).
+
+### 5.1 Rota extra — `home-feed` (feed misto da Home Feed, Fase 3a)
+
+Fora do contrato canônico de 9 rotas de `timeline-posts-view`, mesmo padrão de
+`calendar-event-attendees/respond` e `calendar-event-invites/accept-token`:
+um método a mais no `ResourceViewController`/`Processor`, registrado junto do
+bloco canônico no mesmo `EndPointView.php` e no `route_manager`
+(`object=timeline-posts-view`, `action=home-feed`). Protegida pelo mesmo
+wildcard `jwtauth` de `api/v1/timeline-posts-view/*` — nenhuma mudança em
+`Config/Filters.php`.
+
+```
+GET /api/v1/timeline-posts-view/home-feed?seed=123&page=1&limit=10
+```
+
+**Algoritmo** (`Services/V1/Timeline/TimelinePosts/Processor::homeFeed`),
+implementando a regra de exibição pedida pelo usuário — cotas fixas somando
+ao `limit` (proporção 3/3/2/2 de um total de 10; outro `limit` escala
+proporcionalmente):
+
+| Balde | Regra | Método (`SqlViewModel`) |
+| --- | --- | --- |
+| Hoje (aleatório) | `tp_status='published'` e `DATE(tp_published_at)=CURDATE()`, ordem `RAND(seed)` | `randomToday` |
+| Outros usuários (aleatório) | `tp_status='published'` e `tp_user_manager_id != usuário atual`, ordem `RAND(seed)` | `randomOtherUsers` |
+| Mais curtidos | `ORDER BY likes_count DESC` | `topLiked` |
+| Mais bem avaliados | só com avaliação (`ratings_avg IS NOT NULL`), `ORDER BY ratings_avg DESC` | `topRated` |
+
+Cada balde roda **depois** dos anteriores e exclui os IDs já escolhidos por
+eles (`WHERE id NOT IN (...)`) — evita duplicata **dentro da mesma página**.
+A ordem final de exibição é embaralhada (`shuffle`) só para não parecer "em
+blocos" (todo hoje, depois todo curtido, ...); os baldes já decidiram QUAIS
+posts entram.
+
+**`seed`** é gerado pelo **cliente** uma única vez ao abrir a Home Feed e
+reenviado em toda chamada de "carregar mais": com o mesmo `seed`,
+`ORDER BY RAND(seed)` faz uma caminhada estável e sem repetição conforme o
+`page` (e o `offset` por balde) cresce — é o que dá o efeito de scroll
+infinito sem repetir posts aleatórios.
+
+**Decisão registrada (2026-09-27):** **sem** exclusão global entre páginas
+diferentes — só dentro da mesma página. Um post pode, raramente, reaparecer
+depois de várias páginas (ranking mudou entre chamadas, ou colisão de
+offset), ou a mudança de like/nota no meio do scroll pode reordenar os
+baldes de ranking. Risco aceito para não exigir estado de sessão no servidor
+nem o cliente reenviar uma lista crescente de IDs vistos.
 
 ## 6. Definições BUILD do módulo
 
@@ -485,15 +543,35 @@ Mesmo padrão da lista `form-manager` do construtor: a página do feed só infor
 
 ## 7. Menu e rotas
 
-- **Backend — CONCLUÍDO em 2026-09-26:** as 189 rotas (§5), registradas em
-  `Config/Routes.php` e no `route_manager`.
-- **Navbar** (`sort_order < 100`): item "Timeline" → tela do feed. *Pendente.*
-- **Árvore administrativa** (`sort_order >= 2000`): grupo do módulo com os itens
-  de form/list (construtor) — como as demais pastas do admin. *Pendente.*
-- **Rotas frontend** (`/v1/timeline`, `/v1/timeline-posts/create`, …):
-  *pendentes* — não há páginas React ainda (Etapa D).
+- **Backend — CONCLUÍDO em 2026-09-26/27:** as 189 rotas (§5), registradas em
+  `Config/Routes.php` e no `route_manager`; classes PHP implementadas e
+  testadas em 27/09 (ver nota do topo).
+- **Navbar — CONCLUÍDO em 2026-09-27, `active`:** item pai "Timeline"
+  (`menu_manager.id=28`) com dois filhos: "Início" (`id=30`,
+  `react_route=/v1/timeline`, Home Feed, Fase 3b) e "Feed" (`id=29`,
+  `react_route=/v1/timeline-posts`, listagem clássica, Fase 2) — mesmo padrão
+  de agrupamento navbar de "Calendário" (pai sem rota própria, filhos com
+  rota). "Feed" nasceu `draft` (rota reservada `/v1/timeline` para a Home
+  Feed) e foi promovido a `active` na Fase 2; "Início" já nasceu `active`
+  (a página já existia quando o item foi criado).
+- **Árvore administrativa: decisão tomada em 2026-09-27 — sem item próprio.**
+  Os 5 formulários e a listagem `timeline-feed` **não** ganham item de menu
+  dedicado: já aparecem de forma genérica em "Listar Formulários"
+  (`/v1/form-constructor`) e "Listar" (`/v1/list-constructor`) assim que os
+  registros de `form_manager`/`list_manager` existem — mesmo padrão usado por
+  todos os outros módulos do sistema (Calendar, Upload, User), nenhum deles
+  tem item de menu próprio por formulário/lista.
+- **Rotas frontend — Fase 2 CONCLUÍDA em 2026-09-27:** `/v1/timeline-posts`
+  (listagem clássica do feed, `pages/v1/timeline/timeline-posts/GetAllPage.tsx`).
+  Criação dos 5 formulários usa o renderizador genérico já existente
+  (`/v1/form/<slug>`), sem página própria. *Pendente (Fase 3):* Home Feed
+  (`/v1/timeline`, algoritmo misto e scroll infinito) e as páginas que a
+  listagem clássica ainda não tem (detalhe do post, comentários, edição de
+  post) — ver lacunas conhecidas em
+  [`README_rotas_frontend.md`](../../../frontend/projeto54900/src/markdown/geral/README_rotas_frontend.md)
+  do frontend.
 
-O que falta aqui (menu e frontend) é Etapa C/D.
+O que falta aqui é só a Fase 3 (Home Feed) e as páginas de detalhe/edição de post.
 
 ## 8. Decisões e desvios registrados
 
@@ -507,6 +585,12 @@ O que falta aqui (menu e frontend) é Etapa C/D.
 | 6   | `1..5` da estrela no Processor                            | Mesmo lugar onde vive o teto de 12 do `FormGrid`                                                                          |
 | 7   | Sem `visibility`                                          | Requisito é "público para logado"; ocultar/remover é `status`                                                             |
 | 8   | Subquery escalar na view                                  | Limitação do MySQL: view não aceita subquery no `FROM`                                                                    |
+| 9   | Sem item de menu por formulário/lista                     | Os 5 formulários e a listagem já aparecem de forma genérica em "Listar Formulários"/"Listar" (construtor) — mesmo padrão de todos os outros módulos; só o item de navbar do feed foi criado (em `draft`, aguardando a Home Feed) |
+| 10  | Corpo do `api_call` de curtir/avaliar/republicar — RESOLVIDO em 2026-09-27 (Fase 2) | O motor genérico (`utils/listConstructor.tsx`) não envia corpo em nenhuma página do projeto; a página `timeline-posts/GetAllPage.tsx` passou a reconhecer `list_actions.data_action` (`reaction-like`/`rating`/`repost`, gravado nesta fase) para montar o corpo antes de chamar a API — decisão local desta página, não mudança no motor genérico |
+| 11  | "Editar"/"Ver"/"Comentar" do feed sem página de destino | Não existe formulário de edição de post nem página de detalhe/comentários ainda — os `list_actions` continuam apontando para essas rotas (documentado como lacuna conhecida em `README_rotas_frontend.md`, mesmo padrão de `upload.routes.tsx`), a resolver quando essas telas forem construídas |
+| 12  | Sem exclusão global de IDs entre páginas do `home-feed` | Só dedup dentro da mesma página (§5.1) — decisão do usuário (2026-09-27) para não exigir estado de sessão no servidor nem o cliente reenviar uma lista crescente de IDs vistos; risco cosmético aceito |
+| 13  | Curtir/Avaliar "write-only" na Home Feed | A view do feed não expõe a reação/nota do próprio usuário autenticado — implementar isso exigiria uma consulta extra por post (N+1) ou um novo campo calculado na view; adiado. O card mostra "curti"/"minha nota" só localmente, durante a sessão da tela aberta |
+| 14  | Upload de anexo (`timeline_post_attachments`) não ligado no back-end | O `EndpointTable.php` só tem o comentário "previsto"; apesar do `StorageManager.php` já existir, a rota HTTP de upload/serve/download nunca foi registrada — `MediaPreview` (Fase 3b) exibe anexo que exista, mas não há como enviar um pela UI ainda |
 
 Fora do escopo desta entrega (podem virar recurso depois): seguir timeline,
 mensagem direta, notificação, like/estrela em comentário, denúncia de comentário,
@@ -514,17 +598,48 @@ histórico de edição, `visibility` privada.
 
 ## 9. Próximo passo
 
-1. **Revisão deste documento** e dos 5 desenhos em `form/timeline/`.
+1. **Revisão deste documento** e dos 5 desenhos em `form/timeline/` — feito.
 2. **Etapa B — CONCLUÍDA em 2026-09-26**: SQL da estrutura (`CREATE TABLE` das 7 + a view do
    feed) em `doc/sql/insert/` e aplicação no banco DEV; as 6 views de apoio
    foram criadas direto no banco (§3.1).
-3. **Etapa C — PARCIAL**: as rotas estão **concluídas** em 2026-09-26 (189 no
-   código e no `route_manager`, §5). Falta o `INSERT` das definições: 5
-   `form_manager` (+ groups/rows/fields), 1 `list_manager` do feed
-   (+ columns/actions) e os itens de `menu_manager`.
-4. **Etapa D** — backend PHP (Controller/Request/Processor/Model por módulo, que
-   as rotas já apontam) e frontend (feed e telas de BUILD), com a timeline sendo
-   criada automaticamente na primeira publicação.
+3. **Etapa C — CONCLUÍDA em 2026-09-27**: rotas (189, §5), 5 `form_manager`
+   (+ groups/rows/fields), 1 `list_manager` do feed (+ columns/actions) e os
+   itens de `menu_manager` (§7) — script
+   `doc/sql/insert/20260927161741_timeline_form_list_menu_seed.sql`.
+4. **Etapa D backend — CONCLUÍDA em 2026-09-27**: Controller/Request/Processor/
+   Model dos 7 recursos, testados rota a rota (§5). Timeline criada
+   automaticamente na primeira publicação (`TimelinePosts::Processor`).
+5. **Etapa D frontend:**
+   - **Fase 2 — CONCLUÍDA em 2026-09-27**: listagem clássica `timeline-feed`
+     em `/v1/timeline-posts` (`pages/v1/timeline/timeline-posts/GetAllPage.tsx`,
+     mesmo padrão de `calendar-list`/`FormConstructorListPage`); criação dos 5
+     formulários reaproveita o renderizador genérico `/v1/form/<slug>` (não
+     precisou de página própria); Curtir/Avaliar/Republicar funcionando de
+     verdade contra a API; menu "Timeline → Feed" ativo. Lacuna conhecida:
+     Ver/Comentar/Editar do post ainda sem página de destino.
+   - **Fase 3a (backend) — CONCLUÍDA em 2026-09-27**: rota extra
+     `GET /api/v1/timeline-posts-view/home-feed` (§5.1) com o algoritmo do
+     feed misto (cotas 3/3/2/2, `seed` do cliente para paginação aleatória
+     estável). Testado sem token (401 — `jwtauth` ativo); teste autenticado
+     completo (várias páginas seguidas) fica para quando a tela (Fase 3b)
+     existir e puder ser testada de ponta a ponta pelo navegador.
+   - **Fase 3b (frontend) — CONCLUÍDA em 2026-09-27**: página `/v1/timeline`
+     ("Home Feed") consumindo o `home-feed` acima —
+     `pages/v1/timeline/home-feed/{GetAllPage,PostCard,NewPostModal}.tsx`.
+     Scroll infinito 10 em 10 (`hooks/useInfiniteScroll.ts`, hook global
+     novo — primeiro do projeto); card único por post
+     (`MediaPreview` global novo para mídia — imagem/vídeo inline, demais
+     categorias em ícone; ferramentas curtir/avaliar com estrelas/comentar/
+     denunciar; 3 comentários + "ver mais" com scroll infinito próprio);
+     botão flutuante de novo post (modal reaproveitando a técnica do
+     `FormRendererPage`, sem campo de anexo). Menu "Timeline → Início"
+     ativo (`menu_manager.id=30`), irmão de "Feed" (Fase 2).
+     **Lacunas conhecidas:** (1) upload de anexo ainda não tem rota ligada no
+     back-end (`timeline_post_attachments`), então `MediaPreview` só mostra
+     anexo se ele existir por outro meio; (2) curtir/avaliar são "write-only"
+     — a API não devolve a reação/nota prévia do próprio usuário, então o
+     "já curti"/"minha nota" só valem durante a sessão da tela aberta; (3)
+     "Denunciar" abre o formulário genérico sem pré-preencher a publicação.
 
 ---
 

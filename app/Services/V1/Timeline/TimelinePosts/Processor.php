@@ -206,6 +206,87 @@ class Processor extends BaseTableService
     }
 
     // -------------------------------------------------------------------------
+    // Home Feed (feed misto) — rota extra GET .../home-feed
+    // -------------------------------------------------------------------------
+
+    /**
+     * Monta uma pagina do feed misto: cotas fixas (proporcao 3/3/2/2 de um
+     * total de 10) de publicacoes de hoje (aleatorio), de outros usuarios
+     * (aleatorio), mais curtidas e mais bem avaliadas — nessa ordem, cada
+     * balde excluindo os IDs ja escolhidos pelos baldes anteriores (evita
+     * duplicata DENTRO da mesma pagina). $seed vem do cliente (gerado uma vez
+     * ao abrir a Home Feed) e mantem os baldes aleatorios estaveis conforme
+     * $page cresce — ver SqlViewModel::randomToday/randomOtherUsers.
+     *
+     * Sem exclusao global entre paginas diferentes (decisao do usuario,
+     * 2026-09-27): risco cosmetico de um post reaparecer depois de varias
+     * paginas, aceito para nao exigir estado de sessao no servidor nem o
+     * cliente reenviar uma lista crescente de IDs vistos.
+     */
+    public function homeFeed(int $seed, int $page, int $limit = 10): array
+    {
+        $userId = (int) CurrentUser::id();
+        $page   = max(1, $page);
+        $quotas = $this->quotasFor(max(1, $limit));
+
+        $today = $this->viewModel->randomToday($quotas['today'], ($page - 1) * $quotas['today'], $seed);
+        $excluded = array_map(static fn (array $r): int => (int) $r['id'], $today);
+
+        $others = $this->viewModel->randomOtherUsers(
+            $quotas['others'],
+            ($page - 1) * $quotas['others'],
+            $seed,
+            $userId,
+            $excluded,
+        );
+        $excluded = [...$excluded, ...array_map(static fn (array $r): int => (int) $r['id'], $others)];
+
+        $liked = $this->viewModel->topLiked($quotas['liked'], ($page - 1) * $quotas['liked'], $excluded);
+        $excluded = [...$excluded, ...array_map(static fn (array $r): int => (int) $r['id'], $liked)];
+
+        $rated = $this->viewModel->topRated($quotas['rated'], ($page - 1) * $quotas['rated'], $excluded);
+
+        $merged = [...$today, ...$others, ...$liked, ...$rated];
+
+        // Os baldes ja decidiram QUAIS posts entram; embaralhar so a ORDEM DE
+        // EXIBICAO evita a pagina parecer "em blocos" (todo hoje, depois todo
+        // curtido, ...).
+        shuffle($merged);
+
+        return [
+            'success' => true,
+            'data'    => $merged,
+            'meta'    => [
+                'page'    => $page,
+                'limit'   => $limit,
+                'seed'    => $seed,
+                'count'   => count($merged),
+                'buckets' => [
+                    'today'  => count($today),
+                    'others' => count($others),
+                    'liked'  => count($liked),
+                    'rated'  => count($rated),
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Proporcao 3/3/2/2 (hoje/outros/curtidos/avaliados) de um total de 10,
+     * escalada proporcionalmente para outro $limit; a sobra do arredondamento
+     * cai no balde 'rated'.
+     */
+    private function quotasFor(int $limit): array
+    {
+        $today  = (int) round($limit * 0.3);
+        $others = (int) round($limit * 0.3);
+        $liked  = (int) round($limit * 0.2);
+        $rated  = max(0, $limit - $today - $others - $liked);
+
+        return ['today' => $today, 'others' => $others, 'liked' => $liked, 'rated' => $rated];
+    }
+
+    // -------------------------------------------------------------------------
     // Privados
     // -------------------------------------------------------------------------
 

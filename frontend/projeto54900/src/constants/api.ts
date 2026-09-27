@@ -56,6 +56,13 @@ export const API_GROUPS = {
   calendarEventInvites: 'calendar-event-invites',
   calendarEventReminders: 'calendar-event-reminders',
   calendarEventAttachments: 'calendar-event-attachments',
+  timelinePosts: 'timeline-posts',
+  timelinePostsView: 'timeline-posts-view',
+  timelinePostComments: 'timeline-post-comments',
+  timelinePostCommentsView: 'timeline-post-comments-view',
+  timelinePostReactions: 'timeline-post-reactions',
+  timelinePostRatings: 'timeline-post-ratings',
+  timelinePostAttachments: 'timeline-post-attachments',
   dbSchema: 'db-schema',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];

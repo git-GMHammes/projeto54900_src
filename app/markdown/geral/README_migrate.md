@@ -227,15 +227,15 @@ executa **dentro do container `php`** (`working_dir` = `/var/www/html`), mas
 
 **1. Digite isto no host, uma vez, para subir o ambiente:**
 
-```
-cd C:\laragon\www\js\habilidade\projeto54900
+``` 
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose up -d --build
 ```
 
 **2. Aplicar as migrations — comando real, digitado no host:**
 
 ``` 
-cd C:\laragon\www\js\habilidade\projeto54900
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark migrate
  
 ```
