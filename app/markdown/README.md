@@ -26,7 +26,6 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`navmenu`](#navmenu)         | Config do app e árvore de navegação     |
 | [`rotas`](#rotas)             | Mapa de todas as rotas REST             |
 | [`schema`](#schema)           | Introspecção do banco por API            |
-| [`seed`](#seed)               | Popular tabelas com dados iniciais      |
 | [`timeline`](#timeline)       | Módulo de publicações e timeline        |
 | [`upload`](#upload)           | Módulo de anexos para outros módulos     |
 
@@ -122,9 +121,15 @@ no host com `podman compose exec php php spark ...` (o container tem PHP 8.2).
 `-g mapa|agenda|chat` para os módulos. Cobre `make:migration`, `migrate:status`,
 `rollback`, `migrate:refresh` (destrutivo), seeds e o fluxo de montar o banco do
 zero. Alerta: as migrations atuais não declaram `$DBGroup`.
-**Proibido criar migration/SQL nova (ALTER, SEED, REMAKE) sem autorização do
-usuário** — ele avisa quando fazer novo REMAKE; todo migrate destrói tudo e
-refaz tudo (2026-09-24).
+
+**Modelo ativo (REMAKE, desde 2026-09-23): sempre 3 migrations** por rodada,
+mesmo timestamp — `replace_table` (destrói e recria **todas** as tabelas do
+zero), `seed_table` (repovoa **todos** os inserts, limpando quaisquer
+vestígios de dados anteriores) e a 3ª que recria **todas** as views (sufixo
+`create_view` até 2026-09-26; **`replace_view` a partir de 2026-09-27**, mesmo
+padrão semântico de `replace_table`). **Proibido criar migration/SQL nova
+(ALTER, SEED, REMAKE) sem autorização do usuário** — ele avisa quando fazer
+novo REMAKE; todo migrate destrói tudo e refaz tudo (2026-09-24).
 
 [`geral/README_migrate.md`](geral/README_migrate.md) — comandos de migration do CodeIgniter por módulo.
 
@@ -189,22 +194,6 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 
 [`geral/README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — introspecção do banco pela API (`db-schema`).
 
-### `seed`
-
-Comandos diretos do `spark` para popular tabelas com dados iniciais, digitados
-no host com `podman compose exec php php spark db:seed <Classe>` (mesmo prefixo
-das migrations). Duas classes ativas, ambas na conexão `default`
-(`codeigniter54900_db`) e idempotentes: `BootstrapIconsSeeder` (catálogo
-Bootstrap Icons em `bootstrap_icons`, preserva favoritos) e `DumpSeeder`
-(restaura o snapshot `202609161351_seed.sql` — form/list/nav/menu/route/
-user_roles via `REPLACE INTO`). Não há `DatabaseSeeder` agregador — `db:seed`
-sem argumento falha; roda-se um a um, ou cria-se o agregador (exemplo no doc).
-Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
-(`user_manager`, `user_profiles`, `upload_manager`, `calendar_manager`/
-`calendar_*`) e conferência via `spark db:table` ou Adminer.
-
-[`geral/README_seed.md`](geral/README_seed.md) — comandos de seed para popular as tabelas do sistema.
-
 ### `timeline`
 
 Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
@@ -264,5 +253,4 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 - [`README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo Upload/UploadManager: anexos polimórficos da API V1.
 - [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.
 - [`README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1, por módulo.
-- [`README_seed.md`](geral/README_seed.md) — comandos diretos de seed para popular as tabelas do sistema.
 - [`ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1 (Routes/Controller/Request/Processor/Model/Migration).

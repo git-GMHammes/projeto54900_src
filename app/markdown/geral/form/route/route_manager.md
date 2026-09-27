@@ -10,9 +10,9 @@ aqui antes do `INSERT` (não migration, não seed — ver aviso em
 
 **O que é:** formulário de `route_manager` — catálogo de rotas (backend e
 frontend) do sistema. Hoje as **355 linhas existentes** vieram em bloco do
-dump/seeder (`RouteManagerSeeder`, já descontinuado — ver
-`README_seed.md`), refletindo `Config/Routes.php` por introspecção
-automática. **Este formulário não substitui isso** — serve só pro caso
+dump/seeder (`RouteManagerSeeder`, já descontinuado), refletindo
+`Config/Routes.php` por introspecção automática. **Este formulário não
+substitui isso** — serve só pro caso
 manual: cadastrar uma rota que a introspecção automática não capta (ex.:
 rota externa, de outro serviço). Desenho novo, direto do schema real
 (`DESCRIBE route_manager`).
