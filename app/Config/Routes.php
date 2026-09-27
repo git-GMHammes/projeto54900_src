@@ -165,6 +165,76 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Timeline — Modulo Messages/Timeline: timeline_manager (a timeline de cada
+    //            usuario) > timeline_posts > {attachments, comments, reactions,
+    //            ratings, reports}. NAO ha rota publica: todo o modulo exige
+    //            'jwtauth' por wildcard em Config/Filters.php, e as rotas de
+    //            moderacao de denuncia e de exclusao definitiva somam
+    //            'adminonly' na propria rota (ver TimelinePostReports).
+    //            Contrato canonico: 18 rotas por tabela e 9 por view — sao 7
+    //            tabelas + 7 views = 189 rotas.
+    //            ATENCAO: Controller/Processor/Model/Request da Etapa D ainda
+    //            nao existem; as rotas existem para fechar o contrato e passam a
+    //            responder quando a Etapa D for implementada.
+    // =========================================================================
+
+    $routes->group('timeline-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelineManager/EndpointTable.php';
+    });
+
+    $routes->group('timeline-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelineManager/EndPointView.php';
+    });
+
+    $routes->group('timeline-posts', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePosts/EndpointTable.php';
+    });
+
+    $routes->group('timeline-posts-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePosts/EndPointView.php';
+    });
+
+    $routes->group('timeline-post-attachments', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostAttachments/EndpointTable.php';
+    });
+
+    $routes->group('timeline-post-attachments-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostAttachments/EndPointView.php';
+    });
+
+    $routes->group('timeline-post-comments', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostComments/EndpointTable.php';
+    });
+
+    $routes->group('timeline-post-comments-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostComments/EndPointView.php';
+    });
+
+    $routes->group('timeline-post-reactions', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostReactions/EndpointTable.php';
+    });
+
+    $routes->group('timeline-post-reactions-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostReactions/EndPointView.php';
+    });
+
+    $routes->group('timeline-post-ratings', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostRatings/EndpointTable.php';
+    });
+
+    $routes->group('timeline-post-ratings-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostRatings/EndPointView.php';
+    });
+
+    $routes->group('timeline-post-reports', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostReports/EndpointTable.php';
+    });
+
+    $routes->group('timeline-post-reports-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostReports/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.
     // =========================================================================

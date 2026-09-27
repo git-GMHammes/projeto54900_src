@@ -9,9 +9,11 @@ própria (a tabela pai, criada automaticamente na primeira publicação) e publi
 posts com texto e anexos. O feed mistura as publicações de todas as timelines e é
 visível para qualquer usuário autenticado.
 
-> **Estado (2026-09-26): as 7 tabelas e a view já estão APLICADAS no banco DEV**
-> (`codeigniter54900_db`), pelo script
-> `doc/sql/insert/20260926183935_timeline_tables.sql`. Os **5 formulários e a
+> **Estado (2026-09-26): as 7 tabelas e as 7 views já estão APLICADAS no banco
+> DEV** (`codeigniter54900_db`). As tabelas e a view do feed vieram do script
+> `doc/sql/insert/20260926183935_timeline_tables.sql`; as **6 views de apoio**
+> (uma por tabela que ainda não tinha view) foram criadas direto no banco, sem
+> arquivo `.sql` e sem migration — ver §3.1. Os **5 formulários e a
 > listagem do feed ainda são só desenho (Etapa C)**.
 > Caminho do módulo: [`README_form.md`](README_form.md) — markdown revisado (este
 > arquivo) → SQL revisado → aplicação direta no banco DEV. **Sem
@@ -338,6 +340,36 @@ contagens exigiriam tabela derivada. Subquery escalar na lista do `SELECT` é
 permitida. Se o custo incomodar no feed, a alternativa é tirar os contadores da
 view e calculá-los por endpoint — decisão em aberto, registrada aqui.
 
+### 3.1 Views de apoio (criadas em 2026-09-26)
+
+Uma view por tabela do módulo que ainda não tinha view. Mesma convenção do feed:
+`id`, `created_at`, `updated_at`, `deleted_at` da tabela principal **sem
+prefixo**; demais colunas da principal com `{alias}_`; relacionadas sempre
+prefixadas. `LEFT JOIN` em todas as relacionadas, com `deleted_at IS NULL` na
+condição — mas, diferente do feed, **não há filtro de exclusão na tabela
+principal**, para as rotas `get-deleted`/`get-all-with-deleted` do contrato de 9
+rotas de view continuarem enxergando os registros excluídos.
+
+| View | Principal (alias) | Colunas | Relacionadas (alias) |
+| ---- | ----------------- | ------- | -------------------- |
+| `view_timeline_manager` | `timeline_manager` (`tm`) | 18 | `user_manager` (`um`), `user_profiles` (`uc`) |
+| `view_timeline_post_attachments` | `timeline_post_attachments` (`ta`) | 27 | `timeline_posts` (`tp`) → `um`, `uc` do autor |
+| `view_timeline_post_comments` | `timeline_post_comments` (`tc`) | 17 | `um`, `uc` do autor; `tp` (post); `pc` (comentário pai) |
+| `view_timeline_post_reactions` | `timeline_post_reactions` (`tr`) | 12 | `um`, `uc` do autor; `tp` (post) |
+| `view_timeline_post_ratings` | `timeline_post_ratings` (`rt`) | 12 | `um`, `uc` do autor; `tp` (post) |
+| `view_timeline_post_reports` | `timeline_post_reports` (`trp`) | 19 | `um`, `uc` denunciante; `mu`, `muc` moderador; `tp` (post) |
+
+O DDL dessas 6 views **não** foi gravado em `doc/sql/` (decisão do usuário em
+2026-09-26: view construída direto no banco, sem script prévio): cada
+`CREATE VIEW` está registrado no `_no_plano.json` da sua ação, em
+`src/writable/claude/`. Alterar essas views é operação direta no banco DEV, como
+qualquer outra mudança de estrutura deste módulo — ver
+[`README_migrate.md`](README_migrate.md).
+
+Nenhuma delas tem objeto ou rota registrada em `route_manager` ainda: cada view
+que alimentar uma listagem precisa do seu próprio objeto `-view` com as 9 rotas
+de leitura (Etapa C/D) — hoje só existe o contrato previsto na §5.
+
 ## 4. Regras de negócio (vão no Processor, não no DDL)
 
 1. **Timeline automática.** `TimelinePosts::Processor::create()`: se o usuário
@@ -367,13 +399,17 @@ view e calculá-los por endpoint — decisão em aberto, registrada aqui.
    físico; `delete-hard`/`clear-deleted` apagam. Mesmo ciclo de vida documentado
    no Calendar (`form/calendar/calendar_event_attachments.md`).
 
-## 5. Contrato de rotas previsto
+## 5. Rotas — conjunto completo (aplicado em 2026-09-26)
 
-Cada uma das 7 tabelas segue o contrato canônico de **18 rotas** e a view as
-**9 de leitura** — mesmo arquivo-espelho de
+**189 rotas**: as 7 tabelas seguem o contrato canônico de **18 rotas** e cada
+uma das 7 views tem as **9 de leitura** (7 × 18 + 7 × 9 = 189). Espelho de
 [`Calendar/CalendarManager`](../ROADMAP_padrao_modulo.md) (referência:
 `Config/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php` e
-`EndPointView.php`).
+`EndPointView.php`). Os 14 grupos estão registrados em `Config/Routes.php` e as
+189 linhas no `route_manager` pelo sync
+`doc/sql/insert/20260926213013_route_manager_timeline_sync.sql` (idempotente por
+`layer + object + endpoint`). Mapa completo em
+[`README_rotas_swagger.md`](README_rotas_swagger.md).
 
 | Objeto (`route_manager.object`) | Tabela/view               | Arquivo de rotas                                   |
 | ------------------------------- | ------------------------- | -------------------------------------------------- |
@@ -383,7 +419,14 @@ Cada uma das 7 tabelas segue o contrato canônico de **18 rotas** e a view as
 | `timeline-post-reactions`       | `timeline_post_reactions` | `Timeline/TimelinePostReactions/EndpointTable.php` |
 | `timeline-post-ratings`         | `timeline_post_ratings`   | `Timeline/TimelinePostRatings/EndpointTable.php`   |
 | `timeline-post-reports`         | `timeline_post_reports`   | `Timeline/TimelinePostReports/EndpointTable.php`   |
-| `timeline-posts-view`           | `view_timeline_posts`     | `Timeline/TimelinePosts/EndPointView.php`          || `timeline-post-attachments` | `timeline_post_attachments` | `Timeline/TimelinePostAttachments/EndpointTable.php` |
+| `timeline-posts-view`           | `view_timeline_posts`     | `Timeline/TimelinePosts/EndPointView.php`          
+| `timeline-post-attachments` | `timeline_post_attachments` | `Timeline/TimelinePostAttachments/EndpointTable.php` |
+| `timeline-manager-view` | `view_timeline_manager` | `Timeline/TimelineManager/EndPointView.php` |
+| `timeline-post-attachments-view` | `view_timeline_post_attachments` | `Timeline/TimelinePostAttachments/EndPointView.php` |
+| `timeline-post-comments-view` | `view_timeline_post_comments` | `Timeline/TimelinePostComments/EndPointView.php` |
+| `timeline-post-reactions-view` | `view_timeline_post_reactions` | `Timeline/TimelinePostReactions/EndPointView.php` |
+| `timeline-post-ratings-view` | `view_timeline_post_ratings` | `Timeline/TimelinePostRatings/EndPointView.php` |
+| `timeline-post-reports-view` | `view_timeline_post_reports` | `Timeline/TimelinePostReports/EndPointView.php` |
 
 As 18 do contrato: `POST find`, `POST get-grouped`, `GET search`,
 `GET get/{id}`, `GET get-all`, `GET get-no-pagination`, `GET get-deleted/{id}`,
@@ -393,9 +436,17 @@ As 18 do contrato: `POST find`, `POST get-grouped`, `GET search`,
 `DELETE delete-hard/{id}`, `DELETE clear-deleted`,
 `DELETE clear-deleted/{id}`.
 
-Filtros: `jwtauth` em todas as rotas do módulo (é o "para quem estiver logado");
-`adminonly` apenas em `delete-hard`/`clear-deleted` e nas rotas de moderação de
-denúncia.
+Filtros: `jwtauth` por **wildcard de URI** nos 14 grupos — o módulo não tem
+rota pública (o feed é "público para quem estiver logado"). `adminonly` **rota a
+rota**: nas 3 rotas de exclusão definitiva (`delete-hard/{id}`, `clear-deleted`,
+`clear-deleted/{id}`) das 7 tabelas e em **todas** as rotas de
+`timeline-post-reports` e `timeline-post-reports-view`, exceto `create` (o
+denunciar). O filtro de rota roda depois do filtro de URI, com `CurrentUser` já
+populado.
+
+> As rotas já estão registradas, mas as classes `Api\V1\Timeline\*`
+> (Controller/Request/Processor/Model) ainda **não existem** — é a Etapa D. Até
+> lá, cada rota responde erro em runtime.
 
 ## 6. Definições BUILD do módulo
 
@@ -409,7 +460,8 @@ motor de listas (`list_manager`/`list_columns`/`list_actions`).
 | `timeline-settings` | `timeline_manager`       | editar a própria timeline (título, slug, capa, status) | [`form/timeline/timeline_manager.md`](form/timeline/timeline_manager.md)             |
 | `timeline-post`     | `timeline_posts`         | nova publicação (e republicação por `repost_of_id`)    | [`form/timeline/timeline_posts.md`](form/timeline/timeline_posts.md)                 |
 | `timeline-comment`  | `timeline_post_comments` | comentar / responder                                   | [`form/timeline/timeline_post_comments.md`](form/timeline/timeline_post_comments.md) |
-| `timeline-report`   | `timeline_post_reports`  | denunciar uma publicação                               | [`form/timeline/timeline_post_reports.md`](form/timeline/timeline_post_reports.md)   || `timeline-attachment` | `timeline_post_attachments` | anexos do post (metadados do arquivo enviado, título, ordem e status) | [`form/timeline/timeline_post_attachments.md`](form/timeline/timeline_post_attachments.md) |
+| `timeline-report`   | `timeline_post_reports`  | denunciar uma publicação                               | [`form/timeline/timeline_post_reports.md`](form/timeline/timeline_post_reports.md)   
+| `timeline-attachment` | `timeline_post_attachments` | anexos do post (metadados do arquivo enviado, título, ordem e status) | [`form/timeline/timeline_post_attachments.md`](form/timeline/timeline_post_attachments.md) |
 
 **Sem formulário, de propósito:** `timeline_post_reactions` (like/dislike é ação
 de um clique, não tela) e `timeline_post_ratings` (estrela é ação; 1 campo em
@@ -431,16 +483,17 @@ o uso é `create`/`update`/`delete-soft` direto pela UI.
 Mesmo padrão da lista `form-manager` do construtor: a página do feed só informa o
 `MANAGER_SLUG`; coluna, rótulo e ação vivem no banco.
 
-## 7. Menu e rotas (previsto)
+## 7. Menu e rotas
 
-- **Navbar** (`sort_order < 100`): item "Timeline" → tela do feed.
+- **Backend — CONCLUÍDO em 2026-09-26:** as 189 rotas (§5), registradas em
+  `Config/Routes.php` e no `route_manager`.
+- **Navbar** (`sort_order < 100`): item "Timeline" → tela do feed. *Pendente.*
 - **Árvore administrativa** (`sort_order >= 2000`): grupo do módulo com os itens
-  de form/list (construtor) — como as demais pastas do admin.
-- `route_manager`: as 18×7 rotas de tabela (18+18+18+18+18+18+18), as 9 da view e as rotas
-  frontend (`/v1/timeline`, `/v1/timeline-posts/create`, …), registradas
-  idempotentemente por `layer + object + endpoint`.
+  de form/list (construtor) — como as demais pastas do admin. *Pendente.*
+- **Rotas frontend** (`/v1/timeline`, `/v1/timeline-posts/create`, …):
+  *pendentes* — não há páginas React ainda (Etapa D).
 
-Nada disso é criado nesta etapa — são valores previstos para a Etapa C/D.
+O que falta aqui (menu e frontend) é Etapa C/D.
 
 ## 8. Decisões e desvios registrados
 
@@ -462,14 +515,16 @@ histórico de edição, `visibility` privada.
 ## 9. Próximo passo
 
 1. **Revisão deste documento** e dos 5 desenhos em `form/timeline/`.
-2. **Etapa B — CONCLUÍDA em 2026-09-26**: SQL da estrutura (`CREATE TABLE` das 7 + a view) em
-   `doc/sql/insert/` e aplicação no banco DEV.
-3. **Etapa C** — `INSERT` das definições: 5 `form_manager` (+ groups/rows/fields),
-   1 `list_manager` do feed (+ columns/actions), itens de `menu_manager` e as
-   rotas em `route_manager`.
-4. **Etapa D** — backend PHP (Routes/Controller/Request/Processor/Model por
-   módulo) e frontend (feed e telas de BUILD), com a timeline sendo criada
-   automaticamente na primeira publicação.
+2. **Etapa B — CONCLUÍDA em 2026-09-26**: SQL da estrutura (`CREATE TABLE` das 7 + a view do
+   feed) em `doc/sql/insert/` e aplicação no banco DEV; as 6 views de apoio
+   foram criadas direto no banco (§3.1).
+3. **Etapa C — PARCIAL**: as rotas estão **concluídas** em 2026-09-26 (189 no
+   código e no `route_manager`, §5). Falta o `INSERT` das definições: 5
+   `form_manager` (+ groups/rows/fields), 1 `list_manager` do feed
+   (+ columns/actions) e os itens de `menu_manager`.
+4. **Etapa D** — backend PHP (Controller/Request/Processor/Model por módulo, que
+   as rotas já apontam) e frontend (feed e telas de BUILD), com a timeline sendo
+   criada automaticamente na primeira publicação.
 
 ---
 
