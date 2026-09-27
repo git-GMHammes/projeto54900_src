@@ -132,6 +132,14 @@ class Filters extends BaseFilters
      * 'adminonly' abaixo nem trocar a view por view_user_manager/user_manager
      * (essas tem colunas sensiveis de outros usuarios).
      *
+     * /Timeline (2026-09-26): mesmo desenho do Calendar — jwtauth por
+     * wildcard nos 14 grupos, porque o modulo nao tem NENHUMA rota publica.
+     * A diferenca e o 'adminonly', que aqui nao entra por wildcard: as rotas de
+     * moderacao de denuncia (timeline-post-reports e timeline-post-reports-view)
+     * e as exclusoes definitivas das 7 tabelas trazem ['filter' => 'adminonly']
+     * na propria rota do EndpointTable.php, porque dentro do mesmo grupo existe
+     * rota que o usuario comum precisa (create = publicar/denunciar).
+     *
      * @var array<string, array<string, list<string>>>
      */
     public array $filters = [
@@ -158,6 +166,20 @@ class Filters extends BaseFilters
                 'api/v1/calendar-event-reminders/*',
                 'api/v1/calendar-event-attachments/*',
                 'api/v1/calendar-event-extended-properties/*',
+                'api/v1/timeline-manager/*',
+                'api/v1/timeline-manager-view/*',
+                'api/v1/timeline-posts/*',
+                'api/v1/timeline-posts-view/*',
+                'api/v1/timeline-post-attachments/*',
+                'api/v1/timeline-post-attachments-view/*',
+                'api/v1/timeline-post-comments/*',
+                'api/v1/timeline-post-comments-view/*',
+                'api/v1/timeline-post-reactions/*',
+                'api/v1/timeline-post-reactions-view/*',
+                'api/v1/timeline-post-ratings/*',
+                'api/v1/timeline-post-ratings-view/*',
+                'api/v1/timeline-post-reports/*',
+                'api/v1/timeline-post-reports-view/*',
                 'api/v1/nav-manager/*',
                 'api/v1/menu-manager/*',
                 'api/v1/db-schema/*',

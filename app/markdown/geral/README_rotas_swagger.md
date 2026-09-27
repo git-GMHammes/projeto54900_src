@@ -736,6 +736,344 @@ mista usado em `user-manager`.
 | DELETE | `/calendar-event-invites/clear-deleted`                     | `Api\V1\Calendar\CalendarEventInvites\ResourceTableController::clearDeleted`                 |
 | DELETE | `/calendar-event-invites/clear-deleted/{id}`                | `Api\V1\Calendar\CalendarEventInvites\ResourceTableController::clearDeleted/$1`              |
 
+### timeline-post-reactions
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostReactions/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-reactions/find` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::find` |
+| POST | `/timeline-post-reactions/get-grouped` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getGrouped` |
+| GET | `/timeline-post-reactions/search` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::search` |
+| GET | `/timeline-post-reactions/get/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::get/$1` |
+| GET | `/timeline-post-reactions/get-all` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getAll` |
+| GET | `/timeline-post-reactions/get-no-pagination` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getNoPagination` |
+| GET | `/timeline-post-reactions/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-post-reactions/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-post-reactions/get-deleted-all` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-post-reactions/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-post-reactions/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-post-reactions/create` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::create` |
+| PUT | `/timeline-post-reactions/update/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::update/$1` |
+| DELETE | `/timeline-post-reactions/delete-soft/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-post-reactions/delete-restore/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-post-reactions/delete-hard/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-post-reactions/clear-deleted` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-post-reactions/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceTableController::clearDeleted/$1` |
+
+### timeline-post-reactions-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostReactions/EndPointView.php` —
+consulta da view `view_timeline_post_reactions` (somente leitura, 9 rotas).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-reactions-view/find` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::find` |
+| POST | `/timeline-post-reactions-view/get-grouped` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getGrouped` |
+| GET | `/timeline-post-reactions-view/search` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::search` |
+| GET | `/timeline-post-reactions-view/get/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::get/$1` |
+| GET | `/timeline-post-reactions-view/get-all` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getAll` |
+| GET | `/timeline-post-reactions-view/get-no-pagination` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getNoPagination` |
+| GET | `/timeline-post-reactions-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-post-reactions-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-post-reactions-view/get-deleted-all` | `Api\V1\Timeline\TimelinePostReactions\ResourceViewController::getDeletedAll` |
+
+### timeline-post-ratings
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostRatings/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-ratings/find` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::find` |
+| POST | `/timeline-post-ratings/get-grouped` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getGrouped` |
+| GET | `/timeline-post-ratings/search` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::search` |
+| GET | `/timeline-post-ratings/get/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::get/$1` |
+| GET | `/timeline-post-ratings/get-all` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getAll` |
+| GET | `/timeline-post-ratings/get-no-pagination` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getNoPagination` |
+| GET | `/timeline-post-ratings/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-post-ratings/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-post-ratings/get-deleted-all` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-post-ratings/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-post-ratings/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-post-ratings/create` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::create` |
+| PUT | `/timeline-post-ratings/update/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::update/$1` |
+| DELETE | `/timeline-post-ratings/delete-soft/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-post-ratings/delete-restore/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-post-ratings/delete-hard/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-post-ratings/clear-deleted` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-post-ratings/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceTableController::clearDeleted/$1` |
+
+### timeline-post-ratings-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostRatings/EndPointView.php` —
+consulta da view `view_timeline_post_ratings` (somente leitura, 9 rotas).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-ratings-view/find` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::find` |
+| POST | `/timeline-post-ratings-view/get-grouped` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getGrouped` |
+| GET | `/timeline-post-ratings-view/search` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::search` |
+| GET | `/timeline-post-ratings-view/get/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::get/$1` |
+| GET | `/timeline-post-ratings-view/get-all` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getAll` |
+| GET | `/timeline-post-ratings-view/get-no-pagination` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getNoPagination` |
+| GET | `/timeline-post-ratings-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-post-ratings-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-post-ratings-view/get-deleted-all` | `Api\V1\Timeline\TimelinePostRatings\ResourceViewController::getDeletedAll` |
+
+### timeline-post-reports
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostReports/EndpointTable.php`
+
+**Filtros:** `jwtauth` (wildcard de URI) + `adminonly` (rota a rota) em **todas
+as rotas exceto `create`** — é o grupo da fila de moderação de denúncias.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-reports/find` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::find` |
+| POST | `/timeline-post-reports/get-grouped` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getGrouped` |
+| GET | `/timeline-post-reports/search` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::search` |
+| GET | `/timeline-post-reports/get/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::get/$1` |
+| GET | `/timeline-post-reports/get-all` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getAll` |
+| GET | `/timeline-post-reports/get-no-pagination` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getNoPagination` |
+| GET | `/timeline-post-reports/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-post-reports/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-post-reports/get-deleted-all` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-post-reports/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-post-reports/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-post-reports/create` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::create` |
+| PUT | `/timeline-post-reports/update/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::update/$1` |
+| DELETE | `/timeline-post-reports/delete-soft/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-post-reports/delete-restore/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-post-reports/delete-hard/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-post-reports/clear-deleted` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-post-reports/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceTableController::clearDeleted/$1` |
+
+### timeline-post-reports-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostReports/EndPointView.php` —
+consulta da view `view_timeline_post_reports` (9 rotas).
+
+**Filtros:** `jwtauth` (wildcard de URI) + `adminonly` (rota a rota) nas **9
+rotas** — fila de moderação, só admin lê.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-reports-view/find` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::find` |
+| POST | `/timeline-post-reports-view/get-grouped` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getGrouped` |
+| GET | `/timeline-post-reports-view/search` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::search` |
+| GET | `/timeline-post-reports-view/get/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::get/$1` |
+| GET | `/timeline-post-reports-view/get-all` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getAll` |
+| GET | `/timeline-post-reports-view/get-no-pagination` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getNoPagination` |
+| GET | `/timeline-post-reports-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-post-reports-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-post-reports-view/get-deleted-all` | `Api\V1\Timeline\TimelinePostReports\ResourceViewController::getDeletedAll` |
+
+### timeline-post-attachments
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostAttachments/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-attachments/find` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::find` |
+| POST | `/timeline-post-attachments/get-grouped` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getGrouped` |
+| GET | `/timeline-post-attachments/search` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::search` |
+| GET | `/timeline-post-attachments/get/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::get/$1` |
+| GET | `/timeline-post-attachments/get-all` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getAll` |
+| GET | `/timeline-post-attachments/get-no-pagination` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getNoPagination` |
+| GET | `/timeline-post-attachments/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-post-attachments/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-post-attachments/get-deleted-all` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-post-attachments/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-post-attachments/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-post-attachments/create` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::create` |
+| PUT | `/timeline-post-attachments/update/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::update/$1` |
+| DELETE | `/timeline-post-attachments/delete-soft/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-post-attachments/delete-restore/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-post-attachments/delete-hard/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-post-attachments/clear-deleted` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-post-attachments/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::clearDeleted/$1` |
+
+### timeline-post-attachments-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostAttachments/EndPointView.php` —
+consulta da view `view_timeline_post_attachments` (somente leitura, 9 rotas).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-attachments-view/find` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::find` |
+| POST | `/timeline-post-attachments-view/get-grouped` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getGrouped` |
+| GET | `/timeline-post-attachments-view/search` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::search` |
+| GET | `/timeline-post-attachments-view/get/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::get/$1` |
+| GET | `/timeline-post-attachments-view/get-all` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getAll` |
+| GET | `/timeline-post-attachments-view/get-no-pagination` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getNoPagination` |
+| GET | `/timeline-post-attachments-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-post-attachments-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-post-attachments-view/get-deleted-all` | `Api\V1\Timeline\TimelinePostAttachments\ResourceViewController::getDeletedAll` |
+
+### timeline-post-comments
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostComments/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-comments/find` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::find` |
+| POST | `/timeline-post-comments/get-grouped` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getGrouped` |
+| GET | `/timeline-post-comments/search` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::search` |
+| GET | `/timeline-post-comments/get/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::get/$1` |
+| GET | `/timeline-post-comments/get-all` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getAll` |
+| GET | `/timeline-post-comments/get-no-pagination` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getNoPagination` |
+| GET | `/timeline-post-comments/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-post-comments/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-post-comments/get-deleted-all` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-post-comments/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-post-comments/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-post-comments/create` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::create` |
+| PUT | `/timeline-post-comments/update/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::update/$1` |
+| DELETE | `/timeline-post-comments/delete-soft/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-post-comments/delete-restore/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-post-comments/delete-hard/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-post-comments/clear-deleted` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-post-comments/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceTableController::clearDeleted/$1` |
+
+### timeline-post-comments-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePostComments/EndPointView.php` —
+consulta da view `view_timeline_post_comments` (somente leitura, 9 rotas).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-post-comments-view/find` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::find` |
+| POST | `/timeline-post-comments-view/get-grouped` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getGrouped` |
+| GET | `/timeline-post-comments-view/search` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::search` |
+| GET | `/timeline-post-comments-view/get/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::get/$1` |
+| GET | `/timeline-post-comments-view/get-all` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getAll` |
+| GET | `/timeline-post-comments-view/get-no-pagination` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getNoPagination` |
+| GET | `/timeline-post-comments-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-post-comments-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-post-comments-view/get-deleted-all` | `Api\V1\Timeline\TimelinePostComments\ResourceViewController::getDeletedAll` |
+
+---
+
+## Timeline — Módulo Messages/Timeline
+
+Fonte: `Config/Routes/Api/v1/Timeline/**` — 7 tabelas × 18 rotas + 7 views × 9
+rotas = **189 rotas**. Um grupo por tabela (`EndpointTable.php`) e um por view
+(`EndPointView.php`), na ordem tabela → view. As 7 views são as do banco:
+`view_timeline_manager`, `view_timeline_posts` (o feed),
+`view_timeline_post_attachments`, `view_timeline_post_comments`,
+`view_timeline_post_reactions`, `view_timeline_post_ratings` e
+`view_timeline_post_reports`.
+
+**Filtros:** `jwtauth` **por wildcard de URI** nos 14 grupos — o módulo não tem
+nenhuma rota pública (o requisito do feed é "público para quem estiver logado").
+`adminonly` **rota a rota**, nunca por wildcard, porque dentro do mesmo grupo há
+rota que o usuário comum precisa: as 3 rotas de exclusão definitiva
+(`delete-hard/{id}`, `clear-deleted`, `clear-deleted/{id}`) das 7 tabelas, e
+**todas** as rotas de `timeline-post-reports` e `timeline-post-reports-view`
+exceto `create` (que é o denunciar). O filtro de rota roda depois do filtro de
+URI, com `CurrentUser` já populado.
+
+> Os `Controller::method` abaixo já estão declarados nas rotas, mas as classes
+> `Api\V1\Timeline\*` ainda **não existem**: são a Etapa D do módulo — ver
+> [`README_modulo_timeline.md`](README_modulo_timeline.md).
+
+### timeline-manager
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelineManager/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-manager/find` | `Api\V1\Timeline\TimelineManager\ResourceTableController::find` |
+| POST | `/timeline-manager/get-grouped` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getGrouped` |
+| GET | `/timeline-manager/search` | `Api\V1\Timeline\TimelineManager\ResourceTableController::search` |
+| GET | `/timeline-manager/get/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::get/$1` |
+| GET | `/timeline-manager/get-all` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getAll` |
+| GET | `/timeline-manager/get-no-pagination` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getNoPagination` |
+| GET | `/timeline-manager/get-deleted/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-manager/get-with-deleted/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-manager/get-deleted-all` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-manager/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-manager/get-all-with-deleted` | `Api\V1\Timeline\TimelineManager\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-manager/create` | `Api\V1\Timeline\TimelineManager\ResourceTableController::create` |
+| PUT | `/timeline-manager/update/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::update/$1` |
+| DELETE | `/timeline-manager/delete-soft/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-manager/delete-restore/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-manager/delete-hard/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-manager/clear-deleted` | `Api\V1\Timeline\TimelineManager\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-manager/clear-deleted/{id}` | `Api\V1\Timeline\TimelineManager\ResourceTableController::clearDeleted/$1` |
+
+### timeline-manager-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelineManager/EndPointView.php` — consulta
+da view `view_timeline_manager` (somente leitura, 9 rotas).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-manager-view/find` | `Api\V1\Timeline\TimelineManager\ResourceViewController::find` |
+| POST | `/timeline-manager-view/get-grouped` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getGrouped` |
+| GET | `/timeline-manager-view/search` | `Api\V1\Timeline\TimelineManager\ResourceViewController::search` |
+| GET | `/timeline-manager-view/get/{id}` | `Api\V1\Timeline\TimelineManager\ResourceViewController::get/$1` |
+| GET | `/timeline-manager-view/get-all` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getAll` |
+| GET | `/timeline-manager-view/get-no-pagination` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getNoPagination` |
+| GET | `/timeline-manager-view/get-deleted/{id}` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-manager-view/get-all-with-deleted` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-manager-view/get-deleted-all` | `Api\V1\Timeline\TimelineManager\ResourceViewController::getDeletedAll` |
+
+### timeline-posts
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePosts/EndpointTable.php`
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-posts/find` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::find` |
+| POST | `/timeline-posts/get-grouped` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getGrouped` |
+| GET | `/timeline-posts/search` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::search` |
+| GET | `/timeline-posts/get/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::get/$1` |
+| GET | `/timeline-posts/get-all` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getAll` |
+| GET | `/timeline-posts/get-no-pagination` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getNoPagination` |
+| GET | `/timeline-posts/get-deleted/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getDeleted/$1` |
+| GET | `/timeline-posts/get-with-deleted/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getWithDeleted/$1` |
+| GET | `/timeline-posts/get-deleted-all` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getDeletedAll` |
+| GET | `/timeline-posts/get-all-with-deleted/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/timeline-posts/get-all-with-deleted` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::getAllWithDeleted` |
+| POST | `/timeline-posts/create` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::create` |
+| PUT | `/timeline-posts/update/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::update/$1` |
+| DELETE | `/timeline-posts/delete-soft/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/timeline-posts/delete-restore/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/timeline-posts/delete-hard/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::deleteHard/$1` |
+| DELETE | `/timeline-posts/clear-deleted` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::clearDeleted` |
+| DELETE | `/timeline-posts/clear-deleted/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceTableController::clearDeleted/$1` |
+
+### timeline-posts-view
+
+Fonte: `Config/Routes/Api/v1/Timeline/TimelinePosts/EndPointView.php` — consulta da
+view `view_timeline_posts` (o feed; somente leitura, 9 rotas). É a fonte da
+listagem do feed (`list_manager` slug `timeline-feed`).
+
+**Filtros:** `jwtauth` (por wildcard de URI).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ----------------- |
+| POST | `/timeline-posts-view/find` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::find` |
+| POST | `/timeline-posts-view/get-grouped` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getGrouped` |
+| GET | `/timeline-posts-view/search` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::search` |
+| GET | `/timeline-posts-view/get/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::get/$1` |
+| GET | `/timeline-posts-view/get-all` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getAll` |
+| GET | `/timeline-posts-view/get-no-pagination` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getNoPagination` |
+| GET | `/timeline-posts-view/get-deleted/{id}` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getDeleted/$1` |
+| GET | `/timeline-posts-view/get-all-with-deleted` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getAllWithDeleted` |
+| GET | `/timeline-posts-view/get-deleted-all` | `Api\V1\Timeline\TimelinePosts\ResourceViewController::getDeletedAll` |
+
 ---
 
 ## Nav — Config/branding do app e da navbar

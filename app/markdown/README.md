@@ -159,7 +159,7 @@ título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
 
 Mapa textual de todas as rotas REST da API V1 (`app/Config/Routes/Api/v1`),
 agrupadas por módulo (Auth, User, Upload, Form, List, BootstrapIcons, AuxCor,
-Calendar, Nav, Menu, Meta) na mesma ordem em que são registradas em
+Calendar, Timeline, Nav, Menu, Meta) na mesma ordem em que são registradas em
 `Config/Routes.php`. Cada módulo lista o arquivo
 `EndpointTable.php`/`EndPointView.php` de origem e a tabela completa
 Método/Rota/Controller::method (18 rotas canônicas de tabela, 9 de view, mais os
@@ -208,11 +208,11 @@ Cobre também `make:seed`, variante `-T` sem TTY, tabelas sem seeder
 ### `timeline`
 
 Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
-Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais a view `view_timeline_posts` do feed.
+Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais as 7 views: a do feed (`view_timeline_posts`) e uma de apoio por tabela.
 Anexo em tabela própria, isolada do módulo Upload e do Calendar; reação e estrela são ação, não formulário.
-Tabelas e view aplicadas no banco DEV em 2026-09-26; os 5 formulários e a listagem do feed ainda são desenho (Etapa C).
+Tabelas, views e as **189 rotas** (7 tabelas × 18 + 7 views × 9) aplicadas no banco DEV e no `Config/Routes.php`/`route_manager` em 2026-09-26 — os controllers da Etapa D ainda não existem; os 5 formulários e a listagem do feed ainda são desenho (Etapa C).
 
-[`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, view do feed e regras.
+[`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, views (feed e apoio) e regras.
 
 ### `upload`
 
@@ -260,7 +260,7 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
 - [`README_modulo_form.md`](geral/README_modulo_form.md) — módulo Form: formulários dinâmicos persistidos no banco.
 - [`README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu: config do app e árvore de navegação.
-- [`README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: 6 tabelas, view do feed, regras de negócio e roadmap.
+- [`README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: 7 tabelas, 7 views (feed + apoio), regras de negócio e roadmap.
 - [`README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo Upload/UploadManager: anexos polimórficos da API V1.
 - [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.
 - [`README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1, por módulo.
