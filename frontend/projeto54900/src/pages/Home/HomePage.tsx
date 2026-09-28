@@ -9,8 +9,8 @@ const INFO_CARDS = [
     title: 'Autenticacao via API (JWT)',
     lead: 'Login, sessao e permissoes resolvidos por token — sem estado guardado no servidor.',
     items: [
-      'Login por e-mail e senha emite um token de acesso e um token de renovacao, no padrao Bearer.',
-      'Login e renovacao de token sao publicos; encerrar sessao e consultar o usuario logado exigem token valido.',
+      'Login por usuario e senha emite um token de acesso e um token de renovacao, no padrao Bearer.',
+      'Login, renovacao e encerramento de sessao sao publicos (o logout identifica a sessao pelo token enviado); consultar o usuario logado exige token valido.',
       'Cada rota protegida da API passa por um filtro de autenticacao antes de executar qualquer regra de negocio.',
       'A renovacao evita pedir login de novo enquanto a sessao estiver ativa, mantendo o acesso continuo.',
       'O mesmo contrato de autenticacao atende qualquer cliente: aplicacao web, aplicativo mobile ou integracao externa.',
@@ -28,6 +28,21 @@ const INFO_CARDS = [
       'Anexos podem ser vinculados diretamente a um compromisso especifico.',
       'Propriedades extras podem ser adicionadas a um evento sem alterar a estrutura das tabelas.',
       'Toda a agenda e exposta por API REST, pronta para alimentar novas telas sem mudar o backend.',
+    ],
+  },
+  {
+    icon: 'bi-chat-square-text-fill',
+    title: 'Timeline social',
+    lead: 'Feed interno de publicacoes entre usuarios logados, com midia, interacao e moderacao.',
+    items: [
+      'Cada usuario ganha sua propria timeline automaticamente na primeira publicacao.',
+      'Publicacoes com texto e anexo (imagem, video ou documento), guardados em area propria do modulo e entregues somente com token.',
+      'Curtir, avaliar de 1 a 5 estrelas e comentar; o sistema lembra o que o usuario ja fez em cada post.',
+      'Abertura do feed com 14 posts (5 recentes aleatorios, 3 mais bem avaliados, 3 mais curtidos e 3 mais comentados) e rolagem infinita de 10 em 10, sem repeticao.',
+      'Cada post aparece inteiro, so depois que texto e midia terminam de carregar; a publicacao nova do usuario fica no topo ate a pagina ser atualizada.',
+      'Publicar, comentar e denunciar acontecem em modais, sem sair do feed.',
+      'Post denunciado sai do feed de todos na hora e segue para a moderacao do administrador.',
+      'Toda a Timeline e exposta por API REST protegida por JWT; as listagens administrativas mostram ao usuario apenas as proprias publicacoes.',
     ],
   },
 ];

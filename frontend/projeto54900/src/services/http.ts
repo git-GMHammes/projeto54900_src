@@ -193,7 +193,9 @@ function pickErrorMessage(payload: unknown, status: number): string {
  *   4. `fetch` dentro de `try`: se falhar com `AbortError`, REPASSA o erro
  *      original (cancelamento é controle de fluxo — quem cancelou sabe o que
  *      fazer); qualquer outra falha vira `ApiError` de REDE, sem `status`;
- *   5. lê o corpo com `parseBody`;
+ *   5. lê o corpo com `parseBody` — exceto `responseType: 'blob'` com resposta
+ *      OK, que devolve `response.blob()` (binário de serve/download com token;
+ *      no debug log entra só um resumo `[blob <tipo> <bytes>]`);
  *   6. registra a resposta no debug log (`record`) ANTES de decidir
  *      sucesso/erro, para que uma chamada que falhou também apareça no painel;
  *   7. se `!response.ok`, lança `ApiError` com a mensagem de `pickErrorMessage`,
@@ -212,7 +214,7 @@ function pickErrorMessage(payload: unknown, status: number): string {
 export async function request<T = unknown>(
   method: HttpMethod,
   path: string,
-  { params, body, headers, signal }: RequestOptions = {},
+  { params, body, headers, signal, responseType }: RequestOptions = {},
 ): Promise<T> {
   const url = buildUrl(path, params);
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
@@ -239,6 +241,18 @@ export async function request<T = unknown>(
   } catch (cause) {
     if (cause instanceof Error && cause.name === 'AbortError') throw cause;
     throw new ApiError('Falha de rede ao contatar a API.', { url });
+  }
+
+  if (responseType === 'blob' && response.ok) {
+    const blob = await response.blob();
+    recordApiDebug({
+      method,
+      path: url,
+      status: response.status,
+      ok: true,
+      payload: `[blob ${blob.type || 'application/octet-stream'} ${blob.size} bytes]`,
+    });
+    return blob as T;
   }
 
   const payload = await parseBody(response);

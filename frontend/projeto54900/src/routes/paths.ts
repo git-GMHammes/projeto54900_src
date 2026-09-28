@@ -72,13 +72,29 @@ export const paths = {
     svgMap: {
       view: '/v1/svg-map',
     },
-    // Timeline — listagem classica do feed (view_timeline_posts, slug list_manager 'timeline-feed').
-    // Criacao/edicao dos 5 recursos do modulo usa o renderizador generico
-    // paths.v1.form.render('timeline-post' | 'timeline-settings' | ...), nao rota propria.
+    // Timeline — o modulo tem duas telas de feed e as LISTAS PADRAO dos seus
+    // recursos. Todas as listas usam o motor do Construtor de Listas
+    // (list_manager/list_columns): o slug homonimo da rota define titulo,
+    // endpoint, colunas e ordenacao (ver pages/v1/timeline/StandardListPage.tsx).
+    // Antes de 2026-09-28 os 5 recursos eram telas de formulario no renderizador
+    // generico (`paths.v1.form.render('timeline-post' | 'timeline-settings' | ...)`);
+    // aquele renderizador continua existindo, apenas nao e mais o destino dos
+    // itens de menu do modulo.
     timeline: {
       // Home Feed (feed misto: hoje/outros usuários aleatório + mais curtidos/avaliados).
       home: '/v1/timeline',
+      // Listagem classica do feed (slug list_manager 'timeline-feed').
       list: '/v1/timeline-posts',
+      // Variante admin da listagem classica: get-all simples, sem "so meus posts" (slug 'timeline-posts-get-all').
+      listGetAll: '/v1/timeline-posts-get-all',
+      // Listas padrao por recurso (slugs 'timeline-post', 'timeline-manager', ...).
+      post: '/v1/timeline-post',
+      manager: '/v1/timeline-manager',
+      comment: '/v1/timeline-comment',
+      report: '/v1/timeline-report',
+      attachment: '/v1/timeline-attachment',
+      reaction: '/v1/timeline-reaction',
+      rating: '/v1/timeline-rating',
     },
     // account — self-service do proprio usuario logado (dropdown da Navbar):
     // Editar Perfil (user-profiles/me) e Seguranca (troca da propria senha).

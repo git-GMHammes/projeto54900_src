@@ -46,10 +46,11 @@ export { calendarEventAttendeesTable, respondToEvent } from './calendarEventAtte
 export { calendarEventInvitesTable } from './calendarEventInvites.table';
 export { calendarEventRemindersTable } from './calendarEventReminders.table';
 export { calendarEventAttachmentsTable } from './calendarEventAttachments.table';
-export { timelinePostsTable, getHomeFeed } from './timelinePosts.table';
+export { timelinePostsTable, getHomeFeed, getFeedPost } from './timelinePosts.table';
 export { timelinePostCommentsTable } from './timelinePostComments.table';
 export { timelinePostCommentsView } from './timelinePostComments.view';
 export { timelinePostReactionsTable } from './timelinePostReactions.table';
 export { timelinePostRatingsTable } from './timelinePostRatings.table';
 export { timelinePostAttachmentsTable } from './timelinePostAttachments.table';
+export { timelinePostAttachmentsUpload } from './timelinePostAttachments.upload';
 export { dbSchema } from './dbSchema';

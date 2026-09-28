@@ -331,6 +331,16 @@ qualquer `format`. Aplicado em `user-manager`, coluna Usuário (`list_columns`
 id 3): `people-circle` `text-danger` quando `um_user_role_id = 1` (Admin),
 `text-success` nos demais.
 
+**Ícones intercalados e `showIf` (2026-09-28)**: quando há ícone **entre**
+duas partes de texto (ex.: `👍 likes 👎 dislikes`), `renderCell` desenha as
+partes na ordem do `concat_json` — cada trecho de texto entre ícones vira um
+`<span>` próprio (trecho vazio → `fallback` da coluna), texto puro, sem
+`format` customizado. Ícones só nas pontas mantêm o comportamento acima.
+Qualquer parte (`field`/`literal`/`icon`) aceita `"showIf":{field,op,value}`
+(mesmo avaliador): falsa para a linha → a parte some do texto e do desenho.
+Aplicado em `timeline-feed`, colunas Curtidas (id 82) e Reações (id 84 — o
+"repost de #id" só aparece com `showIf tp_repost_of_id gt 0`).
+
 **Filtro de status (mesma página)**: `<select>` ao lado da busca (grid
 `col-md-8` + `col-md-4` = 100% da largura; empilha no mobile). Opções =
 `enum_values` de `user_manager.status` via `dbSchema.describe('user_manager')`

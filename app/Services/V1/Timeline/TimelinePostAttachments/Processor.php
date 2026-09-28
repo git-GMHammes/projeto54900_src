@@ -20,9 +20,10 @@ use CodeIgniter\HTTP\Files\UploadedFile;
  *    modulo Upload).
  *  - delete-soft e logico e NAO apaga o arquivo (10); delete-hard e
  *    clear-deleted apagam o binario.
- *  - PENDENCIA registrada: nao existe rota de serve/download no contrato
- *    canonico de 18 rotas, entao file_url fica vazio (o binario existe em disco
- *    e o caminho esta em storage_path).
+ *  - UM anexo por publicacao (decisao do usuario, 2026-09-28): se o post ja tem
+ *    anexo nao excluido, o store responde 409 antes de gravar o binario.
+ *  - serve/download (EndpointUpload.php, fora do contrato de 18 rotas) usam
+ *    resolvePhysical(); file_url e preenchido apos o insert com a URL de serve.
  */
 class Processor extends BaseTableService
 {
@@ -59,6 +60,11 @@ class Processor extends BaseTableService
 
         if (!$this->isPostOwner($post)) {
             return $this->forbidden('Somente o dono da publicacao pode anexar arquivo');
+        }
+
+        // Regra: 1 anexo por publicacao (soft delete ja fica de fora da contagem).
+        if ($this->tableModel->where('timeline_post_id', $postId)->countAllResults() > 0) {
+            return ['success' => false, 'message' => 'Esta publicacao ja tem um anexo', 'code' => 409];
         }
 
         if ($file === null || !$file->isValid()) {
@@ -110,9 +116,45 @@ class Processor extends BaseTableService
         if (!$result['success']) {
             // Falhou ao registrar: o binario nao pode ficar orfao no disco.
             $this->storage->remove($physical['storage_path']);
+
+            return $result;
+        }
+
+        // file_url so existe depois do id: aponta para a rota de serve.
+        $id = (int) ($result['data']['id'] ?? 0);
+        if ($id > 0) {
+            helper('url');
+            $this->tableModel->update($id, ['file_url' => site_url('api/v1/timeline-post-attachments/serve/' . $id)]);
+            $result['data'] = $this->tableModel->find($id);
         }
 
         return $result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Servir arquivo (GET /serve/{id}, GET /download/{id})
+    // -------------------------------------------------------------------------
+
+    /**
+     * Resolve o arquivo fisico de um anexo ativo (status = active, nao excluido).
+     *
+     * @return array{row: array, abs_path: string}|null
+     */
+    public function resolvePhysical(int $id): ?array
+    {
+        $row = $this->tableModel->find($id);
+
+        if (!$row || ($row['status'] ?? 'active') !== 'active') {
+            return null;
+        }
+
+        $abs = $this->storage->absoluteFromRelative((string) $row['storage_path']);
+
+        if (!is_file($abs)) {
+            return null;
+        }
+
+        return ['row' => $row, 'abs_path' => $abs];
     }
 
     // -------------------------------------------------------------------------

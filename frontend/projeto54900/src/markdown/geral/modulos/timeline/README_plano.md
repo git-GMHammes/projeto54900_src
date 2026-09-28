@@ -50,14 +50,44 @@ a listagem tradicional (base para uma futura tela "timeline deste usuário").
 
 - `GetAllPage.tsx` — gera um `seed` uma vez (estável durante o scroll,
   garante paginação sem repetição), carrega páginas via `getHomeFeed`,
-  scroll infinito, botão flutuante.
+  scroll infinito, botão flutuante. **Correção 2026-09-28:** o scroll parava
+  na 1ª página quando um balde do algoritmo vinha vazio (ex.: todos os posts
+  do mesmo usuário) — o backend agora monta uma ordem global pelo `seed`
+  (completa vagas, sem repetir) e devolve `pagination.has_more`, que o
+  frontend usa no lugar de "veio 10 itens" (`README_modulo_timeline.md` §5.1).
 - `PostCard.tsx` — o template único do post: `MediaPreview` (mídia) →
   título/descrição → curtir/avaliar (estrelas)/comentar/denunciar → 3
-  primeiros comentários + "ver mais" com scroll infinito próprio + caixa de
-  novo comentário.
+  comentários **mais recentes** (último no topo) + "ver mais" com scroll
+  infinito próprio (antigos abaixo) + botão de novo comentário.
+  **Correção 2026-09-28:** a 1ª carga (limit 3) e o "ver mais" (page 2,
+  limit 10) usavam tamanhos diferentes — a API pulava os itens 4-10 e a
+  sentinela ficava pedindo páginas vazias em loop. Agora cada carga é uma
+  janela (`page=1`, `limit` = exibidos + 10, `id DESC`) com trava
+  `commentsExhausted`; "Recolher" volta a mostrar só os 3 mais recentes.
 - `NewPostModal.tsx` — modal do botão flutuante, reaproveita a técnica do
   `FormRendererPage` (schema do `form_manager` `timeline-post` + `FormGrid`),
-  sem navegar de página.
+  sem navegar de página. **Form enxuto desde 2026-09-28:** só "Publicação*"
+  e "Anexo" — Timeline, Republicar de, Título e Status saíram do form (soft
+  delete; as colunas continuam no banco por uso interno — ver
+  `app/markdown/geral/form/timeline/timeline_posts.md`). Republicar fica
+  como ação sobre um post existente (hoje só na listagem clássica; um botão
+  no `PostCard` é sugestão futura). **Fake fill (dev-only, 2026-09-28):**
+  botão "Fake fill" com o modal aberto — texto médio + imagem aleatória de
+  `doc/clipart_teste` (`dev/fakeFill/timelinePost.ts`; detalhe em
+  [`README_envHost.md`](../../README_envHost.md)).
+
+- `NewCommentModal.tsx` (2026-09-28) — modal "Novo comentário" do
+  `PostCard`, agora pelo form `timeline-comment` + `FormGrid` (antes era um
+  `<textarea>` escrito à mão, sem tooltip): mostra só "Comentário*" — o post
+  vem do card (`timeline_post_id` injetado) e "Responder a" não se aplica na
+  Home Feed. Fake fill dev-only (`dev/fakeFill/timelineComment.ts`).
+
+**Tooltips (2026-09-28):** todos os campos dos 5 forms da Timeline têm
+`help_text` (regra de `app/markdown/geral/README_modulo_form.md` §2.4).
+Auditoria do sistema achou **124 campos sem tooltip em outros módulos**
+(form-constructor, list-constructor, usuário, nav, menu, role, route,
+upload) — tarefa separada: propor os textos num markdown para revisão antes
+de gravar.
 
 **Componentes/hooks globais novos** (reaproveitáveis por qualquer módulo,
 não só Timeline):
@@ -84,19 +114,27 @@ HTTP manual sem token confirmando `401` (proteção `jwtauth` ativa).
 
 ## ⚠️ Pendências — para continuar depois
 
-1. **Upload de anexo não está ligado no backend.** `timeline_post_attachments`
-   tem `Processor`/`StorageManager.php` prontos, mas a rota HTTP de
-   `upload`/`serve`/`download` nunca foi registrada em
-   `Config/Routes/Api/v1/Timeline/TimelinePostAttachments/EndpointTable.php`
-   (só um comentário "previsto"). Sem isso: `MediaPreview` exibe anexo que
-   já exista no banco, mas não há como enviar um pela UI — nem no
-   `NewPostModal`, nem em nenhum outro lugar.
-2. **Curtir/Avaliar são "write-only".** A view do feed não expõe a
-   reação/nota que o **próprio usuário autenticado** já deu a um post —
-   implementar isso exigiria uma consulta extra por post (N+1) ou uma coluna
-   calculada nova na view. Hoje, `liked`/`myRating` em `PostCard.tsx` só
-   valem durante a sessão da tela aberta; recarregar a página perde a
-   marcação visual (o dado no banco continua correto).
+1. ~~**Upload de anexo não está ligado no backend.**~~ **RESOLVIDO em
+   2026-09-28** (plano `src/writable/claude/20260928081213_upload_anexo_timeline_*`).
+   Backend exclusivo da Timeline (`timeline_post_attachments`, nunca o
+   módulo Upload):
+   - envio = o próprio `POST .../timeline-post-attachments/create`
+     (multipart, campo `file`, já existia); **1 anexo por publicação** — o
+     segundo responde `409`;
+   - novo `EndpointUpload.php` com `GET serve/{id}` e `GET download/{id}`
+     (sob `jwtauth`); `file_url` agora é preenchido com a URL de serve.
+   - Frontend: novo tipo de campo **`arquivo`** no FormGrid
+     (`components/ui/FormGrid/arquivo`), campo "Anexo" (`file`) no form
+     `timeline-post` (SQL `doc/sql/insert/20260928081213_timeline_post_campo_arquivo.sql`,
+     banco DEV); `NewPostModal` envia em 2 etapas (post JSON → anexo
+     multipart; falha no anexo mantém o post e avisa); `PostCard` baixa o
+     binário com token (`http.ts` `responseType: 'blob'`) e passa um `blob:`
+     URL ao `MediaPreview` — `<img src>` direto daria 401.
+2. ~~**Curtir/Avaliar são "write-only".**~~ **RESOLVIDO em 2026-09-27** —
+   `Processor::homeFeed` devolve `my_reaction_id`/`my_rating` por post (2
+   queries em lote, sem N+1); `PostCard.tsx` inicia `liked`/`myRating` com
+   esses valores, então recarregar a página mantém a marcação (decisão 13
+   do `README_modulo_timeline.md`).
 3. **"Denunciar" não pré-preenche a publicação.** Abre
    `/v1/form/timeline-report` (formulário genérico) e o usuário escolhe a
    publicação num select remoto — funciona, mas não é tão direto quanto

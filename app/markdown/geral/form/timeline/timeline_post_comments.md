@@ -54,7 +54,13 @@ _slug `comment` · icon `chat-dots`_
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Publicação | `timeline_post_id` | select | 12 | sim | remoto: `GET /api/v1/timeline-posts/get-no-pagination`, `valueKey=id`, `labelTemplate="Publicação #{id}"`; help: "Publicação que recebe o comentário." |
 | 2 | Responder a | `parent_id` | select | 12 | não | remoto: `GET /api/v1/timeline-post-comments/get-no-pagination`, `valueKey=id`, `labelTemplate="Comentário #{id}"`; help: "Vazio = comentário de topo. Preenchido = resposta a este comentário." |
-| 3 | Comentário | `content` | textarea | 12 | sim | `rows: 3`, `showCounter`; o teto de caracteres entra no `CreateRequest` (Etapa D) |
+| 3 | Comentário | `content` | textarea | 12 | sim | `rows: 3`, `showCounter`; o teto de caracteres entra no `CreateRequest` (Etapa D); help (2026-09-28): "Sua resposta a esta publicação. Obrigatório." |
+
+> **Uso na Home Feed (2026-09-28):** o modal "Novo comentário" do `PostCard`
+> (`NewCommentModal.tsx`) renderiza este form pelo FormGrid, mas **retira**
+> "Publicação" e "Responder a" do schema (o post vem do card; resposta
+> encadeada não existe na Home Feed) e injeta `timeline_post_id` no payload.
+> O form genérico `/v1/form/timeline-comment` continua com os 3 campos.
 
 Observações de negócio (Processor, Etapa D):
 

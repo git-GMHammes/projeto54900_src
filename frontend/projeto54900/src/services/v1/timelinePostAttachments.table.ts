@@ -10,11 +10,10 @@
  * grupo api/v1/timeline-post-attachments ->
  * Api\V1\Timeline\TimelinePostAttachments\ResourceTableController.
  *
- * USADO SÓ PARA LEITURA por enquanto (`find` por `timeline_post_id`, para o
- * `MediaPreview` do card do feed) — a rota de upload do arquivo em si ainda
- * não está ligada no back-end (ver README_modulo_timeline.md seção 9, Fase
- * 3b: lacuna conhecida), então a criação de anexo não tem consumidor no
- * frontend ainda.
+ * USADO SÓ PARA LEITURA de metadados (`find` por `timeline_post_id`, para o
+ * `MediaPreview` do card do feed). O ENVIO do arquivo (multipart) e a leitura
+ * do binário (serve, como Blob) ficam em `timelinePostAttachments.upload.ts` —
+ * o `create` daqui recebe JSON e não serve para anexo.
  *
  * DEPENDÊNCIAS: services/resourceFactory (createResource) e constants/api
  * (API_GROUPS.timelinePostAttachments).

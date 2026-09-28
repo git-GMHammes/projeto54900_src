@@ -216,12 +216,14 @@ const GUTTER_OPCOES = ['g-0', 'g-1', 'g-2', 'g-3', 'g-4', 'g-5'].map((g) => ({
 }));
 
 // Enum `field_type` do banco — ordem exata da migration 2026-09-06-012303,
-// + 'datahora' (2026-09-22, ALTER TABLE direto no banco DEV — ver
-// src/app/markdown/geral/README_migrate.md, seção da pausa das migrations).
+// + 'datahora' (2026-09-22) e 'arquivo' (2026-09-28), ambos por ALTER TABLE
+// direto no banco DEV — ver src/app/markdown/geral/README_migrate.md, seção
+// da pausa das migrations.
 const FIELD_TYPE_OPCOES = [
   'text', 'password', 'email', 'textarea', 'senha', 'select', 'radio',
   'checkbox', 'cpf', 'cnpj', 'phone', 'cep', 'data', 'hora', 'moeda',
   'pis', 'placa', 'titulo', 'cnh', 'processo', 'renavam', 'sei', 'datahora',
+  'arquivo',
 ].map((t) => ({ value: t, label: t }));
 
 const COL_OPCOES = Array.from({ length: 12 }, (_, i) => ({

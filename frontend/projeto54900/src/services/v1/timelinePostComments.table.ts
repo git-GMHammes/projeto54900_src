@@ -12,8 +12,9 @@
  *
  * DEPENDÊNCIAS: services/resourceFactory (createResource) e constants/api
  * (API_GROUPS.timelinePostComments).
- * CONSUMIDORES: pages/v1/timeline/home-feed/PostCard.tsx (find por
- * timeline_post_id, para os 3 primeiros + "ver mais"; create, para comentar).
+ * CONSUMIDORES: nenhum na Home Feed desde 2026-09-28 — a leitura usa
+ * timelinePostComments.view.ts (PostCard) e o envio vai pelo submit do form
+ * `timeline-comment` (NewCommentModal). Mantido para o CRUD da tabela.
  * Reexportado pelo barrel services/v1/index.ts.
  * -------------------------------------------------------------------------
  */

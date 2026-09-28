@@ -403,9 +403,28 @@ de leitura (Etapa C/D) — hoje só existe o contrato previsto na §5.
 8. **Visibilidade.** O requisito é "pública para quem estiver logado": todos os
    módulos da Timeline ficam atrás de `jwtauth`. Não existe coluna `visibility`;
    ocultar/remover é `status`.
+   **Atualização 2026-09-28:** os 9 endpoints de leitura da view
+   (`timeline-posts-view`: `get-grouped`, `find`, `search`, `get`, `get-all`,
+   `get-no-pagination`, `get-deleted`, `get-deleted-all`,
+   `get-all-with-deleted`) devolvem **só os posts do usuário do JWT**
+   (`tp_user_manager_id = CurrentUser::id()`), inclusive para admin —
+   ninguém observa o feed de outro. Filtro `tp_user_manager_id` vindo do
+   cliente é descartado; `get/{id}` de post alheio = 404. A listagem
+   `timeline-feed` usa `POST get-grouped`
+   (`doc/sql/insert/20260928102459_timeline_feed_get_grouped.sql`). O Home
+   Feed (`home-feed`, feed social) continua com todos os publicados. Os
+   endpoints de **tabela** (`timeline-posts/get-all` etc.) seguem sem filtro
+   de dono na leitura — lacuna conhecida.
 9. **Anexo.** Só o dono do post anexa. O arquivo vai para
    `writable/uploads/timeline_posts/<post_id>/` e é registrado na própria
    `timeline_post_attachments` — sem `file_id` para `uploads`.
+   **Tamanho máximo: 20 MB (2026-09-28)**, alinhado em quatro camadas:
+   `client_max_body_size 20M` (`docker/nginx/default.conf` — antes valia o
+   padrão de 1 MB e vídeos eram barrados com 413), `upload_max_filesize`/
+   `post_max_size=20M` (`docker/php/Dockerfile`, exige rebuild do `php`),
+   `Config/Upload.php` (`maxSizeKbGlobal = 20480`) e o campo FormGrid
+   `arquivo` (`MAX_UPLOAD_MB`, recusa o arquivo já no navegador). Mudar o
+   limite exige mudar nas quatro.
 10. **Exclusão do anexo.** `delete-soft` é lógica e **não** apaga o arquivo
    físico; `delete-hard`/`clear-deleted` apagam. Mesmo ciclo de vida documentado
    no Calendar (`form/calendar/calendar_event_attachments.md`).
@@ -480,31 +499,87 @@ implementando a regra de exibição pedida pelo usuário — cotas fixas somando
 ao `limit` (proporção 3/3/2/2 de um total de 10; outro `limit` escala
 proporcionalmente):
 
-| Balde | Regra | Método (`SqlViewModel`) |
+| Balde | Regra | Método (`SqlViewModel`, só ids) |
 | --- | --- | --- |
-| Hoje (aleatório) | `tp_status='published'` e `DATE(tp_published_at)=CURDATE()`, ordem `RAND(seed)` | `randomToday` |
-| Outros usuários (aleatório) | `tp_status='published'` e `tp_user_manager_id != usuário atual`, ordem `RAND(seed)` | `randomOtherUsers` |
-| Mais curtidos | `ORDER BY likes_count DESC` | `topLiked` |
-| Mais bem avaliados | só com avaliação (`ratings_avg IS NOT NULL`), `ORDER BY ratings_avg DESC` | `topRated` |
+| Hoje (aleatório) | `tp_status='published'` e `DATE(tp_published_at)=CURDATE()`, ordem `RAND(seed)` | `idsToday` |
+| Outros usuários (aleatório) | `tp_status='published'` e `tp_user_manager_id != usuário atual`, ordem `RAND(seed)` | `idsOtherUsers` |
+| Mais curtidos | `ORDER BY likes_count DESC, id DESC` | `idsTopLiked` |
+| Mais bem avaliados | só com avaliação (`ratings_avg IS NOT NULL`), `ORDER BY ratings_avg DESC` | `idsTopRated` |
+| *"Demais" (completa vaga)* | todos os publicados, ordem `RAND(seed+1)` | `idsAllRandom` |
 
-Cada balde roda **depois** dos anteriores e exclui os IDs já escolhidos por
-eles (`WHERE id NOT IN (...)`) — evita duplicata **dentro da mesma página**.
-A ordem final de exibição é embaralhada (`shuffle`) só para não parecer "em
-blocos" (todo hoje, depois todo curtido, ...); os baldes já decidiram QUAIS
-posts entram.
+**Ordem global (desde 2026-09-28).** Cada método devolve a **fila completa de
+ids** do balde. `Processor::homeFeedOrder` intercala as filas numa ordem única:
+página a página tira as cotas 3/3/2/2 de cada balde pulando id já usado; a vaga
+que um balde não preencher (ex.: nenhum post de outro usuário) vai para a fila
+"demais". Todo publicado entra **exatamente uma vez**. `homeFeed` fatia a página
+pedida, carrega as linhas (`findByIdsOrdered`) e embaralha (`shuffle`) só a
+ordem de exibição dentro da página. A resposta traz em `pagination`: `total` e
+**`has_more`** — o frontend usa `has_more` para saber se continua rolando.
+
+**Primeira página (desde 2026-09-28, pedido do usuário — rompe o `limit`).**
+A ordem global começa com o bloco `Processor::FIRST_PAGE_QUOTAS`, **na ordem
+de exibição** (sem `shuffle`):
+
+| Bloco | Qtde | Método (`SqlViewModel`) |
+| --- | --- | --- |
+| Recentes aleatórios | 5 | `idsRecent` — pool dos 20 publicados mais recentes, ordem `RAND(seed)` |
+| Mais bem avaliados | 3 | `idsTopRated` |
+| Mais curtidos | 3 | `idsTopLiked` |
+| Mais comentados | 3 | `idsTopCommented` — `ORDER BY comments_count DESC, id DESC` |
+
+Id repetido entre blocos cede a vaga ao próximo do mesmo balde; faltando
+candidatos, a fila "demais" completa os 14. Da página 2 em diante vale a
+intercalação 3/3/2/2 acima (`limit` por página), sem repetir nada da página 1.
+Paginação: página 1 = `offset 0, 14 itens`; página N = `offset 14 + (N-2)·limit`;
+`has_more = offset + itens < total`; `meta.limit` devolve o tamanho real da
+página.
+
+**Denunciados nunca aparecem (2026-09-28).** Toda fila de ids e o
+`findByIdsOrdered` partem de `SqlViewModel::feedBase()`: `tp_status='published'`
+e `NOT EXISTS` em `timeline_post_reports` com `deleted_at IS NULL` —
+**qualquer status**, inclusive `rejected`. Vale só para o `home-feed`; a
+listagem clássica (`timeline-posts-view` canônico, admin) não foi alterada.
+
+**Frontend (`pages/v1/timeline/home-feed`).**
+- Cada `PostCard` só aparece quando anexos + imagem/vídeo
+  (`MediaPreview.onReady`) + 1ª leva de comentários estão prontos (spinner
+  antes; trava de 15 s).
+- Post publicado pelo usuário logado é buscado em
+  `timeline-posts-view/get/{id}` e fixado no topo até o F5 — o `seed` não troca
+  mais ao publicar.
+- **Denunciar** abre o `NewReportModal` na própria página (form
+  `timeline-report` sem o campo "Publicação"; o id vem do card). Sucesso tira o
+  card da tela. A página admin `/v1/form/timeline-report` e a ação "Denunciar"
+  da listagem clássica (`list_actions` 37) continuam — regra do projeto: toda
+  tabela tem lista + form admin; na tela de uso, ação é modal, nunca link.
+- **Editar / Excluir (2026-09-28):** logo após a data/hora do card, dois ícones
+  minúsculos — lápis (abre `EditPostModal`: form `timeline-post` **sem** o
+  campo "Anexo", só o texto; `PUT timeline-posts/update/{id}`) e lixeira
+  vermelha (`ConfirmModal` → `DELETE timeline-posts/delete-soft/{id}`).
+  Aparecem **só** quando `useAuth().user.id === tp_user_manager_id` do post,
+  **inclusive para admin** (decisão do usuário). No backend,
+  `Processor::assertOwner` devolve 404 para post alheio; o escape de admin
+  continua lá para as telas admin/moderação. Upload não é editável: o anexo
+  existente segue exibido, sem troca nem remoção pelo feed.
+
+> **Bug corrigido (2026-09-28):** antes, cada balde paginava com o próprio
+> offset e o frontend só continuava se a página viesse com 10 itens. Com todos
+> os posts de um mesmo usuário (balde "outros" vazio), a página 1 vinha com ≤7
+> itens e o scroll parava; além disso havia repetição/buraco entre páginas.
 
 **`seed`** é gerado pelo **cliente** uma única vez ao abrir a Home Feed e
-reenviado em toda chamada de "carregar mais": com o mesmo `seed`,
-`ORDER BY RAND(seed)` faz uma caminhada estável e sem repetição conforme o
-`page` (e o `offset` por balde) cresce — é o que dá o efeito de scroll
-infinito sem repetir posts aleatórios.
+reenviado em toda chamada de "carregar mais": com o mesmo `seed`, o backend
+recalcula a mesma ordem global e devolve a próxima fatia — scroll infinito sem
+repetir. Custo por requisição: 7 consultas só de ids sobre os publicados + 1
+das linhas da página (se o feed crescer muito, limitar a janela — ex.: 1.000
+mais recentes).
 
-**Decisão registrada (2026-09-27):** **sem** exclusão global entre páginas
-diferentes — só dentro da mesma página. Um post pode, raramente, reaparecer
-depois de várias páginas (ranking mudou entre chamadas, ou colisão de
-offset), ou a mudança de like/nota no meio do scroll pode reordenar os
-baldes de ranking. Risco aceito para não exigir estado de sessão no servidor
-nem o cliente reenviar uma lista crescente de IDs vistos.
+**Decisão 12 (2026-09-27, mantida na essência em 2026-09-28):** sem estado de
+sessão no servidor e sem o cliente reenviar lista de ids vistos. A correção de
+2026-09-28 respeita isso — a ordem global sai só do `seed` — e elimina a
+repetição entre páginas que antes era "risco aceito". Resta só um efeito
+cosmético: like/nota ou post novo no meio do scroll (mesmo `seed`) pode
+reordenar o que ainda não foi exibido.
 
 ## 6. Definições BUILD do módulo
 
@@ -538,6 +613,14 @@ o uso é `create`/`update`/`delete-soft` direto pela UI.
 | `list_columns`            | `uc_name` (autor), `tm_title` (timeline), `tp_content`, `tp_published_at`, `likes_count`, `dislikes_count`, `comments_count`, `ratings_avg`, `reposts_count`, `attachments_count`, `tp_status` e um indicador de repost (`tp_repost_of_id`)                                                                                                        |
 | `list_actions`            | **Ver** (`link`), **Comentar** (`link`), **Curtir** (`api_call` POST `timeline-post-reactions/create`), **Avaliar** (`api_call` POST `timeline-post-ratings/create`), **Republicar** (`api_call` POST `timeline-posts/create` com `repost_of_id`), **Denunciar** (`link`), **Editar** (`link`), **Excluir** (`api_call` DELETE `delete-soft/{id}`) |
 
+> **Atualização 2026-09-28 — lista enxuta** (`doc/sql/insert/20260928101518_timeline_feed_lista_enxuta.sql`):
+> colunas ativas = Autor, Timeline, Publicação, Publicada em, **Curtidas**
+> (id 82: ícone joia/não-joia + `likes_count`/`dislikes_count`), **Reações**
+> (id 84: comentários, nota média, republicações e "repost de #id" via
+> `concat_json` com ícones intercalados e `showIf`) e Anexos. Soft delete nas
+> colunas 83, 85, 86, 89 (mescladas) e 88 (Status, fora de uso). Ações viraram
+> botões só-ícone (`list_actions.icon`) com tooltip do rótulo.
+
 Mesmo padrão da lista `form-manager` do construtor: a página do feed só informa o
 `MANAGER_SLUG`; coluna, rótulo e ação vivem no banco.
 
@@ -570,6 +653,21 @@ Mesmo padrão da lista `form-manager` do construtor: a página do feed só infor
   post) — ver lacunas conhecidas em
   [`README_rotas_frontend.md`](../../../frontend/projeto54900/src/markdown/geral/README_rotas_frontend.md)
   do frontend.
+- **Rotas frontend dos 5 recursos — ALTERADAS em 2026-09-28:** os itens de menu
+  do módulo (`menu_manager` 31-35) deixaram de apontar para o renderizador de
+  formulário e passaram a apontar para rotas do próprio módulo que exibem
+  **listas padrão** (motor `list_manager`/`list_columns`, sem formulário):
+  `/v1/timeline-post`, `/v1/timeline-manager`, `/v1/timeline-comment`,
+  `/v1/timeline-report` e `/v1/timeline-attachment` — páginas
+  `pages/v1/timeline/<recurso>/GetAllPage.tsx`, wrappers de
+  `pages/v1/timeline/StandardListPage.tsx` (o slug do `list_manager` é homônimo
+  da rota). O renderizador `/v1/form/<slug>` **não** foi removido: os 5
+  formulários (slug `timeline-settings`, `timeline-post`, `timeline-comment`,
+  `timeline-report`, `timeline-attachment`) continuam acessíveis por ele.
+  SQL do menu DEV: `doc/sql/insert/20260928115754_timeline_rotas_frontend_listas.sql`.
+  *Pendência:* criar os 5 registros em `list_manager` (+ `list_columns`) para as
+  listas mostrarem dados — enquanto não existirem, a rota exibe
+  `Listagem '<slug>' não encontrada em list_manager`.
 
 O que falta aqui é só a Fase 3 (Home Feed) e as páginas de detalhe/edição de post.
 
@@ -588,9 +686,9 @@ O que falta aqui é só a Fase 3 (Home Feed) e as páginas de detalhe/edição d
 | 9   | Sem item de menu por formulário/lista                     | Os 5 formulários e a listagem já aparecem de forma genérica em "Listar Formulários"/"Listar" (construtor) — mesmo padrão de todos os outros módulos; só o item de navbar do feed foi criado (em `draft`, aguardando a Home Feed) |
 | 10  | Corpo do `api_call` de curtir/avaliar/republicar — RESOLVIDO em 2026-09-27 (Fase 2) | O motor genérico (`utils/listConstructor.tsx`) não envia corpo em nenhuma página do projeto; a página `timeline-posts/GetAllPage.tsx` passou a reconhecer `list_actions.data_action` (`reaction-like`/`rating`/`repost`, gravado nesta fase) para montar o corpo antes de chamar a API — decisão local desta página, não mudança no motor genérico |
 | 11  | "Editar"/"Ver"/"Comentar" do feed sem página de destino | Não existe formulário de edição de post nem página de detalhe/comentários ainda — os `list_actions` continuam apontando para essas rotas (documentado como lacuna conhecida em `README_rotas_frontend.md`, mesmo padrão de `upload.routes.tsx`), a resolver quando essas telas forem construídas |
-| 12  | Sem exclusão global de IDs entre páginas do `home-feed` | Só dedup dentro da mesma página (§5.1) — decisão do usuário (2026-09-27) para não exigir estado de sessão no servidor nem o cliente reenviar uma lista crescente de IDs vistos; risco cosmético aceito |
+| 12  | Sem estado de sessão no `home-feed` | Decisão do usuário (2026-09-27): não exigir estado de sessão no servidor nem o cliente reenviar lista de IDs vistos. **Atualizado em 2026-09-28:** a ordem global passa a ser recalculada só a partir do `seed` (§5.1) — sem repetição nem buraco entre páginas, e o scroll não para mais quando um balde vem vazio; `pagination.has_more` decide o fim |
 | 13  | Curtir/Avaliar "write-only" na Home Feed — **RESOLVIDO em 2026-09-27** | A view do feed não expunha a reação/nota do próprio usuário autenticado. Resolvido SEM mudar a view: `Processor::homeFeed` anexa `my_reaction_id`/`my_rating` em memória, com 2 queries em lote (não N+1) contra `timeline_post_reactions`/`timeline_post_ratings` — ver §11.3 |
-| 14  | Upload de anexo (`timeline_post_attachments`) não ligado no back-end | O `EndpointTable.php` só tem o comentário "previsto"; apesar do `StorageManager.php` já existir, a rota HTTP de upload/serve/download nunca foi registrada — `MediaPreview` (Fase 3b) exibe anexo que exista, mas não há como enviar um pela UI ainda |
+| 14  | Upload de anexo (`timeline_post_attachments`) — **RESOLVIDO em 2026-09-28** | Envio pelo próprio `POST create` multipart (já existia); `EndpointUpload.php` novo com `serve/{id}`/`download/{id}` (desvio sancionado igual ao do Upload, fora das 18 rotas); `file_url` preenchido com a URL de serve; **1 anexo por publicação** (`Processor::store` → `409`). Frontend: tipo `arquivo` no FormGrid + campo `file` no form `timeline-post` (SQL `doc/sql/insert/20260928081213_timeline_post_campo_arquivo.sql`); binário lido com token como `Blob` (`jwtauth` só aceita header, `<img src>` daria 401) |
 
 Fora do escopo desta entrega (podem virar recurso depois): seguir timeline,
 mensagem direta, notificação, like/estrela em comentário, denúncia de comentário,
@@ -661,7 +759,10 @@ pages/v1/timeline/home-feed/
 ├── PostCard.tsx        → template ÚNICO de exibição de 1 post (recebe
 │                          `post: FeedPost` já pronto). Busca SÓ os dados
 │                          próprios do card: anexos e comentários. Dono de
-│                          curtir/avaliar/comentar (via modal)/denunciar.
+│                          curtir/avaliar/comentar (via modal)/denunciar e,
+│                          só no post do próprio usuário, editar/excluir.
+├── EditPostModal.tsx   → modal do lápis do card — form 'timeline-post' sem
+│                          o anexo, texto preenchido; PUT update/{id}.
 └── NewPostModal.tsx    → modal do botão flutuante "+" — formulário de novo
                            post via FormGrid (schema do form_manager
                            'timeline-post'), reaproveitado também dentro do
@@ -675,7 +776,8 @@ pages/v1/timeline/home-feed/
 | Arquivo | Hooks | Componentes globais | Serviços (`@/services/v1`) | Outros |
 | --- | --- | --- | --- | --- |
 | `GetAllPage.tsx` | `useInfiniteScroll` | `PageHeader`, `EmptyState`, `LoadingOverlay` | `getHomeFeed` | `ApiError` (`@/services/http`), `normalizeList` |
-| `PostCard.tsx` | `useToast`, `useInfiniteScroll`, `useBootstrapTooltips` | `MediaPreview`, `Modal` | `timelinePostAttachmentsTable`, `timelinePostCommentsTable`, `timelinePostCommentsView`, `timelinePostReactionsTable`, `timelinePostRatingsTable` | `ApiError`, `normalizeItem`/`normalizeList`, `formatDateTime`, `paths` (link de Denunciar) |
+| `PostCard.tsx` | `useAuth`, `useToast`, `useInfiniteScroll`, `useBootstrapTooltips` | `MediaPreview`, `Modal`, `ConfirmModal` | `timelinePostsTable` (`deleteSoft`), `timelinePostAttachmentsTable`, `timelinePostCommentsTable`, `timelinePostCommentsView`, `timelinePostReactionsTable`, `timelinePostRatingsTable` | `ApiError`, `normalizeItem`/`normalizeList`, `formatDateTime`, `paths` (link de Denunciar) |
+| `EditPostModal.tsx` | `useToast` | `Modal`, `FormGrid` | `formManagerView`, `timelinePostsTable` (`update`) | `buildRenderSchema`, `formDataToPayload`/`errorDetail` |
 | `NewPostModal.tsx` | `useToast` | `Modal`, `FormGrid` (`components/ui/FormGrid/Input`) | `formManagerView` | `buildRenderSchema`/`isFormPublished` (`@/services/formSchema`), `formDataToPayload`/`errorDetail`/`resolveEndpoint`/`senderFor` (`@/utils/formSubmit`) |
 
 **Hooks GLOBAIS usados aqui e reaproveitáveis por qualquer módulo:**
@@ -699,9 +801,11 @@ GetAllPage.tsx (mount)
           └─ GET /api/v1/timeline-posts-view/home-feed?seed=&page=&limit=
               └─ ResourceViewController::homeFeed()
                   └─ Processor::homeFeed(seed, page, limit)
-                      ├─ SqlViewModel::randomToday / randomOtherUsers / topLiked / topRated
-                      │     (4 queries em view_timeline_posts, cotas 3/3/2/2)
-                      └─ attachMyState($merged, $userId)      ← RESOLVIDO §11.3
+                      ├─ homeFeedOrder(): SqlViewModel::idsToday / idsOtherUsers /
+                      │     idsTopLiked / idsTopRated / idsAllRandom (só ids) →
+                      │     ordem global 3/3/2/2 + completa com "demais" (§5.1)
+                      ├─ SqlViewModel::findByIdsOrdered(fatia da página)
+                      └─ attachMyState($rows, $userId)        ← RESOLVIDO §11.3
                             ├─ TimelinePostReactionsModel::whereIn/where→findAll
                             └─ TimelinePostRatingsModel::whereIn/where→findAll
           ↩ JSON { data: [...posts com my_reaction_id/my_rating] }

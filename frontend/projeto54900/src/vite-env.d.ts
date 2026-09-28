@@ -14,3 +14,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// Injetado por vite.config.ts (`define`): caminho absoluto (barras "/") de
+// doc/clipart_teste no `npm run dev`; '' no build. Uso: fake fill dev-only da
+// Timeline (src/dev/fakeFill/timelinePost.ts).
+declare const __DEV_CLIPART_DIR__: string;

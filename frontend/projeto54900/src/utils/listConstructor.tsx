@@ -100,9 +100,17 @@ export interface ConcatIconPart {
   classTrue?: string;
   classFalse?: string;
   title?: string;
+  showIf?: BusinessRule | null;
 }
 
-export type ConcatPart = { type: 'field'; key: string } | { type: 'literal'; value: string } | ConcatIconPart;
+/**
+ * `showIf` (opcional, qualquer parte): mesmo formato de business_rule_json;
+ * falsa para a linha -> a parte nao entra nem no texto nem no desenho.
+ */
+export type ConcatPart =
+  | { type: 'field'; key: string; showIf?: BusinessRule | null }
+  | { type: 'literal'; value: string; showIf?: BusinessRule | null }
+  | ConcatIconPart;
 export interface BusinessRule {
   field: string;
   op: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
@@ -189,11 +197,16 @@ export function toAction(raw: Record<string, unknown>): ListActionRow {
 
 /** Monta o texto de uma coluna "concat" juntando literais e campos da linha, na ordem definida em concat_json. */
 export function resolveConcat(parts: ConcatPart[], row: Record<string, unknown>): string {
-  return parts
+  return visibleParts(parts, row)
     .map((part) =>
       part.type === 'literal' ? str(part.value) : part.type === 'field' ? str(row[part.key]) : '',
     )
     .join('');
+}
+
+/** Partes de concat_json cujo `showIf` (se houver) e verdadeiro para a linha. */
+function visibleParts(parts: ConcatPart[], row: Record<string, unknown>): ConcatPart[] {
+  return parts.filter((p) => evalBusinessRule(p.showIf ?? null, row));
 }
 
 /** Valor de exibicao de uma celula: usa concat_json se houver, senao o campo direto; cai no fallback da coluna se vazio. */
@@ -296,8 +309,9 @@ export function renderCell(column: ListColumnRow, row: Record<string, unknown>):
 
   // Partes 'icon' do concat_json: as que vem antes da 1a parte de texto
   // ficam a esquerda do conteudo, as demais a direita.
-  const parts = Array.isArray(column.concat) ? column.concat : [];
+  const parts = Array.isArray(column.concat) ? visibleParts(column.concat, row) : [];
   if (!parts.some(isIconPart)) return body;
+  if (hasInterleavedIcon(parts)) return renderInOrder(parts, column, row);
   const firstText = parts.findIndex((p) => !isIconPart(p));
   const leading = parts.filter((p, i) => isIconPart(p) && (firstText === -1 || i < firstText));
   const trailing = parts.filter((p, i) => isIconPart(p) && firstText !== -1 && i > firstText);
@@ -313,6 +327,40 @@ export function renderCell(column: ListColumnRow, row: Record<string, unknown>):
 
 function isIconPart(part: ConcatPart): part is ConcatIconPart {
   return part.type === 'icon' && typeof part.icon === 'string' && part.icon !== '';
+}
+
+/** Ha icone ENTRE duas partes de texto (ex.: 👍 likes 👎 dislikes)? */
+function hasInterleavedIcon(parts: ConcatPart[]): boolean {
+  const firstText = parts.findIndex((p) => !isIconPart(p));
+  const lastText = parts.length - 1 - [...parts].reverse().findIndex((p) => !isIconPart(p));
+  return firstText !== -1 && parts.some((p, i) => isIconPart(p) && i > firstText && i < lastText);
+}
+
+/**
+ * Desenho em ordem para icones intercalados: cada trecho de texto entre
+ * icones vira um <span> proprio (vazio -> fallback da coluna). Texto puro,
+ * sem CUSTOM_CELL_RENDERERS (o format vale para o valor inteiro, nao para
+ * trechos).
+ */
+function renderInOrder(parts: ConcatPart[], column: ListColumnRow, row: Record<string, unknown>): ReactNode {
+  const nodes: ReactNode[] = [];
+  let run: ConcatPart[] = [];
+  const flush = () => {
+    if (run.length === 0) return;
+    const text = resolveConcat(run, row);
+    nodes.push(<span key={`s${nodes.length}`}>{text === '' ? column.fallback : text}</span>);
+    run = [];
+  };
+  parts.forEach((p) => {
+    if (isIconPart(p)) {
+      flush();
+      nodes.push(renderIconPart(p, row, `i${nodes.length}`));
+    } else {
+      run.push(p);
+    }
+  });
+  flush();
+  return <span className="d-inline-flex align-items-center gap-1 text-nowrap">{nodes}</span>;
 }
 
 function renderIconPart(part: ConcatIconPart, row: Record<string, unknown>, key: string): ReactNode {

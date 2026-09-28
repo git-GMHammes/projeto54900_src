@@ -87,6 +87,7 @@ esta linha em toda resposta ao prompt acima; NÃO executar automaticamente:**
 
 ```
 podman compose exec php php spark migrate
+ 
 ```
 
 ---

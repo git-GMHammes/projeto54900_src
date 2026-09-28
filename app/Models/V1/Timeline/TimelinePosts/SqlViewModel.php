@@ -36,97 +36,189 @@ class SqlViewModel extends BaseViewModel
 
     public array $filterFields = ['tp_status', 'tm_status', 'um_status'];
 
+    /** Tamanho do pool de publicados mais recentes sorteado por idsRecent(). */
+    private const RECENT_POOL = 20;
+
     // -------------------------------------------------------------------------
     // Baldes do Home Feed (feed misto) — ver Services/V1/Timeline/TimelinePosts/Processor::homeFeed
     // -------------------------------------------------------------------------
 
+    // Cada metodo devolve a FILA COMPLETA de ids do balde, na ordem do balde
+    // (so a coluna id — barato). Processor::homeFeed intercala as filas numa
+    // ordem global unica pelo $seed e fatia por pagina; por isso aqui nao ha
+    // limit/offset nem exclusao de ids (exceto idsRecent, que e um pool fixo).
+    //
+    // Todas partem de feedBase(): so publicados e NUNCA um post denunciado
+    // (pedido do usuario, 2026-09-28).
+
     /**
      * Balde 1 — publicacoes de HOJE, ordem aleatoria seedada. $seed vem do
-     * cliente (gerado uma vez ao abrir a Home Feed, reenviado a cada pagina)
-     * para o ORDER BY RAND($seed) dar uma caminhada estavel e sem repeticao
-     * conforme o $offset cresce por pagina — mesmo $seed, $offset diferente.
+     * cliente (gerado uma vez ao abrir a Home Feed, reenviado a cada pagina):
+     * RAND($seed) sobre o mesmo conjunto de linhas da sempre a mesma ordem.
+     *
+     * @return list<int>
      */
-    public function randomToday(int $limit, int $offset, int $seed, array $excludeIds = []): array
+    public function idsToday(int $seed): array
     {
-        $builder = $this->db->table($this->table)
-            ->where('tp_status', 'published')
-            ->where('DATE(tp_published_at) = CURDATE()', null, false);
-
-        if (!empty($excludeIds)) {
-            $builder->whereNotIn('id', $excludeIds);
-        }
-
-        return $builder
-            ->orderBy('RAND(' . $seed . ')', '', false)
-            ->limit($limit, $offset)
-            ->get()
-            ->getResultArray();
+        return $this->idsFrom(
+            $this->feedBase()
+                ->where('DATE(tp_published_at) = CURDATE()', null, false)
+                ->orderBy('RAND(' . $seed . ')', '', false)
+        );
     }
 
     /**
      * Balde 2 — publicacoes de OUTROS usuarios (exclui o autenticado), ordem
-     * aleatoria seedada. Mesmo $seed do balde 1 (o cliente usa um unico seed
-     * por sessao da Home Feed) — cada balde tem seu proprio espaco de
-     * offset, entao nao colidem entre si.
+     * aleatoria seedada.
+     *
+     * @return list<int>
      */
-    public function randomOtherUsers(int $limit, int $offset, int $seed, int $currentUserId, array $excludeIds = []): array
+    public function idsOtherUsers(int $seed, int $currentUserId): array
     {
-        $builder = $this->db->table($this->table)
-            ->where('tp_status', 'published')
-            ->where('tp_user_manager_id !=', $currentUserId);
-
-        if (!empty($excludeIds)) {
-            $builder->whereNotIn('id', $excludeIds);
-        }
-
-        return $builder
-            ->orderBy('RAND(' . $seed . ')', '', false)
-            ->limit($limit, $offset)
-            ->get()
-            ->getResultArray();
+        return $this->idsFrom(
+            $this->feedBase()
+                ->where('tp_user_manager_id !=', $currentUserId)
+                ->orderBy('RAND(' . $seed . ')', '', false)
+        );
     }
 
     /**
-     * Balde 3 — mais curtidos (ranking estavel por likes_count). Paginado por
-     * $offset (nao por RAND) — mesma pagina sempre pega a "proxima fatia" do
-     * ranking, sem repetir enquanto likes_count nao mudar entre chamadas.
+     * Balde 3 — mais curtidos (ranking estavel por likes_count, desempate id).
+     *
+     * @return list<int>
      */
-    public function topLiked(int $limit, int $offset, array $excludeIds = []): array
+    public function idsTopLiked(): array
     {
-        $builder = $this->db->table($this->table)->where('tp_status', 'published');
-
-        if (!empty($excludeIds)) {
-            $builder->whereNotIn('id', $excludeIds);
-        }
-
-        return $builder
-            ->orderBy('likes_count', 'DESC')
-            ->orderBy('id', 'DESC')
-            ->limit($limit, $offset)
-            ->get()
-            ->getResultArray();
+        return $this->idsFrom(
+            $this->feedBase()
+                ->orderBy('likes_count', 'DESC')
+                ->orderBy('id', 'DESC')
+        );
     }
 
     /**
-     * Balde 4 — mais bem avaliados (ranking estavel por ratings_avg, desempate
-     * por ratings_count). So entram publicacoes com ao menos uma avaliacao.
+     * Balde 4 — mais bem avaliados (ratings_avg, desempate ratings_count/id).
+     * So entram publicacoes com ao menos uma avaliacao.
+     *
+     * @return list<int>
      */
-    public function topRated(int $limit, int $offset, array $excludeIds = []): array
+    public function idsTopRated(): array
     {
-        $builder = $this->db->table($this->table)
-            ->where('tp_status', 'published')
-            ->where('ratings_avg IS NOT NULL', null, false);
+        return $this->idsFrom(
+            $this->feedBase()
+                ->where('ratings_avg IS NOT NULL', null, false)
+                ->orderBy('ratings_avg', 'DESC')
+                ->orderBy('ratings_count', 'DESC')
+                ->orderBy('id', 'DESC')
+        );
+    }
 
-        if (!empty($excludeIds)) {
-            $builder->whereNotIn('id', $excludeIds);
+    /**
+     * Fila "demais" — TODOS os publicados, ordem aleatoria seedada. Completa a
+     * vaga de um balde que se esgotou (ex.: sem posts de outros usuarios) e
+     * garante que todo post publicado aparece em alguma pagina.
+     *
+     * @return list<int>
+     */
+    public function idsAllRandom(int $seed): array
+    {
+        return $this->idsFrom(
+            $this->feedBase()
+                ->orderBy('RAND(' . ($seed + 1) . ')', '', false)
+        );
+    }
+
+    /**
+     * Bloco "recentes" da 1a pagina — sorteio seedado entre os RECENT_POOL
+     * publicados mais recentes (subconsulta com LIMIT; RAND($seed) so sobre
+     * esse pool).
+     *
+     * @return list<int>
+     */
+    public function idsRecent(int $seed): array
+    {
+        $pool = $this->feedBase()
+            ->orderBy('tp_published_at', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->limit(self::RECENT_POOL)
+            ->getCompiledSelect();
+
+        $rows = $this->db->query('SELECT id FROM (' . $pool . ') AS recent_pool ORDER BY RAND(' . $seed . ')')
+            ->getResultArray();
+
+        return array_map(static fn (array $r): int => (int) $r['id'], $rows);
+    }
+
+    /**
+     * Mais comentados (ranking estavel por comments_count, desempate id).
+     *
+     * @return list<int>
+     */
+    public function idsTopCommented(): array
+    {
+        return $this->idsFrom(
+            $this->feedBase()
+                ->orderBy('comments_count', 'DESC')
+                ->orderBy('id', 'DESC')
+        );
+    }
+
+    /**
+     * Linhas completas da view para os ids da pagina, NA ORDEM recebida.
+     *
+     * @param list<int> $ids
+     */
+    public function findByIdsOrdered(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
         }
 
-        return $builder
-            ->orderBy('ratings_avg', 'DESC')
-            ->orderBy('ratings_count', 'DESC')
-            ->orderBy('id', 'DESC')
-            ->limit($limit, $offset)
-            ->get()
-            ->getResultArray();
+        // Refiltra por feedBase(): post denunciado entre o calculo da ordem e a
+        // carga da pagina tambem nao aparece.
+        $rows = $this->feedBase('*')->whereIn('id', $ids)->get()->getResultArray();
+
+        $byId = [];
+        foreach ($rows as $row) {
+            $byId[(int) $row['id']] = $row;
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $ordered[] = $byId[$id];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Base de toda consulta do Home Feed: so publicados e SEM denuncia ativa
+     * (timeline_post_reports com deleted_at nulo, qualquer status — inclusive
+     * 'rejected'). Posts denunciados NUNCA sao exibidos no feed.
+     */
+    private function feedBase(string $select = 'id'): \CodeIgniter\Database\BaseBuilder
+    {
+        $reports = $this->db->prefixTable('timeline_post_reports');
+        $view    = $this->db->prefixTable($this->table);
+
+        return $this->db->table($this->table)
+            ->select($select)
+            ->where('tp_status', 'published')
+            ->where(
+                'NOT EXISTS (SELECT 1 FROM ' . $reports . ' AS tpr'
+                . ' WHERE tpr.timeline_post_id = ' . $view . '.id AND tpr.deleted_at IS NULL)',
+                null,
+                false
+            );
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function idsFrom(\CodeIgniter\Database\BaseBuilder $builder): array
+    {
+        return array_map(static fn (array $r): int => (int) $r['id'], $builder->get()->getResultArray());
     }
 }

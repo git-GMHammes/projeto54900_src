@@ -57,11 +57,11 @@ _slug `timeline` · icon `person-lines-fill`_
 
 | Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Título | `title` | text | 8 | sim | placeholder "Ex: Minha timeline"; alimenta o `slug` enquanto ele não for editado à mão |
-| 1 | Status | `status` | radio | 4 | não | `inline=1`; opções: Rascunho (`draft`), Ativa (`active`), Inativa (`inactive`) |
+| 1 | Título | `title` | text | 8 | sim | placeholder "Ex: Minha timeline"; alimenta o `slug` enquanto ele não for editado à mão; help (2026-09-28): "Nome exibido da sua timeline. Obrigatório." |
+| 1 | Status | `status` | radio | 4 | não | `inline=1`; opções: Rascunho (`draft`), Ativa (`active`), Inativa (`inactive`); help (2026-09-28): "Ativa = visível no feed; Inativa = oculta; Rascunho = ainda não publicada." |
 | 2 | Slug | `slug` | text | 12 | sim | identidade legível (`UNIQUE` no banco), no molde do `form_manager.slug`; a API busca pelo `id`, nunca pelo slug |
 | 3 | Imagem de capa | `cover_image_url` | text | 12 | não | por enquanto URL; o arquivo em si é do módulo Upload (`module='timeline'`, `collection='cover'`) — o `FormGrid` não tem campo de arquivo |
-| 4 | Descrição | `description` | textarea | 12 | não | `rows: 2`, `showCounter` |
+| 4 | Descrição | `description` | textarea | 12 | não | `rows: 2`, `showCounter`; help (2026-09-28): "Texto opcional de apresentação da sua timeline." |
 
 Fora do formulário (preenchidos pelo Processor): `user_manager_id` (dono — vem da
 sessão, base da `UNIQUE KEY`), `version` (default `1`) e os timestamps.

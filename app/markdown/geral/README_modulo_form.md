@@ -138,8 +138,13 @@ form_fields.help_text → view (fc_help_text) → formSchema.ts buildField()
 - Na árvore markdown de cada form (`form/<modulo>/*.md`), a tabela de campos
   tem a coluna fixa **Tooltip (`help_text`)**; não se gera `INSERT` com
   essa coluna vazia. Modelo: [`form/calendar/calendar_manager.md`](form/calendar/calendar_manager.md).
-- Gravar/corrigir `help_text` com acento via API do app (`PUT
-  /api/v1/form-campos/update/{id}`), não por SQL cru (charset).
+- Gravar/corrigir `help_text` com acento: via API do app (`PUT
+  /api/v1/form-campos/update/{id}`) **ou** por SQL direto no banco DEV
+  **somente** com `mysql --default-character-set=utf8mb4` (+ `SET NAMES
+  utf8mb4;` no script) **e** um `SELECT` de conferência em
+  `view_form_manager` logo depois, lendo o texto acentuado de volta — SQL sem
+  charset explícito continua proibido (grava acento corrompido). Aceito por
+  decisão do usuário em 2026-09-28 (scripts `doc/sql/insert/20260928*_timeline_*`).
 - Espelho no frontend:
   [`README_alerta_padroes_ui.md`](../../../frontend/projeto54900/src/markdown/geral/README_alerta_padroes_ui.md)
   (item 8). Origem: 2026-09-20 (form `calendario` publicado sem tooltip) e

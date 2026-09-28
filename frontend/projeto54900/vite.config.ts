@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
@@ -7,13 +7,20 @@ import { fileURLToPath, URL } from 'node:url';
 //                        deploy em subpasta sobrescreve com VITE_BASE_PATH no build.
 // - `build.outDir`    -> `dist/` local (padrao). O deploy publica o conteudo de dist/.
 // - alias `@`         -> src/ (evita imports relativos profundos).
-export default defineConfig(({ mode }) => {
+// - `__DEV_CLIPART_DIR__` -> caminho absoluto de doc/clipart_teste (imagens de
+//                        TESTE do fake fill da Timeline) SO no `npm run dev`;
+//                        no build vira '' — nenhuma imagem de teste entra no dist/.
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const base = env.VITE_BASE_PATH || '/';
+  const clipartDir = fileURLToPath(new URL('../../../doc/clipart_teste', import.meta.url));
 
   return {
     base,
     plugins: [react()],
+    define: {
+      __DEV_CLIPART_DIR__: JSON.stringify(command === 'serve' ? clipartDir.replace(/\\/g, '/') : ''),
+    },
     css: {
       preprocessorOptions: {
         scss: {
@@ -36,6 +43,13 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       // Editando os arquivos no Windows: polling garante o HMR reagir.
       watch: { usePolling: true, interval: 100 },
+      // fs.allow: raiz padrao do Vite + a pasta de imagens de TESTE do
+      // repositorio (doc/clipart_teste), lida via /@fs/ pelo fake fill
+      // dev-only da Timeline (src/dev/fakeFill/timelinePost.ts). So o
+      // dev-server usa isto; o build nao referencia essas imagens.
+      fs: {
+        allow: [searchForWorkspaceRoot(process.cwd()), clipartDir],
+      },
       // Proxy do dev-server: encaminha /api e /ws para o backend (containers do
       // docker-compose publicados no host em :54900), evitando CORS no dev.
       proxy: {

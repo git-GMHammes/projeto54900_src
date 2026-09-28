@@ -15,7 +15,7 @@
  * DEPENDÊNCIAS: services/resourceFactory (createResource) e constants/api
  * (API_GROUPS.timelinePostCommentsView).
  * CONSUMIDORES: pages/v1/timeline/home-feed/PostCard.tsx (find por
- * tc_timeline_post_id, para os 3 primeiros comentários + "ver mais").
+ * tc_timeline_post_id, para os 3 comentários mais recentes + "ver mais", id DESC).
  * Reexportado pelo barrel services/v1/index.ts.
  * -------------------------------------------------------------------------
  */
