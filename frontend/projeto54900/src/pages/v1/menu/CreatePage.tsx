@@ -8,6 +8,9 @@
 // roles usa o par toStringList/parseStringList (README_campo_json_montado.md).
 // placement (Navbar/Offcanvas) nasce 'navbar'; so pesa no item de topo.
 // status nao entra aqui: nasce 'draft' pelo DEFAULT da coluna.
+// icon usa IconSelect (fora do FormGrid, mesmo padrao do FormBuilderPage/
+// grupoSchema — nao e um tipo do FormGrid). is_bookmark e flag-unica via
+// checkbox com 1 option (mesmo padrao de 'collapsed'/'required' no FormBuilderPage).
 
 import { useCallback, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -15,6 +18,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
 import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
+import IconSelect from '@/components/ui/IconSelect';
 import PageHeader from '@/components/global/PageHeader';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
@@ -46,7 +50,9 @@ export default function CreatePage() {
   const [parentId, setParentId] = useState('');
   const [title, setTitle] = useState('');
   const [reactRoute, setReactRoute] = useState('');
+  const [icon, setIcon] = useState('');
   const [placement, setPlacement] = useState<MenuPlacement>('navbar');
+  const [isBookmark, setIsBookmark] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('0');
   const [submitting, setSubmitting] = useState(false);
@@ -118,7 +124,7 @@ export default function CreatePage() {
         fields: [
           {
             type: 'select',
-            col: 8,
+            col: 6,
             label: 'Roles (opcional)',
             multiple: true,
             src: USER_ROLES_SRC,
@@ -128,11 +134,20 @@ export default function CreatePage() {
             onChangeMultiple: (values) => setRoles(values),
           },
           {
-            col: 4,
+            col: 3,
             label: 'Ordem (sort_order)',
             inputMode: 'numeric',
             value: sortOrder,
             onChange: (e) => setSortOrder(e.target.value.replace(/\D/g, '')),
+          },
+          {
+            type: 'checkbox',
+            col: 3,
+            name: 'is_bookmark',
+            title: 'Marca o item para aparecer na lista de favoritos do usuario.',
+            options: [{ id: 'is_bookmark', value: '1', label: 'Favorito (bookmark)' }],
+            value: isBookmark ? ['1'] : [],
+            onChange: (values) => setIsBookmark(values.includes('1')),
           },
         ],
       },
@@ -153,6 +168,8 @@ export default function CreatePage() {
       };
       if (parentId) payload.parent_id = Number(parentId);
       if (reactRoute.trim()) payload.react_route = reactRoute.trim();
+      if (icon) payload.icon = icon;
+      payload.is_bookmark = isBookmark ? 1 : 0;
       const rolesStr = toStringList(roles);
       if (rolesStr) payload.roles = rolesStr;
       if (sortOrder) payload.sort_order = Number(sortOrder);
@@ -173,7 +190,7 @@ export default function CreatePage() {
         setSubmitting(false);
       }
     },
-    [navManagerId, title, parentId, reactRoute, placement, roles, sortOrder, navigate, toast],
+    [navManagerId, title, parentId, reactRoute, icon, placement, isBookmark, roles, sortOrder, navigate, toast],
   );
 
   return (
@@ -184,6 +201,12 @@ export default function CreatePage() {
       />
       <form onSubmit={(e) => void handleSubmit(e)} noValidate>
         <FormGrid schema={schema} />
+        <div className="row g-3">
+          <div className="col-md-4 mb-1">
+            <label className="form-label">Ícone</label>
+            <IconSelect value={icon} onChange={setIcon} />
+          </div>
+        </div>
         <div className="d-flex gap-2 mt-4 pt-3 border-top">
           <button type="submit" className="btn btn-primary" disabled={submitting}>
             {submitting ? 'Criando...' : 'Criar'}

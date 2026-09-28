@@ -20,7 +20,9 @@ export interface MenuManagerItem {
   parent_id: number | string | null;
   title: string;
   react_route: string | null;
+  icon?: string | null;
   placement?: MenuPlacement;
+  is_bookmark?: boolean;
   roles: string[] | null;
   sort_order: number | string;
   status: MenuManagerStatus;

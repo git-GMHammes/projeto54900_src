@@ -130,6 +130,7 @@ export default function Navbar() {
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
                       >
+                        {item.icon && <i className={`bi bi-${item.icon} me-1`} aria-hidden="true" />}
                         {item.label}
                       </NavLink>
                     ) : (
@@ -141,6 +142,7 @@ export default function Navbar() {
                         aria-expanded="false"
                         onClick={(e) => e.preventDefault()}
                       >
+                        {item.icon && <i className={`bi bi-${item.icon} me-1`} aria-hidden="true" />}
                         {item.label}
                       </a>
                     )}
@@ -237,7 +239,10 @@ export default function Navbar() {
                       aria-expanded="false"
                       aria-controls={`${OFFCANVAS_ID}Group${index}`}
                     >
-                      {item.label}
+                      <span>
+                        {item.icon && <i className={`bi bi-${item.icon} me-1`} aria-hidden="true" />}
+                        {item.label}
+                      </span>
                       <i className="bi bi-chevron-down small" aria-hidden="true" />
                     </button>
                     <div className="collapse" id={`${OFFCANVAS_ID}Group${index}`}>

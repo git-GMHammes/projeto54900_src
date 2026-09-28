@@ -6,7 +6,10 @@
 // pai" muda de `src` (com ?nav_manager_id=) sempre que o nav muda. roles usa
 // o par toStringList/parseStringList (README_campo_json_montado.md). Preload
 // via menuManagerTable.get(id); status so entra no update. placement
-// (Navbar/Offcanvas) ausente no registro = 'navbar'.
+// (Navbar/Offcanvas) ausente no registro = 'navbar'. icon usa IconSelect
+// (fora do FormGrid, mesmo padrao do FormBuilderPage/grupoSchema). is_bookmark
+// e flag-unica via checkbox com 1 option (mesmo padrao de 'collapsed'/'required'
+// no FormBuilderPage).
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -14,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
 import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
+import IconSelect from '@/components/ui/IconSelect';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
@@ -51,7 +55,9 @@ export default function UpdatePage() {
   const [parentId, setParentId] = useState('');
   const [title, setTitle] = useState('');
   const [reactRoute, setReactRoute] = useState('');
+  const [icon, setIcon] = useState('');
   const [placement, setPlacement] = useState<MenuPlacement>('navbar');
+  const [isBookmark, setIsBookmark] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('0');
   const [status, setStatus] = useState('active');
@@ -75,7 +81,9 @@ export default function UpdatePage() {
         setParentId(row.parent_id !== null && row.parent_id !== undefined ? toText(row.parent_id, '') : '');
         setTitle(toText(row.title, ''));
         setReactRoute(toText(row.react_route, ''));
+        setIcon(toText(row.icon, ''));
         setPlacement(row.placement === 'offcanvas' ? 'offcanvas' : 'navbar');
+        setIsBookmark(row.is_bookmark === 1 || row.is_bookmark === true || row.is_bookmark === '1');
         setRoles(parseStringList(typeof row.roles === 'string' ? row.roles : ''));
         setSortOrder(toText(row.sort_order, '0'));
         setStatus(toText(row.status, 'active'));
@@ -157,7 +165,7 @@ export default function UpdatePage() {
         fields: [
           {
             type: 'select',
-            col: 6,
+            col: 5,
             label: 'Roles (opcional)',
             multiple: true,
             src: USER_ROLES_SRC,
@@ -167,7 +175,7 @@ export default function UpdatePage() {
             onChangeMultiple: (values) => setRoles(values),
           },
           {
-            col: 3,
+            col: 2,
             label: 'Ordem (sort_order)',
             inputMode: 'numeric',
             value: sortOrder,
@@ -188,6 +196,15 @@ export default function UpdatePage() {
             labelKey: 'label',
             onChange: (value) => setStatus(value),
           },
+          {
+            type: 'checkbox',
+            col: 2,
+            name: 'is_bookmark',
+            title: 'Marca o item para aparecer na lista de favoritos do usuario.',
+            options: [{ id: 'is_bookmark', value: '1', label: 'Favorito' }],
+            value: isBookmark ? ['1'] : [],
+            onChange: (values) => setIsBookmark(values.includes('1')),
+          },
         ],
       },
     ],
@@ -204,7 +221,9 @@ export default function UpdatePage() {
         nav_manager_id: Number(navManagerId),
         title: title.trim(),
         react_route: reactRoute.trim() || null,
+        icon: icon || null,
         placement,
+        is_bookmark: isBookmark ? 1 : 0,
         roles: toStringList(roles) || null,
         sort_order: sortOrder ? Number(sortOrder) : 0,
         status,
@@ -226,7 +245,7 @@ export default function UpdatePage() {
         setSubmitting(false);
       }
     },
-    [id, navManagerId, title, parentId, reactRoute, placement, roles, sortOrder, status, navigate, toast],
+    [id, navManagerId, title, parentId, reactRoute, icon, placement, isBookmark, roles, sortOrder, status, navigate, toast],
   );
 
   return (
@@ -240,6 +259,12 @@ export default function UpdatePage() {
       {!loading && !error && (
         <form onSubmit={(e) => void handleSubmit(e)} noValidate>
           <FormGrid schema={schema} />
+          <div className="row g-3">
+            <div className="col-md-4 mb-1">
+              <label className="form-label">Ícone</label>
+              <IconSelect value={icon} onChange={setIcon} />
+            </div>
+          </div>
           <div className="d-flex gap-2 mt-4 pt-3 border-top">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar'}

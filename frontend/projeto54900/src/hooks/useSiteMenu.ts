@@ -47,6 +47,8 @@ export interface SiteMenuLink {
 export interface SiteMenuItem {
   label: string;
   link: SiteMenuLink | null;
+  /** Nome do icone Bootstrap (sem `bi-`) do item pai — Navbar so exibe quando children.length > 0. */
+  icon?: string | null;
   children: SiteMenuLink[];
 }
 
@@ -64,7 +66,7 @@ function toLink(item: MenuManagerItem): SiteMenuLink | null {
 }
 
 /** roles null = liberado para qualquer autenticado; senao, precisa do slug do usuario na lista. */
-function isRoleAllowed(roles: string[] | null, roleSlug: string | null): boolean {
+export function isRoleAllowed(roles: string[] | null, roleSlug: string | null): boolean {
   if (roles === null) return true;
   return roleSlug !== null && roles.includes(roleSlug);
 }
@@ -101,7 +103,7 @@ async function fetchSiteMenu(signal: AbortSignal, roleSlug: string | null): Prom
           .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
           .map(toLink)
           .filter((link): link is SiteMenuLink => link !== null);
-        return { label: item.title, link: toLink(item), children };
+        return { label: item.title, link: toLink(item), icon: item.icon ?? null, children };
       })
       .filter((item) => item.link !== null || item.children.length > 0);
 
