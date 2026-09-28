@@ -589,7 +589,7 @@ O que falta aqui é só a Fase 3 (Home Feed) e as páginas de detalhe/edição d
 | 10  | Corpo do `api_call` de curtir/avaliar/republicar — RESOLVIDO em 2026-09-27 (Fase 2) | O motor genérico (`utils/listConstructor.tsx`) não envia corpo em nenhuma página do projeto; a página `timeline-posts/GetAllPage.tsx` passou a reconhecer `list_actions.data_action` (`reaction-like`/`rating`/`repost`, gravado nesta fase) para montar o corpo antes de chamar a API — decisão local desta página, não mudança no motor genérico |
 | 11  | "Editar"/"Ver"/"Comentar" do feed sem página de destino | Não existe formulário de edição de post nem página de detalhe/comentários ainda — os `list_actions` continuam apontando para essas rotas (documentado como lacuna conhecida em `README_rotas_frontend.md`, mesmo padrão de `upload.routes.tsx`), a resolver quando essas telas forem construídas |
 | 12  | Sem exclusão global de IDs entre páginas do `home-feed` | Só dedup dentro da mesma página (§5.1) — decisão do usuário (2026-09-27) para não exigir estado de sessão no servidor nem o cliente reenviar uma lista crescente de IDs vistos; risco cosmético aceito |
-| 13  | Curtir/Avaliar "write-only" na Home Feed | A view do feed não expõe a reação/nota do próprio usuário autenticado — implementar isso exigiria uma consulta extra por post (N+1) ou um novo campo calculado na view; adiado. O card mostra "curti"/"minha nota" só localmente, durante a sessão da tela aberta |
+| 13  | Curtir/Avaliar "write-only" na Home Feed — **RESOLVIDO em 2026-09-27** | A view do feed não expunha a reação/nota do próprio usuário autenticado. Resolvido SEM mudar a view: `Processor::homeFeed` anexa `my_reaction_id`/`my_rating` em memória, com 2 queries em lote (não N+1) contra `timeline_post_reactions`/`timeline_post_ratings` — ver §11.3 |
 | 14  | Upload de anexo (`timeline_post_attachments`) não ligado no back-end | O `EndpointTable.php` só tem o comentário "previsto"; apesar do `StorageManager.php` já existir, a rota HTTP de upload/serve/download nunca foi registrada — `MediaPreview` (Fase 3b) exibe anexo que exista, mas não há como enviar um pela UI ainda |
 
 Fora do escopo desta entrega (podem virar recurso depois): seguir timeline,
@@ -634,12 +634,202 @@ histórico de edição, `visibility` privada.
      botão flutuante de novo post (modal reaproveitando a técnica do
      `FormRendererPage`, sem campo de anexo). Menu "Timeline → Início"
      ativo (`menu_manager.id=30`), irmão de "Feed" (Fase 2).
-     **Lacunas conhecidas:** (1) upload de anexo ainda não tem rota ligada no
+     **Lacuna conhecida:** upload de anexo ainda não tem rota ligada no
      back-end (`timeline_post_attachments`), então `MediaPreview` só mostra
-     anexo se ele existir por outro meio; (2) curtir/avaliar são "write-only"
-     — a API não devolve a reação/nota prévia do próprio usuário, então o
-     "já curti"/"minha nota" só valem durante a sessão da tela aberta; (3)
-     "Denunciar" abre o formulário genérico sem pré-preencher a publicação.
+     anexo se ele existir por outro meio; "Denunciar" abre o formulário
+     genérico sem pré-preencher a publicação. *(Resolvido em 2026-09-27,
+     ver §11: persistência de curtir/avaliar entre sessões, dropdown da
+     Navbar travando na Home Feed, toast sobrepondo a Navbar, e comentário
+     via modal em vez de input fixo no rodapé do card.)*
+
+## 10. Frontend — mapa de arquivos, dependências e fluxo (Home Feed)
+
+Esta seção documenta **só o lado React** (o lado PHP já está mapeado nas
+§§4-5). Escopo: `pages/v1/timeline/home-feed/*` (a Home Feed, `/v1/timeline`)
+e, de passagem, `pages/v1/timeline/timeline-posts/GetAllPage.tsx` (a listagem
+clássica, `/v1/timeline-posts`, que **não** usa nada disto — é o motor
+genérico de listas, ver `README_list_constructor.md`).
+
+### 10.1 Árvore de arquivos e responsabilidade
+
+```
+pages/v1/timeline/home-feed/
+├── GetAllPage.tsx      → página /v1/timeline. Busca as páginas do feed
+│                          (getHomeFeed), monta o scroll infinito, renderiza
+│                          1 <PostCard/> por post e o botão flutuante "+"
+│                          (abre <NewPostModal/>). Dono do tipo `FeedPost`.
+├── PostCard.tsx        → template ÚNICO de exibição de 1 post (recebe
+│                          `post: FeedPost` já pronto). Busca SÓ os dados
+│                          próprios do card: anexos e comentários. Dono de
+│                          curtir/avaliar/comentar (via modal)/denunciar.
+└── NewPostModal.tsx    → modal do botão flutuante "+" — formulário de novo
+                           post via FormGrid (schema do form_manager
+                           'timeline-post'), reaproveitado também dentro do
+                           PostCard? NÃO — é só do GetAllPage; o modal de
+                           comentário do PostCard é outro <Modal/> genérico,
+                           não este componente.
+```
+
+### 10.2 Tabela de dependências (quem importa o quê)
+
+| Arquivo | Hooks | Componentes globais | Serviços (`@/services/v1`) | Outros |
+| --- | --- | --- | --- | --- |
+| `GetAllPage.tsx` | `useInfiniteScroll` | `PageHeader`, `EmptyState`, `LoadingOverlay` | `getHomeFeed` | `ApiError` (`@/services/http`), `normalizeList` |
+| `PostCard.tsx` | `useToast`, `useInfiniteScroll`, `useBootstrapTooltips` | `MediaPreview`, `Modal` | `timelinePostAttachmentsTable`, `timelinePostCommentsTable`, `timelinePostCommentsView`, `timelinePostReactionsTable`, `timelinePostRatingsTable` | `ApiError`, `normalizeItem`/`normalizeList`, `formatDateTime`, `paths` (link de Denunciar) |
+| `NewPostModal.tsx` | `useToast` | `Modal`, `FormGrid` (`components/ui/FormGrid/Input`) | `formManagerView` | `buildRenderSchema`/`isFormPublished` (`@/services/formSchema`), `formDataToPayload`/`errorDetail`/`resolveEndpoint`/`senderFor` (`@/utils/formSubmit`) |
+
+**Hooks GLOBAIS usados aqui e reaproveitáveis por qualquer módulo:**
+`useInfiniteScroll` (`hooks/useInfiniteScroll.ts` — primeiro do projeto,
+`IntersectionObserver` numa sentinela) e `useBootstrapTooltips`
+(`hooks/useBootstrapTooltips.ts` — inicializa `bootstrap.Tooltip` nos botões
+ícone-only da toolbar do card). **Componente global reaproveitável:**
+`MediaPreview` (`components/global/MediaPreview.tsx` — imagem/vídeo inline,
+demais categorias em ícone; usável por qualquer módulo com anexo).
+
+### 10.3 Fluxo vertical de ida e volta
+
+Notação: `Componente → Hook/Service → HTTP → Controller → Processor → Model → Tabela/View`, com a volta (↩) no fim de cada jornada.
+
+**(a) Abrir a Home Feed (mount)**
+
+```
+GetAllPage.tsx (mount)
+  └─ useEffect → loadPage(1, seed, replace=true)
+      └─ getHomeFeed(seed, page, limit)         [services/v1/timelinePosts.table.ts]
+          └─ GET /api/v1/timeline-posts-view/home-feed?seed=&page=&limit=
+              └─ ResourceViewController::homeFeed()
+                  └─ Processor::homeFeed(seed, page, limit)
+                      ├─ SqlViewModel::randomToday / randomOtherUsers / topLiked / topRated
+                      │     (4 queries em view_timeline_posts, cotas 3/3/2/2)
+                      └─ attachMyState($merged, $userId)      ← RESOLVIDO §11.3
+                            ├─ TimelinePostReactionsModel::whereIn/where→findAll
+                            └─ TimelinePostRatingsModel::whereIn/where→findAll
+          ↩ JSON { data: [...posts com my_reaction_id/my_rating] }
+      └─ toFeedPost() mapeia cada linha → FeedPost (camelCase)
+      └─ setPosts(mapped) → renderiza <PostCard post={p}/> por item
+          └─ PostCard: useState inicial de liked/reactionId/myRating
+             já vem de post.myReactionId/post.myRating (sem clique nenhum)
+```
+
+**(b) Curtir (toggle)**
+
+```
+PostCard → botão "Curtir" onClick → handleLike()
+  ├─ SE já curtido (liked && reactionId):
+  │     timelinePostReactionsTable.deleteSoft(reactionId)
+  │       └─ DELETE /api/v1/timeline-post-reactions/delete-soft/{id}
+  │           └─ ResourceTableController → Processor → SqlTableModel (soft delete)
+  │     ↩ 200 → setLiked(false)
+  └─ SENÃO:
+        timelinePostReactionsTable.create({ timeline_post_id, reaction_type:'like' })
+          └─ POST /api/v1/timeline-post-reactions/create
+              └─ Processor: INSERT (ou restaura linha soft-deleted, UNIQUE
+                 timeline_post_id+user_manager_id garante 1 por usuário)
+        ↩ 200 { id } → setReactionId(id), setLiked(true)
+```
+
+**(c) Avaliar (estrela)**
+
+```
+PostCard → clique numa estrela (1-5) → handleRate(n)
+  └─ timelinePostRatingsTable.create({ timeline_post_id, rating:n })
+      └─ POST /api/v1/timeline-post-ratings/create
+          └─ Processor: INSERT ou UPDATE (mesma UNIQUE de reactions)
+  ↩ 200 → setMyRating(n) + toast.success('Avaliação registrada.')
+```
+
+**(d) Comentar (via modal — §11.4)**
+
+```
+PostCard → botão "Comentar" (ícone balão) → setCommentModalOpen(true)
+  └─ <Modal> abre com <textarea rows={4}> + Enviar
+      └─ Enviar → handleAddComment()
+          └─ timelinePostCommentsTable.create({ timeline_post_id, content })
+              └─ POST /api/v1/timeline-post-comments/create
+          ↩ 200 → setCommentModalOpen(false)
+              └─ loadComments(1, limit, silent=true)
+                  └─ timelinePostCommentsView.find({ tc_timeline_post_id })
+                      └─ GET /api/v1/timeline-post-comments-view/find?...
+                  ↩ 200 → setComments(mapped)  (SEM setCommentsLoading — não pisca)
+```
+
+## 11. Incidentes corrigidos nesta sessão (2026-09-27) — causa raiz e solução
+
+Registrado aqui porque nenhum dos três é "decisão de produto" (§8) — são
+**bugs reais**, encontrados por bisseção sistemática (página de diagnóstico
+temporária `/v1/timeline-debug`, apagada depois de achar a causa) e
+corrigidos no mesmo dia.
+
+### 11.1 Dropdown do menu (Navbar) travando só na Home Feed
+
+- **Sintoma:** ao visitar `/v1/timeline`, os dropdowns da Navbar (Usuários,
+  Calendário, Timeline, usuário logado) paravam de abrir — em QUALQUER outra
+  página, funcionavam normalmente. Persistia mesmo navegando pra outra
+  página depois (só um F5 completo resolvia).
+- **Causa raiz:** `hooks/useBootstrapTooltips.ts` importava `Tooltip` do
+  especificador genérico `'bootstrap'`, que o bundler resolve para
+  `bootstrap/dist/js/bootstrap.esm.js` — um ARQUIVO FÍSICO DIFERENTE do
+  `bootstrap/dist/js/bootstrap.bundle.min.js` já carregado por
+  `src/bootstrap.ts`. Esse `.esm.js` é um bundle único que reexporta TODOS
+  os componentes (`Dropdown` incluso) e se autorregistra num listener de
+  clique no `document` só de ser carregado — duplicando o listener já
+  registrado pelo bundle. Com dois listeners independentes respondendo ao
+  mesmo clique, um abria o dropdown e o outro fechava de novo, no mesmo
+  evento, antes de qualquer repintura.
+- **Solução:** `useBootstrapTooltips.ts` passou a importar de
+  `'bootstrap/dist/js/bootstrap.bundle.min.js'` (mesmo arquivo/módulo já
+  carregado). `types/vendor.d.ts` foi ajustado, fundindo as duas declarações
+  de módulo que existiam (uma para o bundle vazio, outra tipando `Tooltip`
+  em `'bootstrap'`) numa só.
+- **Por que só na Home Feed:** só o JS-chunk que carrega `PostCard.tsx` (via
+  `useBootstrapTooltips`) puxava o `bootstrap.esm.js` — nenhuma outra tela
+  do sistema usa esse hook.
+
+### 11.2 Toast sobrepondo a Navbar
+
+- **Sintoma:** com um toast na tela (ex.: depois de curtir), cliques no
+  canto superior direito da Navbar podiam ser engolidos pelo toast.
+- **Causa raiz:** `components/global/ToastStack.tsx` renderizava
+  `position-fixed top-0 end-0` com `zIndex: 1090` — maior que o `zIndex:
+  1000` do dropdown do Bootstrap — bem em cima do canto onde a Navbar abre
+  seus dropdowns.
+- **Solução:** trocado `top-0` por `top: '5.5rem'` (mesmo offset já usado
+  pelo botão flutuante da Home Feed para ficar abaixo da navbar),
+  mantendo o `zIndex` alto.
+
+### 11.3 Curtir/Avaliar "esquecidos" ao recarregar — RESOLVIDO (era item 13 da §8)
+
+- **Sintoma:** curtir ou avaliar um post e depois recarregar a página
+  (ou sair e voltar) fazia os botões voltarem ao estado "nunca marcado",
+  mesmo o dado estando salvo certo no banco.
+- **Causa raiz:** `GET .../home-feed` nunca devolvia se o usuário logado já
+  tinha curtido/avaliado cada post — só os contadores agregados
+  (`likes_count`, `ratings_avg`) da view. `PostCard.tsx` sempre iniciava
+  `liked=false`/`myRating=null`.
+- **Solução (ver fluxo (a) em §10.3):** `Processor::homeFeed` ganhou o
+  método privado `attachMyState()` — 2 queries em lote (`whereIn` pelos IDs
+  da página + `user_manager_id` do usuário atual, uma em
+  `timeline_post_reactions`, outra em `timeline_post_ratings`) que anexam
+  `my_reaction_id`/`my_rating` a cada post. `FeedPost`/`toFeedPost()`
+  (`GetAllPage.tsx`) carregam os dois campos novos, e `PostCard.tsx`
+  inicializa `liked`/`reactionId`/`myRating` a partir deles, em vez de
+  sempre "zerado".
+- **Comentários nunca tiveram esse problema:** são recarregados do banco a
+  cada abertura do post (`loadComments` no mount), sem depender de estado
+  local — não precisaram de nenhuma mudança.
+
+### 11.4 Comentário via modal (mudança de UX, não bug)
+
+- **Antes:** uma linha fixa no rodapé de CADA card (`<input>` + botão
+  "Enviar"), sempre visível, ocupando espaço mesmo sem uso.
+- **Depois:** o mesmo botão "Comentar" da toolbar (ícone de balão com o
+  contador) abre um `<Modal>` (componente global, mesmo usado pelo
+  `NewPostModal`) com um `<textarea rows={4}>` + Enviar/Cancelar. Ao
+  suceder, o modal fecha e a lista de comentários recarrega em modo
+  **silencioso** (`loadComments(..., silent: true)` — não liga
+  `commentsLoading`, então não pisca "Carregando comentários..."). Os links
+  "Ver mais"/"Recolher comentários" continuam funcionando à parte, para ver
+  o que já existe.
 
 ---
 

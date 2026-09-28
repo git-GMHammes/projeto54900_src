@@ -4,6 +4,8 @@ namespace App\Services\V1\Timeline\TimelinePosts;
 
 use App\Libraries\Auth\CurrentUser;
 use App\Models\V1\Timeline\TimelineManager\SqlTableModel as TimelineManagerModel;
+use App\Models\V1\Timeline\TimelinePostRatings\SqlTableModel as TimelinePostRatingsModel;
+use App\Models\V1\Timeline\TimelinePostReactions\SqlTableModel as TimelinePostReactionsModel;
 use App\Models\V1\Timeline\TimelinePosts\SqlTableModel;
 use App\Models\V1\Timeline\TimelinePosts\SqlViewModel;
 use App\Models\V1\User\UserManager\SqlTableModel as UserManagerModel;
@@ -34,6 +36,8 @@ class Processor extends BaseTableService
 
     private TimelineManagerModel $timelineManagerModel;
     private UserManagerModel $userManagerModel;
+    private TimelinePostReactionsModel $reactionsModel;
+    private TimelinePostRatingsModel $ratingsModel;
 
     public function __construct()
     {
@@ -41,6 +45,8 @@ class Processor extends BaseTableService
         $this->viewModel            = new SqlViewModel();
         $this->timelineManagerModel = new TimelineManagerModel();
         $this->userManagerModel     = new UserManagerModel();
+        $this->reactionsModel       = new TimelinePostReactionsModel();
+        $this->ratingsModel         = new TimelinePostRatingsModel();
     }
 
     // -------------------------------------------------------------------------
@@ -247,6 +253,7 @@ class Processor extends BaseTableService
         $rated = $this->viewModel->topRated($quotas['rated'], ($page - 1) * $quotas['rated'], $excluded);
 
         $merged = [...$today, ...$others, ...$liked, ...$rated];
+        $merged = $this->attachMyState($merged, $userId);
 
         // Os baldes ja decidiram QUAIS posts entram; embaralhar so a ORDEM DE
         // EXIBICAO evita a pagina parecer "em blocos" (todo hoje, depois todo
@@ -269,6 +276,57 @@ class Processor extends BaseTableService
                 ],
             ],
         ];
+    }
+
+    /**
+     * Anexa a CADA post o estado do usuario atual: `my_reaction_id` (id da
+     * curtida ainda ativa, ou null) e `my_rating` (nota 1-5 ja dada, ou null).
+     * Sem isso a tela (PostCard.tsx) nao tinha como saber, ao recarregar, que
+     * o usuario ja curtiu/avaliou aquele post — o dado ja estava correto no
+     * banco, so nunca era devolvido pela listagem (pedido do usuario,
+     * 2026-09-27: "o sistema deve se lembrar do que fiz").
+     *
+     * 1 query em lote por tabela (whereIn nos IDs da PAGINA + user_manager_id
+     * do usuario logado), nao 1 query por post — useSoftDeletes=true de
+     * ambos os models ja filtra deleted_at sozinho.
+     */
+    private function attachMyState(array $posts, int $userId): array
+    {
+        if ($userId <= 0 || empty($posts)) {
+            foreach ($posts as &$post) {
+                $post['my_reaction_id'] = null;
+                $post['my_rating']      = null;
+            }
+            unset($post);
+
+            return $posts;
+        }
+
+        $postIds = array_map(static fn (array $p): int => (int) $p['id'], $posts);
+
+        $reactionByPost = [];
+        foreach ($this->reactionsModel->whereIn('timeline_post_id', $postIds)
+            ->where('user_manager_id', $userId)
+            ->where('reaction_type', 'like')
+            ->findAll() as $r) {
+            $reactionByPost[(int) $r['timeline_post_id']] = (int) $r['id'];
+        }
+
+        $ratingByPost = [];
+        foreach ($this->ratingsModel->whereIn('timeline_post_id', $postIds)
+            ->where('user_manager_id', $userId)
+            ->findAll() as $r) {
+            $ratingByPost[(int) $r['timeline_post_id']] = (int) $r['rating'];
+        }
+
+        foreach ($posts as &$post) {
+            $id                      = (int) $post['id'];
+            $post['my_reaction_id']  = $reactionByPost[$id] ?? null;
+            $post['my_rating']       = $ratingByPost[$id] ?? null;
+        }
+        unset($post);
+
+        return $posts;
     }
 
     /**

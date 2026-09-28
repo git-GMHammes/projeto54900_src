@@ -70,6 +70,10 @@ export interface FeedPost {
   repostOfId: number | null;
   repostAuthorName: string | null;
   repostContent: string | null;
+  /** Curtida do PRÓPRIO usuário logado nesse post — id da reação ativa, ou null se nunca curtiu. */
+  myReactionId: number | null;
+  /** Nota (1-5) que o PRÓPRIO usuário logado já deu a esse post, ou null se nunca avaliou. */
+  myRating: number | null;
 }
 
 /** Traduz uma linha crua de view_timeline_posts (home-feed) para FeedPost. */
@@ -95,6 +99,8 @@ function toFeedPost(raw: Record<string, unknown>): FeedPost {
     repostOfId: raw.tp_repost_of_id === null || raw.tp_repost_of_id === undefined ? null : num(raw.tp_repost_of_id),
     repostAuthorName: hasRepost ? str(raw.rc_name) || str(raw.ru_username) : null,
     repostContent: hasRepost ? str(raw.rp_content) : null,
+    myReactionId: raw.my_reaction_id === null || raw.my_reaction_id === undefined ? null : num(raw.my_reaction_id),
+    myRating: raw.my_rating === null || raw.my_rating === undefined ? null : num(raw.my_rating),
   };
 }
 
