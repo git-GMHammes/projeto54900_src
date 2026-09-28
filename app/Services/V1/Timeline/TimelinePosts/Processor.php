@@ -26,11 +26,20 @@ use App\Services\V1\BaseTableService;
  *     edited_at = agora no update de title/content.
  *  4. Republicacao por repost_of_id: o post original precisa existir, estar
  *     publicado e nao estar excluido. O auto-reposto e recusado no update.
- *  8. Visibilidade: leitura liberada a qualquer usuario logado (o feed e
- *     "publico para quem estiver logado"); escrita so do dono (admin escapa).
+ *  8. Visibilidade (2026-09-28, revisado 2026-09-28 — lista admin
+ *     '/v1/timeline-post' precisa ver todo mundo): os 9 endpoints de leitura
+ *     da VIEW (timeline-posts-view: get-grouped, find, search, get, get-all,
+ *     ...) devolvem so posts do usuario do JWT (tp_user_manager_id) para
+ *     quem NAO e admin — ninguem observa o feed de outro. Admin ve todos
+ *     (mesmo escape de `assertOwner`, usado na escrita). O Home Feed
+ *     (homeFeed, feed social misto) continua mostrando todos os publicados,
+ *     independente de role. Escrita so do dono (admin escapa).
  */
 class Processor extends BaseTableService
 {
+    /** Bloco da 1a pagina do Home Feed, na ordem de exibicao (ver homeFeed()). */
+    private const FIRST_PAGE_QUOTAS = ['recent' => 5, 'rated' => 3, 'liked' => 3, 'commented' => 3];
+
     protected SqlTableModel $tableModel;
     protected SqlViewModel $viewModel;
 
@@ -212,79 +221,254 @@ class Processor extends BaseTableService
     }
 
     // -------------------------------------------------------------------------
+    // Leitura — View restrita ao usuario do JWT (regra 8)
+    // -------------------------------------------------------------------------
+    //
+    // Mesmo mecanismo do CalendarManager\Processor: Closure de escopo passada
+    // aos metodos de BaseViewModel. O id vem SEMPRE do token (CurrentUser),
+    // nunca do corpo/query — filtro tp_user_manager_id enviado pelo cliente e
+    // descartado.
+
+    public function findView(array $filters, array $params): array
+    {
+        unset($filters['tp_user_manager_id']);
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->findPaginatedView($this->removeMasks($filters), $p['page'], $p['limit'], $p['sort'], $p['order'], $this->ownerScope());
+    }
+
+    public function getGroupedView(array $multiFilters, array $params): array
+    {
+        unset($multiFilters['tp_user_manager_id']);
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->findGroupedView($this->removeMasks($multiFilters), $p['page'], $p['limit'], $p['sort'], $p['order'], $this->ownerScope());
+    }
+
+    public function searchView(string $term, array $params, array $filters = []): array
+    {
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->searchByTermView($term, $p['page'], $p['limit'], $p['sort'], $p['order'], $filters, $this->ownerScope());
+    }
+
+    public function getView(int $id): ?array
+    {
+        return $this->ownRowOrNull($this->viewModel->findById($id));
+    }
+
+    public function getAllView(array $params): array
+    {
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->findPaginatedView([], $p['page'], $p['limit'], $p['sort'], $p['order'], $this->ownerScope());
+    }
+
+    public function getNoPaginationView(string $sort, string $order, ?int $limit = null): array
+    {
+        return $this->viewModel->findAllView($sort, $order, $limit, $this->ownerScope());
+    }
+
+    public function getDeletedView(int $id): ?array
+    {
+        return $this->ownRowOrNull($this->viewModel->findDeletedById($id));
+    }
+
+    public function getDeletedAllView(array $params): array
+    {
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->findDeletedPaginatedView($p['page'], $p['limit'], $p['sort'], $p['order'], $this->ownerScope());
+    }
+
+    public function getAllWithDeletedView(array $params): array
+    {
+        $p = $this->buildPaginationParams($params);
+
+        return $this->viewModel->findAllWithDeletedPaginatedView($p['page'], $p['limit'], $p['sort'], $p['order'], $this->ownerScope());
+    }
+
+    /** Closure de escopo: so linhas cujo autor e o usuario do JWT — admin nao e escopado (mesmo escape de `assertOwner`). */
+    private function ownerScope(): \Closure
+    {
+        if (CurrentUser::isAdmin()) {
+            return static function (object $builder): void {};
+        }
+
+        $userId = (int) CurrentUser::id();
+
+        return static function (object $builder) use ($userId): void {
+            $builder->where('tp_user_manager_id', $userId);
+        };
+    }
+
+    /** Linha de outro usuario "nao existe" para quem pediu (404, sem revelar o post) — admin ve qualquer linha. */
+    private function ownRowOrNull(?array $record): ?array
+    {
+        if ($record === null) {
+            return null;
+        }
+
+        if (!CurrentUser::isAdmin() && (int) ($record['tp_user_manager_id'] ?? 0) !== (int) CurrentUser::id()) {
+            return null;
+        }
+
+        return $record;
+    }
+
+    // -------------------------------------------------------------------------
     // Home Feed (feed misto) — rota extra GET .../home-feed
     // -------------------------------------------------------------------------
 
     /**
-     * Monta uma pagina do feed misto: cotas fixas (proporcao 3/3/2/2 de um
-     * total de 10) de publicacoes de hoje (aleatorio), de outros usuarios
-     * (aleatorio), mais curtidas e mais bem avaliadas — nessa ordem, cada
-     * balde excluindo os IDs ja escolhidos pelos baldes anteriores (evita
-     * duplicata DENTRO da mesma pagina). $seed vem do cliente (gerado uma vez
-     * ao abrir a Home Feed) e mantem os baldes aleatorios estaveis conforme
-     * $page cresce — ver SqlViewModel::randomToday/randomOtherUsers.
+     * Monta uma pagina do feed misto. Algoritmo (2026-09-28 — corrige o scroll
+     * que parava quando um balde vinha vazio e a repeticao/buraco entre
+     * paginas):
      *
-     * Sem exclusao global entre paginas diferentes (decisao do usuario,
-     * 2026-09-27): risco cosmetico de um post reaparecer depois de varias
-     * paginas, aceito para nao exigir estado de sessao no servidor nem o
-     * cliente reenviar uma lista crescente de IDs vistos.
+     *  1. Busca a FILA COMPLETA de ids de cada balde, na ordem do balde: hoje
+     *     (aleatorio pelo $seed), outros usuarios (aleatorio), mais curtidos,
+     *     mais bem avaliados — e a fila "demais" (todos os publicados,
+     *     aleatorio), que completa vaga de balde esgotado.
+     *  2. Intercala as filas numa ORDEM GLOBAL unica: pagina a pagina, tira as
+     *     cotas 3/3/2/2 (escaladas para $limit) de cada balde, pulando id ja
+     *     usado; a vaga que um balde nao preencher vai para a fila "demais".
+     *     Todo publicado entra exatamente uma vez.
+     *  3. Fatia a pagina pedida, carrega as linhas completas e embaralha so a
+     *     ordem de exibicao DENTRO da pagina.
+     *
+     * PRIMEIRA PAGINA (2026-09-28, pedido do usuario — rompe o $limit): antes
+     * da intercalacao, a ordem global comeca com o bloco FIRST_PAGE_QUOTAS —
+     * 5 recentes aleatorios, 3 mais bem avaliados, 3 mais curtidos, 3 mais
+     * comentados (14), sem repeticao (id repetido => o proximo do mesmo balde)
+     * e completado pela fila "demais" se algum balde faltar. A pagina 1 devolve
+     * esse bloco NA ORDEM dos baldes (sem shuffle); da pagina 2 em diante vale
+     * o passo 2, $limit por pagina, sem repetir nada da pagina 1.
+     *
+     * Posts denunciados nunca entram (filtro no SqlViewModel::feedBase).
+     *
+     * Decisao 12 mantida: sem estado de sessao no servidor e sem lista de ids
+     * vindo do cliente — a ordem global e recalculada so a partir do $seed a
+     * cada requisicao (mesmo $seed => mesma ordem => paginas sem repeticao).
+     * Custo: 7 consultas so de ids sobre os publicados + 1 das linhas da pagina.
      */
     public function homeFeed(int $seed, int $page, int $limit = 10): array
     {
         $userId = (int) CurrentUser::id();
         $page   = max(1, $page);
-        $quotas = $this->quotasFor(max(1, $limit));
+        $limit  = max(1, $limit);
 
-        $today = $this->viewModel->randomToday($quotas['today'], ($page - 1) * $quotas['today'], $seed);
-        $excluded = array_map(static fn (array $r): int => (int) $r['id'], $today);
+        $order = $this->homeFeedOrder($seed, $userId, $this->quotasFor($limit), $limit);
+        $total = count($order);
 
-        $others = $this->viewModel->randomOtherUsers(
-            $quotas['others'],
-            ($page - 1) * $quotas['others'],
-            $seed,
-            $userId,
-            $excluded,
-        );
-        $excluded = [...$excluded, ...array_map(static fn (array $r): int => (int) $r['id'], $others)];
+        // Pagina 1 = bloco FIRST_PAGE_QUOTAS; demais = $limit cada, depois dele.
+        $firstSize = array_sum(self::FIRST_PAGE_QUOTAS);
+        $offset    = $page === 1 ? 0 : $firstSize + ($page - 2) * $limit;
+        $length    = $page === 1 ? $firstSize : $limit;
 
-        $liked = $this->viewModel->topLiked($quotas['liked'], ($page - 1) * $quotas['liked'], $excluded);
-        $excluded = [...$excluded, ...array_map(static fn (array $r): int => (int) $r['id'], $liked)];
+        $pageIds = array_slice($order, $offset, $length);
+        $rows    = $this->attachMyState($this->viewModel->findByIdsOrdered($pageIds), $userId);
 
-        $rated = $this->viewModel->topRated($quotas['rated'], ($page - 1) * $quotas['rated'], $excluded);
-
-        $merged = [...$today, ...$others, ...$liked, ...$rated];
-        $merged = $this->attachMyState($merged, $userId);
-
-        // Os baldes ja decidiram QUAIS posts entram; embaralhar so a ORDEM DE
-        // EXIBICAO evita a pagina parecer "em blocos" (todo hoje, depois todo
-        // curtido, ...).
-        shuffle($merged);
+        // Da pagina 2 em diante a ordem global ja decidiu QUAIS posts entram;
+        // embaralhar so a ORDEM DE EXIBICAO evita a pagina parecer "em blocos".
+        // A pagina 1 fica na ordem dos baldes (recentes > avaliados > curtidos > comentados).
+        if ($page > 1) {
+            shuffle($rows);
+        }
 
         return [
             'success' => true,
-            'data'    => $merged,
+            'data'    => $rows,
             'meta'    => [
-                'page'    => $page,
-                'limit'   => $limit,
-                'seed'    => $seed,
-                'count'   => count($merged),
-                'buckets' => [
-                    'today'  => count($today),
-                    'others' => count($others),
-                    'liked'  => count($liked),
-                    'rated'  => count($rated),
-                ],
+                'page'     => $page,
+                'limit'    => $length,
+                'seed'     => $seed,
+                'count'    => count($rows),
+                'total'    => $total,
+                'has_more' => $offset + $length < $total,
             ],
         ];
     }
 
     /**
-     * Anexa a CADA post o estado do usuario atual: `my_reaction_id` (id da
-     * curtida ainda ativa, ou null) e `my_rating` (nota 1-5 ja dada, ou null).
-     * Sem isso a tela (PostCard.tsx) nao tinha como saber, ao recarregar, que
-     * o usuario ja curtiu/avaliou aquele post — o dado ja estava correto no
+     * Ordem global do feed para o $seed (lista de ids, cada publicado uma vez)
+     * — ver passo 2 de homeFeed().
+     *
+     * @param array{today: int, others: int, liked: int, rated: int} $quotas
+     *
+     * @return list<int>
+     */
+    private function homeFeedOrder(int $seed, int $userId, array $quotas, int $limit): array
+    {
+        $queues = [
+            'today'  => $this->viewModel->idsToday($seed),
+            'others' => $this->viewModel->idsOtherUsers($seed, $userId),
+            'liked'  => $this->viewModel->idsTopLiked(),
+            'rated'  => $this->viewModel->idsTopRated(),
+        ];
+        $rest = $this->viewModel->idsAllRandom($seed);
+
+        $total = count($rest);
+        $used  = [];
+        $order = [];
+
+        // Tira ate $n ids ainda nao usados do inicio da fila (consumindo-a).
+        $take = static function (array &$queue, int $n) use (&$used): array {
+            $picked = [];
+            while ($n > 0 && $queue !== []) {
+                $id = array_shift($queue);
+                if (!isset($used[$id])) {
+                    $used[$id] = true;
+                    $picked[]  = $id;
+                    $n--;
+                }
+            }
+
+            return $picked;
+        };
+
+        // Bloco da 1a pagina (FIRST_PAGE_QUOTAS), na ordem dos baldes; vaga que
+        // um balde nao preencher e completada pela fila "demais".
+        $firstQueues = [
+            'recent'    => $this->viewModel->idsRecent($seed),
+            'rated'     => $queues['rated'],
+            'liked'     => $queues['liked'],
+            'commented' => $this->viewModel->idsTopCommented(),
+        ];
+        foreach (self::FIRST_PAGE_QUOTAS as $bucket => $quota) {
+            $order = [...$order, ...$take($firstQueues[$bucket], $quota)];
+        }
+        $order = [...$order, ...$take($rest, array_sum(self::FIRST_PAGE_QUOTAS) - count($order))];
+
+        while (count($order) < $total) {
+            $pageIds = [];
+            foreach ($quotas as $bucket => $quota) {
+                $pageIds = [...$pageIds, ...$take($queues[$bucket], $quota)];
+            }
+            // Vagas que os baldes nao preencheram: completa com a fila "demais".
+            $pageIds = [...$pageIds, ...$take($rest, $limit - count($pageIds))];
+
+            if ($pageIds === []) {
+                break; // nada mais a distribuir (defensivo)
+            }
+            $order = [...$order, ...$pageIds];
+        }
+
+        return $order;
+    }
+
+    /**
+     * Anexa a CADA post o estado do usuario atual: `my_reaction_id` +
+     * `my_reaction_type` (id/tipo da reacao ainda ativa — 'like' ou
+     * 'dislike' — ou null) e `my_rating` (nota 1-5 ja dada, ou null). Sem
+     * isso a tela (PostCard.tsx) nao tinha como saber, ao recarregar, que o
+     * usuario ja reagiu/avaliou aquele post — o dado ja estava correto no
      * banco, so nunca era devolvido pela listagem (pedido do usuario,
      * 2026-09-27: "o sistema deve se lembrar do que fiz").
+     *
+     * `my_reaction_type` foi adicionado em 2026-09-28 junto do botao
+     * "Descurtir": antes o filtro `reaction_type = 'like'` aqui escondia
+     * reacoes 'dislike' do usuario (o post SEMPRE voltava sem marcacao pra
+     * quem tinha descurtido) — agora traz a reacao ativa de qualquer tipo.
      *
      * 1 query em lote por tabela (whereIn nos IDs da PAGINA + user_manager_id
      * do usuario logado), nao 1 query por post — useSoftDeletes=true de
@@ -294,35 +478,43 @@ class Processor extends BaseTableService
     {
         if ($userId <= 0 || empty($posts)) {
             foreach ($posts as &$post) {
-                $post['my_reaction_id'] = null;
-                $post['my_rating']      = null;
+                $post['my_reaction_id']   = null;
+                $post['my_reaction_type'] = null;
+                $post['my_rating']        = null;
             }
             unset($post);
 
             return $posts;
         }
 
-        $postIds = array_map(static fn (array $p): int => (int) $p['id'], $posts);
+        $postIds = array_map(static fn(array $p): int => (int) $p['id'], $posts);
 
-        $reactionByPost = [];
-        foreach ($this->reactionsModel->whereIn('timeline_post_id', $postIds)
-            ->where('user_manager_id', $userId)
-            ->where('reaction_type', 'like')
-            ->findAll() as $r) {
-            $reactionByPost[(int) $r['timeline_post_id']] = (int) $r['id'];
+        $reactionIdByPost   = [];
+        $reactionTypeByPost = [];
+        foreach (
+            $this->reactionsModel->whereIn('timeline_post_id', $postIds)
+                ->where('user_manager_id', $userId)
+                ->findAll() as $r
+        ) {
+            $postId                          = (int) $r['timeline_post_id'];
+            $reactionIdByPost[$postId]       = (int) $r['id'];
+            $reactionTypeByPost[$postId]     = (string) $r['reaction_type'];
         }
 
         $ratingByPost = [];
-        foreach ($this->ratingsModel->whereIn('timeline_post_id', $postIds)
-            ->where('user_manager_id', $userId)
-            ->findAll() as $r) {
+        foreach (
+            $this->ratingsModel->whereIn('timeline_post_id', $postIds)
+                ->where('user_manager_id', $userId)
+                ->findAll() as $r
+        ) {
             $ratingByPost[(int) $r['timeline_post_id']] = (int) $r['rating'];
         }
 
         foreach ($posts as &$post) {
-            $id                      = (int) $post['id'];
-            $post['my_reaction_id']  = $reactionByPost[$id] ?? null;
-            $post['my_rating']       = $ratingByPost[$id] ?? null;
+            $id                        = (int) $post['id'];
+            $post['my_reaction_id']    = $reactionIdByPost[$id] ?? null;
+            $post['my_reaction_type']  = $reactionTypeByPost[$id] ?? null;
+            $post['my_rating']         = $ratingByPost[$id] ?? null;
         }
         unset($post);
 

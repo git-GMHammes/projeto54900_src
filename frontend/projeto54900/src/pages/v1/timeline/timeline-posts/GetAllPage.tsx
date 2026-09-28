@@ -29,17 +29,25 @@
  *   Fase 2) e monta o corpo certo antes de chamar `http.post`. Ações sem
  *   `data_action` reconhecido continuam no padrão sem corpo (Excluir).
  *
- * LACUNA CONHECIDA (documentada em `routes/v1/timeline.routes.tsx` e
- *   `README_rotas_frontend.md`, NÃO corrigida aqui): "Ver", "Comentar" e
- *   "Editar" apontam para rotas que ainda não existem (sem página de
- *   detalhe/comentários nem formulário de edição de post) — clicar cai no
- *   `NotFoundPage`. "Denunciar" já foi corrigido para o renderizador
- *   genérico real (`/v1/form/timeline-report`).
+ * AÇÕES POR MODAL (2026-09-28): "Ver", "Comentar", "Denunciar" e "Editar"
+ *   eram `link` para rotas que não existem (ou que tiravam o usuário da
+ *   lista) — corrigido trocando `list_actions.action_type` para `modal`
+ *   (`href_template` vira a chave `ver-detalhes`/`comentar`/`denunciar`/
+ *   `editar`, lida pelo `handleOpenModal` abaixo, mesmo padrão de
+ *   `StandardListPage.tsx`). Os modais são os MESMOS de
+ *   `home-feed/{EditPostModal,NewCommentModal,NewReportModal}.tsx` (nenhum
+ *   componente novo além de `./PostDetailsModal.tsx`, para "Ver") — e são
+ *   compartilhados com `timeline-posts-get-all/GetAllPage.tsx` (mesmos 4
+ *   componentes importados nas duas páginas, pedido do usuário). "Editar" não
+ *   verifica dono no front (igual "Excluir", já assim antes) — o backend
+ *   (`Processor::assertOwner`) barra com 404 quem tentar editar post alheio.
  *
  * DE ONDE VEM CADA COISA:
  *   definição -> `list_manager` (slug `timeline-feed`) + `list_columns` +
  *               `list_actions`, normalizados por `@/utils/listConstructor`
  *   dados     -> `api_get_endpoint`/`api_search_endpoint` do próprio manager
+ *               (`get-grouped` via POST; o servidor devolve só os posts do
+ *               usuário do JWT — ninguém vê o feed de outro)
  *   paginação -> a URL (`page`/`limit`/`sort`/`order`), via `usePagination`;
  *               ordenação padrão (`tp_published_at`/`desc`) aplicada uma vez,
  *               a partir do próprio `manager`, se a URL não trouxer `sort`
@@ -58,11 +66,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
@@ -73,6 +83,7 @@ import { resolveEndpoint } from '@/utils/formSubmit';
 import { paginationWindow } from '@/utils/pagination';
 import {
   str,
+  num,
   toManager,
   toColumn,
   toAction,
@@ -82,16 +93,21 @@ import {
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
 import type { QueryParams } from '@/types/api';
+import PostDetailsModal from './PostDetailsModal';
+import EditPostModal from '../home-feed/EditPostModal';
+import NewCommentModal from '../home-feed/NewCommentModal';
+import NewReportModal from '../home-feed/NewReportModal';
 
 /** Único dado de configuração fixo no código — o slug do `list_manager` desta tela. */
 const MANAGER_SLUG = 'timeline-feed';
 
 /**
- * `list_actions.data_action` reconhecidos por este `ActionButton` — os únicos
- * três `api_call` deste módulo que exigem corpo. Qualquer outro valor (ou
- * `null`) cai no comportamento padrão do motor (sem corpo).
+ * `list_actions.data_action` reconhecidos por este `ActionButton` — os
+ * `api_call` deste módulo que exigem corpo. Qualquer outro valor (ou `null`)
+ * cai no comportamento padrão do motor (sem corpo).
  */
 const DATA_ACTION_REACTION_LIKE = 'reaction-like';
+const DATA_ACTION_REACTION_DISLIKE = 'reaction-dislike';
 const DATA_ACTION_RATING = 'rating';
 const DATA_ACTION_REPOST = 'repost';
 
@@ -113,8 +129,15 @@ function buildActionBody(
     return { timeline_post_id: postId, reaction_type: 'like' };
   }
 
+  if (dataAction === DATA_ACTION_REACTION_DISLIKE) {
+    return { timeline_post_id: postId, reaction_type: 'dislike' };
+  }
+
   if (dataAction === DATA_ACTION_REPOST) {
-    return { repost_of_id: postId };
+    // POST /timeline-posts/create exige titulo OU conteudo mesmo em repost
+    // (Processor::validateOnCreate) — sem isso a API sempre devolvia 422 e
+    // "Republicar" nunca funcionava. Reaproveita o conteudo do post original.
+    return { repost_of_id: postId, content: str(row.tp_content) };
   }
 
   if (dataAction === DATA_ACTION_RATING) {
@@ -131,40 +154,84 @@ function buildActionBody(
   return undefined;
 }
 
+// Tooltip custom (bolha CSS) a esquerda do botao — mesmo `WithTooltip` local
+// de menu/GetAllPage.tsx (acoes ficam na borda direita da tabela).
+function WithTooltip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <span className="icon-action-tooltip">
+      {children}
+      <span className="icon-action-tooltip-bubble icon-action-tooltip-bubble--start" role="tooltip">
+        {label}
+      </span>
+    </span>
+  );
+}
+
 /**
- * Ação de linha: `link` navega (rota do próprio front, inclusive o
- * renderizador genérico `/v1/form/:slug`); `api_call` executa de verdade,
- * com corpo quando `data_action` é reconhecido (ver `buildActionBody`).
- * Mesmo padrão de `FormConstructorListPage.tsx` (`ActionButton` local, não
- * compartilhado — este projeto ainda não tem esse componente global).
+ * Ação de linha: `link` navega (rota do próprio front); `modal` avisa a
+ * página (`onOpenModal`, chave fixa em `href_template` — mesmo padrão de
+ * `StandardListPage.tsx`), que decide qual dos 4 modais abrir; `api_call`
+ * executa de verdade, com corpo quando `data_action` é reconhecido (ver
+ * `buildActionBody`). Botão só-ícone (`list_actions.icon`) com tooltip do
+ * rótulo; sem ícone cadastrado, cai no rótulo. Mesmo padrão de
+ * `menu/GetAllPage.tsx` (`ActionButton` local, não compartilhado).
  */
 function ActionButton({
   action,
   row,
   disabled,
+  myReaction,
+  onReacted,
+  onOpenModal,
   onExecuted,
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
   disabled: boolean;
+  /** Curtir/Descurtir já registrado NESTA sessão para esta linha, ou `null` (a view não devolve o estado do usuário — ver `buildActionBody`). Mutuamente exclusivo, como no backend. */
+  myReaction: 'like' | 'dislike' | null;
+  onReacted: (type: 'like' | 'dislike') => void;
+  onOpenModal: (targetSlug: string, row: Record<string, unknown>) => void;
   onExecuted: () => void;
 }) {
   const toast = useToast();
 
+  const content = action.icon ? <i className={`bi bi-${action.icon}`} aria-hidden="true" /> : action.label;
+  const tip = `${action.label}${disabled ? ' (indisponível)' : ''}`;
+
   if (action.actionType === 'link') {
     const href = resolveHrefTemplate(action.hrefTemplate, row);
     return (
-      <Link
-        className={`btn btn-sm btn-outline-primary ms-2${disabled ? ' disabled' : ''}`}
-        to={href}
-        aria-disabled={disabled}
-        tabIndex={disabled ? -1 : undefined}
-        onClick={(e) => {
-          if (disabled) e.preventDefault();
-        }}
-      >
-        {action.label}
-      </Link>
+      <WithTooltip label={tip}>
+        <Link
+          className={`btn btn-sm btn-outline-primary ms-1${disabled ? ' disabled' : ''}`}
+          to={href}
+          aria-label={tip}
+          aria-disabled={disabled}
+          tabIndex={disabled ? -1 : undefined}
+          onClick={(e) => {
+            if (disabled) e.preventDefault();
+          }}
+        >
+          {content}
+        </Link>
+      </WithTooltip>
+    );
+  }
+
+  if (action.actionType === 'modal') {
+    return (
+      <WithTooltip label={tip}>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-secondary ms-1"
+          aria-label={tip}
+          disabled={disabled}
+          onClick={() => onOpenModal(action.hrefTemplate, row)}
+        >
+          {content}
+        </button>
+      </WithTooltip>
     );
   }
 
@@ -184,21 +251,46 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path, body);
       else if (method === 'POST') await http.post(path, body);
       else await http.get(path);
+      if (action.dataAction === DATA_ACTION_REACTION_LIKE) onReacted('like');
+      else if (action.dataAction === DATA_ACTION_REACTION_DISLIKE) onReacted('dislike');
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
+  // Curtir/Descurtir marcado (reação já registrada nesta sessão) vira botão
+  // preenchido; Excluir fica outline-danger (mesmo padrão de
+  // StandardListPage.tsx); o resto (Avaliar/Republicar) mantém outline-secondary.
+  const isLike = action.dataAction === DATA_ACTION_REACTION_LIKE;
+  const isDislike = action.dataAction === DATA_ACTION_REACTION_DISLIKE;
+  const isDelete = action.httpMethod.toUpperCase() === 'DELETE';
+  const btnClass = isLike
+    ? `btn btn-sm ${myReaction === 'like' ? 'btn-primary' : 'btn-outline-primary'} ms-1`
+    : isDislike
+      ? `btn btn-sm ${myReaction === 'dislike' ? 'btn-secondary' : 'btn-outline-secondary'} ms-1`
+      : isDelete
+        ? 'btn btn-sm btn-outline-danger ms-1'
+        : 'btn btn-sm btn-outline-secondary ms-1';
+
   return (
-    <button type="button" className="btn btn-sm btn-outline-secondary ms-2" disabled={disabled} onClick={() => void execute()}>
-      {action.label}
-    </button>
+    <WithTooltip label={tip}>
+      <button
+        type="button"
+        className={btnClass}
+        aria-label={tip}
+        disabled={disabled}
+        onClick={() => void execute()}
+      >
+        {content}
+      </button>
+    </WithTooltip>
   );
 }
 
 export default function TimelinePostsGetAllPage() {
   const { params, setPage, setLimit, toggleSort, patch } = usePagination();
+  const { user } = useAuth();
 
   // GRUPO 1 — definição (o que a lista é; carregada uma vez no mount).
   const [manager, setManager] = useState<ListManagerRow | null>(null);
@@ -206,6 +298,15 @@ export default function TimelinePostsGetAllPage() {
   const [actions, setActions] = useState<ListActionRow[]>([]);
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
+
+  // Estado dos 4 modais por linha (Ver/Comentar/Denunciar/Editar) — `null` = fechado.
+  const [viewingRow, setViewingRow] = useState<Record<string, unknown> | null>(null);
+  const [commentRow, setCommentRow] = useState<Record<string, unknown> | null>(null);
+  const [reportRow, setReportRow] = useState<Record<string, unknown> | null>(null);
+  const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
+
+  // Curtir/Descurtir registrados NESTA sessão, por linha (a view não devolve o estado do usuário) — marca o botão certo.
+  const [reactions, setReactions] = useState<Map<number, 'like' | 'dislike'>>(new Map());
 
   // GRUPO 2 — dados listados (o conteúdo; recarrega a cada mudança de página/busca/ordenação/ação).
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
@@ -284,7 +385,12 @@ export default function TimelinePostsGetAllPage() {
     try {
       const path = resolveEndpoint(searching ? manager.apiSearchEndpoint : manager.apiGetEndpoint);
       const query: QueryParams = searching ? { ...params, q: term } : { ...params };
-      const raw = await http.get(path, { params: query });
+      // get-grouped é POST (filtro no corpo, paginação na query). O servidor
+      // restringe ao usuário do JWT de qualquer forma; o corpo só cumpre o
+      // contrato de "ao menos um filtro".
+      const raw = !searching && path.endsWith('/get-grouped')
+        ? await http.post(path, { tp_user_manager_id: [user?.id ?? 0] }, { params: query })
+        : await http.get(path, { params: query });
       if (seq !== requestSeq.current) return;
       const { rows: list, total: t } = normalizeList<Record<string, unknown>>(raw);
       setRows(list);
@@ -297,11 +403,19 @@ export default function TimelinePostsGetAllPage() {
     } finally {
       if (seq === requestSeq.current) setDataLoading(false);
     }
-  }, [manager, params, term]);
+  }, [manager, params, term, user]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  /** Ramo 'modal' de list_actions: cada chave abre um dos 4 modais por linha. */
+  const handleOpenModal = useCallback((targetSlug: string, row: Record<string, unknown>) => {
+    if (targetSlug === 'ver-detalhes') setViewingRow(row);
+    else if (targetSlug === 'comentar') setCommentRow(row);
+    else if (targetSlug === 'denunciar') setReportRow(row);
+    else if (targetSlug === 'editar') setEditRow(row);
+  }, []);
 
   const error = defsError ?? dataError;
 
@@ -392,6 +506,9 @@ export default function TimelinePostsGetAllPage() {
                             action={a}
                             row={row}
                             disabled={!evalBusinessRule(a.businessRule, row)}
+                            myReaction={reactions.get(num(row.id)) ?? null}
+                            onReacted={(type) => setReactions((prev) => new Map(prev).set(num(row.id), type))}
+                            onOpenModal={handleOpenModal}
                             onExecuted={() => void loadData()}
                           />
                         ))}
@@ -461,6 +578,30 @@ export default function TimelinePostsGetAllPage() {
           </div>
         </div>
       )}
+
+      <PostDetailsModal row={viewingRow} columns={columns} onClose={() => setViewingRow(null)} />
+
+      <NewCommentModal
+        open={!!commentRow}
+        postId={num(commentRow?.id)}
+        onClose={() => setCommentRow(null)}
+        onCreated={() => void loadData()}
+      />
+
+      <NewReportModal
+        open={!!reportRow}
+        postId={num(reportRow?.id)}
+        onClose={() => setReportRow(null)}
+        onReported={() => void loadData()}
+      />
+
+      <EditPostModal
+        open={!!editRow}
+        postId={num(editRow?.id)}
+        content={str(editRow?.tp_content)}
+        onClose={() => setEditRow(null)}
+        onUpdated={() => void loadData()}
+      />
     </>
   );
 }

@@ -221,6 +221,8 @@ function clampCol(v: unknown): number {
  *                  fixos em 'value'/'label';
  *      radio / checkbox -> opções (lista vazia é aceita) e `inline`;
  *      data     -> `min`/`max`;  hora -> `comSegundos`;
+ *      arquivo  -> nada além da base comum (input de 1 arquivo; o `File` não
+ *                  entra no payload JSON — a página envia em multipart);
  *      demais   -> `pattern`, limites, `inputMode`, `autoComplete`, bloqueios de
  *                  caractere e, em `text`/`password`, a `datalist`; em `email`,
  *                  os `allowedDomains`.
@@ -319,6 +321,10 @@ function buildField(row: ApiRow): AnyFieldSchema {
     set('max', str(row.fc_max_date));
   } else if (type === 'hora') {
     if (bool(row.fc_with_seconds)) set('comSegundos', true);
+  } else if (type === 'arquivo') {
+    // Só a base comum (label/name/required/...): `accept` não tem coluna em
+    // form_fields — quem valida extensão/MIME é o backend do módulo. O tamanho
+    // máximo (MAX_UPLOAD_MB, 20 MB) já é barrado no próprio ArquivoField.
   } else {
     // text / password / email / mascarados
     set('pattern', str(row.fc_pattern));

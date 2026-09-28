@@ -244,24 +244,54 @@ Guarda: apenas `RequireAuth` (sem `RequireRole`).
 | -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/v1/svg-map` | `pages/v1/svg-map/SvgMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
 
-### timeline — Listagem clássica do feed (view_timeline_posts)
+### timeline — Feed e listas padrão do módulo
 
 Fonte: `routes/v1/timeline.routes.tsx` — espelha `api/v1/timeline-posts-view`
-(+ `api/v1/timeline-posts` para as ações de escrita). Guarda: apenas
+(+ `api/v1/timeline-posts` para as ações de escrita) e, nas listas padrão, os
+`-view` de cada recurso via motor do Construtor de Listas. Guarda: apenas
 `RequireAuth` (sem `RequireRole`). Backend completo e testado (7 recursos,
 189 rotas) — ver
 [`README_modulo_timeline.md`](../../../../../app/markdown/geral/README_modulo_timeline.md)
-do backend. Criação dos 5 recursos do módulo usa o renderizador genérico
-(`/v1/form/timeline-post`, `/v1/form/timeline-settings`, …), não rota própria.
+do backend.
+
+**Mudança de 2026-09-28 — os itens de menu do módulo deixaram de apontar para
+formulário.** Os 5 recursos saíam do renderizador genérico
+(`/v1/form/timeline-post`, `/v1/form/timeline-settings`, `/v1/form/timeline-comment`,
+`/v1/form/timeline-report`, `/v1/form/timeline-attachment`) e passaram a ter rota
+do próprio módulo, exibindo **listas padrão**: `/v1/timeline-post`,
+`/v1/timeline-manager`, `/v1/timeline-comment`, `/v1/timeline-report` e
+`/v1/timeline-attachment`. Cada página é um wrapper fino de
+`pages/v1/timeline/StandardListPage.tsx` (mesmo motor de `calendar-list`:
+`list_manager`/`list_columns`, busca + paginação de servidor, **sem** formulário
+e **sem** `list_actions`). O slug do `list_manager` é homônimo da rota — ver
+["timeline" em `README_list_constructor.md`](README_list_constructor.md).
+As rotas antigas `/v1/form/<slug>` **continuam existindo e funcionando**
+(genéricas), apenas não são mais destino de item de menu.
+SQL da troca no menu DEV: `doc/sql/insert/20260928115754_timeline_rotas_frontend_listas.sql`.
 
 Esta é a listagem **clássica** (Fase 2); a página inicial com feed
-misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela, ainda não
-construída (Fase 3).
+misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela (Fase 3).
 
 | Path                | Elemento (lazy)                                | Observação                                                                                                   |
 | ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `/v1/timeline` | `pages/v1/timeline/home-feed/GetAllPage` | **Home Feed** (Fase 3b) — feed misto (`GET .../timeline-posts-view/home-feed`, algoritmo no backend, `README_modulo_timeline.md` §5.1), scroll infinito 10 em 10 (`useInfiniteScroll`), card único por post (`PostCard.tsx`: mídia via `MediaPreview` global, curtir/avaliar/comentar/denunciar, 3 comentários + "ver mais" com scroll infinito próprio), botão flutuante de novo post (`NewPostModal.tsx`, reaproveita a técnica do `FormRendererPage`) |
 | `/v1/timeline-posts` | `pages/v1/timeline/timeline-posts/GetAllPage` | Listagem **clássica** (Fase 2) — feed completo (`view_timeline_posts`), mais recentes primeiro — motor `list_manager`/`list_columns`/`list_actions` (slug `timeline-feed`), busca + paginação de servidor, mesmo padrão de `calendar-list/GetAllPage`. Ações Curtir/Avaliar/Republicar chamam a API de verdade (corpo montado por `list_actions.data_action`, ver header do arquivo) |
+| `/v1/timeline-post` | `pages/v1/timeline/timeline-post/GetAllPage` | **Lista padrão** das publicações (`timeline_posts`) — slug `timeline-post`, wrapper de `StandardListPage`. Item de menu "Nova Publicação" (`menu_manager.id=31`) |
+| `/v1/timeline-manager` | `pages/v1/timeline/timeline-manager/GetAllPage` | **Lista padrão** das timelines (`timeline_manager`) — slug `timeline-manager`. Item de menu "Minha Timeline" (`id=32`). Era o form `timeline-settings` |
+| `/v1/timeline-comment` | `pages/v1/timeline/timeline-comment/GetAllPage` | **Lista padrão** dos comentários (`timeline_post_comments`) — slug `timeline-comment`. Item de menu "Comentar" (`id=33`) |
+| `/v1/timeline-report` | `pages/v1/timeline/timeline-report/GetAllPage` | **Lista padrão** das denúncias (`timeline_post_reports`) — slug `timeline-report`. Item de menu "Denunciar" (`id=34`) |
+| `/v1/timeline-attachment` | `pages/v1/timeline/timeline-attachment/GetAllPage` | **Lista padrão** dos anexos de post (`timeline_post_attachments`) — slug `timeline-attachment`. Item de menu "Anexo do Post" (`id=35`) |
+
+> **Pendência das 5 listas padrão:** cada rota só mostra dados depois que o
+> registro homônimo existir em `list_manager` (com `list_columns`) — criar em
+> `/v1/list-constructor`. Até lá a página exibe
+> `Listagem '<slug>' não encontrada em list_manager`.
+> Os títulos dos itens de menu continuam os antigos ("Nova Publicação",
+> "Comentar", …), embora as telas agora sejam de listagem — ajustar em
+> `/v1/menu-manager` se for o caso.
+> As listas padrão usam **GET** (`api_get_endpoint`/`api_search_endpoint`); uma
+> listagem que exija POST (`get-grouped`, como `timeline-feed`) precisa de página
+> própria, não deste wrapper.
 
 **Lacuna conhecida (não corrigida nesta fase, mesmo padrão de
 `upload.routes.tsx`):** as ações "Ver" (`/v1/timeline-posts/{id}`), "Comentar"

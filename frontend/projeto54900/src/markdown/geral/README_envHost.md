@@ -122,7 +122,24 @@ específico), para agilizar teste manual sem digitar campo por campo.
    existem no DOM nesse momento. Também em
    **`pages/v1/user/user-profiles/CreatePage.tsx`** (slug `dados-do-usuario`,
    script `dev/fakeFill/dadosDoUsuario.ts`), montado quando o formulário da
-   etapa 2 do cadastro de usuário está carregado.
+   etapa 2 do cadastro de usuário está carregado. E em
+   **`pages/v1/timeline/home-feed/NewPostModal.tsx`** (slug `timeline-post`,
+   script `dev/fakeFill/timelinePost.ts`, 2026-09-28), com o modal "Nova
+   publicação" aberto.
+
+**Fake fill com ARQUIVO (`timelinePost.ts`) — como funciona e por quê:**
+o texto vai por `setReactValue`; a imagem é sorteada entre
+`doc/clipart_teste/img001..img005.jpg` (fora da raiz do Vite). O navegador
+não lê disco local, então o dev-server serve a pasta por `/@fs/<caminho
+absoluto>` — liberada em `server.fs.allow` do `vite.config.ts` (arquivo fora
+dessa lista responde 403) — e o `vite.config.ts` injeta o caminho em
+`__DEV_CLIPART_DIR__` (`define`, **só** em `command === 'serve'`; no build é
+`''`). O script faz `fetch`, monta um `File` e coloca no `<input
+type="file">` com `DataTransfer` + evento `change`. **Não usar
+`import`/`import.meta.glob` para imagem de teste:** o Vite emite o asset no
+`dist/` mesmo dentro de `if (import.meta.env.DEV)` (conferido em
+2026-09-28 — `img001`/`img002` apareceram no build). Mudança no
+`vite.config.ts` exige reiniciar o `npm run dev`.
 
 **Como registrar o próximo formulário:** copiar `calendario.ts` como base,
 levantar as regras de negócio reais do novo formulário (API + Model +

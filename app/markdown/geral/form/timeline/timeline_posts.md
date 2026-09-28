@@ -46,16 +46,22 @@ automaticamente na primeira publicação.
 ```
 timeline-post
 └─ Publicação (timeline_posts)
-   ├─ Linha 1
-   │  ├─ Timeline
-   │  └─ Republicar de
-   ├─ Linha 2
-   │  └─ Título
    ├─ Linha 3
    │  └─ Publicação
    └─ Linha 4
-      └─ Status
+      └─ Anexo
 ```
+
+> **Form enxuto — 2026-09-28** (pedido do usuário: "como em qualquer rede
+> social", só texto + anexo). Timeline, Republicar de, Título e Status saíram
+> do FORM por soft delete (`form_fields` 221/222/223/225, `form_rows`
+> 133/134/136 — SQL `doc/sql/insert/20260928084335_timeline_post_form_enxuto.sql`).
+> As **colunas continuam** em `timeline_posts`, porque têm uso fora do form:
+> o backend resolve `timeline_manager_id` (timeline do usuário, criada na 1ª
+> publicação) e `status` (`published`); `repost_of_id` vem da ação
+> "Republicar" sobre um post existente; `status` também é usado pela moderação
+> e pelo filtro do feed; `title` existe nos posts antigos e na listagem
+> clássica (o card não mostra título vazio).
 
 ## Grupo 1 — Publicação (`timeline_posts`)
 
@@ -63,11 +69,12 @@ _slug `post` · icon `collection`_
 
 | Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Timeline | `timeline_manager_id` | select | 6 | não | remoto: `GET /api/v1/timeline-manager/get-no-pagination`, `valueKey=id`, `labelTemplate="{title} #{id}"`; help: "Vazio = a sua timeline (criada automaticamente na primeira publicação)." |
-| 1 | Republicar de | `repost_of_id` | select | 6 | não | remoto: `GET /api/v1/timeline-posts/get-no-pagination`, `valueKey=id`, `labelTemplate="Publicação #{id}"`; help: "Preenchido = republicação: esta publicação aponta para a original e aparece na sua timeline." |
-| 2 | Título | `title` | text | 12 | não | opcional — a publicação pode ser só texto |
-| 3 | Publicação | `content` | textarea | 12 | sim | `rows: 4`, `showCounter`; o teto de caracteres entra no `CreateRequest` (Etapa D) |
-| 4 | Status | `status` | radio | 12 | não | `inline=1`; opções: Rascunho (`draft`), Publicada (`published`), Ocultada (`hidden`) |
+| 3 | Publicação | `content` | textarea | 12 | sim | `rows: 4`, `showCounter`; o teto de caracteres entra no `CreateRequest` (Etapa D); help (2026-09-28): "O que você quer compartilhar? Obrigatório. Para anexar imagem, vídeo ou documento, use o campo Anexo abaixo." |
+| 4 | Anexo | `file` | arquivo | 12 | não | 1 arquivo por publicação; NÃO vai no JSON do post — o `NewPostModal` envia em multipart para `api/v1/timeline-post-attachments/create` (2026-09-28) |
+
+Removidos do form em 2026-09-28 (soft delete, reversível): Timeline
+(`timeline_manager_id`, select), Republicar de (`repost_of_id`, select),
+Título (`title`, text), Status (`status`, radio).
 
 Observações de negócio (Processor, Etapa D):
 

@@ -53,8 +53,15 @@ _slug `report` · icon `flag`_
 | Linha | Rótulo | `field_name` | Tipo | col | Obrig. | Observação |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Publicação | `timeline_post_id` | select | 12 | sim | remoto: `GET /api/v1/timeline-posts/get-no-pagination`, `valueKey=id`, `labelTemplate="Publicação #{id}"`; help: "Publicação que está sendo denunciada." |
-| 2 | Motivo | `reason` | select | 12 | sim | estático (`options_json`), casando com o enum da coluna: Spam (`spam`), Abuso (`abuse`), Violência (`violence`), Nudez (`nudity`), Discurso de ódio (`hate`), Direitos autorais (`copyright`), Informação falsa (`misinformation`), Outro (`other`) |
+| 2 | Motivo | `reason` | radio (select até 2026-09-28) | 12 | sim | `inline=0` (uma opção por linha); estático (`options_json`), casando com o enum da coluna: Spam (`spam`), Abuso (`abuse`), Violência (`violence`), Nudez (`nudity`), Discurso de ódio (`hate`), Direitos autorais (`copyright`), Informação falsa (`misinformation`), Outro (`other`); help (2026-09-28): "Escolha o tipo de problema desta publicação para a moderação. Obrigatório." |
 | 3 | Detalhes | `description` | textarea | 12 | não | `rows: 3`, `showCounter`; ajuda o moderador a decidir |
+
+Uso na Home Feed (2026-09-28): o ícone de bandeira do `PostCard` abre o
+`NewReportModal` (`pages/v1/timeline/home-feed/`) na própria página. O modal
+remove o campo **Publicação** do schema e envia `timeline_post_id` = id do card;
+mostra só Motivo (radio, obrigatório) e Detalhes (opcional). O campo 229 segue
+no banco porque a página admin `/v1/form/timeline-report` o usa. SQL:
+`doc/sql/insert/20260928112046_timeline_report_motivo_radio.sql`.
 
 Observações de negócio (Processor, Etapa D):
 

@@ -196,6 +196,7 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('timeline-post-attachments', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostAttachments/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Timeline/TimelinePostAttachments/EndpointUpload.php';
     });
 
     $routes->group('timeline-post-attachments-view', static function ($routes) {

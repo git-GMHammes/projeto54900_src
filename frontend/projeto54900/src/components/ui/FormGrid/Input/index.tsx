@@ -20,7 +20,7 @@
  * `../cnpj`, `../cep`, `../moeda`, `../data`, `../hora`, `../pis`,
  * `../placa`, `../titulo`, `../cnh`, `../processo`, `../renavam`, `../sei`,
  * `../email`, `../textarea`, `../senha`, `../radio`, `../checkbox`,
- * `../select`) — cada um exporta seu componente + `XxxFieldSchema`.
+ * `../select`, `../arquivo`) — cada um exporta seu componente + `XxxFieldSchema`.
  * CONSUMIDORES: qualquer pagina que renderize um formulario dinamico
  * (pages/v1/form/FormRendererPage.tsx, pages/v1/user/register/RegisterPage.tsx,
  * FormBuilderPage.tsx no preview) — sempre com
@@ -67,6 +67,7 @@ import { SenhaField, type SenhaFieldSchema } from '../senha'
 import { RadioField, type RadioFieldSchema } from '../radio'
 import { CheckboxField, type CheckboxFieldSchema } from '../checkbox'
 import { SelectField, type SelectFieldSchema } from '../select'
+import { ArquivoField, type ArquivoFieldSchema } from '../arquivo'
 import FieldTooltip from '../FieldTooltip'
 
 // ─── Schema de campo texto ────────────────────────────────────────────────────
@@ -156,6 +157,7 @@ export type AnyFieldSchema =
   | RadioFieldSchema
   | CheckboxFieldSchema
   | SelectFieldSchema
+  | ArquivoFieldSchema
 
 export interface FormRowSchema {
   fields: AnyFieldSchema[]
@@ -490,6 +492,16 @@ function FormGrid({ schema }: FormGridProps) {
                 <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
                   {field.title && <FieldTooltip text={field.title} />}
                   <SelectField field={field} />
+                </div>
+              )
+            }
+
+            // ── Arquivo (1 arquivo; o File NÃO entra no payload JSON — a página envia em multipart) ──
+            if (field.type === 'arquivo') {
+              return (
+                <div key={fieldIndex} className={`col-md-${field.col} mb-1 position-relative`} hidden={field.hidden}>
+                  {field.title && <FieldTooltip text={field.title} />}
+                  <ArquivoField field={field} />
                 </div>
               )
             }

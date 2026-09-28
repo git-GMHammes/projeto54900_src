@@ -24,6 +24,9 @@
 import { fillCalendarioForm } from './calendario';
 import { fillCadastroEventoForm } from './cadastroEvento';
 import { fillDadosDoUsuarioForm } from './dadosDoUsuario';
+import { fillTimelinePostForm } from './timelinePost';
+import { fillTimelineCommentForm } from './timelineComment';
+import { fillTimelineReportForm } from './timelineReport';
 
 type FakeFillFn = () => void | Promise<void>;
 
@@ -31,6 +34,9 @@ export const FAKE_FILL_SCRIPTS: Record<string, FakeFillFn> = {
   calendario: fillCalendarioForm,
   'cadastro-evento': fillCadastroEventoForm,
   'dados-do-usuario': fillDadosDoUsuarioForm,
+  'timeline-post': fillTimelinePostForm,
+  'timeline-comment': fillTimelineCommentForm,
+  'timeline-report': fillTimelineReportForm,
 };
 
 export function getFakeFillScript(slug: string): FakeFillFn | undefined {

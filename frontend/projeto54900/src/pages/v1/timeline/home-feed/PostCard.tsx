@@ -7,17 +7,40 @@
  * (pedido do usuário: "modelo adaptável para esse nosso sistema"). Ordem
  * fixa: autor/data → indicador de republicação (se houver) → `MediaPreview`
  * (anexos, se houver) → título/descrição → linha de ferramentas (curtir,
- * avaliar com estrelas, comentar, denunciar — Curtir/Denunciar são
- * ícone-only, com tooltip do Bootstrap mostrando o nome; Curtir/Comentar têm
- * badge com a contagem; Avaliar mostra só as 5 estrelas, sem média/contagem —
- * isso fica só na página "Feed", `timeline-posts/GetAllPage.tsx`) → 3
- * primeiros comentários, com "ver mais" expandindo em scroll infinito
- * (`useInfiniteScroll`).
+ * descurtir, avaliar com estrelas, comentar, republicar, denunciar —
+ * Curtir/Descurtir/Republicar/Denunciar são ícone-only, com tooltip do
+ * Bootstrap mostrando o nome; Curtir/Descurtir/Comentar/Republicar têm badge
+ * com a contagem; Avaliar mostra só as 5 estrelas, sem média/contagem — isso
+ * fica só na página "Feed", `timeline-posts/GetAllPage.tsx`) → 3 comentários
+ * MAIS RECENTES (o último no topo, antigos abaixo), com "ver mais"
+ * expandindo em scroll infinito (`useInfiniteScroll`) por JANELA — ver o
+ * bloco de comentários no corpo (2026-09-28: corrigido o loop que pulava
+ * itens 4-10 e o "tremor" de "Carregando comentários...").
+ *
+ * CURTIR/DESCURTIR (2026-09-28): mutuamente exclusivos — a mesma UNIQUE
+ * (timeline_post_id + user_manager_id) do backend garante 1 reação por
+ * usuário por post; clicar no tipo oposto TROCA a reação existente (upsert
+ * em `Processor::create`), nunca duplica. Estado inicial (qual botão fica
+ * marcado ao recarregar) vem de `post.myReactionType`/`myReactionId`
+ * (`Processor::homeFeed` → `attachMyState`, que agora devolve os dois tipos,
+ * não só 'like').
+ *
+ * REPUBLICAR (2026-09-28): faltava nesta tela — só existia como ação nas
+ * listas tabulares `timeline-posts`/`timeline-posts-get-all`
+ * (`list_actions.data_action='repost'`), mas não na Home Feed (pedido do
+ * usuário: "em todas as telas que tiverem o objetivo de like"). Cada clique
+ * cria um post NOVO com `repost_of_id=post.id` (`timelinePostsTable.create`,
+ * sem upsert — não é toggle, é sempre uma nova publicação, mesmo padrão das
+ * listas). `content` vai preenchido com o texto do post original porque o
+ * backend (`Processor::validateOnCreate`) exige título OU conteúdo mesmo em
+ * repost.
  *
  * NOVO COMENTÁRIO: o botão "Comentar" do toolbar (ícone de balão) NÃO alterna
- * mais expandir/recolher — abre um `Modal` (`components/global/Modal`) com um
- * `<textarea rows={4}>` + Enviar/Cancelar, no lugar da linha de input fixa que
- * antes ocupava o rodapé do card (pedido do usuário, 2026-09-27). Ao enviar
+ * mais expandir/recolher — abre o `NewCommentModal` (form_manager
+ * `timeline-comment` renderizado pelo FormGrid: tooltip, validação e fake
+ * fill; desde 2026-09-28 — antes era um `<textarea>` escrito à mão), no lugar
+ * da linha de input fixa que antes ocupava o rodapé do card (pedido do
+ * usuário, 2026-09-27). Ao enviar
  * com sucesso, o modal fecha e a lista de comentários recarrega em modo
  * SILENCIOSO (`loadComments(..., silent: true)` — não liga `commentsLoading`,
  * então não pisca "Carregando comentários..."). Os links "Ver mais"/"Recolher
@@ -26,56 +49,84 @@
  * NÃO busca a lista de posts (isso é do `GetAllPage.tsx`, que passa `post`
  * já pronto) — só os dados PRÓPRIOS deste card: anexos e comentários.
  *
+ * ANEXO: metadados por `timelinePostAttachmentsTable.find` e o binário por
+ * `timelinePostAttachmentsUpload.fetchBlob` (serve com token) — o `fileUrl`
+ * passado ao `MediaPreview` é um `blob:` URL, liberado ao desmontar. Nunca usar
+ * `file_url` do banco direto em `<img src>`: a rota exige `Authorization`.
+ *
+ * CARREGAMENTO POR POST INTEIRO (2026-09-28, pedido do usuário): o card só
+ * aparece quando anexos baixados + imagem/vídeo renderizados
+ * (`MediaPreview.onReady`) + 1ª leva de comentários carregada; até lá mostra
+ * um spinner no lugar. O card fica montado oculto (`visibility: hidden`, não
+ * `display: none`) para a mídia carregar por baixo. Trava: `READY_TIMEOUT_MS`.
+ *
  * DEPENDÊNCIAS: `@/services/v1` (`timelinePostAttachmentsTable`,
- * `timelinePostCommentsTable`/`.View`, `timelinePostReactionsTable`,
+ * `timelinePostAttachmentsUpload`,
+ * `timelinePostCommentsView`, `timelinePostReactionsTable`,
  * `timelinePostRatingsTable`), `@/hooks/useInfiniteScroll`,
  * `@/hooks/useBootstrapTooltips` (inicializa os tooltips da barra de
  * ferramentas), `@/components/global/MediaPreview`,
- * `@/utils/{apiResult,format}`, `@/routes/paths` (link de Denunciar →
- * renderizador genérico de formulário).
+ * `@/utils/{apiResult,format}`, `./NewCommentModal` e `./NewReportModal`.
  *
- * ESTADO INICIAL (`liked`/`reactionId`/`myRating`) vem de `post.myReactionId`/
- * `post.myRating` — `Processor::homeFeed` (backend) já devolve a curtida/nota
- * que O PRÓPRIO usuário logado deu antes a cada post, então F5/reabrir o
+ * ESTADO INICIAL (`myReaction`/`reactionId`/`myRating`) vem de
+ * `post.myReactionType`/`post.myReactionId`/`post.myRating` —
+ * `Processor::homeFeed` (backend) já devolve a reação/nota que O PRÓPRIO
+ * usuário logado deu antes a cada post, então F5/reabrir o
  * sistema mantém os botões marcados (pedido do usuário, 2026-09-27: "o
  * sistema deve se lembrar do que fiz"). Curtir continua toggle: clique cria a
  * reação e guarda o `id` devolvido; clique seguinte remove (`deleteSoft`) com
  * esse `id`; próximo clique cria de novo (o backend restaura a linha
  * soft-deleted).
  *
- * LACUNA CONHECIDA (registrada em README_modulo_timeline.md, não resolvida
- * aqui):
- *   - "Denunciar" abre o formulário genérico (`/v1/form/timeline-report`)
- *     sem pré-preencher a publicação — o usuário escolhe no select remoto.
+ * DENUNCIAR (2026-09-28): a bandeira abre o `NewReportModal` NA PRÓPRIA
+ * página (antes era link para `/v1/form/timeline-report`, que tirava o
+ * usuário do feed). O id do post é injetado — sem o campo "Publicação".
+ * Sucesso -> `onReported(post.id)`: a página tira o card do feed. A página
+ * admin do form continua existindo para a moderação.
+ *
+ * EDITAR/EXCLUIR (2026-09-28): logo após a data/hora, dois ícones minúsculos
+ * — lápis (abre `EditPostModal`, só o texto; upload não edita) e lixeira
+ * vermelha (`ConfirmModal` -> `timelinePostsTable.deleteSoft`). Aparecem SÓ
+ * quando o usuário da sessão (`useAuth().user.id`) é o autor do post
+ * (`post.authorId` = `tp_user_manager_id`), inclusive para admin. O backend
+ * repete a regra (`Processor::assertOwner` -> 404 para post alheio).
+ * Sucesso -> `onUpdated(id, content)` / `onDeleted(id)` para a página.
  *
  * CONSUMIDORES: `pages/v1/timeline/home-feed/GetAllPage.tsx`.
  * -------------------------------------------------------------------------
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useBootstrapTooltips } from '@/hooks/useBootstrapTooltips';
 import { ApiError } from '@/services/http';
 import {
   timelinePostAttachmentsTable,
-  timelinePostCommentsTable,
+  timelinePostAttachmentsUpload,
   timelinePostCommentsView,
   timelinePostReactionsTable,
   timelinePostRatingsTable,
+  timelinePostsTable,
 } from '@/services/v1';
 import { normalizeItem, normalizeList } from '@/utils/apiResult';
 import { formatDateTime } from '@/utils/format';
-import { paths } from '@/routes/paths';
+import ConfirmModal from '@/components/global/ConfirmModal';
 import MediaPreview from '@/components/global/MediaPreview';
 import type { MediaAttachment, MediaCategory } from '@/components/global/MediaPreview';
-import Modal from '@/components/global/Modal';
 import type { FeedPost } from './GetAllPage';
+import EditPostModal from './EditPostModal';
+import NewCommentModal from './NewCommentModal';
+import NewReportModal from './NewReportModal';
 
 const COMMENTS_INITIAL = 3;
 const COMMENTS_PAGE_SIZE = 10;
+/** Trava de seguranca: passado esse tempo, o card aparece mesmo que a midia nao tenha avisado. */
+const READY_TIMEOUT_MS = 15_000;
+/** Card montado mas invisivel e sem ocupar altura (visibility, nao display:none: a midia segue carregando). */
+const HIDDEN_UNTIL_READY = { visibility: 'hidden', height: 0, overflow: 'hidden', margin: 0 } as const;
 const MEDIA_CATEGORIES: readonly MediaCategory[] = [
   'image', 'video', 'audio', 'document', 'spreadsheet', 'presentation', 'pdf', 'archive', 'other',
 ];
@@ -115,61 +166,172 @@ function toMediaAttachment(raw: Record<string, unknown>): MediaAttachment {
   };
 }
 
-export default function PostCard({ post }: { post: FeedPost }) {
+export default function PostCard({
+  post,
+  onReported,
+  onUpdated,
+  onDeleted,
+}: {
+  post: FeedPost;
+  /** Denúncia enviada com sucesso — a página tira o card do feed (denunciado nunca é exibido). */
+  onReported?: (postId: number) => void;
+  /** Edição salva pelo dono — a página troca o texto do card. */
+  onUpdated?: (postId: number, content: string) => void;
+  /** Exclusão confirmada pelo dono — a página tira o card do feed. */
+  onDeleted?: (postId: number) => void;
+}) {
+  // Denunciar — NewReportModal (form_manager 'timeline-report' sem o campo Publicacao; o id vem daqui).
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const toast = useToast();
   const toolbarRef = useBootstrapTooltips<HTMLDivElement>();
+  const ownerActionsRef = useBootstrapTooltips<HTMLDivElement>();
 
-  // Anexos — so busca se o post tiver algum (attachments_count > 0).
+  // Editar/Excluir — SO o autor do post (id da sessao === tp_user_manager_id), inclusive admin.
+  // O backend repete a regra (Processor::assertOwner -> 404 para post alheio).
+  const { user } = useAuth();
+  const isOwner = user !== null && post.authorId > 0 && user.id === post.authorId;
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleDelete = useCallback(async () => {
+    setDeleting(true);
+    try {
+      await timelinePostsTable.deleteSoft(post.id);
+      toast.success('Publicação excluída.', { title: 'Excluir publicação' });
+      setConfirmDeleteOpen(false);
+      onDeleted?.(post.id);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao excluir.', { title: 'Excluir publicação' });
+    } finally {
+      setDeleting(false);
+    }
+  }, [post.id, toast, onDeleted]);
+
+  // Anexos — so busca se o post tiver algum (attachments_count > 0). 2 passos: metadados (find)
+  // e, para cada anexo, o BINARIO via serve com token (fetchBlob) -> `blob:` URL no fileUrl.
+  // Motivo: o grupo esta sob jwtauth, e <img>/<video>/<a> nao mandam Authorization (401).
+  // Os blob: URLs sao liberados (revokeObjectURL) quando o card desmonta ou o post muda.
   const [attachments, setAttachments] = useState<MediaAttachment[]>([]);
+  // Prontidao do card (2026-09-28): o post so aparece quando anexos baixados + imagem/video
+  // renderizados (MediaPreview.onReady) + 1a leva de comentarios carregada; ate la, spinner.
+  // READY_TIMEOUT_MS e a trava de seguranca para o spinner nunca ficar preso.
+  const [attachmentsFetched, setAttachmentsFetched] = useState(post.attachmentsCount <= 0);
+  const [mediaReady, setMediaReady] = useState(post.attachmentsCount <= 0);
+  const [commentsReady, setCommentsReady] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const ready = timedOut || (attachmentsFetched && mediaReady && commentsReady);
+  const handleMediaReady = useCallback(() => setMediaReady(true), []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setTimedOut(true), READY_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (post.attachmentsCount <= 0) return undefined;
     let active = true;
+    const controller = new AbortController();
+    const objectUrls: string[] = [];
+
     timelinePostAttachmentsTable
       .find({ timeline_post_id: post.id }, { limit: 20, sort: 'sort_order', order: 'ASC' })
-      .then((raw) => {
+      .then(async (raw) => {
+        const metas = normalizeList<Record<string, unknown>>(raw).rows.map(toMediaAttachment);
+        const loaded = await Promise.all(
+          metas.map(async (meta) => {
+            try {
+              const blob = await timelinePostAttachmentsUpload.fetchBlob(meta.id, controller.signal);
+              const url = URL.createObjectURL(blob);
+              objectUrls.push(url);
+              return { ...meta, fileUrl: url };
+            } catch {
+              return null; // binario indisponivel: some so este anexo, nao o card
+            }
+          }),
+        );
         if (!active) return;
-        setAttachments(normalizeList<Record<string, unknown>>(raw).rows.map(toMediaAttachment));
+        setAttachments(loaded.filter((a): a is MediaAttachment => a !== null));
+        // Lista nova: espera o onReady do MediaPreview (imediato se nao houver imagem/video).
+        setMediaReady(false);
+        setAttachmentsFetched(true);
       })
       .catch(() => {
         // Sem anexo visivel em caso de falha - nao quebra o card inteiro por causa disso.
+        if (!active) return;
+        setMediaReady(true);
+        setAttachmentsFetched(true);
       });
     return () => {
       active = false;
+      controller.abort();
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [post.id, post.attachmentsCount]);
 
-  // Curtir — toggle: 1o clique cria a reacao (upsert no backend) e guarda o id devolvido;
-  // 2o clique remove (deleteSoft) usando esse id; clique seguinte cria de novo (backend restaura).
-  // Estado INICIAL vem de post.myReactionId (Processor::homeFeed ja devolve a curtida ativa do
-  // usuario logado) — sem isso o botao voltava "apagado" a cada F5 mesmo ja tendo curtido antes.
-  const [liked, setLiked] = useState(post.myReactionId !== null);
+  // Curtir/Descurtir — mutuamente exclusivos (UNIQUE timeline_post_id+user no
+  // backend): 1o clique cria a reacao (upsert) e guarda o id devolvido; clicar
+  // no MESMO tipo de novo remove (deleteSoft); clicar no tipo OPOSTO troca o
+  // reaction_type NA MESMA linha (Processor::create ja faz upsert) — nunca
+  // duplica. Estado INICIAL vem de post.myReactionType/post.myReactionId
+  // (Processor::homeFeed ja devolve a reacao ativa do usuario logado, os dois
+  // tipos desde 2026-09-28) — sem isso os botoes voltavam "apagados" a cada F5
+  // mesmo ja tendo reagido antes.
+  const [myReaction, setMyReaction] = useState<'like' | 'dislike' | null>(post.myReactionType);
   const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [dislikesCount, setDislikesCount] = useState(post.dislikesCount);
   const [reactionId, setReactionId] = useState<number | null>(post.myReactionId);
-  const handleLike = useCallback(async () => {
-    if (liked && reactionId !== null) {
-      setLiked(false);
-      setLikesCount((c) => Math.max(0, c - 1));
-      try {
-        await timelinePostReactionsTable.deleteSoft(reactionId);
-      } catch (err) {
-        setLiked(true);
-        setLikesCount((c) => c + 1);
-        toast.error(err instanceof ApiError ? err.message : 'Falha ao remover curtida.', { title: 'Curtir' });
-      }
-      return;
-    }
+  const [reacting, setReacting] = useState(false);
+  const handleReact = useCallback(
+    async (type: 'like' | 'dislike') => {
+      if (reacting) return;
+      setReacting(true);
 
-    try {
-      const row = normalizeItem<Record<string, unknown>>(
-        await timelinePostReactionsTable.create({ timeline_post_id: post.id, reaction_type: 'like' }),
-      );
-      if (row?.id !== undefined) setReactionId(num(row.id));
-      setLiked(true);
-      setLikesCount((c) => c + 1);
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao curtir.', { title: 'Curtir' });
-    }
-  }, [post.id, liked, reactionId, toast]);
+      const prevReaction = myReaction;
+      const removing = prevReaction === type;
+
+      // Otimista: ajusta estado local e os 2 contadores antes de chamar a API.
+      setMyReaction(removing ? null : type);
+      if (removing) {
+        if (type === 'like') setLikesCount((c) => Math.max(0, c - 1));
+        else setDislikesCount((c) => Math.max(0, c - 1));
+      } else {
+        if (type === 'like') setLikesCount((c) => c + 1);
+        else setDislikesCount((c) => c + 1);
+        if (prevReaction === 'like') setLikesCount((c) => Math.max(0, c - 1));
+        if (prevReaction === 'dislike') setDislikesCount((c) => Math.max(0, c - 1));
+      }
+
+      try {
+        if (removing && reactionId !== null) {
+          await timelinePostReactionsTable.deleteSoft(reactionId);
+          setReactionId(null);
+        } else {
+          const row = normalizeItem<Record<string, unknown>>(
+            await timelinePostReactionsTable.create({ timeline_post_id: post.id, reaction_type: type }),
+          );
+          if (row?.id !== undefined) setReactionId(num(row.id));
+        }
+      } catch (err) {
+        // Reverte o otimismo.
+        setMyReaction(prevReaction);
+        if (removing) {
+          if (type === 'like') setLikesCount((c) => c + 1);
+          else setDislikesCount((c) => c + 1);
+        } else {
+          if (type === 'like') setLikesCount((c) => Math.max(0, c - 1));
+          else setDislikesCount((c) => Math.max(0, c - 1));
+          if (prevReaction === 'like') setLikesCount((c) => c + 1);
+          if (prevReaction === 'dislike') setDislikesCount((c) => c + 1);
+        }
+        toast.error(err instanceof ApiError ? err.message : `Falha ao ${type === 'like' ? 'curtir' : 'descurtir'}.`, {
+          title: type === 'like' ? 'Curtir' : 'Descurtir',
+        });
+      } finally {
+        setReacting(false);
+      }
+    },
+    [post.id, myReaction, reactionId, reacting, toast],
+  );
 
   // Avaliar — 5 estrelas clicaveis; estado INICIAL vem de post.myRating (Processor::homeFeed ja
   // devolve a nota que o usuario logado deu antes), atualizado localmente a cada novo clique.
@@ -191,29 +353,57 @@ export default function PostCard({ post }: { post: FeedPost }) {
     [post.id, toast],
   );
 
-  // Comentarios — os 3 primeiros carregam no mount; "ver mais" expande com scroll infinito proprio.
+  // Republicar — cria um post novo com repost_of_id apontando pra este (upsert
+  // nao existe aqui: cada clique republica de novo, mesmo padrao das listas
+  // timeline-posts/timeline-posts-get-all). content vai preenchido porque o
+  // backend (Processor::validateOnCreate) exige titulo OU conteudo mesmo em
+  // repost — sem isso a API sempre devolve 422.
+  const [repostsCount, setRepostsCount] = useState(post.repostsCount);
+  const [reposting, setReposting] = useState(false);
+  const handleRepost = useCallback(async () => {
+    setReposting(true);
+    try {
+      await timelinePostsTable.create({ repost_of_id: post.id, content: post.content });
+      setRepostsCount((c) => c + 1);
+      toast.success('Publicação republicada.', { title: 'Republicar' });
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao republicar.', { title: 'Republicar' });
+    } finally {
+      setReposting(false);
+    }
+  }, [post.id, post.content, toast]);
+
+  // Comentarios — MAIS RECENTE NO TOPO (id DESC). Os 3 mais recentes carregam no mount; "ver mais"
+  // expande com scroll infinito proprio, trazendo os mais antigos abaixo.
+  //
+  // JANELA (2026-09-28): toda carga pede page=1 com limit = quantos ja estao na tela + 10 e
+  // SUBSTITUI a lista. Antes a 1a carga era page=1/limit=3 e o "ver mais" page=2/limit=10 — para a
+  // API isso e offset 10, entao os itens 4-10 eram pulados, a lista nunca alcancava o total e a
+  // sentinela pedia paginas vazias em loop ("tremendo"). `commentsExhausted` e a trava: se a carga
+  // voltou menor que o pedido (ou ja cobriu o total), o scroll nao reabre.
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [commentsTotal, setCommentsTotal] = useState(post.commentsCount);
-  const [commentsPage, setCommentsPage] = useState(0);
   const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsExhausted, setCommentsExhausted] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  /** `silent=true` (usado apos publicar um comentario novo) nao liga `commentsLoading` — atualiza a lista sem piscar "Carregando comentários...". */
+  /** Carrega os `windowSize` comentarios mais recentes. `silent=true` (apos publicar) nao liga `commentsLoading` — sem piscar "Carregando comentários...". */
   const loadComments = useCallback(
-    async (page: number, limit: number, silent = false) => {
+    async (windowSize: number, silent = false) => {
       if (!silent) setCommentsLoading(true);
       try {
         const raw = await timelinePostCommentsView.find(
           { tc_timeline_post_id: post.id },
-          { page, limit, sort: 'id', order: 'ASC' },
+          { page: 1, limit: windowSize, sort: 'id', order: 'DESC' },
         );
         const { rows, total } = normalizeList<Record<string, unknown>>(raw);
         const mapped = rows.map(toFeedComment);
         setCommentsTotal(total);
-        setComments((prev) => (page === 1 ? mapped : [...prev, ...mapped]));
-        setCommentsPage(page);
+        setComments(mapped);
+        setCommentsExhausted(mapped.length < windowSize || mapped.length >= total);
       } catch {
-        // Feed nao quebra por falha ao carregar comentario - so fica sem a lista.
+        // Feed nao quebra por falha ao carregar comentario - so fica sem a lista (e sem loop).
+        setCommentsExhausted(true);
       } finally {
         if (!silent) setCommentsLoading(false);
       }
@@ -222,45 +412,79 @@ export default function PostCard({ post }: { post: FeedPost }) {
   );
 
   useEffect(() => {
-    void loadComments(1, COMMENTS_INITIAL);
+    // loadComments nunca rejeita (trata o erro por dentro) — o finally so libera a prontidao.
+    void loadComments(COMMENTS_INITIAL).finally(() => setCommentsReady(true));
     // Roda so no mount deste card — loadComments muda de identidade so se post.id mudar (nao acontece).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const hasMoreComments = expanded && comments.length < commentsTotal;
+  // Recolhido = so os COMMENTS_INITIAL mais recentes, mesmo que mais ja tenham sido carregados.
+  const visibleComments = expanded ? comments : comments.slice(0, COMMENTS_INITIAL);
+  const hasMoreComments = expanded && !commentsExhausted && comments.length < commentsTotal;
   const sentinelRef = useInfiniteScroll(
-    () => void loadComments(commentsPage + 1, COMMENTS_PAGE_SIZE),
+    () => void loadComments(comments.length + COMMENTS_PAGE_SIZE),
     { enabled: hasMoreComments && !commentsLoading },
   );
 
-  // Novo comentario — escrito no modal (commentModalOpen), nao mais numa linha fixa no rodape do card.
+  // Novo comentario — NewCommentModal (form_manager 'timeline-comment' via FormGrid: tooltip,
+  // validacao e fake fill). Depois de enviar, so recarrega a lista aqui.
   const [commentModalOpen, setCommentModalOpen] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [submittingComment, setSubmittingComment] = useState(false);
-  const handleAddComment = useCallback(async () => {
-    const content = newComment.trim();
-    if (content === '') return;
-    setSubmittingComment(true);
-    try {
-      await timelinePostCommentsTable.create({ timeline_post_id: post.id, content });
-      setNewComment('');
-      setCommentModalOpen(false);
-      setExpanded(true);
-      // silent=true: fecha o modal e atualiza a lista sem exibir "Carregando comentários..." (pedido do usuário).
-      await loadComments(1, Math.max(COMMENTS_INITIAL, comments.length + 1), true);
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao comentar.', { title: 'Comentar' });
-    } finally {
-      setSubmittingComment(false);
-    }
-  }, [newComment, post.id, comments.length, loadComments, toast]);
+  const handleCommentCreated = useCallback(() => {
+    setExpanded(true);
+    // silent=true: atualiza a lista sem exibir "Carregando comentários..." (pedido do usuário).
+    // Janela = o que ja estava na tela + o novo (que entra no topo, por ser o id mais recente).
+    void loadComments(Math.max(COMMENTS_INITIAL, comments.length + 1), true);
+  }, [comments.length, loadComments]);
 
   return (
-    <div className="card border-0 shadow-sm mb-4">
+    <>
+    {/* Spinner no lugar do card enquanto midia/comentarios nao estao prontos. */}
+    {!ready && (
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-body d-flex justify-content-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando publicação…</span>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* O card ja fica montado (oculto, sem display:none) para a imagem/video carregar por baixo. */}
+    <div className="card border-0 shadow-sm mb-4" style={ready ? undefined : HIDDEN_UNTIL_READY} aria-hidden={!ready}>
       <div className="card-body">
         <div className="mb-2">
           <strong>{post.authorName}</strong>
-          <div className="small text-body-secondary">{formatDateTime(post.publishedAt)}</div>
+          <div ref={ownerActionsRef} className="d-flex align-items-center gap-2 small text-body-secondary">
+            <span>{formatDateTime(post.publishedAt)}</span>
+            {isOwner && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-link btn-sm p-0 lh-1 text-body-secondary"
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => setEditModalOpen(true)}
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Editar"
+                  aria-label="Editar publicação"
+                >
+                  <i className="bi bi-pencil" />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-link btn-sm p-0 lh-1 text-danger"
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => setConfirmDeleteOpen(true)}
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Excluir"
+                  aria-label="Excluir publicação"
+                >
+                  <i className="bi bi-trash" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {post.repostOfId !== null && (
@@ -271,7 +495,7 @@ export default function PostCard({ post }: { post: FeedPost }) {
           </div>
         )}
 
-        <MediaPreview attachments={attachments} />
+        <MediaPreview attachments={attachments} onReady={handleMediaReady} />
 
         {post.title !== '' && <h6 className="mb-1">{post.title}</h6>}
         <p className="mb-3" style={{ whiteSpace: 'pre-wrap' }}>
@@ -284,8 +508,9 @@ export default function PostCard({ post }: { post: FeedPost }) {
         >
           <button
             type="button"
-            className={`btn btn-sm position-relative ${liked ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => void handleLike()}
+            className={`btn btn-sm position-relative ${myReaction === 'like' ? 'btn-primary' : 'btn-outline-primary'}`}
+            onClick={() => void handleReact('like')}
+            disabled={reacting}
             data-bs-toggle="tooltip"
             data-bs-placement="top"
             title="Curtir"
@@ -294,6 +519,22 @@ export default function PostCard({ post }: { post: FeedPost }) {
             <i className="bi bi-hand-thumbs-up" />
             <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-secondary">
               {likesCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`btn btn-sm position-relative ${myReaction === 'dislike' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+            onClick={() => void handleReact('dislike')}
+            disabled={reacting}
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Descurtir"
+            aria-label="Descurtir"
+          >
+            <i className="bi bi-hand-thumbs-down" />
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-secondary">
+              {dislikesCount}
             </span>
           </button>
 
@@ -327,20 +568,37 @@ export default function PostCard({ post }: { post: FeedPost }) {
             ))}
           </div>
 
-          <Link
-            to={paths.v1.form.render('timeline-report')}
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary position-relative"
+            onClick={() => void handleRepost()}
+            disabled={reposting}
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Republicar"
+            aria-label="Republicar"
+          >
+            <i className="bi bi-arrow-repeat" />
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-secondary">
+              {repostsCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
             className="btn btn-sm btn-outline-danger ms-auto"
+            onClick={() => setReportModalOpen(true)}
             data-bs-toggle="tooltip"
             data-bs-placement="top"
             title="Denunciar"
             aria-label="Denunciar"
           >
             <i className="bi bi-flag" />
-          </Link>
+          </button>
         </div>
 
         <div>
-          {comments.map((c) => (
+          {visibleComments.map((c) => (
             <div key={c.id} className="mb-2">
               <strong className="small">{c.authorName}</strong>{' '}
               <span className="small text-body-secondary">{formatDateTime(c.createdAt)}</span>
@@ -350,9 +608,9 @@ export default function PostCard({ post }: { post: FeedPost }) {
 
           {commentsLoading && <div className="small text-body-secondary">Carregando comentários…</div>}
 
-          {!expanded && commentsTotal > comments.length && (
+          {!expanded && commentsTotal > visibleComments.length && (
             <button type="button" className="btn btn-sm btn-link ps-0" onClick={() => setExpanded(true)}>
-              Ver mais {commentsTotal - comments.length} comentário(s)
+              Ver mais {commentsTotal - visibleComments.length} comentário(s)
             </button>
           )}
 
@@ -366,28 +624,43 @@ export default function PostCard({ post }: { post: FeedPost }) {
         </div>
       </div>
 
-      <Modal open={commentModalOpen} title="Novo comentário" onClose={() => setCommentModalOpen(false)} size="sm">
-        <textarea
-          className="form-control"
-          rows={4}
-          placeholder="Escreva um comentário..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-        />
-        <div className="d-flex gap-2 mt-3 pt-3 border-top">
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={submittingComment || newComment.trim() === ''}
-            onClick={() => void handleAddComment()}
-          >
-            {submittingComment ? 'Enviando...' : 'Enviar'}
-          </button>
-          <button type="button" className="btn btn-outline-secondary" onClick={() => setCommentModalOpen(false)}>
-            Cancelar
-          </button>
-        </div>
-      </Modal>
+      <NewCommentModal
+        open={commentModalOpen}
+        postId={post.id}
+        onClose={() => setCommentModalOpen(false)}
+        onCreated={handleCommentCreated}
+      />
+
+      <NewReportModal
+        open={reportModalOpen}
+        postId={post.id}
+        onClose={() => setReportModalOpen(false)}
+        onReported={() => onReported?.(post.id)}
+      />
+
+      {isOwner && (
+        <>
+          <EditPostModal
+            open={editModalOpen}
+            postId={post.id}
+            content={post.content}
+            onClose={() => setEditModalOpen(false)}
+            onUpdated={(content) => onUpdated?.(post.id, content)}
+          />
+
+          <ConfirmModal
+            open={confirmDeleteOpen}
+            title="Excluir publicação"
+            message="Deseja realmente excluir esta publicação?"
+            confirmLabel="Excluir"
+            variant="danger"
+            busy={deleting}
+            onConfirm={() => void handleDelete()}
+            onClose={() => setConfirmDeleteOpen(false)}
+          />
+        </>
+      )}
     </div>
+    </>
   );
 }

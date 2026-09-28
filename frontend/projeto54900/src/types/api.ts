@@ -121,7 +121,11 @@ export type PaginationInput = Partial<PageParams> & QueryParams;
  *   headers -> cabeçalhos extras, mesclados por ÚLTIMO no `http.ts`, o que
  *              permite sobrescrever um cabeçalho fixo quando necessário;
  *   signal  -> `AbortSignal` para CANCELAR a requisição — é o que o `useApi` usa
- *              ao desmontar a tela.
+ *              ao desmontar a tela;
+ *   responseType -> 'blob' devolve o corpo de SUCESSO como `Blob` (binário de
+ *              rota serve/download que exige token — `<img src>` não manda
+ *              `Authorization`); omitido = JSON/texto, como sempre. Erro
+ *              continua sendo lido como JSON/texto para virar `ApiError`.
  *   O `| undefined` explícito em cada campo existe por causa do
  *   `exactOptionalPropertyTypes` do projeto: sem ele, passar `params: undefined`
  *   não compilaria.
@@ -140,6 +144,7 @@ export interface RequestOptions {
   body?: unknown;
   headers?: Record<string, string> | undefined;
   signal?: AbortSignal | undefined;
+  responseType?: 'blob' | undefined;
 }
 
 // Opcoes repassadas pelos services (sem body; o service monta o body).

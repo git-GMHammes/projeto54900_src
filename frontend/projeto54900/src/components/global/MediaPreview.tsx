@@ -22,6 +22,10 @@
  * o tipo exato de `timeline_post_attachments`, é um subconjunto, para o
  * componente não ficar acoplado a UM módulo específico.
  *
+ * `fileUrl` PRECISA ser carregável sem cabeçalho: se a rota do binário exige
+ * `Authorization` (caso da Timeline, sob `jwtauth`), o pai baixa o `Blob` com
+ * token e passa um `blob:` URL (`URL.createObjectURL`) — ver `PostCard.tsx`.
+ *
  * DEPENDÊNCIAS: nenhuma (Bootstrap Icons já carregado globalmente pelo
  * projeto — `bootstrap-icons`, ver `bootstrap.ts`).
  * CONSUMIDORES: `pages/v1/timeline/home-feed/PostCard.tsx`. Qualquer módulo
@@ -34,6 +38,8 @@
  * `timeline_post_attachments`.
  * -------------------------------------------------------------------------
  */
+
+import { useCallback, useLayoutEffect, useRef } from 'react';
 
 export type MediaCategory =
   | 'image'
@@ -64,8 +70,17 @@ const ICON_BY_CATEGORY: Record<Exclude<MediaCategory, 'image' | 'video'>, string
   other: 'file-earmark',
 };
 
-/** Um anexo: imagem/vídeo inline, os demais um card com ícone + nome, clicável (abre em nova aba). */
-function AttachmentItem({ attachment }: { attachment: MediaAttachment }) {
+/** Categorias que tocam inline e, por isso, têm evento de "terminou de carregar". */
+function isInlineMedia(attachment: MediaAttachment): boolean {
+  return attachment.category === 'image' || attachment.category === 'video';
+}
+
+/**
+ * Um anexo: imagem/vídeo inline, os demais um card com ícone + nome, clicável (abre em nova aba).
+ * `onDone` dispara quando a imagem/vídeo termina de carregar OU falha (erro também conta, para
+ * quem espera o carregamento nunca ficar preso).
+ */
+function AttachmentItem({ attachment, onDone }: { attachment: MediaAttachment; onDone: () => void }) {
   if (attachment.category === 'image') {
     return (
       <img
@@ -73,12 +88,24 @@ function AttachmentItem({ attachment }: { attachment: MediaAttachment }) {
         alt={attachment.name}
         className="img-fluid rounded"
         style={{ maxHeight: '420px', width: '100%', objectFit: 'cover' }}
+        onLoad={onDone}
+        onError={onDone}
       />
     );
   }
 
   if (attachment.category === 'video') {
-    return <video src={attachment.fileUrl} controls className="w-100 rounded" style={{ maxHeight: '420px' }} />;
+    return (
+      <video
+        src={attachment.fileUrl}
+        controls
+        preload="auto"
+        className="w-100 rounded"
+        style={{ maxHeight: '420px' }}
+        onLoadedData={onDone}
+        onError={onDone}
+      />
+    );
   }
 
   const icon = ICON_BY_CATEGORY[attachment.category];
@@ -98,14 +125,59 @@ function AttachmentItem({ attachment }: { attachment: MediaAttachment }) {
   );
 }
 
-/** Preview de 1 ou mais anexos de um post/registro — imagem/vídeo inline, demais em ícone. Sem anexo, não renderiza nada. */
-export default function MediaPreview({ attachments }: { attachments: MediaAttachment[] }) {
+/**
+ * Preview de 1 ou mais anexos de um post/registro — imagem/vídeo inline, demais em ícone. Sem anexo,
+ * não renderiza nada.
+ *
+ * `onReady` (opcional, 2026-09-28): chamado UMA vez por lista de anexos, quando TODAS as imagens e
+ * vídeos terminaram de carregar (ou falharam). Sem imagem/vídeo, é chamado logo após montar. Usado
+ * pelo `PostCard` para só exibir o post quando a mídia já está pronta.
+ */
+export default function MediaPreview({
+  attachments,
+  onReady,
+}: {
+  attachments: MediaAttachment[];
+  onReady?: () => void;
+}) {
+  const onReadyRef = useRef(onReady);
+  const doneRef = useRef<Set<MediaAttachment['id']>>(new Set());
+  const firedRef = useRef(false);
+  const mediaCount = attachments.filter(isInlineMedia).length;
+
+  useLayoutEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
+
+  // Lista nova => recomeça a contagem; sem mídia inline, já está pronto. useLayoutEffect (e não
+  // useEffect): roda antes de qualquer onLoad da mídia — senão um load rápido (blob:) podia cair
+  // ANTES do reset e o onReady nunca disparava.
+  useLayoutEffect(() => {
+    doneRef.current = new Set();
+    firedRef.current = false;
+    if (mediaCount === 0) {
+      firedRef.current = true;
+      onReadyRef.current?.();
+    }
+  }, [attachments, mediaCount]);
+
+  const handleDone = useCallback(
+    (id: MediaAttachment['id']) => {
+      doneRef.current.add(id);
+      if (!firedRef.current && doneRef.current.size >= mediaCount) {
+        firedRef.current = true;
+        onReadyRef.current?.();
+      }
+    },
+    [mediaCount],
+  );
+
   if (attachments.length === 0) return null;
 
   return (
     <div className={attachments.length > 1 ? 'd-flex flex-wrap gap-2 mb-3' : 'mb-3'}>
       {attachments.map((a) => (
-        <AttachmentItem key={a.id} attachment={a} />
+        <AttachmentItem key={a.id} attachment={a} onDone={() => handleDone(a.id)} />
       ))}
     </div>
   );

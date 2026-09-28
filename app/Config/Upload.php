@@ -31,24 +31,27 @@ class Upload extends BaseConfig
 
     /**
      * Teto global de tamanho por upload, em kilobytes. Aplicado na regra
-     * max_size do UploadRequest. Ajuste tambem client_max_body_size (nginx) e
-     * upload_max_filesize / post_max_size (php-fpm) se aumentar este valor.
+     * max_size do UploadRequest. Alinhado (2026-09-28) com client_max_body_size
+     * (docker/nginx/default.conf), upload_max_filesize / post_max_size
+     * (docker/php/Dockerfile) e o campo FormGrid 'arquivo' (frontend) — mudar
+     * aqui exige mudar nas quatro camadas.
      */
-    public int $maxSizeKbGlobal = 512000; // 500 MB
+    public int $maxSizeKbGlobal = 20480; // 20 MB
 
     /**
      * Teto sugerido por categoria (kilobytes). Referencia para validacao futura
-     * no Processor; nao e aplicado automaticamente pelo UploadRequest.
+     * no Processor; nao e aplicado automaticamente pelo UploadRequest. Nenhuma
+     * categoria passa do teto global (20 MB).
      */
     public array $maxSizeKb = [
         'image'        => 10240,
-        'audio'        => 51200,
-        'video'        => 512000,
-        'document'     => 25600,
-        'spreadsheet'  => 25600,
-        'presentation' => 51200,
-        'pdf'          => 51200,
-        'archive'      => 204800,
+        'audio'        => 20480,
+        'video'        => 20480,
+        'document'     => 20480,
+        'spreadsheet'  => 20480,
+        'presentation' => 20480,
+        'pdf'          => 20480,
+        'archive'      => 20480,
         'other'        => 10240,
     ];
 

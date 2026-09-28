@@ -17,6 +17,12 @@ use Psr\Log\LoggerInterface;
  * sobrescrito aqui porque e o unico do modulo que recebe ARQUIVO (multipart): o
  * binario chega no campo `file` e os metadados no corpo. O contrato de 18 rotas
  * fica intacto — a rota `POST create` e a mesma.
+ *
+ * Acoes extras (EndpointUpload.php, espelho do modulo Upload, mas so para
+ * timeline_post_attachments):
+ *
+ *   serve()    GET  /serve/{id}     -> entrega o binario inline
+ *   download() GET  /download/{id}  -> entrega o binario como anexo
  */
 class ResourceTableController extends BaseResourceTableController
 {
@@ -68,5 +74,69 @@ class ResourceTableController extends BaseResourceTableController
         } finally {
             // reservado para log/auditoria/métricas
         }
+    }
+
+    /**
+     * GET .../serve/{id} — entrega o binario para exibicao inline.
+     */
+    public function serve(int $id): ResponseInterface
+    {
+        try {
+            $resolved = $this->processor->resolvePhysical($id);
+
+            if ($resolved === null) {
+                return $this->respondNotFound('Arquivo nao encontrado ou indisponivel');
+            }
+
+            return $this->streamFile($resolved['row'], $resolved['abs_path'], true);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        } finally {
+            // reservado para log/auditoria/métricas
+        }
+    }
+
+    /**
+     * GET .../download/{id} — entrega o binario como anexo (download forcado).
+     */
+    public function download(int $id): ResponseInterface
+    {
+        try {
+            $resolved = $this->processor->resolvePhysical($id);
+
+            if ($resolved === null) {
+                return $this->respondNotFound('Arquivo nao encontrado ou indisponivel');
+            }
+
+            return $this->streamFile($resolved['row'], $resolved['abs_path'], false);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        } finally {
+            // reservado para log/auditoria/métricas
+        }
+    }
+
+    /**
+     * Monta a resposta de streaming (DownloadResponse) para serve/download.
+     */
+    private function streamFile(array $row, string $path, bool $inline): ResponseInterface
+    {
+        $mime = !empty($row['mime_type']) ? (string) $row['mime_type'] : 'application/octet-stream';
+        $name = !empty($row['original_name']) ? (string) $row['original_name'] : (string) $row['stored_name'];
+
+        $download = $this->response->download($path, null);
+        $download->setFileName($name);
+
+        if (method_exists($download, 'setContentType')) {
+            $download->setContentType($mime);
+        }
+
+        if ($inline && method_exists($download, 'inline')) {
+            $download->inline();
+        }
+
+        $download->setHeader('X-Content-Type-Options', 'nosniff');
+
+        return $download;
     }
 }

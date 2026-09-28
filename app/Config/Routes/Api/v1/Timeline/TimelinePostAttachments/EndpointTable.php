@@ -4,8 +4,9 @@
 // wildcard em Config/Filters.php — o modulo NAO tem rota publica. As rotas de
 // exclusao definitiva somam 'adminonly' na propria rota (roda depois do filtro
 // de URI, com CurrentUser ja populado).
-// O arquivo em si sobe pela tela (writable/uploads/timeline_posts/<post_id>/);
-// estas rotas gravam e mantem os metadados do anexo.
+// O arquivo sobe pelo proprio POST create (multipart, campo `file`) e vai para
+// writable/uploads/timeline_posts/<post_id>/; serve/download do binario ficam
+// em EndpointUpload.php (mesmo grupo). Regra: 1 anexo ativo por publicacao.
 // POST {{www}}/index.php/api/v1/timeline-post-attachments/find?page=1&limit=20&sort=id&order=ASC
 $routes->post('find', 'Api\V1\Timeline\TimelinePostAttachments\ResourceTableController::find');
 // POST {{www}}/index.php/api/v1/timeline-post-attachments/get-grouped?page=1&limit=20&sort=id&order=ASC

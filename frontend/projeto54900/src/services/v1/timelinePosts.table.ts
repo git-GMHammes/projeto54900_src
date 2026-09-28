@@ -47,4 +47,14 @@ export function getHomeFeed(seed: number, page: number, limit = 10): Promise<unk
   });
 }
 
+/**
+ * GET timeline-posts-view/get/{id} — uma linha da view (mesmo formato do
+ * home-feed, sem `my_reaction_id`/`my_rating`). Usado pela Home Feed para
+ * fixar no topo o post que o usuário acabou de publicar (a view é escopada ao
+ * usuário do JWT — o próprio post sempre é visível).
+ */
+export function getFeedPost(id: number): Promise<unknown> {
+  return http.get(`/${DEFAULT_API_VERSION}/${API_GROUPS.timelinePostsView}/get/${id}`);
+}
+
 export default timelinePostsTable;
