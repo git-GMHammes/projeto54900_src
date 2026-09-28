@@ -180,6 +180,8 @@ class Filters extends BaseFilters
                 'api/v1/timeline-post-ratings-view/*',
                 'api/v1/timeline-post-reports/*',
                 'api/v1/timeline-post-reports-view/*',
+                'api/v1/chat-rooms-manager/*',
+                'api/v1/chat-rooms-manager-view/*',
                 'api/v1/nav-manager/*',
                 'api/v1/menu-manager/*',
                 'api/v1/db-schema/*',

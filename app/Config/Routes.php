@@ -236,6 +236,28 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /ChatRooms — Modulo ChatRooms: chat_rooms_manager (a sala, dono =
+    //              moderador). Backend construido so para esta tabela
+    //              (2026-09-28) — as outras 6 tabelas do modulo
+    //              (chat_room_members, chat_messages, chat_room_attachments,
+    //              chat_room_attachment_reports, chat_room_warnings,
+    //              chat_room_favorites) ainda nao tem Controller/Processor/
+    //              Model/Request, so o schema (ver README_modulo_chatrooms.md).
+    //              NAO ha rota publica: todo o modulo exige 'jwtauth' por
+    //              wildcard em Config/Filters.php; as 3 rotas de exclusao
+    //              definitiva somam 'adminonly' na propria rota. Mesmo espelho
+    //              de TimelineManager.
+    // =========================================================================
+
+    $routes->group('chat-rooms-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndpointTable.php';
+    });
+
+    $routes->group('chat-rooms-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.
     // =========================================================================

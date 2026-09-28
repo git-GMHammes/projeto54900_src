@@ -16,6 +16,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | Palavra-chave                 | Assunto (5 palavras)                    |
 | ----------------------------- | -------------------------------------- |
 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
+| [`chatrooms`](#chatrooms)     | Módulo de salas de chat moderadas       |
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
 | [`composer`](#composer)       | PHP Composer proibido sem autorização   |
 | [`conexao`](#conexao)         | Conexão de banco por módulo             |
@@ -42,6 +43,26 @@ completo ao fim do próprio resumo. Todo markdown da base começa e termina com 
 link para este `README.md`.
 
 [`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
+
+### `chatrooms`
+
+Salas de chat moderadas: quem cria vira dono/moderador; qualquer usuário
+autenticado (exceto `guest`) entra sem pedir permissão. Sete tabelas —
+`chat_rooms_manager`, `chat_room_members`, `chat_messages`, `chat_room_attachments`
+(anexo em tabela própria, isolada do Upload/Timeline), `chat_room_attachment_reports`
+(denúncia de anexo com bloqueio imediato do autor, sem 3 chances),
+`chat_room_warnings` (advertência automática do filtro de palavrão —
+dicionário JSON estático — 3 delas bloqueiam o membro) e `chat_room_favorites`
+(favorito por usuário, não flag global) — mais as 7 views de apoio, uma por
+tabela. Sala fecha sozinha ao atingir 3 membros bloqueados; só o dono reabre.
+Tela mostra só as últimas 100 mensagens, histórico completo fica no banco.
+Schema aplicado no banco DEV em 2026-09-28
+(`doc/sql/insert/20260928154501_chatrooms_tables.sql`). Backend PHP de
+`chat_rooms_manager` completo (27 rotas, espelha `Timeline/TimelineManager`);
+as outras 6 tabelas, o dicionário de palavrões e o frontend ainda não
+existem.
+
+[`geral/README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views e regras de moderação.
 
 ### `compose`
 
@@ -242,6 +263,7 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
+- [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
