@@ -85,6 +85,8 @@ export interface ListActionRow {
   confirmMessage: string;
   roles: string[];
   businessRule: BusinessRule | null;
+  /** list_actions.extra_data_json — corpo fixo enviado no PUT/PATCH/POST de uma acao 'api_call' (ex.: {"status":"removed"}). */
+  extraData: Record<string, unknown> | null;
 }
 
 /**
@@ -188,6 +190,7 @@ export function toAction(raw: Record<string, unknown>): ListActionRow {
     confirmMessage: str(raw.confirm_message),
     roles: parseJson<string[]>(raw.roles, []),
     businessRule: parseJson<BusinessRule | null>(raw.business_rule_json, null),
+    extraData: parseJson<Record<string, unknown> | null>(raw.extra_data_json, null),
   };
 }
 

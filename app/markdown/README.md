@@ -13,22 +13,23 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 
 ## Índice
 
-| Palavra-chave                 | Assunto (5 palavras)                    |
-| ----------------------------- | -------------------------------------- |
-| [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice    |
-| [`chatrooms`](#chatrooms)     | Módulo de salas de chat moderadas       |
+| Palavra-chave                 | Assunto (5 palavras)                      |
+| ----------------------------- | ----------------------------------------- |
+| [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice      |
+| [`chatrooms`](#chatrooms)     | Módulo de salas de chat moderadas         |
 | [`compose`](#compose)         | Setup do ambiente Docker e example public |
-| [`composer`](#composer)       | PHP Composer proibido sem autorização   |
-| [`conexao`](#conexao)         | Conexão de banco por módulo             |
-| [`deepseek`](#deepseek)       | Análise de entendimento do sistema      |
-| [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco |
-| [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter |
-| [`modulo`](#modulo)           | Como criar novos módulos padronizados   |
-| [`navmenu`](#navmenu)         | Config do app e árvore de navegação     |
-| [`rotas`](#rotas)             | Mapa de todas as rotas REST             |
-| [`schema`](#schema)           | Introspecção do banco por API            |
-| [`timeline`](#timeline)       | Módulo de publicações e timeline        |
-| [`upload`](#upload)           | Módulo de anexos para outros módulos     |
+| [`composer`](#composer)       | PHP Composer proibido sem autorização     |
+| [`conexao`](#conexao)         | Conexão de banco por módulo               |
+| [`deepseek`](#deepseek)       | Análise de entendimento do sistema        |
+| [`diagramas`](#diagramas)     | Gerar diagramas vetoriais de telas      |
+| [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco  |
+| [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter   |
+| [`modulo`](#modulo)           | Como criar novos módulos padronizados     |
+| [`navmenu`](#navmenu)         | Config do app e árvore de navegação       |
+| [`rotas`](#rotas)             | Mapa de todas as rotas REST               |
+| [`schema`](#schema)           | Introspecção do banco por API             |
+| [`timeline`](#timeline)       | Módulo de publicações e timeline          |
+| [`upload`](#upload)           | Módulo de anexos para outros módulos      |
 
 ---
 
@@ -110,6 +111,23 @@ REMAKE (destrutivo, só sob autorização; estrutura e dados alterados direto no
 banco DEV). Fecha com as lacunas observadas e os pontos em aberto.
 
 [`geral/README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento do sistema antes do novo módulo.
+
+### `diagramas`
+
+Pasta dos **diagramas vetoriais de tela**: o caminho completo que uma requisição
+percorre para construir a tela — do boot do SPA até as tabelas do banco — com os
+nomes reais dos arquivos em cada camada e subcamada. Cada diagrama sai em dois
+artefatos do **mesmo modelo de dados**: `.svg` para visualizar (autocontido,
+imprime em PDF, entra em markdown por imagem) e `.drawio` para editar. O
+`README.md` da pasta é o **método global** — roteiro de análise, métricas de
+layout, validação e o **PROMPT em JSON** para pedir a próxima tela — e não é
+ancorado em nenhum módulo: o módulo aparece apenas como exemplo publicado.
+
+[`diagramas/README.md`](diagramas/README.md) — método e prompt para gerar diagramas vetoriais de qualquer tela.
+
+[`diagramas/README_diagrama_timeline_home_feed.svg`](diagramas/README_diagrama_timeline_home_feed.svg) — exemplo publicado do padrão, para visualizar.
+
+[`diagramas/README_diagrama_timeline_home_feed.drawio`](diagramas/README_diagrama_timeline_home_feed.drawio) — o mesmo exemplo, para editar.
 
 ### `formulario`
 

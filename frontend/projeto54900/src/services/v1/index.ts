@@ -53,4 +53,8 @@ export { timelinePostReactionsTable } from './timelinePostReactions.table';
 export { timelinePostRatingsTable } from './timelinePostRatings.table';
 export { timelinePostAttachmentsTable } from './timelinePostAttachments.table';
 export { timelinePostAttachmentsUpload } from './timelinePostAttachments.upload';
+export { chatRoomsManagerTable } from './chatRoomsManager.table';
+export { chatRoomsManagerView } from './chatRoomsManager.view';
+export { chatMessagesTable } from './chatMessages.table';
+export { chatMessagesView } from './chatMessages.view';
 export { dbSchema } from './dbSchema';

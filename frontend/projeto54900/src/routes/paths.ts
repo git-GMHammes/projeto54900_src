@@ -114,6 +114,18 @@ export const paths = {
       view: (id: RouteId) => `/v1/menu-manager/${id}`,
       update: (id: RouteId) => `/v1/menu-manager/update/${id}`,
     },
+    // ChatRooms — salas de chat (modulo ChatRooms/ChatRoomsManager)
+    chatRooms: {
+      list: '/v1/chat-rooms-manager',
+      create: '/v1/chat-rooms-manager/create',
+      update: (id: RouteId) => `/v1/chat-rooms-manager/update/${id}`,
+    },
+    // ChatMessages — mensagens das salas de chat. Sem update: a API so
+    // aceita status=removed, que vira acao "Remover" na lista (list_actions).
+    chatMessages: {
+      list: '/v1/chat-messages',
+      create: '/v1/chat-messages/create',
+    },
   },
 
   // Reservado para o namespace Api\V1A do backend.

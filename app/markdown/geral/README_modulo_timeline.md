@@ -33,6 +33,19 @@ visível para qualquer usuário autenticado.
 > Desenhos de formulário do módulo: [`form/timeline/`](form/timeline/) (5
 > formulários; reação e estrela não são formulário, são ação).
 
+## 0. Diagrama de camadas
+
+Mapa visual do caminho completo da requisição que constrói a tela `/v1/timeline`
+(Home Feed): do boot do SPA até a view `view_timeline_posts`, com as camadas e
+subcamadas de frontend e backend, os nomes reais dos arquivos e os quatro fluxos
+concretos (feed, card/mídia/comentários, escrita e republicar). O SVG e o
+`.drawio` editável ficam em [`../diagramas/`](../diagramas/README.md), junto do
+método de geração e do prompt para repetir o padrão.
+
+![Diagrama de camadas da tela /v1/timeline - Home Feed](../diagramas/README_diagrama_timeline_home_feed.svg)
+
+*O preview reduz a imagem para a largura da janela — [abrir o SVG em tamanho real](../diagramas/README_diagrama_timeline_home_feed.svg).*
+
 ## 1. Identidade
 
 | Item               | Valor                                                                                                                                                          |

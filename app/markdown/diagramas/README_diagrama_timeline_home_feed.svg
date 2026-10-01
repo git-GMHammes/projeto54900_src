@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="4040" viewBox="0 0 1680 4040" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/></marker><marker id="arwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>
+<rect x="0" y="0" width="1680" height="4040" fill="#f8fafc"/>
+<text x="40" y="56" font-size="22" fill="#0f172a" font-weight="700">Diagrama de camadas — tela /v1/timeline (Home Feed)</text>
+<text x="40" y="84" font-size="13" fill="#475569">Caminho completo da requisicao que constroi a tela: navegador -&gt; SPA React (Vite) -&gt; services -&gt; API CodeIgniter 5 -&gt; Processor -&gt; Model -&gt; banco codeigniter54900_db.</text>
+<text x="40" y="104" font-size="13" fill="#475569">Fontes: codigo-fonte do workspace e src/app/markdown/geral/README_modulo_timeline.md. Caminhos do frontend relativos a src/frontend/projeto54900/; do backend relativos a src/.</text>
+<rect x="40" y="138" width="14" height="14" rx="3" fill="#1d4ed8"/>
+<text x="62" y="150" font-size="12.5" fill="#475569">Boot / entrada do SPA</text>
+<rect x="450" y="138" width="14" height="14" rx="3" fill="#4338ca"/>
+<text x="472" y="150" font-size="12.5" fill="#475569">Rotas e pagina</text>
+<rect x="860" y="138" width="14" height="14" rx="3" fill="#0f766e"/>
+<text x="882" y="150" font-size="12.5" fill="#475569">Componentes da tela e UI global</text>
+<rect x="1270" y="138" width="14" height="14" rx="3" fill="#6d28d9"/>
+<text x="1292" y="150" font-size="12.5" fill="#475569">Hooks, contexto e utilitarios</text>
+<rect x="40" y="164" width="14" height="14" rx="3" fill="#b45309"/>
+<text x="62" y="176" font-size="12.5" fill="#475569">Services (fronteira HTTP)</text>
+<rect x="450" y="164" width="14" height="14" rx="3" fill="#15803d"/>
+<text x="472" y="176" font-size="12.5" fill="#475569">Backend PHP</text>
+<rect x="860" y="164" width="14" height="14" rx="3" fill="#7e22ce"/>
+<text x="882" y="176" font-size="12.5" fill="#475569">Banco de dados e arquivos</text>
+<text x="40" y="234" font-size="14" fill="#334155" font-weight="700" letter-spacing="0.6">1. CAMADAS E SUBCAMADAS — ARQUIVOS POR CAMADA</text>
+<rect x="40" y="320" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="342" font-size="12" fill="#1e293b" font-weight="700" letter-spacing="0.6">FRONTEND — SPA React + Vite (src/frontend/projeto54900)</text>
+<line x1="955" y1="360" x2="955" y2="390" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<rect x="40" y="394" width="210" height="76" rx="8" fill="#1d4ed8"/>
+<text x="52" y="437" font-size="12.5" fill="#ffffff" font-weight="700">0. Boot do SPA</text>
+<rect x="270" y="394" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="394" width="6" height="76" rx="3" fill="#1d4ed8"/>
+<rect x="282" y="406" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="426" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">carregamento e montagem</text>
+<text x="292" y="446" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">index.html  ·  src/main.tsx  ·  src/bootstrap.ts  ·  src/App.tsx  ·  src/styles/_custom.scss</tspan></text>
+<line x1="955" y1="476" x2="955" y2="506" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="496" font-size="11.5" fill="#475569">monta o App e o roteador</text>
+<rect x="40" y="510" width="210" height="213" rx="8" fill="#4338ca"/>
+<text x="52" y="621.5" font-size="12.5" fill="#ffffff" font-weight="700">1. Rotas e layout</text>
+<rect x="270" y="510" width="1370" height="213" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="510" width="6" height="213" rx="3" fill="#4338ca"/>
+<rect x="282" y="522" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="542" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">agregador de rotas</text>
+<text x="292" y="562" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/index.tsx  ·  src/routes/v1/index.tsx  ·  src/routes/v1/timeline.routes.tsx  ·  src/routes/paths.ts</tspan></text>
+<rect x="282" y="582" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="602" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">guarda de sessao e layout</text>
+<text x="292" y="622" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/RequireAuth.tsx  ·  src/layouts/RootLayout.tsx  ·  src/components/layout/Navbar.tsx</tspan><tspan x="292" dy="17">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</tspan></text>
+<rect x="282" y="659" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="679" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">item de menu da tela (vem do banco)</text>
+<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/menuManager.table.ts  ·  menu_manager  -&gt;  item "Inicio" = /v1/timeline</tspan></text>
+<line x1="955" y1="729" x2="955" y2="759" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="749" font-size="11.5" fill="#475569">lazy import da pagina</text>
+<rect x="40" y="763" width="210" height="153" rx="8" fill="#4338ca"/>
+<text x="52" y="844.5" font-size="12.5" fill="#ffffff" font-weight="700">2. Pagina</text>
+<rect x="270" y="763" width="1370" height="153" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="763" width="6" height="153" rx="3" fill="#4338ca"/>
+<rect x="282" y="775" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="795" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">pagina da Home Feed</text>
+<text x="292" y="815" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/pages/v1/timeline/home-feed/GetAllPage.tsx</tspan></text>
+<rect x="282" y="835" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="855" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">responsabilidades (Blocos 1 a 10 do arquivo)</text>
+<text x="292" y="875" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">seed unico por montagem  ·  1a pagina com 14 posts  ·  scroll infinito 10 em 10  ·  pinned do post recem-publicado</tspan><tspan x="292" dy="17">handlers onCreated  ·  onUpdated  ·  onDeleted  ·  onReported</tspan></text>
+<line x1="955" y1="922" x2="955" y2="952" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="942" font-size="11.5" fill="#475569">renderiza o card e os modais</text>
+<rect x="40" y="956" width="210" height="153" rx="8" fill="#0f766e"/>
+<text x="52" y="1037.5" font-size="12.5" fill="#ffffff" font-weight="700">3. Componentes da tela</text>
+<rect x="270" y="956" width="1370" height="153" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="956" width="6" height="153" rx="3" fill="#0f766e"/>
+<rect x="282" y="968" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="988" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">pages/v1/timeline/home-feed/</text>
+<text x="292" y="1008" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">PostCard.tsx  ·  NewPostModal.tsx  ·  EditPostModal.tsx  ·  NewCommentModal.tsx  ·  NewReportModal.tsx</tspan></text>
+<rect x="282" y="1028" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1048" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">papel de cada um</text>
+<text x="292" y="1068" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">PostCard: autor/data -&gt; midia -&gt; texto -&gt; curtir/descurtir/avaliar/comentar/republicar/denunciar</tspan><tspan x="292" dy="17">3 comentarios mais recentes  ·  os 4 modais leem o schema do form_manager e escrevem via API</tspan></text>
+<line x1="955" y1="1115" x2="955" y2="1145" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1135" font-size="11.5" fill="#475569">usa a UI compartilhada</text>
+<rect x="40" y="1149" width="210" height="153" rx="8" fill="#0f766e"/>
+<text x="52" y="1230.5" font-size="12.5" fill="#ffffff" font-weight="700">4. UI global e FormGrid</text>
+<rect x="270" y="1149" width="1370" height="153" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1149" width="6" height="153" rx="3" fill="#0f766e"/>
+<rect x="282" y="1161" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1181" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/components/global/</text>
+<text x="292" y="1201" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">PageHeader.tsx  ·  EmptyState.tsx  ·  LoadingOverlay.tsx  ·  ScrollTopButton.tsx  ·  MediaPreview.tsx  ·  Modal.tsx</tspan><tspan x="292" dy="17">ConfirmModal.tsx  ·  FakeFillButton.tsx  ·  ToastStack.tsx</tspan></text>
+<rect x="282" y="1238" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1258" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/components/ui/FormGrid/</text>
+<text x="292" y="1278" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">Input.tsx  ·  arquivo (campo file do form)</tspan></text>
+<line x1="955" y1="1308" x2="955" y2="1338" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1328" font-size="11.5" fill="#475569">consome hooks e utilitarios</text>
+<rect x="40" y="1342" width="210" height="196" rx="8" fill="#6d28d9"/>
+<text x="52" y="1445" font-size="12.5" fill="#ffffff" font-weight="700">5. Hooks, contexto e utils</text>
+<rect x="270" y="1342" width="1370" height="196" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1342" width="6" height="196" rx="3" fill="#6d28d9"/>
+<rect x="282" y="1354" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1374" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/hooks/</text>
+<text x="292" y="1394" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">useInfiniteScroll.ts  ·  useToast.ts  ·  useBootstrapTooltips.ts  ·  useApi.ts</tspan></text>
+<rect x="282" y="1414" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1434" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">contexto de sessao</text>
+<text x="292" y="1454" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/context/AuthContext.tsx — access_token em memoria  ·  refresh_token em sessionStorage</tspan></text>
+<rect x="282" y="1474" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1494" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">utilitarios e schema</text>
+<text x="292" y="1514" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/utils/apiResult.ts  ·  src/utils/format.ts  ·  src/utils/formSubmit.ts  ·  src/services/formSchema.ts</tspan></text>
+<line x1="955" y1="1544" x2="955" y2="1574" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1564" font-size="11.5" fill="#475569">chama os services da v1</text>
+<rect x="40" y="1578" width="210" height="170" rx="8" fill="#b45309"/>
+<text x="52" y="1668" font-size="12.5" fill="#ffffff" font-weight="700">6. Services (fronteira HTTP)</text>
+<rect x="270" y="1578" width="1370" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1578" width="6" height="170" rx="3" fill="#b45309"/>
+<rect x="282" y="1590" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1610" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">transporte</text>
+<text x="292" y="1630" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/services/http.ts  ·  src/services/resourceFactory.ts  ·  src/constants/api.ts  ·  src/config/env.ts</tspan></text>
+<rect x="282" y="1650" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1670" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">recursos consumidos por esta tela</text>
+<text x="292" y="1690" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/services/v1/index.ts (barrel)  ·  timelinePosts.table.ts (getHomeFeed / getFeedPost / create / update / deleteSoft)</tspan><tspan x="292" dy="17">timelinePostComments.view.ts  ·  timelinePostReactions.table.ts  ·  timelinePostRatings.table.ts</tspan><tspan x="292" dy="17">timelinePostAttachments.table.ts  ·  timelinePostAttachments.upload.ts  ·  formManager.view.ts</tspan></text>
+<line x1="955" y1="1754" x2="955" y2="1784" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1774" font-size="11.5" fill="#475569">requisicao HTTP</text>
+<rect x="40" y="1788" width="1600" height="44" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+<text x="840" y="1815" font-size="12.5" fill="#7c2d12" font-weight="700" text-anchor="middle">Fronteira — HTTP/JSON  ·  GET|POST|PUT|DELETE /api/v1/&lt;grupo&gt;/&lt;endpoint&gt;  ·  Authorization: Bearer &lt;jwt&gt;  ·  multipart/form-data no upload do anexo</text>
+<rect x="40" y="1854" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="1876" font-size="12" fill="#1e293b" font-weight="700" letter-spacing="0.6">BACKEND — API CodeIgniter 5 (src/app)</text>
+<line x1="955" y1="1894" x2="955" y2="1924" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<rect x="40" y="1928" width="210" height="76" rx="8" fill="#15803d"/>
+<text x="52" y="1971" font-size="12.5" fill="#ffffff" font-weight="700">7. Entrada HTTP</text>
+<rect x="270" y="1928" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1928" width="6" height="76" rx="3" fill="#15803d"/>
+<rect x="282" y="1940" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1960" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">bootstrap do framework</text>
+<text x="292" y="1980" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">public/index.php  ·  system/Boot.php  ·  app/Config/Routes.php  ·  app/Config/Database.php</tspan></text>
+<line x1="955" y1="2010" x2="955" y2="2040" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<rect x="40" y="2044" width="210" height="230" rx="8" fill="#15803d"/>
+<text x="52" y="2164" font-size="12.5" fill="#ffffff" font-weight="700">8. Rotas REST + filtro</text>
+<rect x="270" y="2044" width="1370" height="230" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2044" width="6" height="230" rx="3" fill="#15803d"/>
+<rect x="282" y="2056" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2076" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">grupos do modulo (app/Config/Routes.php)</text>
+<text x="292" y="2096" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">timeline-posts  ·  timeline-posts-view  ·  timeline-post-attachments (+view)  ·  timeline-post-comments (+view)</tspan><tspan x="292" dy="17">timeline-post-reactions (+view)  ·  timeline-post-ratings (+view)  ·  timeline-post-reports (+view)  ·  timeline-manager (+view)</tspan></text>
+<rect x="282" y="2133" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2153" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Config/Routes/Api/v1/Timeline/&lt;Recurso&gt;/</text>
+<text x="292" y="2173" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">EndpointTable.php (18 rotas)  ·  EndPointView.php (9 rotas + extra home-feed)  ·  EndpointUpload.php (serve / download)</tspan></text>
+<rect x="282" y="2193" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2213" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">seguranca e registro das rotas</text>
+<text x="292" y="2233" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">app/Config/Filters.php (alias jwtauth por wildcard)  ·  app/Filters/JwtAuthFilter.php</tspan><tspan x="292" dy="17">app/Filters/AdminOnlyFilter.php  ·  route_manager (tabela de sincronizacao das rotas)</tspan></text>
+<line x1="955" y1="2280" x2="955" y2="2310" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2300" font-size="11.5" fill="#475569">encaminha para o controller</text>
+<rect x="40" y="2314" width="210" height="187" rx="8" fill="#15803d"/>
+<text x="52" y="2412.5" font-size="12.5" fill="#ffffff" font-weight="700">9. Controller</text>
+<rect x="270" y="2314" width="1370" height="187" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2314" width="6" height="187" rx="3" fill="#15803d"/>
+<rect x="282" y="2326" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2346" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Controllers/Api/V1/Timeline/TimelinePosts/</text>
+<text x="292" y="2366" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">ResourceViewController.php (homeFeed, find, getGrouped, search, get)</tspan><tspan x="292" dy="17">ResourceTableController.php (create, update, deleteSoft, serve, download)</tspan><tspan x="292" dy="17">app/Controllers/BaseController.php</tspan></text>
+<rect x="282" y="2420" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2440" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">mesmo par por recurso</text>
+<text x="292" y="2460" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">TimelinePostComments/  ·  TimelinePostReactions/  ·  TimelinePostRatings/  ·  TimelinePostAttachments/</tspan><tspan x="292" dy="17">TimelinePostReports/  ·  TimelineManager/</tspan></text>
+<line x1="955" y1="2507" x2="955" y2="2537" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2527" font-size="11.5" fill="#475569">valida o payload</text>
+<rect x="40" y="2541" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="52" y="2592.5" font-size="12.5" fill="#ffffff" font-weight="700">10. Request</text>
+<rect x="270" y="2541" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2541" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2553" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2573" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Requests/V1/Timeline/&lt;Recurso&gt;/</text>
+<text x="292" y="2593" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">TimelinePosts/CreateRequest.php  ·  TimelinePosts/UpdateRequest.php</tspan><tspan x="292" dy="17">TimelinePostComments/  ·  TimelinePostReactions/  ·  TimelinePostRatings/  ·  TimelinePostAttachments/  ·  TimelinePostReports/</tspan></text>
+<line x1="955" y1="2640" x2="955" y2="2670" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2660" font-size="11.5" fill="#475569">aplica a regra de negocio</text>
+<rect x="40" y="2674" width="210" height="170" rx="8" fill="#15803d"/>
+<text x="52" y="2764" font-size="12.5" fill="#ffffff" font-weight="700">11. Service / Processor</text>
+<rect x="270" y="2674" width="1370" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2674" width="6" height="170" rx="3" fill="#15803d"/>
+<rect x="282" y="2686" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2706" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Services/V1/</text>
+<text x="292" y="2726" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">BaseViewService.php  ·  BaseTableService.php  ·  Timeline/TimelinePosts/Processor.php (homeFeed, attachMyState, assertOwner)</tspan><tspan x="292" dy="17">TimelinePostComments/  ·  TimelinePostReactions/  ·  TimelinePostRatings/  ·  TimelinePostAttachments/  ·  TimelinePostReports/</tspan></text>
+<rect x="282" y="2763" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2783" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">regras centrais do feed</text>
+<text x="292" y="2803" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">ordem global estavel pelo seed  ·  cotas 5 recentes / 3 mais avaliados / 3 mais curtidos / 3 mais comentados</tspan><tspan x="292" dy="17">pagination.has_more  ·  reacao e nota do proprio usuario do JWT  ·  post denunciado nunca entra</tspan></text>
+<line x1="955" y1="2850" x2="955" y2="2880" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2870" font-size="11.5" fill="#475569">monta e executa o SQL</text>
+<rect x="40" y="2884" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="52" y="2935.5" font-size="12.5" fill="#ffffff" font-weight="700">12. Model</text>
+<rect x="270" y="2884" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2884" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2896" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2916" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Models/V1/Timeline/&lt;Recurso&gt;/</text>
+<text x="292" y="2936" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">TimelinePosts/SqlViewModel.php (le a view)  ·  TimelinePosts/SqlTableModel.php (escreve nas tabelas)</tspan><tspan x="292" dy="17">TimelinePostComments/  ·  TimelinePostReactions/  ·  TimelinePostRatings/  ·  TimelinePostAttachments/  ·  TimelinePostReports/</tspan></text>
+<line x1="955" y1="2983" x2="955" y2="3013" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="3003" font-size="11.5" fill="#475569">consulta / persiste</text>
+<rect x="40" y="3017" width="210" height="273" rx="8" fill="#7e22ce"/>
+<text x="52" y="3149.5" font-size="12.5" fill="#ffffff" font-weight="700"><tspan x="52" dy="0">13. Banco</tspan><tspan x="52" dy="17">codeigniter54900_db</tspan></text>
+<rect x="270" y="3017" width="1370" height="273" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="3017" width="6" height="273" rx="3" fill="#7e22ce"/>
+<rect x="282" y="3029" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3049" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">view do feed</text>
+<text x="292" y="3069" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">view_timeline_posts</tspan></text>
+<rect x="282" y="3089" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3109" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas do modulo</text>
+<text x="292" y="3129" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">timeline_posts  ·  timeline_manager  ·  timeline_post_attachments  ·  timeline_post_comments</tspan><tspan x="292" dy="17">timeline_post_reactions  ·  timeline_post_ratings  ·  timeline_post_reports</tspan></text>
+<rect x="282" y="3166" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3186" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas de apoio</text>
+<text x="292" y="3206" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">user_manager  ·  form_manager + view_form_manager  ·  list_manager (slug timeline-feed)  ·  menu_manager  ·  route_manager</tspan></text>
+<rect x="282" y="3226" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3246" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">arquivos em disco</text>
+<text x="292" y="3266" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/writable/uploads/timeline_posts/&lt;id&gt;/</tspan></text>
+<text x="40" y="3340" font-size="14" fill="#334155" font-weight="700" letter-spacing="0.6">2. FLUXOS DA TELA (CADA PASSO COM A SETA PARA O PROXIMO)</text>
+<rect x="68" y="3374" width="374" height="504" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="80" y="3386" width="350" height="30" rx="6" fill="#1d4ed8"/>
+<text x="90" y="3406" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="90" dy="0">Fluxo A — Feed (leitura, scroll infinito)</tspan></text>
+<rect x="80" y="3432" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3432" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3452" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">useInfiniteScroll (sentinela)</tspan></text>
+<line x1="255" y1="3465" x2="255" y2="3484" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3488" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3488" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3508" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">GetAllPage.loadPage(seed, page)</tspan></text>
+<line x1="255" y1="3521" x2="255" y2="3540" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3544" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3544" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3564" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">getHomeFeed() (services/v1)</tspan></text>
+<line x1="255" y1="3577" x2="255" y2="3596" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3600" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3600" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3620" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">GET timeline-posts-view/home-feed</tspan></text>
+<line x1="255" y1="3633" x2="255" y2="3652" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3656" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3656" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3676" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">ResourceViewController::homeFeed</tspan></text>
+<line x1="255" y1="3689" x2="255" y2="3708" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3712" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3712" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3732" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">Processor::homeFeed + attachMyState</tspan></text>
+<line x1="255" y1="3745" x2="255" y2="3764" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3768" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3768" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3788" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">SqlViewModel -&gt; view_timeline_posts</tspan></text>
+<line x1="255" y1="3801" x2="255" y2="3820" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3824" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3824" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3844" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="90" dy="0">toFeedPost() -&gt; PostCard.tsx</tspan></text>
+<rect x="458" y="3374" width="374" height="634" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="470" y="3386" width="350" height="30" rx="6" fill="#0f766e"/>
+<text x="480" y="3406" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="480" dy="0">Fluxo B — Card: midia, comentarios, reacao e nota</tspan></text>
+<rect x="470" y="3432" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3432" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3452" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">PostCard.tsx</tspan></text>
+<line x1="645" y1="3465" x2="645" y2="3484" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3488" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3488" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3508" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">timelinePostAttachmentsTable.find</tspan></text>
+<line x1="645" y1="3521" x2="645" y2="3540" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3544" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3544" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3564" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">timelinePostAttachmentsUpload.fetchBlob</tspan></text>
+<line x1="645" y1="3577" x2="645" y2="3596" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3600" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3600" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3620" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">GET timeline-post-attachments/serve/{id}</tspan></text>
+<line x1="645" y1="3633" x2="645" y2="3652" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3656" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3656" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3676" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">MediaPreview.onReady</tspan></text>
+<line x1="645" y1="3689" x2="645" y2="3708" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3712" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3712" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3732" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">timelinePostCommentsView.find</tspan></text>
+<line x1="645" y1="3745" x2="645" y2="3764" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3768" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3768" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3788" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">POST timeline-post-comments-view/find</tspan></text>
+<line x1="645" y1="3801" x2="645" y2="3820" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3824" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3824" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3844" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">timelinePostReactions.table · Ratings.table</tspan></text>
+<line x1="645" y1="3857" x2="645" y2="3876" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3880" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3880" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3900" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">ResourceTableController -&gt; Processor</tspan></text>
+<line x1="645" y1="3913" x2="645" y2="3932" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3936" width="350" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3936" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="480" y="3956" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="480" dy="0">timeline_post_attachments · _comments ·</tspan><tspan x="480" dy="17">_reactions · _ratings</tspan></text>
+<rect x="848" y="3374" width="374" height="634" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="860" y="3386" width="350" height="30" rx="6" fill="#b45309"/>
+<text x="870" y="3406" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="870" dy="0">Fluxo C — Escrita (publicar, editar, excluir,</tspan><tspan x="870" dy="17">comentar, curtir, avaliar, denunciar)</tspan></text>
+<rect x="860" y="3432" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3432" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3452" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">Modais New/EditPost, NewComment, NewReport</tspan></text>
+<line x1="1035" y1="3465" x2="1035" y2="3484" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3488" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3488" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3508" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">formManagerView.getGrouped (view_form_manager)</tspan></text>
+<line x1="1035" y1="3521" x2="1035" y2="3540" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3544" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3544" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3564" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">buildRenderSchema -&gt; FormGrid/Input</tspan></text>
+<line x1="1035" y1="3577" x2="1035" y2="3596" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3600" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3600" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3620" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">timelinePostsTable.create / update / deleteSoft</tspan></text>
+<line x1="1035" y1="3633" x2="1035" y2="3652" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3656" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3656" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3676" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">ResourceTableController::create / update</tspan></text>
+<line x1="1035" y1="3689" x2="1035" y2="3708" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3712" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3712" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3732" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">Processor::create / update / deleteSoft</tspan></text>
+<line x1="1035" y1="3745" x2="1035" y2="3764" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3768" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3768" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3788" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">assertOwner (404 para post alheio)</tspan></text>
+<line x1="1035" y1="3801" x2="1035" y2="3820" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3824" width="350" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3824" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="870" y="3844" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">timeline_posts / _comments / _reactions /</tspan><tspan x="870" dy="17">_reports</tspan></text>
+<line x1="1035" y1="3875" x2="1035" y2="3894" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3898" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3898" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3918" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">anexo: POST timeline-post-attachments/create</tspan></text>
+<line x1="1035" y1="3931" x2="1035" y2="3950" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3954" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3954" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3974" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="870" dy="0">writable/uploads/timeline_posts/&lt;id&gt;/</tspan></text>
+<rect x="1238" y="3374" width="374" height="392" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="1250" y="3386" width="350" height="30" rx="6" fill="#6d28d9"/>
+<text x="1260" y="3406" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="1260" dy="0">Fluxo D — Republicar</tspan></text>
+<rect x="1250" y="3432" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3432" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3452" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">PostCard.tsx (botao Republicar)</tspan></text>
+<line x1="1425" y1="3465" x2="1425" y2="3484" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3488" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3488" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3508" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">timelinePostsTable.create</tspan></text>
+<line x1="1425" y1="3521" x2="1425" y2="3540" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3544" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3544" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3564" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">com repost_of_id = post.id</tspan></text>
+<line x1="1425" y1="3577" x2="1425" y2="3596" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3600" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3600" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3620" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">POST timeline-posts/create</tspan></text>
+<line x1="1425" y1="3633" x2="1425" y2="3652" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3656" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3656" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3676" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">Processor::create (valida timeline)</tspan></text>
+<line x1="1425" y1="3689" x2="1425" y2="3708" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3712" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3712" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3732" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1260" dy="0">timeline_posts (novo post do autor)</tspan></text>
+<text x="40" y="4028" font-size="11.5" fill="#475569">Arquivo autocontido (sem CDN, sem build). Mesmo conteudo em README_diagrama_timeline_home_feed.drawio, para edicao no draw.io.</text>
+</svg>

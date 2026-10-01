@@ -86,6 +86,7 @@
 esta linha em toda resposta ao prompt acima; NÃO executar automaticamente:**
 
 ```
+cd C:\laragon\www\js\habilidade\projeto54900
 podman compose exec php php spark migrate
  
 ```

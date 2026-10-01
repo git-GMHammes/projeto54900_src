@@ -18,18 +18,31 @@ por fechar a sala.
 > `doc/sql/insert/20260928160312_chatrooms_manager_rename.sql`. **Backend PHP
 > de `chat_rooms_manager` COMPLETO (2026-09-28):** as 27 rotas (18 de tabela +
 > 9 de view) implementadas, testadas via `spark routes` e uma chamada real
-> (401 correto do `jwtauth` sem token) — ver §6. As outras 6 tabelas do
-> módulo (`chat_room_members`, `chat_messages`, `chat_room_attachments`,
-> `chat_room_attachment_reports`, `chat_room_warnings`,
-> `chat_room_favorites`), o dicionário JSON estático de palavrões e a tela
-> React **ainda não existem** — fase seguinte, fora deste desenho.
+> (401 correto do `jwtauth` sem token) — ver §6. **Backend PHP de
+> `chat_messages` COMPLETO (2026-09-29):** mesmo padrão, mais 27 rotas — ver
+> §6. **Backend PHP de `chat_room_attachments` COMPLETO (2026-09-29):** anexo
+> de arquivo, mesmo desenho do `TimelinePostAttachments` (upload multipart,
+> disco próprio, rotas extras `serve`/`download`) — ver §6. **Backend PHP de
+> `chat_room_attachment_reports` COMPLETO (2026-09-29):** denúncia com ação
+> imediata (bloqueia anexo + matrícula do autor no mesmo request), rotas
+> `adminonly` em quase tudo — ver §6. `chat_room_members` ganhou um **Model
+> interno mínimo** (sem Controller/Request/Processor/Rotas) só para essa
+> ação imediata funcionar. **Backend PHP de `chat_room_warnings` COMPLETO
+> (2026-09-29):** advertência de palavrão, módulo inteiro (27 rotas)
+> `adminonly` — ver §6. **Backend PHP de `chat_room_favorites` COMPLETO
+> (2026-09-29):** sala favorita, toggle idempotente sem `adminonly` — ver
+> §6. **Todas as 7 tabelas do módulo têm backend, exceto `chat_room_members`**
+> (só o Model interno mínimo usado por `ChatRoomAttachmentReports`). O
+> módulo completo de `chat_room_members`, o dicionário JSON estático de
+> palavrões e a tela React **ainda não existem** — fase seguinte, fora deste
+> desenho.
 
 ## 1. Identidade
 
 | Item               | Valor                                                                                                                                                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Domínio            | `ChatRooms`                                                                                                                                                                                                                     |
-| Namespace previsto | `Api\V1\ChatRooms\<Modulo>` (`ChatRoomsManager`, `ChatRoomMembers`, `ChatMessages`, `ChatRoomAttachments`, `ChatRoomAttachmentReports`, `ChatRoomWarnings`, `ChatRoomFavorites`)                                                 |
+| Namespace previsto | `Api\V1\ChatRooms\<Modulo>` (`ChatRoomsManager`, `ChatRoomMembers`, `ChatMessages`, `ChatRoomAttachments`, `ChatRoomAttachmentReports`, `ChatRoomWarnings`, `ChatRoomFavorites`)                                                |
 | Banco / grupo      | `codeigniter54900_db` / conexão `default` (sem `$DBGroup`) — **decisão do usuário em 2026-09-28**: não usa o grupo `chat` já reservado em `Config/Database.php` (`projeto54900_chat`), mesma decisão que o Timeline tomou antes |
 | Tabelas            | `chat_rooms_manager`, `chat_room_members`, `chat_messages`, `chat_room_attachments`, `chat_room_attachment_reports`, `chat_room_warnings`, `chat_room_favorites`                                                                |
 | Views              | Uma por tabela (§3) — sem view de "feed" dedicada; `view_chat_rooms_manager` já serve de listagem principal e `view_chat_messages` de histórico por sala                                                                        |
@@ -419,21 +432,23 @@ de usuário autenticado. Resolver do mesmo jeito — o Processor anexa
     `chat_room_favorites` do usuário logado; atalho abaixo do NAV mostra só
     as 2 primeiras (regra de exibição do frontend/Processor, não do banco).
 
-## 6. Backend PHP — `chat_rooms_manager` (implementado em 2026-09-28)
+## 6. Backend PHP
 
-Único recurso das 7 tabelas do módulo com backend até aqui. Espelha
+### 6.1 `chat_rooms_manager` (implementado em 2026-09-28)
+
+Primeiro recurso das 7 tabelas do módulo com backend. Espelha
 `Timeline/TimelineManager` (Controller/Request/Processor/Model), namespace
 `Api\V1\ChatRooms\ChatRoomsManager`, slug `chat-rooms-manager` /
 `chat-rooms-manager-view`.
 
-| Camada | Arquivo |
-| --- | --- |
-| Rotas (18) | `Config/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndpointTable.php` |
-| Rotas (9) | `Config/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndPointView.php` |
+| Camada     | Arquivo                                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------------------------------- |
+| Rotas (18) | `Config/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndpointTable.php`                                        |
+| Rotas (9)  | `Config/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndPointView.php`                                         |
 | Controller | `Controllers/Api/V1/ChatRooms/ChatRoomsManager/ResourceTableController.php` + `ResourceViewController.php` |
-| Request | `Requests/V1/ChatRooms/ChatRoomsManager/CreateRequest.php` + `UpdateRequest.php` |
-| Processor | `Services/V1/ChatRooms/ChatRoomsManager/Processor.php` |
-| Model | `Models/V1/ChatRooms/ChatRoomsManager/SqlTableModel.php` + `SqlViewModel.php` |
+| Request    | `Requests/V1/ChatRooms/ChatRoomsManager/CreateRequest.php` + `UpdateRequest.php`                           |
+| Processor  | `Services/V1/ChatRooms/ChatRoomsManager/Processor.php`                                                     |
+| Model      | `Models/V1/ChatRooms/ChatRoomsManager/SqlTableModel.php` + `SqlViewModel.php`                              |
 
 **Regras aplicadas no Processor** (diferem do espelho `TimelineManager` onde
 anotado):
@@ -474,13 +489,340 @@ completo (`create`/`update`/`delete`) com JWT válido fica pendente — não há
 credencial de usuário disponível nesta sessão para gerar o token (regra do
 projeto: credenciais só sob demanda do usuário, nunca persistidas).
 
+### 6.2 `chat_messages` (implementado em 2026-09-29)
+
+Segundo recurso do módulo com backend. Mesmo espelho estrutural de
+`ChatRoomsManager`, namespace `Api\V1\ChatRooms\ChatMessages`, slug
+`chat-messages` / `chat-messages-view`.
+
+| Camada     | Arquivo                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| Rotas (18) | `Config/Routes/Api/v1/ChatRooms/ChatMessages/EndpointTable.php`                                        |
+| Rotas (9)  | `Config/Routes/Api/v1/ChatRooms/ChatMessages/EndPointView.php`                                         |
+| Controller | `Controllers/Api/V1/ChatRooms/ChatMessages/ResourceTableController.php` + `ResourceViewController.php` |
+| Request    | `Requests/V1/ChatRooms/ChatMessages/CreateRequest.php` + `UpdateRequest.php`                           |
+| Processor  | `Services/V1/ChatRooms/ChatMessages/Processor.php`                                                     |
+| Model      | `Models/V1/ChatRooms/ChatMessages/SqlTableModel.php` + `SqlViewModel.php`                              |
+
+**Regras aplicadas no Processor:**
+
+1. **Guest não escreve nada** (403) em create/update/delete — só lê.
+2. **Create exige sala existente e aberta.** `validateOnCreate` busca a sala
+   por `chat_rooms_manager_id`: `404` se não existir, `409` com o texto fixo
+   do §4.4 (`"Sala fechada, procure o moderador da sala para entender o
+   motivo."`) se `status != 'open'`.
+3. **Só usuário ativo escreve.** `validateOnCreate` também checa
+   `user_manager.status == 'active'` do usuário da sessão (§4.3); `403` caso
+   contrário.
+4. **Autor sempre da sessão.** `user_manager_id` do corpo é ignorado; o
+   Processor grava sempre `CurrentUser::id()`; `status` sempre nasce `sent`.
+5. **Conteúdo é imutável.** `UpdateRequest` só aceita `status=removed`;
+   `prepareUpdateData` remove `content`/`chat_rooms_manager_id`/
+   `user_manager_id` de qualquer payload de update, mesmo que enviados.
+6. **Quem remove.** `update`/`delete-soft`/`delete-restore`/`delete-hard` são
+   permitidos ao **autor da mensagem OU ao moderador da sala**
+   (`chat_rooms_manager.owner_user_manager_id`) **OU admin** — decisão
+   tomada em conjunto com o usuário no planejamento desta entrega (não
+   estava 100% explícita no §4).
+7. **Filtro de palavrão e auto-entrada em `chat_room_members` são integração
+   futura.** O dicionário JSON estático (§4.5) e o módulo `ChatRoomMembers`
+   ainda não existem; quando existirem, `prepareData()` deve gravar
+   `status='blocked'` + linha em `chat_room_warnings` para termo proibido, e
+   garantir o UPSERT em `chat_room_members` antes do insert.
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20260929115038_route_manager_chatmessages_sync.sql`
+(27 registros, idempotente).
+
+**`Config/Filters.php` atualizado:** os prefixos `api/v1/chat-messages/*` e
+`api/v1/chat-messages-view/*` precisaram ser adicionados manualmente ao
+array `jwtauth` — diferente do que o comentário do arquivo sugere, o
+"wildcard" do módulo é uma lista explícita de prefixos, não cobertura
+automática por convenção de nome. **Atenção para o próximo recurso do
+módulo:** repetir este passo, senão a rota fica aberta sem sessão (foi
+testado e corrigido aqui: `chat-messages/get-all` respondia `200` sem token
+até o prefixo ser adicionado).
+
+**Validado:** `php -l` em todos os arquivos, `spark routes` lista as 27
+rotas novas, `route_manager` com os 27 registros (idempotente, sem
+duplicar), e chamada real sem token devolve `401` nos dois grupos
+(`chat-messages` e `chat-messages-view`). Teste funcional completo
+(`create`/`update`/`delete`) com JWT válido fica pendente pelo mesmo motivo
+do §6.1.
+
+### 6.3 `chat_room_attachments` (implementado em 2026-09-29)
+
+Terceiro recurso do módulo. Anexo de arquivo — segue o desenho de
+`Timeline/TimelinePostAttachments` (upload multipart, disco próprio isolado
+do módulo Upload, rotas extras `serve`/`download`), não o de
+`ChatRoomsManager`/`ChatMessages`. Namespace
+`Api\V1\ChatRooms\ChatRoomAttachments`, slug `chat-room-attachments` /
+`chat-room-attachments-view`.
+
+| Camada                                                    | Arquivo                                                                                                                       |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Rotas (18)                                                | `Config/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndpointTable.php`                                                        |
+| Rotas extras (`serve`/`download`, fora do contrato de 18) | `Config/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndpointUpload.php`                                                       |
+| Rotas (9)                                                 | `Config/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndPointView.php`                                                         |
+| Controller                                                | `Controllers/Api/V1/ChatRooms/ChatRoomAttachments/ResourceTableController.php` + `ResourceViewController.php`                 |
+| Request                                                   | `Requests/V1/ChatRooms/ChatRoomAttachments/CreateRequest.php` + `UpdateRequest.php`                                           |
+| Processor                                                 | `Services/V1/ChatRooms/ChatRoomAttachments/Processor.php`                                                                     |
+| Storage                                                   | `Services/V1/ChatRooms/ChatRoomAttachments/StorageManager.php` — disco em `writable/uploads/chat_messages/<chat_message_id>/` |
+| Model                                                     | `Models/V1/ChatRooms/ChatRoomAttachments/SqlTableModel.php` + `SqlViewModel.php`                                              |
+
+**Regras aplicadas no Processor:**
+
+1. **Guest não escreve nada** (403) em create/update/delete — só lê.
+2. **Create exige mensagem existente.** `store()` busca a mensagem por
+   `chat_message_id`: `404` se não existir.
+3. **Quem sobe o arquivo é o autor da mensagem.** A tabela não tem coluna
+   própria de uploader — a autoria é resolvida via
+   `chat_messages.user_manager_id`; `403` para quem não é o autor (nem
+   admin). Decisão tomada em conjunto com o usuário no planejamento desta
+   entrega (não estava 100% explícita no §2.4).
+4. **Extensão/mime/tamanho validados via `Config\Upload`** — mesma lógica do
+   `TimelinePostAttachments` (`isAllowedExtension`/`isAllowedMime`/
+   `maxSizeKb`/`categorize`), sem se misturar com o módulo Upload.
+5. **Sem limite de "1 anexo por mensagem".** Diferente da Timeline (que
+   limita a 1 por publicação por decisão específica daquele módulo): nada no
+   README do ChatRooms restringe a quantidade de anexos por mensagem.
+6. **Quem edita/remove.** `update`/`delete-soft`/`delete-restore`/
+   `delete-hard` seguem a mesma regra do `ChatMessages`: autor da mensagem,
+   moderador da sala (`chat_rooms_manager.owner_user_manager_id`) ou admin.
+7. **`status=blocked` não é aceito pelo `UpdateRequest`** (só
+   `active`/`inactive`) — fica reservado ao futuro módulo
+   `ChatRoomAttachmentReports`, que deve gravar direto via
+   `SqlTableModel::update()` quando uma denúncia for confirmada (§4.6),
+   mesmo padrão do fechamento automático de sala em `ChatRoomsManager`.
+8. **`delete-soft` preserva o arquivo em disco**; `delete-hard` e
+   `clear-deleted` apagam o binário.
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20260929120511_route_manager_chatroomattachments_sync.sql`
+(27 registros, idempotente; `serve`/`download` ficam fora, mesmo padrão do
+Timeline).
+
+**`Config/Filters.php` atualizado no mesmo passo desta vez** (lição do
+§6.2): os prefixos `api/v1/chat-room-attachments/*` e
+`api/v1/chat-room-attachments-view/*` já entraram no array `jwtauth` antes
+da validação, e a chamada sem token já saiu `401` de primeira — sem passar
+por `200` como aconteceu no `chat_messages`.
+
+**Validado:** `php -l` em todos os arquivos, `spark routes` lista as 27
+rotas do contrato mais `serve`/`download` (todas com `jwtauth`), `adminonly`
+nas 3 de exclusão definitiva, `route_manager` com os 27 registros
+(idempotente), e chamada real sem token devolve `401` nos dois grupos e em
+`serve/1`. Teste funcional completo (upload real com JWT válido) fica
+pendente pelo mesmo motivo do §6.1.
+
+### 6.4 `chat_room_attachment_reports` (implementado em 2026-09-29)
+
+Quarto recurso do módulo. Denúncia de anexo — segue o desenho de
+`Timeline/TimelinePostReports` (fila de moderação, `adminonly` em quase
+tudo), mas com uma diferença central do §4.6: a ação é **imediata**, não uma
+fila pendente. Namespace `Api\V1\ChatRooms\ChatRoomAttachmentReports`, slug
+`chat-room-attachment-reports` / `chat-room-attachment-reports-view`.
+
+| Camada                                          | Arquivo                                                                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Rotas (18, `adminonly` em tudo exceto `create`) | `Config/Routes/Api/v1/ChatRooms/ChatRoomAttachmentReports/EndpointTable.php`                                        |
+| Rotas (9, `adminonly` em todas)                 | `Config/Routes/Api/v1/ChatRooms/ChatRoomAttachmentReports/EndPointView.php`                                         |
+| Controller                                      | `Controllers/Api/V1/ChatRooms/ChatRoomAttachmentReports/ResourceTableController.php` + `ResourceViewController.php` |
+| Request                                         | `Requests/V1/ChatRooms/ChatRoomAttachmentReports/CreateRequest.php` + `UpdateRequest.php`                           |
+| Processor                                       | `Services/V1/ChatRooms/ChatRoomAttachmentReports/Processor.php`                                                     |
+| Model                                           | `Models/V1/ChatRooms/ChatRoomAttachmentReports/SqlTableModel.php` + `SqlViewModel.php`                              |
+| Model interno novo (dependência)                | `Models/V1/ChatRooms/ChatRoomMembers/SqlTableModel.php` — **só o Model**, sem Controller/Request/Processor/Rotas    |
+
+**Regras aplicadas no Processor:**
+
+1. **Guest não denuncia** (403) — as demais 17 rotas de tabela + 9 de view já
+   barram com `adminonly` na própria rota (fila de moderação).
+2. **Anexo precisa existir** (404 via `ChatRoomAttachments\SqlTableModel`).
+3. **Não dá para denunciar o próprio anexo.** Resolvido comparando
+   `reporter_user_manager_id` da sessão com `chat_messages.user_manager_id`
+   do autor do upload (a mesma cadeia usada em `ChatRoomAttachments`) — 403
+   caso coincidam. Decisão tomada em conjunto com o usuário no planejamento
+   (não estava explícita no §2.4/§4.6).
+4. **"Membro ativo da sala" vira `user_manager.status='active'`.** O texto
+   do §4.6 fala em "qualquer membro ativo da sala", mas não há como
+   confirmar matrícula em `chat_room_members` de forma confiável — a
+   auto-entrada na sala continua pendente (mesma limitação de
+   `ChatMessages`). Usei o status do usuário como proxy.
+5. **Uma denúncia por usuário por anexo** — `409` na segunda tentativa
+   (mesma checagem de `TimelinePostReports`, espelhando a `UNIQUE` da
+   tabela).
+6. **Efeito imediato do `create`** (§4.6, método `applyImmediateBlock`):
+   bloqueia `chat_room_attachments.status='blocked'` sempre; tenta bloquear
+   `chat_room_members.status='blocked'` + `blocked_reason='attachment_report'`
+   do autor do upload **em melhor esforço** — se a matrícula não existir
+   (auto-entrada em `chat_room_members` é integração futura, ver
+   `ChatMessages`), só o anexo é bloqueado, sem erro.
+7. **`status` sempre nasce `resolved`** (a ação já foi tomada no mesmo
+   request); `reviewed_by`/`reviewed_at`/`review_note` ficam `null` até um
+   admin editar via `update` (rota `adminonly`) para fins de auditoria.
+8. **`update`/`delete-*` são só admin** (rota já barra com `adminonly`,
+   Processor reconfere — defesa em profundidade).
+9. **Rejeitar uma denúncia (`status=rejected`) NÃO desfaz os bloqueios
+   automáticos** — reversão é manual, pelos próprios endpoints do anexo
+   (`chat-room-attachments/update`) e, quando existir, do membro. Fora de
+   escopo desta entrega.
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20260929121921_route_manager_chatroomattachmentreports_sync.sql`
+(27 registros, idempotente).
+
+**`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina do
+§6.3: os prefixos `api/v1/chat-room-attachment-reports/*` e
+`-view/*` já entraram no `jwtauth` antes da validação.
+
+**Validado:** `php -l` em todos os arquivos, `spark routes` confirma
+`create` só com `jwtauth` e as outras 26 rotas com `jwtauth adminonly` (a
+coluna de filtro de rota mostra `adminonly`), `route_manager` com os 27
+registros (idempotente), e chamada real sem token devolve `401` em
+`create`, `get-all` (tabela, `adminonly`) e `get-all` (view, `adminonly`) —
+o `jwtauth` roda antes do `adminonly` na cadeia de filtros, então a falta de
+token já barra antes de chegar na checagem de admin. Teste funcional
+completo (denúncia real disparando os dois bloqueios) com JWT válido fica
+pendente pelo mesmo motivo do §6.1.
+
+### 6.5 `chat_room_warnings` (implementado em 2026-09-29)
+
+Quinto recurso do módulo. Advertência de palavrão — diferente de todos os
+recursos anteriores, **não há "autor"**: é registro de moderação sobre outro
+usuário (revela inclusive a palavra proibida usada). Por isso o **módulo
+inteiro (27 rotas) é `adminonly`**, decisão confirmada com o usuário no
+planejamento — nem o `create` fica livre, ao contrário de
+`ChatRoomAttachmentReports`. Namespace `Api\V1\ChatRooms\ChatRoomWarnings`,
+slug `chat-room-warnings` / `chat-room-warnings-view`.
+
+| Camada                    | Arquivo                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------ |
+| Rotas (18, `adminonly` em todas) | `Config/Routes/Api/v1/ChatRooms/ChatRoomWarnings/EndpointTable.php`                       |
+| Rotas (9, `adminonly` em todas)  | `Config/Routes/Api/v1/ChatRooms/ChatRoomWarnings/EndPointView.php`                        |
+| Controller                 | `Controllers/Api/V1/ChatRooms/ChatRoomWarnings/ResourceTableController.php` + `ResourceViewController.php` |
+| Request                    | `Requests/V1/ChatRooms/ChatRoomWarnings/CreateRequest.php` + `UpdateRequest.php`                 |
+| Processor                  | `Services/V1/ChatRooms/ChatRoomWarnings/Processor.php`                                           |
+| Model                      | `Models/V1/ChatRooms/ChatRoomWarnings/SqlTableModel.php` + `SqlViewModel.php`                    |
+
+**Regras aplicadas no Processor:**
+
+1. **Sala, usuário e mensagem precisam existir** (404 cada, via
+   `ChatRoomsManager`/`UserManager`/`ChatMessages` Models).
+2. **A mensagem precisa pertencer à sala informada** — `409` se
+   `chat_message.chat_rooms_manager_id` não bater com o
+   `chat_rooms_manager_id` do corpo (mesma checagem de consistência usada em
+   `TimelinePostComments` para `parent_id`).
+3. **Vínculos são imutáveis.** `UpdateRequest` só aceita `flagged_word`;
+   `prepareUpdateData` remove `chat_rooms_manager_id`/`user_manager_id`/
+   `chat_message_id` de qualquer payload de update.
+4. **Todo write é só admin** — `create`/`update`/`delete-soft`/
+   `delete-restore`/`delete-hard`/`clear-deleted` checam
+   `CurrentUser::isAdmin()` (a rota já barra com `adminonly`, o Processor
+   reconfere).
+5. **`countByRoomAndUser()` no Model** — método novo, não exposto por rota,
+   pronto para o futuro `ChatMessages/Processor` usar quando o filtro de
+   palavrão existir (`COUNT(*)` sem soft-delete, regra "3 advertências
+   bloqueia o membro", §4.5).
+6. **Criação automática continua fora de escopo.** O dicionário JSON
+   estático ainda não existe (mesma pendência do `ChatMessages`); quando
+   existir, deve inserir direto via `SqlTableModel::insert()`, sem passar
+   por este Processor — mesmo padrão já usado em
+   `ChatRoomAttachmentReports` para bloquear `chat_room_members`.
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20260929123535_route_manager_chatroomwarnings_sync.sql`
+(27 registros, idempotente).
+
+**`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina dos
+§6.3/§6.4: os prefixos `api/v1/chat-room-warnings/*` e `-view/*` já entraram
+no `jwtauth` antes da validação.
+
+**Validado:** `php -l` em todos os arquivos, `spark routes` confirma as 27
+rotas com `jwtauth adminonly` (as 27, sem exceção — diferente dos módulos
+anteriores que sempre tinham pelo menos 1 rota livre), `route_manager` com
+os 27 registros (idempotente), e chamada real sem token devolve `401` em
+`create`, `get-all` (tabela) e `get-all` (view). Teste funcional completo
+com JWT admin válido fica pendente pelo mesmo motivo do §6.1.
+
+### 6.6 `chat_room_favorites` (implementado em 2026-09-29)
+
+Sexto recurso do módulo — sétimo e último dos que têm schema pronto
+(`chat_room_members` segue só com o Model interno mínimo, ver §6.4). Sala
+favorita — puro toggle, sem campo além dos vínculos (`UNIQUE
+chat_rooms_manager_id` + `user_manager_id`). Espelha
+`Timeline/TimelinePostReactions` (uma linha por usuário por recurso, ação de
+um clique, sem tela de formulário), mas sem `reaction_type` — aqui é só
+existir a linha ou não. Namespace `Api\V1\ChatRooms\ChatRoomFavorites`, slug
+`chat-room-favorites` / `chat-room-favorites-view`.
+
+| Camada     | Arquivo                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| Rotas (18) | `Config/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndpointTable.php`                                        |
+| Rotas (9)  | `Config/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndPointView.php`                                         |
+| Controller | `Controllers/Api/V1/ChatRooms/ChatRoomFavorites/ResourceTableController.php` + `ResourceViewController.php` |
+| Request    | `Requests/V1/ChatRooms/ChatRoomFavorites/CreateRequest.php` + `UpdateRequest.php`                           |
+| Processor  | `Services/V1/ChatRooms/ChatRoomFavorites/Processor.php`                                                     |
+| Model      | `Models/V1/ChatRooms/ChatRoomFavorites/SqlTableModel.php` + `SqlViewModel.php`                              |
+
+**Regras aplicadas no Processor:**
+
+1. **Guest não favorita** (403) — as demais operações de escrita são livres
+   a qualquer usuário logado (diferente de `ChatRoomWarnings`/
+   `ChatRoomAttachmentReports`: favorito é dado pessoal, não moderação, por
+   isso **sem `adminonly`** nas 24 rotas — só as 3 de exclusão definitiva
+   mantêm o padrão).
+2. **Sala precisa existir** (404).
+3. **`create` é idempotente** — decisão confirmada com o usuário no
+   planejamento: se o usuário já favoritou (linha ativa), devolve o registro
+   existente em vez de erro; se a linha está soft-deleted, restaura. Mesmo
+   espírito do "clique único" do `TimelinePostReactions`, mas sem UPDATE de
+   tipo (não há o que alternar).
+4. **`update` sem campo algum** — `UpdateRequest::rules()` retorna `[]`; a
+   tabela só tem os dois vínculos, ambos imutáveis. Endpoint mantido só para
+   fechar o contrato de 18 rotas.
+5. **Excluir/restaurar é só do dono do favorito** (admin escapa) — mesma
+   regra do `TimelinePostReactions`.
+6. **"Sou eu que favoritei?" na `view_chat_rooms_manager` continua fora de
+   escopo.** A nota do §3 já previa o Processor de `ChatRoomsManager`
+   anexando `is_favorite` em memória por query em lote — não implementado
+   aqui, exigiria editar aquele Processor (não pedido nesta entrega).
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20260929124835_route_manager_chatroomfavorites_sync.sql`
+(27 registros, idempotente).
+
+**`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina dos
+módulos anteriores: os prefixos `api/v1/chat-room-favorites/*` e `-view/*`
+já entraram no `jwtauth` antes da validação.
+
+**Validado:** `php -l` em todos os arquivos, `spark routes` confirma 24
+rotas só com `jwtauth` e 3 (as de exclusão definitiva) com `jwtauth
+adminonly`, `route_manager` com os 27 registros (idempotente), e chamada
+real sem token devolve `401` nos dois grupos. Teste funcional completo
+(favoritar/desfavoritar com JWT válido) fica pendente pelo mesmo motivo do
+§6.1.
+
 ## 7. Próximos passos (fora deste desenho)
 
 - Dicionário JSON estático de palavras proibidas (onde mora, como o backend
   valida antes do `INSERT`).
-- Backend PHP das outras 6 tabelas (Controller/Request/Processor/Model),
-  rotas (18 por tabela + 9 por view, mesmo contrato do Timeline) e registro
-  em `route_manager`.
+- Backend PHP completo de `chat_room_members` (Controller/Request/Processor/
+  Model REST — hoje só existe o Model interno mínimo usado pelo
+  `ChatRoomAttachmentReports`), rotas (18 + 9, mesmo contrato do Timeline) e
+  registro em `route_manager` — **lembrar de atualizar `Config/Filters.php`**
+  (ver nota do §6.2). Com isso as 7 tabelas do módulo ficam com backend
+  completo.
+- Quando `chat_room_members` ganhar auto-entrada de verdade, revisar
+  `ChatRoomAttachmentReports::applyImmediateBlock()` — hoje ele já tenta
+  bloquear a matrícula, só não encontra linha pra bloquear.
+- Quando o dicionário JSON de palavrões existir, `ChatMessages/Processor`
+  deve gravar `status='blocked'` + `INSERT` em `chat_room_warnings` (direto
+  via `SqlTableModel`, sem passar pelo `ChatRoomWarnings/Processor`) e
+  chamar `countByRoomAndUser()` para decidir o bloqueio de 3 advertências.
+- `is_favorite`/`my_role` anexados em memória na listagem de
+  `ChatRoomsManager` (nota do §3) — Processor daquele módulo precisa de uma
+  query em lote em `chat_room_favorites`/`chat_room_members` por página
+  retornada.
 - Tela React do Chat (lista de salas com cards de favoritos, atalho no NAV,
   tela de mensagens com upload, texto de sala fechada).
 - `form_manager`/`list_manager` para as telas administrativas das 7 tabelas
