@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="4219" viewBox="0 0 1680 4219" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/></marker><marker id="arwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>
+<rect x="0" y="0" width="1680" height="4219" fill="#f8fafc"/>
+<text x="40" y="56" font-size="22" fill="#0f172a" font-weight="700">Diagrama de camadas — tela /v1/calendar-manager</text>
+<text x="40" y="84" font-size="13" fill="#475569">Caminho completo da requisicao que constroi a tela: navegador -&gt; SPA React (Vite) -&gt; services -&gt; API CodeIgniter 5 -&gt; Processor -&gt; Model -&gt; banco codeigniter54900_db.</text>
+<text x="40" y="104" font-size="13" fill="#475569">Listagem administrativa de calendarios e eventos (view_calendar_manager agrupada no cliente). Fontes: codigo-fonte do workspace e os markdown do modulo Calendar.</text>
+<rect x="40" y="138" width="14" height="14" rx="3" fill="#1d4ed8"/>
+<text x="62" y="150" font-size="12.5" fill="#475569">Boot / entrada do SPA</text>
+<rect x="450" y="138" width="14" height="14" rx="3" fill="#4338ca"/>
+<text x="472" y="150" font-size="12.5" fill="#475569">Rotas e pagina</text>
+<rect x="860" y="138" width="14" height="14" rx="3" fill="#0f766e"/>
+<text x="882" y="150" font-size="12.5" fill="#475569">Componentes da tela e UI</text>
+<rect x="1270" y="138" width="14" height="14" rx="3" fill="#6d28d9"/>
+<text x="1292" y="150" font-size="12.5" fill="#475569">Hooks, contexto e utils</text>
+<rect x="40" y="164" width="14" height="14" rx="3" fill="#b45309"/>
+<text x="62" y="176" font-size="12.5" fill="#475569">Services (fronteira HTTP)</text>
+<rect x="450" y="164" width="14" height="14" rx="3" fill="#15803d"/>
+<text x="472" y="176" font-size="12.5" fill="#475569">Backend PHP</text>
+<rect x="860" y="164" width="14" height="14" rx="3" fill="#7e22ce"/>
+<text x="882" y="176" font-size="12.5" fill="#475569">Banco de dados e arquivos</text>
+<text x="40" y="234" font-size="14" fill="#334155" font-weight="700" letter-spacing="0.6">1. CAMADAS E SUBCAMADAS — ARQUIVOS POR CAMADA</text>
+<rect x="40" y="320" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="342" font-size="12" fill="#1e293b" font-weight="700" letter-spacing="0.6">FRONTEND — SPA React + Vite (src/frontend/projeto54900)</text>
+<line x1="955" y1="360" x2="955" y2="390" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<rect x="40" y="394" width="210" height="76" rx="8" fill="#1d4ed8"/>
+<text x="52" y="437" font-size="12.5" fill="#ffffff" font-weight="700">0. Boot do SPA</text>
+<rect x="270" y="394" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="394" width="6" height="76" rx="3" fill="#1d4ed8"/>
+<rect x="282" y="406" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="426" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">carregamento e montagem</text>
+<text x="292" y="446" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">index.html  ·  src/main.tsx  ·  src/bootstrap.ts  ·  src/App.tsx  ·  src/styles/_custom.scss</tspan></text>
+<line x1="955" y1="476" x2="955" y2="506" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="496" font-size="11.5" fill="#475569">monta o App e o roteador</text>
+<rect x="40" y="510" width="210" height="213" rx="8" fill="#4338ca"/>
+<text x="52" y="621.5" font-size="12.5" fill="#ffffff" font-weight="700">1. Rotas e layout</text>
+<rect x="270" y="510" width="1370" height="213" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="510" width="6" height="213" rx="3" fill="#4338ca"/>
+<rect x="282" y="522" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="542" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">agregador de rotas</text>
+<text x="292" y="562" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/index.tsx  ·  src/routes/v1/index.tsx  ·  src/routes/v1/calendar.routes.tsx  ·  src/routes/paths.ts</tspan></text>
+<rect x="282" y="582" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="602" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">guarda de sessao e layout</text>
+<text x="292" y="622" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/RequireAuth.tsx  ·  src/layouts/RootLayout.tsx  ·  src/components/layout/Navbar.tsx</tspan><tspan x="292" dy="17">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</tspan></text>
+<rect x="282" y="659" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="679" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">item de menu da tela (vem do banco)</text>
+<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/menuManager.table.ts  ·  menu_manager  -&gt;  item de menu = /v1/calendar-manager</tspan></text>
+<line x1="955" y1="729" x2="955" y2="759" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="749" font-size="11.5" fill="#475569">lazy import da pagina</text>
+<rect x="40" y="763" width="210" height="213" rx="8" fill="#4338ca"/>
+<text x="52" y="874.5" font-size="12.5" fill="#ffffff" font-weight="700">2. Pagina</text>
+<rect x="270" y="763" width="1370" height="213" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="763" width="6" height="213" rx="3" fill="#4338ca"/>
+<rect x="282" y="775" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="795" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">pagina da listagem administrativa</text>
+<text x="292" y="815" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/pages/v1/calendar/calendar-manager/GetAllPage.tsx</tspan></text>
+<rect x="282" y="835" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="855" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">arquivos de apoio da pasta</text>
+<text x="292" y="875" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">constants.ts (slugs de form e de list, PAGE_SIZE, upload module, accept)  ·  helpers.ts (funcoes puras)</tspan></text>
+<rect x="282" y="895" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="915" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">responsabilidades da pagina</text>
+<text x="292" y="935" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">carrega a view sem paginacao de servidor + groupCalendarView  ·  busca e paginacao 100% no cliente</tspan><tspan x="292" dy="17">acoes por linha (list_actions)  ·  respostas de convite (myResponses)  ·  qual modal esta aberto</tspan></text>
+<line x1="955" y1="982" x2="955" y2="1012" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1002" font-size="11.5" fill="#475569">renderiza a tela e os modais</text>
+<rect x="40" y="1016" width="210" height="136" rx="8" fill="#0f766e"/>
+<text x="52" y="1089" font-size="12.5" fill="#ffffff" font-weight="700">3. Componentes da tela</text>
+<rect x="270" y="1016" width="1370" height="136" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1016" width="6" height="136" rx="3" fill="#0f766e"/>
+<rect x="282" y="1028" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1048" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">pages/v1/calendar/calendar-manager/</text>
+<text x="292" y="1068" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">RowActionButton.tsx  ·  AgendaViewer.tsx  ·  CreateCalendarModal.tsx  ·  EditCalendarModal.tsx  ·  ViewEventsModal.tsx</tspan></text>
+<rect x="282" y="1088" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1108" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">modais de sub-recurso do evento</text>
+<text x="292" y="1128" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">CreateEventModal.tsx  ·  AttendeesModal.tsx  ·  RemindersModal.tsx  ·  AttachmentsModal.tsx</tspan></text>
+<line x1="955" y1="1158" x2="955" y2="1188" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1178" font-size="11.5" fill="#475569">usa a UI compartilhada</text>
+<rect x="40" y="1192" width="210" height="136" rx="8" fill="#0f766e"/>
+<text x="52" y="1265" font-size="12.5" fill="#ffffff" font-weight="700">4. UI global e de dominio</text>
+<rect x="270" y="1192" width="1370" height="136" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1192" width="6" height="136" rx="3" fill="#0f766e"/>
+<rect x="282" y="1204" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1224" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/components/global/</text>
+<text x="292" y="1244" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">PageHeader.tsx  ·  EmptyState.tsx  ·  LoadingOverlay.tsx  ·  Modal.tsx  ·  FakeFillButton.tsx  ·  ConfirmModal.tsx</tspan></text>
+<rect x="282" y="1264" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1284" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/components/ui/</text>
+<text x="292" y="1304" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">MonthCalendar  ·  YearCalendar  ·  FormGrid/Input (campo arquivo, select com rota, etc.)</tspan></text>
+<line x1="955" y1="1334" x2="955" y2="1364" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1354" font-size="11.5" fill="#475569">consome hooks e utilitarios</text>
+<rect x="40" y="1368" width="210" height="196" rx="8" fill="#6d28d9"/>
+<text x="52" y="1471" font-size="12.5" fill="#ffffff" font-weight="700">5. Hooks, contexto e utils</text>
+<rect x="270" y="1368" width="1370" height="196" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1368" width="6" height="196" rx="3" fill="#6d28d9"/>
+<rect x="282" y="1380" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1400" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/hooks/ e contexto de sessao</text>
+<text x="292" y="1420" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">useToast.ts  ·  src/context/AuthContext.tsx (useAuth: usuario da sessao)</tspan></text>
+<rect x="282" y="1440" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1460" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">src/utils/</text>
+<text x="292" y="1480" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">utils/apiResult.ts  ·  utils/formSubmit.ts  ·  utils/pagination.ts  ·  utils/listConstructor.ts</tspan></text>
+<rect x="282" y="1500" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1520" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">schemas de dominio</text>
+<text x="292" y="1540" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">services/calendarSchema.ts (groupCalendarView, CalendarGroup, CalendarEventRow)  ·  services/formSchema.ts (buildRenderSchema)</tspan></text>
+<line x1="955" y1="1570" x2="955" y2="1600" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1590" font-size="11.5" fill="#475569">chama os services da v1</text>
+<rect x="40" y="1604" width="210" height="187" rx="8" fill="#b45309"/>
+<text x="52" y="1702.5" font-size="12.5" fill="#ffffff" font-weight="700">6. Services (fronteira HTTP)</text>
+<rect x="270" y="1604" width="1370" height="187" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1604" width="6" height="187" rx="3" fill="#b45309"/>
+<rect x="282" y="1616" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1636" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">transporte</text>
+<text x="292" y="1656" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/services/http.ts  ·  src/services/resourceFactory.ts  ·  src/constants/api.ts  ·  src/config/env.ts</tspan></text>
+<rect x="282" y="1676" width="1346" height="103" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1696" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">recursos consumidos por esta tela</text>
+<text x="292" y="1716" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">calendarManager.view.ts  ·  calendarManager.table.ts  ·  calendarEvents.table.ts  ·  calendarEventAttendees.table.ts</tspan><tspan x="292" dy="17">calendarEventInvites.table.ts  ·  calendarEventReminders.table.ts  ·  calendarEventAttachments.table.ts</tspan><tspan x="292" dy="17">formManager.view.ts  ·  listManager.table.ts  ·  listColumns.table.ts  ·  listActions.table.ts  ·  userManager.table.ts</tspan><tspan x="292" dy="17">uploadManager.table.ts + uploadManager.upload.ts (module calendar_events)</tspan></text>
+<line x1="955" y1="1797" x2="955" y2="1827" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1817" font-size="11.5" fill="#475569">requisicao HTTP</text>
+<rect x="40" y="1831" width="1600" height="44" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+<text x="840" y="1858" font-size="12.5" fill="#7c2d12" font-weight="700" text-anchor="middle">Fronteira — HTTP/JSON  ·  GET|POST|PUT|DELETE /api/v1/&lt;grupo&gt;/&lt;endpoint&gt;  ·  Authorization: Bearer &lt;jwt&gt;  ·  multipart/form-data no upload do anexo</text>
+<rect x="40" y="1897" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="1919" font-size="12" fill="#1e293b" font-weight="700" letter-spacing="0.6">BACKEND — API CodeIgniter 5 (src/app)</text>
+<line x1="955" y1="1937" x2="955" y2="1967" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="1957" font-size="11.5" fill="#475569">resolvida pelo roteador do framework</text>
+<rect x="40" y="1971" width="210" height="76" rx="8" fill="#15803d"/>
+<text x="52" y="2014" font-size="12.5" fill="#ffffff" font-weight="700">7. Entrada HTTP</text>
+<rect x="270" y="1971" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1971" width="6" height="76" rx="3" fill="#15803d"/>
+<rect x="282" y="1983" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2003" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">bootstrap do framework</text>
+<text x="292" y="2023" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">public/index.php  ·  system/Boot.php  ·  app/Config/Routes.php  ·  app/Config/Database.php</tspan></text>
+<line x1="955" y1="2053" x2="955" y2="2083" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<rect x="40" y="2087" width="210" height="247" rx="8" fill="#15803d"/>
+<text x="52" y="2215.5" font-size="12.5" fill="#ffffff" font-weight="700">8. Rotas REST + filtro</text>
+<rect x="270" y="2087" width="1370" height="247" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2087" width="6" height="247" rx="3" fill="#15803d"/>
+<rect x="282" y="2099" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2119" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">grupos do modulo (app/Config/Routes.php)</text>
+<text x="292" y="2139" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">calendar-manager  ·  calendar-manager-view  ·  calendar-events  ·  calendar-event-attendees (+ respond)</tspan><tspan x="292" dy="17">calendar-event-reminders  ·  calendar-event-attachments  ·  calendar-event-extended-properties</tspan><tspan x="292" dy="17">calendar-event-invites (+ accept-token)  ·  upload-manager  ·  form-manager-view  ·  list-manager  ·  list-actions  ·  list-columns</tspan></text>
+<rect x="282" y="2193" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2213" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Config/Routes/Api/v1/Calendar/&lt;Recurso&gt;/</text>
+<text x="292" y="2233" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">EndpointTable.php (18 rotas por tabela)  ·  EndPointView.php (9 rotas de leitura, so no CalendarManager)</tspan></text>
+<rect x="282" y="2253" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2273" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">seguranca e registro das rotas</text>
+<text x="292" y="2293" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">app/Config/Filters.php (alias jwtauth por wildcard)  ·  app/Filters/JwtAuthFilter.php</tspan><tspan x="292" dy="17">app/Filters/AdminOnlyFilter.php (rotas de moderacao)  ·  route_manager (sincronizacao das rotas)</tspan></text>
+<line x1="955" y1="2340" x2="955" y2="2370" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2360" font-size="11.5" fill="#475569">encaminha para o controller</text>
+<rect x="40" y="2374" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="52" y="2425.5" font-size="12.5" fill="#ffffff" font-weight="700">9. Controller</text>
+<rect x="270" y="2374" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2374" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2386" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2406" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Controllers/Api/V1/Calendar/&lt;Recurso&gt;/</text>
+<text x="292" y="2426" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">ResourceTableController.php (create, update, deleteSoft, find, getGrouped, search, get, getNoPagination)</tspan><tspan x="292" dy="17">ResourceViewController.php (9 rotas de leitura - CalendarManager)  ·  app/Controllers/BaseController.php</tspan></text>
+<line x1="955" y1="2473" x2="955" y2="2503" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2493" font-size="11.5" fill="#475569">valida o payload</text>
+<rect x="40" y="2507" width="210" height="76" rx="8" fill="#15803d"/>
+<text x="52" y="2550" font-size="12.5" fill="#ffffff" font-weight="700">10. Request</text>
+<rect x="270" y="2507" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2507" width="6" height="76" rx="3" fill="#15803d"/>
+<rect x="282" y="2519" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2539" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Requests/V1/Calendar/&lt;Recurso&gt;/</text>
+<text x="292" y="2559" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">CreateRequest.php  ·  UpdateRequest.php (um par por recurso)</tspan></text>
+<line x1="955" y1="2589" x2="955" y2="2619" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2609" font-size="11.5" fill="#475569">aplica a regra de negocio</text>
+<rect x="40" y="2623" width="210" height="110" rx="8" fill="#15803d"/>
+<text x="52" y="2683" font-size="12.5" fill="#ffffff" font-weight="700">11. Service / Processor</text>
+<rect x="270" y="2623" width="1370" height="110" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2623" width="6" height="110" rx="3" fill="#15803d"/>
+<rect x="282" y="2635" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2655" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Services/V1/</text>
+<text x="292" y="2675" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">BaseViewService.php  ·  BaseTableService.php  ·  Calendar/&lt;Recurso&gt;/Processor.php (regra de negocio e validacao)</tspan><tspan x="292" dy="17">CalendarManager/Processor.php (tableModel + viewModel, mesmo padrao do UserManager)</tspan><tspan x="292" dy="17">CalendarEventAttachments/Processor.php (UPLOAD_MODULE = calendar_events)  ·  CalendarEventInvites/Processor.php (token do convite)</tspan></text>
+<line x1="955" y1="2739" x2="955" y2="2769" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2759" font-size="11.5" fill="#475569">monta e executa o SQL</text>
+<rect x="40" y="2773" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="52" y="2824.5" font-size="12.5" fill="#ffffff" font-weight="700">12. Model</text>
+<rect x="270" y="2773" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2773" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2785" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2805" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">app/Models/V1/Calendar/&lt;Recurso&gt;/</text>
+<text x="292" y="2825" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">CalendarManager/SqlTableModel.php  ·  CalendarManager/SqlViewModel.php (le a view)</tspan><tspan x="292" dy="17">&lt;Recurso&gt;/SqlTableModel.php (escreve na tabela) - um por recurso</tspan></text>
+<line x1="955" y1="2872" x2="955" y2="2902" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
+<text x="969" y="2892" font-size="11.5" fill="#475569">consulta / persiste</text>
+<rect x="40" y="2906" width="210" height="307" rx="8" fill="#7e22ce"/>
+<text x="52" y="3055.5" font-size="12.5" fill="#ffffff" font-weight="700"><tspan x="52" dy="0">13. Banco</tspan><tspan x="52" dy="17">codeigniter54900_db</tspan></text>
+<rect x="270" y="2906" width="1370" height="307" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2906" width="6" height="307" rx="3" fill="#7e22ce"/>
+<rect x="282" y="2918" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2938" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">view que alimenta a tela</text>
+<text x="292" y="2958" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">view_calendar_manager (calendar_manager LEFT JOIN calendar_events - so 2 niveis)</tspan></text>
+<rect x="282" y="2978" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2998" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas do modulo</text>
+<text x="292" y="3018" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">calendar_manager  ·  calendar_events  ·  calendar_event_attendees  ·  calendar_event_reminders</tspan><tspan x="292" dy="17">calendar_event_attachments  ·  calendar_event_extended_properties  ·  calendar_event_invites</tspan></text>
+<rect x="282" y="3055" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3075" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas de apoio (definicao que vem do banco)</text>
+<text x="292" y="3095" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">form_manager + view_form_manager (slugs calendario, editar-calendario, cadastro-evento, cadastro-convidado,</tspan><tspan x="292" dy="17">cadastro-lembrete, cadastro-anexo-evento)  ·  list_manager + list_columns + list_actions (calendar-manager,</tspan><tspan x="292" dy="17">calendar-events-view)  ·  menu_manager  ·  user_manager  ·  uploads (module calendar_events)  ·  route_manager</tspan></text>
+<rect x="282" y="3149" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3169" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">arquivos em disco</text>
+<text x="292" y="3189" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/writable/uploads/calendar_events/&lt;evento&gt;/&lt;arquivo&gt;&lt;AAAAMMDDHHMMSS&gt;</tspan></text>
+<text x="40" y="3263" font-size="14" fill="#334155" font-weight="700" letter-spacing="0.6">2. FLUXOS DA TELA (CADA PASSO COM A SETA PARA O PROXIMO)</text>
+<rect x="48" y="3297" width="324" height="688" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="60" y="3309" width="300" height="30" rx="6" fill="#1d4ed8"/>
+<text x="70" y="3329" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="70" dy="0">Fluxo A — Listagem da tela (leitura)</tspan></text>
+<rect x="60" y="3355" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3355" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3375" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">GetAllPage.load()</tspan></text>
+<line x1="210" y1="3388" x2="210" y2="3407" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3411" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3411" width="4" height="48" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3431" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">calendarManagerView.getNoPagination({</tspan><tspan x="70" dy="17">sort: cm_sort_order })</tspan></text>
+<line x1="210" y1="3462" x2="210" y2="3481" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3485" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3485" width="4" height="48" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3505" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">POST</tspan><tspan x="70" dy="17">/api/v1/calendar-manager-view/get-no-pagination</tspan></text>
+<line x1="210" y1="3536" x2="210" y2="3555" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3559" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3559" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3579" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">ResourceViewController::getNoPagination</tspan></text>
+<line x1="210" y1="3592" x2="210" y2="3611" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3615" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3615" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3635" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">Processor (viewModel)</tspan></text>
+<line x1="210" y1="3648" x2="210" y2="3667" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3671" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3671" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3691" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">SqlViewModel</tspan></text>
+<line x1="210" y1="3704" x2="210" y2="3723" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3727" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3727" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3747" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">view_calendar_manager</tspan></text>
+<line x1="210" y1="3760" x2="210" y2="3779" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3783" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3783" width="4" height="48" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3803" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">groupCalendarView</tspan><tspan x="70" dy="17">(services/calendarSchema.ts)</tspan></text>
+<line x1="210" y1="3834" x2="210" y2="3853" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3857" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3857" width="4" height="48" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3877" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">busca + paginacao no cliente</tspan><tspan x="70" dy="17">(utils/pagination)</tspan></text>
+<line x1="210" y1="3908" x2="210" y2="3927" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="60" y="3931" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="60" y="3931" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="70" y="3951" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="70" dy="0">lista de calendarios + AgendaViewer</tspan></text>
+<rect x="372" y="3297" width="324" height="594" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="384" y="3309" width="300" height="30" rx="6" fill="#0f766e"/>
+<text x="394" y="3329" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="394" dy="0">Fluxo B — Definicoes que vem do banco</tspan></text>
+<rect x="384" y="3355" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3355" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="394" y="3375" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">listManagerTable.getNoPagination</tspan></text>
+<line x1="534" y1="3388" x2="534" y2="3407" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3411" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3411" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="394" y="3431" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">listActionsTable.find ·</tspan><tspan x="394" dy="17">listColumnsTable.find</tspan></text>
+<line x1="534" y1="3462" x2="534" y2="3481" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3485" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3485" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="394" y="3505" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">GET|POST /api/v1/list-manager ·</tspan><tspan x="394" dy="17">list-actions · list-columns</tspan></text>
+<line x1="534" y1="3536" x2="534" y2="3555" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3559" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3559" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="394" y="3579" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">list_manager · list_actions ·</tspan><tspan x="394" dy="17">list_columns</tspan></text>
+<line x1="534" y1="3610" x2="534" y2="3629" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3633" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3633" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="394" y="3653" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">formManagerView.getGrouped (nos 6</tspan><tspan x="394" dy="17">modais)</tspan></text>
+<line x1="534" y1="3684" x2="534" y2="3703" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3707" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3707" width="4" height="48" rx="2" fill="#0f766e"/>
+<text x="394" y="3727" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">GET</tspan><tspan x="394" dy="17">/api/v1/form-manager-view/get-grouped</tspan></text>
+<line x1="534" y1="3758" x2="534" y2="3777" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3781" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3781" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="394" y="3801" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">view_form_manager</tspan></text>
+<line x1="534" y1="3814" x2="534" y2="3833" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="384" y="3837" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="384" y="3837" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="394" y="3857" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="394" dy="0">FormGrid/Input monta o formulario</tspan></text>
+<rect x="696" y="3297" width="324" height="724" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="708" y="3309" width="300" height="48" rx="6" fill="#b45309"/>
+<text x="718" y="3329" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="718" dy="0">Fluxo C — Escrita do calendario, do</tspan><tspan x="718" dy="17">evento e dos sub-recursos</tspan></text>
+<rect x="708" y="3373" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3373" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="718" y="3393" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">Modal Create/Edit (FormGrid +</tspan><tspan x="718" dy="17">resolveEndpoint)</tspan></text>
+<line x1="858" y1="3424" x2="858" y2="3443" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3447" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3447" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="718" y="3467" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">POST /api/v1/calendar-manager/create</tspan></text>
+<line x1="858" y1="3480" x2="858" y2="3499" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3503" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3503" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="718" y="3523" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">PUT /api/v1/calendar-manager/update/{id}</tspan></text>
+<line x1="858" y1="3536" x2="858" y2="3555" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3559" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3559" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="718" y="3579" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">POST /api/v1/calendar-events/create</tspan></text>
+<line x1="858" y1="3592" x2="858" y2="3611" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3615" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3615" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="718" y="3635" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">POST</tspan><tspan x="718" dy="17">/api/v1/calendar-event-attendees/create</tspan></text>
+<line x1="858" y1="3666" x2="858" y2="3685" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3689" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3689" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="718" y="3709" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">POST</tspan><tspan x="718" dy="17">/api/v1/calendar-event-reminders/create</tspan></text>
+<line x1="858" y1="3740" x2="858" y2="3759" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3763" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3763" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="718" y="3783" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">ResourceTableController::create / update</tspan></text>
+<line x1="858" y1="3796" x2="858" y2="3815" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3819" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3819" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="718" y="3839" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">Processor (validacao + regra de negocio)</tspan></text>
+<line x1="858" y1="3852" x2="858" y2="3871" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3875" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3875" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="718" y="3895" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">calendar_manager · calendar_events ·</tspan><tspan x="718" dy="17">_attendees · _reminders</tspan></text>
+<line x1="858" y1="3926" x2="858" y2="3945" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="708" y="3949" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="708" y="3949" width="4" height="48" rx="2" fill="#b45309"/>
+<text x="718" y="3969" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="718" dy="0">acoes da linha: RowActionButton +</tspan><tspan x="718" dy="17">list_actions</tspan></text>
+<rect x="1020" y="3297" width="324" height="890" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="1032" y="3309" width="300" height="48" rx="6" fill="#6d28d9"/>
+<text x="1042" y="3329" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="1042" dy="0">Fluxo D — Anexo do evento e ciclo do</tspan><tspan x="1042" dy="17">convite</tspan></text>
+<rect x="1032" y="3373" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3373" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3393" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">AttachmentsModal -&gt; uploadManagerUpload</tspan><tspan x="1042" dy="17">(multipart)</tspan></text>
+<line x1="1182" y1="3424" x2="1182" y2="3443" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3447" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3447" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3467" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">POST /api/v1/upload-manager (module</tspan><tspan x="1042" dy="17">calendar_events)</tspan></text>
+<line x1="1182" y1="3498" x2="1182" y2="3517" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3521" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3521" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3541" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">uploads +</tspan><tspan x="1042" dy="17">writable/uploads/calendar_events/&lt;evento&gt;/</tspan></text>
+<line x1="1182" y1="3572" x2="1182" y2="3591" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3595" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3595" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3615" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">calendarEventAttachmentsTable.create</tspan></text>
+<line x1="1182" y1="3628" x2="1182" y2="3647" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3651" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3651" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3671" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">POST</tspan><tspan x="1042" dy="17">/api/v1/calendar-event-attachments/create</tspan></text>
+<line x1="1182" y1="3702" x2="1182" y2="3721" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3725" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3725" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3745" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">calendar_event_attachments</tspan></text>
+<line x1="1182" y1="3758" x2="1182" y2="3777" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3781" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3781" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3801" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">AttendeesModal -&gt;</tspan><tspan x="1042" dy="17">calendarEventInvitesTable.create</tspan></text>
+<line x1="1182" y1="3832" x2="1182" y2="3851" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3855" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3855" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3875" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">POST</tspan><tspan x="1042" dy="17">/api/v1/calendar-event-invites/create (e-mail com token)</tspan></text>
+<line x1="1182" y1="3906" x2="1182" y2="3925" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3929" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3929" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1042" y="3949" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">calendar_event_invites</tspan></text>
+<line x1="1182" y1="3962" x2="1182" y2="3981" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="3985" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="3985" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="4005" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">respondToEvent -&gt; POST</tspan><tspan x="1042" dy="17">/api/v1/calendar-event-attendees/respond</tspan></text>
+<line x1="1182" y1="4036" x2="1182" y2="4055" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="4059" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="4059" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1042" y="4079" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">calendar_event_attendees.response_status</tspan></text>
+<line x1="1182" y1="4092" x2="1182" y2="4111" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1032" y="4115" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1032" y="4115" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1042" y="4135" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1042" dy="0">/v1/convite/aceitar -&gt;</tspan><tspan x="1042" dy="17">calendar-event-invites/accept-token (publica)</tspan></text>
+<rect x="1344" y="3297" width="324" height="556" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="1356" y="3309" width="300" height="48" rx="6" fill="#6d28d9"/>
+<text x="1366" y="3329" font-size="11.5" fill="#ffffff" font-weight="700"><tspan x="1366" dy="0">Fluxo E — Bloco de agenda (proximos</tspan><tspan x="1366" dy="17">eventos)</tspan></text>
+<rect x="1356" y="3373" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3373" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3393" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">AgendaViewer.tsx</tspan></text>
+<line x1="1506" y1="3406" x2="1506" y2="3425" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3429" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3429" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3449" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">select de agenda: CALENDAR_SELECT_SRC</tspan><tspan x="1366" dy="17">(get-all?limit=1000)</tspan></text>
+<line x1="1506" y1="3480" x2="1506" y2="3499" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3503" width="300" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3503" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3523" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">CALENDAR_FIND_SRC (find por summary)</tspan></text>
+<line x1="1506" y1="3536" x2="1506" y2="3555" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3559" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3559" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3579" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">GET /api/v1/calendar-manager/get-all ·</tspan><tspan x="1366" dy="17">/find</tspan></text>
+<line x1="1506" y1="3610" x2="1506" y2="3629" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3633" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3633" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3653" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">MonthCalendar · YearCalendar</tspan><tspan x="1366" dy="17">(components/ui)</tspan></text>
+<line x1="1506" y1="3684" x2="1506" y2="3703" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3707" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3707" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3727" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">helpers.ts: eventsInRange · formatIsoBr</tspan><tspan x="1366" dy="17">· monthLabel</tspan></text>
+<line x1="1506" y1="3758" x2="1506" y2="3777" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1356" y="3781" width="300" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1356" y="3781" width="4" height="48" rx="2" fill="#6d28d9"/>
+<text x="1366" y="3801" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="1366" dy="0">cards de "Proximos eventos" (ordenacao</tspan><tspan x="1366" dy="17">crescente)</tspan></text>
+<text x="40" y="4207" font-size="11.5" fill="#475569">Arquivo autocontido (sem CDN, sem build). Mesmo conteudo em README_diagrama_calendar_manager.drawio, para edicao no draw.io.</text>
+</svg>

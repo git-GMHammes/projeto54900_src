@@ -237,16 +237,26 @@ $routes->group('api/v1', static function ($routes) {
 
     // =========================================================================
     // /ChatRooms — Modulo ChatRooms: chat_rooms_manager (a sala, dono =
-    //              moderador). Backend construido so para esta tabela
-    //              (2026-09-28) — as outras 6 tabelas do modulo
-    //              (chat_room_members, chat_messages, chat_room_attachments,
-    //              chat_room_attachment_reports, chat_room_warnings,
-    //              chat_room_favorites) ainda nao tem Controller/Processor/
-    //              Model/Request, so o schema (ver README_modulo_chatrooms.md).
-    //              NAO ha rota publica: todo o modulo exige 'jwtauth' por
-    //              wildcard em Config/Filters.php; as 3 rotas de exclusao
-    //              definitiva somam 'adminonly' na propria rota. Mesmo espelho
-    //              de TimelineManager.
+    //              moderador), chat_messages (mensagem da sala),
+    //              chat_room_attachments (anexo da mensagem),
+    //              chat_room_attachment_reports (denuncia de anexo, acao
+    //              imediata — README §4.6), chat_room_warnings (advertencia
+    //              de palavrao, modulo inteiro adminonly — README §4.5) e
+    //              chat_room_favorites (sala favorita, toggle idempotente —
+    //              README §2.7/§4.10). Backend construido para estas 6
+    //              tabelas (2026-09-28 e 2026-09-29) — chat_room_members
+    //              ainda nao tem Controller/Processor/Model/Request
+    //              completos, so o schema (ver README_modulo_chatrooms.md) e
+    //              um Model interno minimo, usado pelo Processor de
+    //              ChatRoomAttachmentReports. NAO ha rota publica: todo o
+    //              modulo exige 'jwtauth' por wildcard em Config/Filters.php;
+    //              chat-room-attachment-reports(-view) somam 'adminonly' em
+    //              quase tudo (fila de moderacao, so 'create' e livre);
+    //              chat-room-warnings(-view) somam 'adminonly' em TODAS as
+    //              rotas (nao ha "autor" de uma advertencia); as demais rotas
+    //              de exclusao definitiva dos outros recursos somam
+    //              'adminonly' na propria rota. Mesmo espelho de
+    //              TimelineManager/TimelinePostReactions/TimelinePostReports.
     // =========================================================================
 
     $routes->group('chat-rooms-manager', static function ($routes) {
@@ -255,6 +265,47 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('chat-rooms-manager-view', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndPointView.php';
+    });
+
+    $routes->group('chat-messages', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatMessages/EndpointTable.php';
+    });
+
+    $routes->group('chat-messages-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatMessages/EndPointView.php';
+    });
+
+    $routes->group('chat-room-attachments', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndpointUpload.php';
+    });
+
+    $routes->group('chat-room-attachments-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomAttachments/EndPointView.php';
+    });
+
+    $routes->group('chat-room-attachment-reports', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomAttachmentReports/EndpointTable.php';
+    });
+
+    $routes->group('chat-room-attachment-reports-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomAttachmentReports/EndPointView.php';
+    });
+
+    $routes->group('chat-room-warnings', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomWarnings/EndpointTable.php';
+    });
+
+    $routes->group('chat-room-warnings-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomWarnings/EndPointView.php';
+    });
+
+    $routes->group('chat-room-favorites', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndpointTable.php';
+    });
+
+    $routes->group('chat-room-favorites-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndPointView.php';
     });
 
     // =========================================================================

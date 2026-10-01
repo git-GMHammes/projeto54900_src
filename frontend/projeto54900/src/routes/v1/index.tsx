@@ -76,6 +76,7 @@ import { menuRoutes } from './menu.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
 import { timelineRoutes } from './timeline.routes';
+import { chatRoomsRoutes } from './chat-rooms.routes';
 
 /**
  * =========================================================================
@@ -127,6 +128,7 @@ export const v1Routes: RouteObject = {
         ...calendarRoutes,
         ...svgMapRoutes,
         ...timelineRoutes,
+        ...chatRoomsRoutes,
       ],
     },
   ],

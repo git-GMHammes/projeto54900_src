@@ -16,6 +16,19 @@ histórico de commits): 6 tabelas/recursos — `calendar_manager`, `calendar_eve
 REST completo (108 rotas, `Api\V1\Calendar\*` no backend). Frontend ainda no
 começo.
 
+## Diagrama de camadas da tela
+
+Mapa visual do caminho completo da requisição que constrói a listagem
+administrativa `/v1/calendar-manager` — do boot do SPA até a view
+`view_calendar_manager`, com as camadas do backend e os cinco fluxos (listagem,
+definições que vêm do banco, escrita, anexo/convite e agenda). O método e o
+prompt para gerar os próximos diagramas ficam em
+[`app/markdown/diagramas/README.md`](../../../../../../../app/markdown/diagramas/README.md).
+
+![Diagrama de camadas da tela /v1/calendar-manager](../../../../../../../app/markdown/diagramas/README_diagrama_calendar_manager.svg)
+
+*O preview reduz a imagem para a largura da janela — [abrir o SVG em tamanho real](../../../../../../../app/markdown/diagramas/README_diagrama_calendar_manager.svg).*
+
 ## ⚠️ Estado atual — só visualização, ainda NÃO existe um calendário construído
 
 A página [`/v1/form/calendario`](http://localhost:54910/v1/form/calendario)

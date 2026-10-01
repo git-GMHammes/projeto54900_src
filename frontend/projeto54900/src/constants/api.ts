@@ -63,6 +63,10 @@ export const API_GROUPS = {
   timelinePostReactions: 'timeline-post-reactions',
   timelinePostRatings: 'timeline-post-ratings',
   timelinePostAttachments: 'timeline-post-attachments',
+  chatRoomsManager: 'chat-rooms-manager',
+  chatRoomsManagerView: 'chat-rooms-manager-view',
+  chatMessages: 'chat-messages',
+  chatMessagesView: 'chat-messages-view',
   dbSchema: 'db-schema',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];
