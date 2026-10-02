@@ -29,7 +29,7 @@ somente na seção 8, como exemplo, e podem ser trocados sem tocar no resto.
 
 Onde publicar:
 
-- os artefatos, nesta pasta (`src/app/markdown/diagramas/`);
+- os artefatos, nesta pasta (`src/app/markdown/geral/diagramas/`);
 - no markdown do módulo da tela, embutir a imagem com caminho **relativo** e, ao
   lado, um link para abrir em tamanho real (o preview reduz o SVG para a largura
   da janela);
@@ -138,15 +138,15 @@ gráfico correspondente, no mesmo padrão dos exemplos publicados.
   "nome": "diagrama-vetorial-de-tela",
   "versao": "1.1",
   "criado_em": "2026-09-29",
-  "quando_usar": "Sempre que eu pedir o diagrama de camadas/fluxo de uma tela, no padrao da pasta src/app/markdown/diagramas.",
-  "template_de_pedido": "Gere o diagrama vetorial da tela <URL_DA_TELA> seguindo o metodo de src/app/markdown/diagramas/README.md e executando o prompt JSON da secao 7.",
+  "quando_usar": "Sempre que eu pedir o diagrama de camadas/fluxo de uma tela, no padrao da pasta src/app/markdown/geral/diagramas.",
+  "template_de_pedido": "Gere o diagrama vetorial da tela <URL_DA_TELA> seguindo o metodo de src/app/markdown/geral/diagramas/README.md e executando o prompt JSON da secao 7.",
   "prompt": {
     "papel": "Engenheiro de software que documenta arquitetura em diagrama vetorial legivel, sem inventar nada.",
-    "tarefa": "Levantar no codigo-fonte TODAS as camadas e subcamadas da requisicao que constroi a tela <URL_DA_TELA> e entregar um diagrama vetorial no padrao da pasta src/app/markdown/diagramas.",
+    "tarefa": "Levantar no codigo-fonte TODAS as camadas e subcamadas da requisicao que constroi a tela <URL_DA_TELA> e entregar um diagrama vetorial no padrao da pasta src/app/markdown/geral/diagramas.",
     "entradas": {
       "tela": "<URL_DA_TELA, ex.: http://localhost:54910/v1/<grupo>/<recurso>>",
       "repositorio": "c:\\laragon\\www\\js\\habilidade\\projeto54900",
-      "pasta_de_saida": "src/app/markdown/diagramas",
+      "pasta_de_saida": "src/app/markdown/geral/diagramas",
       "documentacao_de_apoio": [
         "src/app/markdown/geral/**",
         "src/frontend/projeto54900/src/markdown/geral/**"
@@ -214,14 +214,19 @@ Não fazem parte do método: são o padrão de acabamento a repetir. Cada linha 
 conjunto independente — trocar por outra tela não exige mexer em nenhuma seção
 acima.
 
-| Tela                       | SVG (visualizar)                                                                   | drawio (editar)                                                                          |
-| -------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `/v1/timeline` (Home Feed) | [`README_diagrama_timeline_home_feed.svg`](README_diagrama_timeline_home_feed.svg) | [`README_diagrama_timeline_home_feed.drawio`](README_diagrama_timeline_home_feed.drawio) |
-| `/v1/calendar-manager`     | [`README_diagrama_calendar_manager.svg`](README_diagrama_calendar_manager.svg)     | [`README_diagrama_calendar_manager.drawio`](README_diagrama_calendar_manager.drawio)     |
+| Tela                                | SVG (visualizar)                                                                                 | drawio (editar)                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `/v1/timeline` (Home Feed)          | [`README_diagrama_timeline_home_feed.svg`](README_diagrama_timeline_home_feed.svg)               | [`README_diagrama_timeline_home_feed.drawio`](README_diagrama_timeline_home_feed.drawio)           |
+| `/v1/calendar-manager`              | [`README_diagrama_calendar_manager.svg`](README_diagrama_calendar_manager.svg)                   | [`README_diagrama_calendar_manager.drawio`](README_diagrama_calendar_manager.drawio)               |
+| `/v1/chat-rooms-manager/create`     | [`README_diagrama_chat_rooms_manager_create.svg`](README_diagrama_chat_rooms_manager_create.svg) | [`README_diagrama_chat_rooms_manager_create.drawio`](README_diagrama_chat_rooms_manager_create.drawio) |
 
 ![Diagrama de camadas da tela /v1/timeline - Home Feed](README_diagrama_timeline_home_feed.svg)
 
 *14 camadas, faixa de fronteira HTTP e 4 raias de fluxo. O preview reduz a imagem para a largura da janela — [abrir o SVG em tamanho real](README_diagrama_timeline_home_feed.svg).*
+
+![Diagrama de camadas da tela /v1/chat-rooms-manager/create - Nova Sala de Chat](README_diagrama_chat_rooms_manager_create.svg)
+
+*13 camadas, faixa de fronteira HTTP e 4 raias de fluxo. O preview reduz a imagem para a largura da janela — [abrir o SVG em tamanho real](README_diagrama_chat_rooms_manager_create.svg).*
 
 [◄ Índice da base de conhecimento](../README.md)
 

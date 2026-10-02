@@ -1,5 +1,5 @@
 -- -----------------------------------------------------------------------------
--- Views do banco codeigniter54900_db — dump formatado em 2026-10-10.
+-- Views do banco codeigniter54900_db — dump formatado em 2026-10-01.
 -- Fonte: definição real de cada view no banco, nesta data.
 -- Ordem: view_calendar_manager, view_chat_messages,
 -- view_chat_room_attachment_reports, view_chat_room_attachments,

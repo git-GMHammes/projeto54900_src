@@ -5,24 +5,24 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * Popula TODAS as tabelas com o estado de dados de 2026-10-10, 16:58 a
- * partir de um dump SQL puro (202610101658_seed_table.sql — export
+ * Popula TODAS as tabelas com o estado de dados de 2026-10-02, 16:25 a
+ * partir de um dump SQL puro (202610021625_seed_table.sql — export
  * completo, DELETE + INSERT, uma tupla por linha).
  *
  * Mesmo padrao de 2026-09-28-161800_SeedTable20260928.php: le o .sql
  * (mesmo diretorio) e executa statement por statement via
- * $this->db->query(), sem Forge/Model. Depende do ReplaceTable20261010 (as
- * tabelas precisam existir antes). Timestamp da classe (16:58) um minuto
- * apos o ReplaceTable20261010 (16:57), preservando a ordem de execucao do
+ * $this->db->query(), sem Forge/Model. Depende do ReplaceTable20261002 (as
+ * tabelas precisam existir antes). Timestamp da classe (16:25) um minuto
+ * apos o ReplaceTable20261002 (16:24), preservando a ordem de execucao do
  * REMAKE.
  *
  * down() nao tem reversao generica — fica vazio de proposito.
  */
-class SeedTable20261010 extends Migration
+class SeedTable20261002 extends Migration
 {
     public function up()
     {
-        $this->executeSqlFile(__DIR__ . '/202610101658_seed_table.sql');
+        $this->executeSqlFile(__DIR__ . '/202610021625_seed_table.sql');
     }
 
     public function down()

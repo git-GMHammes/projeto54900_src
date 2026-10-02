@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="4223" viewBox="0 0 1680 4223" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/></marker><marker id="arwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>
+<rect x="0" y="0" width="1680" height="4223" fill="#f8fafc"/>
+<text x="40" y="56" font-size="22" fill="#0f172a" font-weight="700">Diagrama de camadas — tela /v1/chat-rooms-manager/create (Nova Sala de Chat)</text>
+<text x="40" y="84" font-size="13" fill="#475569">Caminho completo da requisicao que constroi a tela: navegador -&gt; SPA React (Vite) -&gt; services -&gt; API CodeIgniter 5 -&gt; Processor -&gt; Model -&gt; banco codeigniter54900_db.</text>
+<text x="40" y="104" font-size="13" fill="#475569">Fontes: codigo-fonte do workspace e src/app/markdown/geral/README_modulo_chatrooms.md. Caminhos do frontend relativos a src/frontend/projeto54900/; do backend relativos a src/.</text>
+<rect x="40" y="138" width="14" height="14" rx="3" fill="#1d4ed8"/>
+<text x="62" y="150" font-size="12.5" fill="#475569">Boot / entrada do SPA</text>
+<rect x="450" y="138" width="14" height="14" rx="3" fill="#4338ca"/>
+<text x="472" y="150" font-size="12.5" fill="#475569">Rotas e pagina</text>
+<rect x="860" y="138" width="14" height="14" rx="3" fill="#0f766e"/>
+<text x="882" y="150" font-size="12.5" fill="#475569">Componentes da tela e UI global</text>
+<rect x="1270" y="138" width="14" height="14" rx="3" fill="#6d28d9"/>
+<text x="1292" y="150" font-size="12.5" fill="#475569">Hooks, contexto e utilitarios</text>
+<rect x="40" y="164" width="14" height="14" rx="3" fill="#b45309"/>
+<text x="62" y="176" font-size="12.5" fill="#475569">Services (fronteira HTTP)</text>
+<rect x="450" y="164" width="14" height="14" rx="3" fill="#15803d"/>
+<text x="472" y="176" font-size="12.5" fill="#475569">Backend PHP</text>
+<rect x="860" y="164" width="14" height="14" rx="3" fill="#7e22ce"/>
+<text x="882" y="176" font-size="12.5" fill="#475569">Banco de dados e arquivos</text>
+<text x="40" y="232" font-size="14" fill="#334155" font-weight="700">1. CAMADAS E SUBCAMADAS — ARQUIVOS POR CAMADA</text>
+<rect x="40" y="266" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="288" font-size="12" fill="#1e293b" font-weight="700">FRONTEND — SPA React + Vite (src/frontend/projeto54900)</text>
+<line x1="955" y1="304" x2="955" y2="336" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<rect x="40" y="340" width="210" height="136" rx="8" fill="#1d4ed8"/>
+<text x="145" y="412.5" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">0. Boot do SPA</text>
+<rect x="270" y="340" width="1370" height="136" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="340" width="6" height="136" rx="3" fill="#1d4ed8"/>
+<rect x="282" y="352" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="372" font-size="10.5" fill="#475569" font-weight="700">carregamento e montagem</text>
+<text x="292" y="392" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">index.html  ·  src/main.tsx  ·  src/bootstrap.ts  ·  src/App.tsx  ·  src/styles/_custom.scss</text>
+<rect x="282" y="412" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="432" font-size="10.5" fill="#475569" font-weight="700">providers globais e Suspense</text>
+<text x="292" y="452" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/context/AppConfigContext.tsx  ·  src/context/AuthContext.tsx  ·  src/context/ToastContext.tsx</text>
+<line x1="955" y1="480" x2="955" y2="512" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="502" font-size="11.5" fill="#475569">monta o App e o roteador</text>
+<rect x="40" y="516" width="210" height="213" rx="8" fill="#4338ca"/>
+<text x="145" y="627" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">1. Rotas e layout</text>
+<rect x="270" y="516" width="1370" height="213" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="516" width="6" height="213" rx="3" fill="#4338ca"/>
+<rect x="282" y="528" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="548" font-size="10.5" fill="#475569" font-weight="700">agregador de rotas</text>
+<text x="292" y="568" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/routes/index.tsx  ·  src/routes/v1/index.tsx  ·  src/routes/v1/chat-rooms.routes.tsx  ·  src/routes/paths.ts</text>
+<rect x="282" y="588" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="608" font-size="10.5" fill="#475569" font-weight="700">guarda de sessao e layout</text>
+<text x="292" y="628" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/routes/RequireAuth.tsx  ·  src/layouts/RootLayout.tsx  ·  src/components/layout/Navbar.tsx</text>
+<text x="292" y="645" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</text>
+<rect x="282" y="665" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="685" font-size="10.5" fill="#475569" font-weight="700">item de menu da tela (vem do banco)</text>
+<text x="292" y="705" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/hooks/useSiteMenu.ts  ·  menu_manager  -&gt;  item &quot;ChatRoomsManager&quot; = /v1/chat-rooms-manager</text>
+<line x1="955" y1="733" x2="955" y2="765" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="755" font-size="11.5" fill="#475569">importa a pagina por lazy import</text>
+<rect x="40" y="769" width="210" height="247" rx="8" fill="#4338ca"/>
+<text x="145" y="897" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">2. Pagina</text>
+<rect x="270" y="769" width="1370" height="247" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="769" width="6" height="247" rx="3" fill="#4338ca"/>
+<rect x="282" y="781" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="801" font-size="10.5" fill="#475569" font-weight="700">pagina de criacao da sala (rota chat-rooms-manager/create)</text>
+<text x="292" y="821" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/pages/v1/chat-rooms/chat-rooms-manager/CreatePage.tsx</text>
+<rect x="282" y="841" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="861" font-size="10.5" fill="#475569" font-weight="700">origem e destino</text>
+<text x="292" y="881" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">origem: GetAllPage.tsx (Link &quot;Nova sala de chat&quot;)  -&gt;  paths.v1.chatRooms.create</text>
+<text x="292" y="898" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">destino apos criar: navigate(paths.v1.chatRooms.list)</text>
+<rect x="282" y="918" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="938" font-size="10.5" fill="#475569" font-weight="700">responsabilidades do arquivo</text>
+<text x="292" y="958" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">SLUG = 'criar-sala-chat'  ·  load() via formManagerView.getGrouped  ·  buildRenderSchema -&gt; FormGrid</text>
+<text x="292" y="975" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">withAcceptanceTracking injeta onChange no campo moderation_accepted</text>
+<text x="292" y="992" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">loadTerms() busca o Termo e parseTermsBody() o converte em prosa no card</text>
+<line x1="955" y1="1020" x2="955" y2="1052" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="1042" font-size="11.5" fill="#475569">renderiza o card do Termo e o FormGrid</text>
+<rect x="40" y="1056" width="210" height="213" rx="8" fill="#0f766e"/>
+<text x="145" y="1167" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">3. Componentes e UI</text>
+<rect x="270" y="1056" width="1370" height="213" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1056" width="6" height="213" rx="3" fill="#0f766e"/>
+<rect x="282" y="1068" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1088" font-size="10.5" fill="#475569" font-weight="700">src/components/ui/FormGrid/</text>
+<text x="292" y="1108" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">Input/index.tsx (FormGrid)  ·  textarea/index.tsx  ·  checkbox/index.tsx (moderation_accepted)</text>
+<rect x="282" y="1128" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1148" font-size="10.5" fill="#475569" font-weight="700">src/components/global/</text>
+<text x="292" y="1168" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">PageHeader.tsx  ·  EmptyState.tsx  ·  LoadingOverlay.tsx  ·  ToastStack.tsx</text>
+<rect x="282" y="1188" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1208" font-size="10.5" fill="#475569" font-weight="700">estrutura do render</text>
+<text x="292" y="1228" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">card do Termo (prosa + checkbox no rodape)  ·  bloco &quot;Dados da Sala&quot; (FormGrid)  ·  botao Criar</text>
+<text x="292" y="1245" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">botao Criar desabilitado ate o aceite (disabled={submitting || !accepted})</text>
+<line x1="955" y1="1273" x2="955" y2="1305" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="1295" font-size="11.5" fill="#475569">usa hooks, contexto e utilitarios</text>
+<rect x="40" y="1309" width="210" height="196" rx="8" fill="#6d28d9"/>
+<text x="145" y="1411.5" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">4. Hooks e utils</text>
+<rect x="270" y="1309" width="1370" height="196" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1309" width="6" height="196" rx="3" fill="#6d28d9"/>
+<rect x="282" y="1321" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1341" font-size="10.5" fill="#475569" font-weight="700">src/hooks/ e src/context/</text>
+<text x="292" y="1361" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">useToast.ts  ·  context/ToastContext.tsx  ·  context/AuthContext.tsx (access_token em memoria)</text>
+<rect x="282" y="1381" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1401" font-size="10.5" fill="#475569" font-weight="700">src/utils/ e src/services/</text>
+<text x="292" y="1421" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">utils/formSubmit.ts  ·  utils/apiResult.ts  ·  services/formSchema.ts (buildRenderSchema)</text>
+<rect x="282" y="1441" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1461" font-size="10.5" fill="#475569" font-weight="700">configuracao</text>
+<text x="292" y="1481" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/config/env.ts (basePath, apiBaseUrl)  ·  src/constants/api.ts (API_GROUPS, RESOURCE_ENDPOINTS)</text>
+<line x1="955" y1="1509" x2="955" y2="1541" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="1531" font-size="11.5" fill="#475569">chama os services da v1</text>
+<rect x="40" y="1545" width="210" height="170" rx="8" fill="#b45309"/>
+<text x="145" y="1634.5" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">5. Services HTTP</text>
+<rect x="270" y="1545" width="1370" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1545" width="6" height="170" rx="3" fill="#b45309"/>
+<rect x="282" y="1557" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1577" font-size="10.5" fill="#475569" font-weight="700">transporte</text>
+<text x="292" y="1597" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/services/http.ts  ·  src/services/resourceFactory.ts  ·  src/constants/api.ts  ·  src/config/env.ts</text>
+<rect x="282" y="1617" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1637" font-size="10.5" fill="#475569" font-weight="700">recursos consumidos por esta tela</text>
+<text x="292" y="1657" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/services/v1/index.ts (barrel)  ·  src/services/v1/formManager.view.ts  -&gt;  formManagerView.getGrouped</text>
+<text x="292" y="1674" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">http.ts prefixa env.apiBaseUrl (&quot;/api&quot;) e envia Authorization: Bearer &lt;jwt&gt; quando ha sessao</text>
+<text x="292" y="1691" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/services/v1/chatRoomsManager.table.ts existe, mas NAO e usado aqui: o submit sai do submit_endpoint do build</text>
+<line x1="955" y1="1719" x2="955" y2="1751" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="1741" font-size="11.5" fill="#475569">requisicao HTTP</text>
+<rect x="40" y="1755" width="1600" height="58" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+<text x="840" y="1779" font-size="12.5" fill="#7c2d12" font-weight="700" text-anchor="middle">POST /api/v1/form-manager-view/get-grouped  —  publico, sem Authorization  (definicao do formulario)</text>
+<text x="840" y="1799" font-size="12.5" fill="#7c2d12" font-weight="700" text-anchor="middle">GET /legal/termo-moderador.txt  —  asset estatico do SPA   ·   POST /api/v1/chat-rooms-manager/create  —  Authorization: Bearer &lt;jwt&gt;</text>
+<line x1="955" y1="1817" x2="955" y2="1849" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<rect x="40" y="1853" width="1600" height="34" rx="6" fill="#e2e8f0"/>
+<text x="52" y="1875" font-size="12" fill="#1e293b" font-weight="700">BACKEND — API CodeIgniter 5 (src/app)</text>
+<line x1="955" y1="1891" x2="955" y2="1923" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<rect x="40" y="1927" width="210" height="76" rx="8" fill="#15803d"/>
+<text x="145" y="1969.5" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">6. Entrada HTTP</text>
+<rect x="270" y="1927" width="1370" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="1927" width="6" height="76" rx="3" fill="#15803d"/>
+<rect x="282" y="1939" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="1959" font-size="10.5" fill="#475569" font-weight="700">bootstrap do framework</text>
+<text x="292" y="1979" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">public/index.php  ·  system/Boot.php  ·  app/Config/Routes.php  ·  app/Config/Database.php</text>
+<line x1="955" y1="2007" x2="955" y2="2039" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2029" font-size="11.5" fill="#475569">casa o grupo e roda o filtro</text>
+<rect x="40" y="2043" width="210" height="230" rx="8" fill="#15803d"/>
+<text x="145" y="2162.5" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">7. Rotas + filtro</text>
+<rect x="270" y="2043" width="1370" height="230" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2043" width="6" height="230" rx="3" fill="#15803d"/>
+<rect x="282" y="2055" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2075" font-size="10.5" fill="#475569" font-weight="700">grupos do modulo (app/Config/Routes.php)</text>
+<text x="292" y="2095" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">api/v1/chat-rooms-manager  ·  api/v1/chat-rooms-manager-view  ·  api/v1/form-manager-view  ·  api/v1/form-manager</text>
+<text x="292" y="2112" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">api/v1/nav-manager  ·  api/v1/menu-manager  ·  api/v1/route-manager  ·  api/v1/user-roles</text>
+<rect x="282" y="2132" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2152" font-size="10.5" fill="#475569" font-weight="700">app/Config/Routes/Api/v1/...</text>
+<text x="292" y="2172" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ChatRooms/ChatRoomsManager/EndpointTable.php (18 rotas)  ·  Form/FormManager/EndPointView.php (9 rotas)</text>
+<rect x="282" y="2192" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2212" font-size="10.5" fill="#475569" font-weight="700">seguranca e registro das rotas</text>
+<text x="292" y="2232" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">app/Config/Filters.php  —  jwtauth por wildcard em api/v1/chat-rooms-manager/*  ·  form-manager-view/* e PUBLICO</text>
+<text x="292" y="2249" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">app/Filters/JwtAuthFilter.php  ·  app/Libraries/Auth/CurrentUser.php  ·  route_manager</text>
+<line x1="955" y1="2277" x2="955" y2="2309" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2299" font-size="11.5" fill="#475569">encaminha para o controller</text>
+<rect x="40" y="2313" width="210" height="153" rx="8" fill="#15803d"/>
+<text x="145" y="2394" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">8. Controller</text>
+<rect x="270" y="2313" width="1370" height="153" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2313" width="6" height="153" rx="3" fill="#15803d"/>
+<rect x="282" y="2325" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2345" font-size="10.5" fill="#475569" font-weight="700">app/Controllers/Api/V1/ChatRooms/ChatRoomsManager/</text>
+<text x="292" y="2365" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ResourceTableController.php  —  create() herdado de BaseResourceTableController</text>
+<text x="292" y="2382" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">initController() registra o Processor  ·  getCreateRules() -&gt; CreateRequest</text>
+<rect x="282" y="2402" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2422" font-size="10.5" fill="#475569" font-weight="700">app/Controllers/Api/V1/Form/FormManager/</text>
+<text x="292" y="2442" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ResourceViewController.php  —  getGrouped()  ·  BaseResourceViewController.php  ·  BaseController.php</text>
+<line x1="955" y1="2470" x2="955" y2="2502" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2492" font-size="11.5" fill="#475569">valida o payload</text>
+<rect x="40" y="2506" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="145" y="2557" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">9. Request</text>
+<rect x="270" y="2506" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2506" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2518" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2538" font-size="10.5" fill="#475569" font-weight="700">app/Requests/V1/ChatRooms/ChatRoomsManager/</text>
+<text x="292" y="2558" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">CreateRequest.php  —  name required|string|max_length[150]  ·  description permit_empty|string</text>
+<text x="292" y="2575" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">moderation_accepted required|in_list[1]  ·  owner_user_manager_id e preenchido pelo Processor</text>
+<line x1="955" y1="2603" x2="955" y2="2635" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2625" font-size="11.5" fill="#475569">aplica a regra de negocio</text>
+<rect x="40" y="2639" width="210" height="187" rx="8" fill="#15803d"/>
+<text x="145" y="2737" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">10. Processor</text>
+<rect x="270" y="2639" width="1370" height="187" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2639" width="6" height="187" rx="3" fill="#15803d"/>
+<rect x="282" y="2651" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2671" font-size="10.5" fill="#475569" font-weight="700">app/Services/V1/</text>
+<text x="292" y="2691" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">BaseTableService.php (sanitizeData, validateOnCreate, insert)  ·  BaseViewService.php</text>
+<text x="292" y="2708" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ChatRooms/ChatRoomsManager/Processor.php  ·  Form/FormManager/Processor.php</text>
+<rect x="282" y="2728" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2748" font-size="10.5" fill="#475569" font-weight="700">regras do create (Processor)</text>
+<text x="292" y="2768" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">guest -&gt; 403 forbidden  ·  owner_user_manager_id = CurrentUser::id() (corpo ignorado)</text>
+<text x="292" y="2785" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">moderation_accepted = 1  ·  moderation_accepted_at = agora (hora do servidor)</text>
+<text x="292" y="2802" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">unset(status, closed_at, closed_reason)  —  a sala sempre nasce &quot;open&quot;</text>
+<line x1="955" y1="2830" x2="955" y2="2862" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2852" font-size="11.5" fill="#475569">monta e executa o SQL</text>
+<rect x="40" y="2866" width="210" height="93" rx="8" fill="#15803d"/>
+<text x="145" y="2917" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">11. Model</text>
+<rect x="270" y="2866" width="1370" height="93" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2866" width="6" height="93" rx="3" fill="#15803d"/>
+<rect x="282" y="2878" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="2898" font-size="10.5" fill="#475569" font-weight="700">app/Models/V1/</text>
+<text x="292" y="2918" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ChatRooms/ChatRoomsManager/SqlTableModel.php (escreve)  ·  SqlViewModel.php (le a view)</text>
+<text x="292" y="2935" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">Form/FormManager/SqlViewModel.php  ·  BaseTableModel.php  ·  BaseViewModel.php  ·  DB_GROUP_001</text>
+<line x1="955" y1="2963" x2="955" y2="2995" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
+<text x="969" y="2985" font-size="11.5" fill="#475569">consulta / persiste</text>
+<rect x="40" y="2999" width="210" height="290" rx="8" fill="#7e22ce"/>
+<text x="145" y="3140" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">12. Banco</text>
+<text x="145" y="3157" font-size="12.5" fill="#ffffff" font-weight="700" text-anchor="middle">codeigniter54900_db</text>
+<rect x="270" y="2999" width="1370" height="290" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+<rect x="270" y="2999" width="6" height="290" rx="3" fill="#7e22ce"/>
+<rect x="282" y="3011" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3031" font-size="10.5" fill="#475569" font-weight="700">views</text>
+<text x="292" y="3051" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">view_chat_rooms_manager (sala + dono + contadores)</text>
+<text x="292" y="3068" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">view_form_manager (achata form_manager -&gt; form_groups -&gt; form_rows -&gt; form_fields, 1 linha por campo)</text>
+<rect x="282" y="3088" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3108" font-size="10.5" fill="#475569" font-weight="700">tabelas do modulo</text>
+<text x="292" y="3128" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">chat_rooms_manager  ·  chat_room_members  ·  chat_messages  ·  chat_room_attachments  ·  chat_room_warnings  ·  chat_room_favorites</text>
+<rect x="282" y="3148" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3168" font-size="10.5" fill="#475569" font-weight="700">tabelas de apoio</text>
+<text x="292" y="3188" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">form_manager  ·  form_groups  ·  form_rows  ·  form_fields  ·  user_manager  ·  user_roles  ·  user_profiles</text>
+<text x="292" y="3205" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">nav_manager  ·  menu_manager  ·  route_manager</text>
+<rect x="282" y="3225" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+<text x="292" y="3245" font-size="10.5" fill="#475569" font-weight="700">arquivos em disco</text>
+<text x="292" y="3265" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/frontend/projeto54900/public/legal/termo-moderador.txt</text>
+<text x="40" y="3345" font-size="14" fill="#334155" font-weight="700">2. FLUXOS DA TELA (CADA PASSO COM A SETA PARA O PROXIMO)</text>
+<rect x="68" y="3379" width="374" height="504" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="80" y="3391" width="350" height="30" rx="6" fill="#1d4ed8"/>
+<text x="90" y="3411" font-size="11.5" fill="#ffffff" font-weight="700">Fluxo A — Formulario publicado</text>
+<rect x="80" y="3437" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3437" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3457" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">CreatePage.useEffect(load)</text>
+<line x1="255" y1="3470" x2="255" y2="3489" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3493" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3493" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">formManagerView.getGrouped</text>
+<line x1="255" y1="3526" x2="255" y2="3545" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3549" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3549" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3569" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">POST form-manager-view/get-grouped</text>
+<line x1="255" y1="3582" x2="255" y2="3601" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3605" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3605" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3625" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ResourceViewController::getGrouped</text>
+<line x1="255" y1="3638" x2="255" y2="3657" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3661" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3661" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3681" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">FormManager Processor -&gt; SqlViewModel</text>
+<line x1="255" y1="3694" x2="255" y2="3713" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3717" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3717" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3737" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">view_form_manager (62 colunas)</text>
+<line x1="255" y1="3750" x2="255" y2="3769" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3773" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3773" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3793" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">buildRenderSchema -&gt; FormGrid</text>
+<line x1="255" y1="3806" x2="255" y2="3825" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="80" y="3829" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="80" y="3829" width="4" height="30" rx="2" fill="#1d4ed8"/>
+<text x="90" y="3849" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">FormGrid: name, description, checkbox</text>
+<rect x="458" y="3379" width="374" height="560" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="470" y="3391" width="350" height="30" rx="6" fill="#0f766e"/>
+<text x="480" y="3411" font-size="11.5" fill="#ffffff" font-weight="700">Fluxo B — Termo e aceite</text>
+<rect x="470" y="3437" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3437" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3457" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">CreatePage.useEffect(loadTerms)</text>
+<line x1="645" y1="3470" x2="645" y2="3489" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3493" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3493" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">fetch(TERMS_URL) - asset do SPA</text>
+<line x1="645" y1="3526" x2="645" y2="3545" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3549" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3549" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3569" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">GET /legal/termo-moderador.txt</text>
+<line x1="645" y1="3582" x2="645" y2="3601" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3605" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3605" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3625" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">parseTermsBody -&gt; blocos de prosa</text>
+<line x1="645" y1="3638" x2="645" y2="3657" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3661" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3661" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3681" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">card Termo de Responsabilidade</text>
+<line x1="645" y1="3694" x2="645" y2="3713" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3717" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3717" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3737" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">CheckboxField moderation_accepted</text>
+<line x1="645" y1="3750" x2="645" y2="3769" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3773" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3773" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3793" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">onChange -&gt; setAccepted(true)</text>
+<line x1="645" y1="3806" x2="645" y2="3825" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3829" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3829" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3849" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">botao Criar habilita (accepted)</text>
+<line x1="645" y1="3862" x2="645" y2="3881" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="470" y="3885" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="470" y="3885" width="4" height="30" rx="2" fill="#0f766e"/>
+<text x="480" y="3905" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">handleSubmit exige accepted</text>
+<rect x="848" y="3379" width="374" height="784" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="860" y="3391" width="350" height="30" rx="6" fill="#b45309"/>
+<text x="870" y="3411" font-size="11.5" fill="#ffffff" font-weight="700">Fluxo C — Criar a sala</text>
+<rect x="860" y="3437" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3437" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3457" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">submit do &lt;form&gt; (CreatePage)</text>
+<line x1="1035" y1="3470" x2="1035" y2="3489" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3493" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3493" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">formDataToPayload(form)</text>
+<line x1="1035" y1="3526" x2="1035" y2="3545" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3549" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3549" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3569" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">senderFor('POST') -&gt; http.post</text>
+<line x1="1035" y1="3582" x2="1035" y2="3601" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3605" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3605" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3625" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">resolveEndpoint(submit_endpoint)</text>
+<line x1="1035" y1="3638" x2="1035" y2="3657" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3661" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3661" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3681" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">POST chat-rooms-manager/create</text>
+<line x1="1035" y1="3694" x2="1035" y2="3713" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3717" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3717" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3737" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">JwtAuthFilter (jwtauth)</text>
+<line x1="1035" y1="3750" x2="1035" y2="3769" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3773" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3773" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3793" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ResourceTableController::create</text>
+<line x1="1035" y1="3806" x2="1035" y2="3825" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3829" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3829" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3849" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">validate(CreateRequest rules)</text>
+<line x1="1035" y1="3862" x2="1035" y2="3881" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3885" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3885" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3905" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">Processor::create + prepareData</text>
+<line x1="1035" y1="3918" x2="1035" y2="3937" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3941" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3941" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="3961" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">BaseTableService::create -&gt; insert</text>
+<line x1="1035" y1="3974" x2="1035" y2="3993" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="3997" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="3997" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="4017" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">chat_rooms_manager (nova linha)</text>
+<line x1="1035" y1="4030" x2="1035" y2="4049" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="4053" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="4053" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="4073" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">respondCreated(row) -&gt; normalizeItem</text>
+<line x1="1035" y1="4086" x2="1035" y2="4105" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="860" y="4109" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="4109" width="4" height="30" rx="2" fill="#b45309"/>
+<text x="870" y="4129" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">toast.success + navigate para a lista</text>
+<rect x="1238" y="3379" width="374" height="392" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+<rect x="1250" y="3391" width="350" height="30" rx="6" fill="#6d28d9"/>
+<text x="1260" y="3411" font-size="11.5" fill="#ffffff" font-weight="700">Fluxo D — Navegacao</text>
+<rect x="1250" y="3437" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3437" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3457" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">Navbar (useSiteMenu)</text>
+<line x1="1425" y1="3470" x2="1425" y2="3489" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3493" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3493" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">menu_manager: /v1/chat-rooms-manager</text>
+<line x1="1425" y1="3526" x2="1425" y2="3545" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3549" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3549" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3569" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">GetAllPage (list-constructor)</text>
+<line x1="1425" y1="3582" x2="1425" y2="3601" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3605" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3605" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3625" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">Link &quot;Nova sala de chat&quot;</text>
+<line x1="1425" y1="3638" x2="1425" y2="3657" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3661" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3661" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3681" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">RequireAuth (sessao ativa)</text>
+<line x1="1425" y1="3694" x2="1425" y2="3713" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
+<rect x="1250" y="3717" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="1250" y="3717" width="4" height="30" rx="2" fill="#6d28d9"/>
+<text x="1260" y="3737" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">CreatePage monta e carrega</text>
+<text x="40" y="4201" font-size="11.5" fill="#475569">Arquivo autocontido (sem CDN, sem build). Mesmo conteudo em README_diagrama_chat_rooms_manager_create.drawio, para edicao no draw.io.</text>
+</svg>

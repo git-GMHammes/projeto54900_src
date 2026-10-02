@@ -123,11 +123,11 @@ imprime em PDF, entra em markdown por imagem) e `.drawio` para editar. O
 layout, validação e o **PROMPT em JSON** para pedir a próxima tela — e não é
 ancorado em nenhum módulo: o módulo aparece apenas como exemplo publicado.
 
-[`diagramas/README.md`](diagramas/README.md) — método e prompt para gerar diagramas vetoriais de qualquer tela.
+[`geral/diagramas/README.md`](geral/diagramas/README.md) — método e prompt para gerar diagramas vetoriais de qualquer tela.
 
-[`diagramas/README_diagrama_timeline_home_feed.svg`](diagramas/README_diagrama_timeline_home_feed.svg) — exemplo publicado do padrão, para visualizar.
+[`geral/diagramas/README_diagrama_timeline_home_feed.svg`](geral/diagramas/README_diagrama_timeline_home_feed.svg) — exemplo publicado do padrão, para visualizar.
 
-[`diagramas/README_diagrama_timeline_home_feed.drawio`](diagramas/README_diagrama_timeline_home_feed.drawio) — o mesmo exemplo, para editar.
+[`geral/diagramas/README_diagrama_timeline_home_feed.drawio`](geral/diagramas/README_diagrama_timeline_home_feed.drawio) — o mesmo exemplo, para editar.
 
 ### `formulario`
 

@@ -19,7 +19,7 @@
  *
  * DEPENDENCIAS: utils/jsonList (parseStringList, usado pelo renderer
  * 'roles-badges'); components/ui/FormGrid/phone/mask (aplicarMascara, usado pelo
- * renderer 'phone').
+ * renderer 'phone'); utils/format (formatBytes, usado pelo renderer 'bytes').
  * CONSUMIDORES: pages/v1/list/ListBuilderPage.tsx (edita as definicoes),
  * pages/v1/list/ListConstructorPage.tsx (consumidor original, renderiza a
  * grid de verdade), pages/v1/form/FormBuilderPage.tsx e
@@ -38,6 +38,7 @@ import type { ReactNode } from 'react';
 import { aplicarMascara } from '@/components/ui/FormGrid/phone/mask';
 
 import { parseStringList } from './jsonList';
+import { formatBytes } from './format';
 
 // -----------------------------------------------------------------------------
 // Tipos + normalizacao das linhas cruas da API
@@ -277,6 +278,8 @@ const CUSTOM_CELL_RENDERERS: Record<
       </>
     );
   },
+  // Tamanho em bytes -> unidade legivel (ex.: 1234567 -> "1,2 MB"); valor vazio/invalido -> cru.
+  bytes: (value) => (value.trim() === '' || Number.isNaN(Number(value)) ? value : formatBytes(value)),
   // Mesma mascara do campo de formulario (FormGrid/phone). So formata 10/11
   // digitos (DDD + numero); fora disso (DDI, fallback) devolve o valor cru.
   phone: (value) => {

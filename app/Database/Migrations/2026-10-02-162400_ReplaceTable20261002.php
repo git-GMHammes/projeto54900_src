@@ -5,14 +5,14 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * Recria TODO o schema do banco a partir do dump SQL puro de 2026-10-10,
- * 16:57 (202610101657_replace_table.sql — DROP TABLE IF EXISTS + CREATE
+ * Recria TODO o schema do banco a partir do dump SQL puro de 2026-10-02,
+ * 16:24 (202610021624_replace_table.sql — DROP TABLE IF EXISTS + CREATE
  * TABLE IF NOT EXISTS das 38 tabelas base do banco DEV).
  *
  * REMAKE com um timestamp por arquivo, um minuto de diferenca entre cada um
- * (1657/1658/1659) — a classe PHP espelha o timestamp do respectivo .sql pra
+ * (1624/1625/1626) — a classe PHP espelha o timestamp do respectivo .sql pra
  * preservar a ordem de execucao (replace_table -> seed_table -> replace_view).
- * Sufixo com a data (20261010) nao colide com nenhuma classe existente.
+ * Sufixo com a data (20261002) nao colide com nenhuma classe existente.
  *
  * O dump nao traz `CREATE DATABASE` / `USE`; o filtro fica como protecao pra
  * migration sempre rodar no banco configurado em Database.php, nao num nome
@@ -21,11 +21,11 @@ use CodeIgniter\Database\Migration;
  * down() nao tem inverso generico pra um DROP+CREATE em bloco -- fica vazio
  * de proposito.
  */
-class ReplaceTable20261010 extends Migration
+class ReplaceTable20261002 extends Migration
 {
     public function up()
     {
-        $this->executeSqlFile(__DIR__ . '/202610101657_replace_table.sql');
+        $this->executeSqlFile(__DIR__ . '/202610021624_replace_table.sql');
     }
 
     public function down()

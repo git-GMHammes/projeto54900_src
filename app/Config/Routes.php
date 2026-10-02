@@ -308,6 +308,14 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndPointView.php';
     });
 
+    $routes->group('chat-room-members', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomMembers/EndpointTable.php';
+    });
+
+    $routes->group('chat-room-members-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomMembers/EndPointView.php';
+    });
+
     // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.

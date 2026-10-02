@@ -31,11 +31,11 @@ por fechar a sala.
 > (2026-09-29):** advertência de palavrão, módulo inteiro (27 rotas)
 > `adminonly` — ver §6. **Backend PHP de `chat_room_favorites` COMPLETO
 > (2026-09-29):** sala favorita, toggle idempotente sem `adminonly` — ver
-> §6. **Todas as 7 tabelas do módulo têm backend, exceto `chat_room_members`**
-> (só o Model interno mínimo usado por `ChatRoomAttachmentReports`). O
-> módulo completo de `chat_room_members`, o dicionário JSON estático de
-> palavrões e a tela React **ainda não existem** — fase seguinte, fora deste
-> desenho.
+> §6. **Backend PHP de `chat_room_members` COMPLETO (2026-10-02):** membros
+> da sala, escrita só do dono da sala/admin, mais a tela React
+> `/v1/chat-room-members` — ver §6.7. **Todas as 7 tabelas do módulo têm
+> backend.** O dicionário JSON estático de palavrões **ainda não existe** —
+> fase seguinte, fora deste desenho.
 
 ## 1. Identidade
 
@@ -802,16 +802,88 @@ real sem token devolve `401` nos dois grupos. Teste funcional completo
 (favoritar/desfavoritar com JWT válido) fica pendente pelo mesmo motivo do
 §6.1.
 
+### 6.7 `chat_room_members` (implementado em 2026-10-02)
+
+Sétimo e último recurso do módulo: **as 7 tabelas agora têm backend
+completo**. Substitui o antigo "Model interno mínimo" (o `SqlTableModel`
+continua o mesmo arquivo, usado também por `ChatRoomAttachmentReports`).
+Grupos `api/v1/chat-room-members` (18 rotas) e `api/v1/chat-room-members-view`
+(9 rotas, sobre `view_chat_room_members`), `jwtauth` por wildcard em
+`Config/Filters.php`, `adminonly` só nas 3 rotas de exclusão definitiva.
+
+| Camada     | Arquivo                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| Rotas      | `Config/Routes/Api/v1/ChatRooms/ChatRoomMembers/EndpointTable.php` (18) + `EndPointView.php` (9) |
+| Controller | `Controllers/Api/V1/ChatRooms/ChatRoomMembers/ResourceTableController.php` + `ResourceViewController.php` |
+| Request    | `Requests/V1/ChatRooms/ChatRoomMembers/CreateRequest.php` + `UpdateRequest.php`               |
+| Processor  | `Services/V1/ChatRooms/ChatRoomMembers/Processor.php`                                         |
+| Model      | `Models/V1/ChatRooms/ChatRoomMembers/SqlTableModel.php` + `SqlViewModel.php`                  |
+
+**Regras aplicadas no Processor:**
+
+1. **Guest não escreve** (403).
+2. **Escrita só do dono da sala (ou admin):** create/update/delete-soft/
+   restore/hard exigem `chat_rooms_manager.owner_user_manager_id` = usuário da
+   sessão; senão 403. Sala/matrícula/usuário inexistente → 404.
+3. **Matrícula única por sala+usuário:** par já ativo → 409; par
+   soft-deletado → o create restaura e reaplica os dados.
+4. **Sala e usuário imutáveis** após o create (descartados no update).
+5. **`status=blocked`** grava `blocked_at` (e `blocked_reason=manual` se não
+   vier motivo); outro status limpa `blocked_at`/`blocked_reason`.
+6. `clear-deleted` só admin (além do filtro `adminonly` da rota).
+
+**Frontend (tela `/v1/chat-room-members`):** mesmo modelo de
+`/v1/chat-rooms-manager` — lista via motor de listagens (slug
+`chat-room-members`, 7 colunas, ações Editar/Excluir), busca por sala/usuário/
+nome, formulários `criar-membro-sala` e `editar-membro-sala` (form builder).
+Páginas em `frontend/.../pages/v1/chat-rooms/chat-room-members/`. Cadastro
+da lista/formulários feito por INSERT no banco DEV (sem migration).
+
+**Sincronizado em `route_manager`:**
+`doc/sql/insert/20261002170000_route_manager_chatroommembers_sync.sql`
+(27 registros, idempotente).
+
+**Validação:** `php -l` limpo; `php spark routes` lista as 27 rotas com
+`jwtauth` (+ `adminonly` nas 3 de exclusão definitiva); `npm run typecheck`
+e `npm run lint` limpos. Teste funcional com JWT válido (criar/editar/excluir
+pela tela) **pendente**, pelo mesmo motivo do §6.1.
+
+### 6.8 Tela `/v1/chat-room-attachments` (frontend, 2026-10-02)
+
+Backend de `chat_room_attachments` já existia (§6.3); esta rodada só criou
+a tela, no mesmo modelo de `/v1/chat-rooms-manager`: lista via motor de
+listagens (slug `chat-room-attachments`, 7 colunas, ações **Baixar**,
+Editar e Excluir), busca por arquivo/sala/usuário e formulários
+`enviar-anexo-chat` e `editar-anexo-chat` (form builder). Cadastro feito por
+INSERT no banco DEV (sem migration). Particularidades:
+
+- **Novo = upload multipart.** `CreatePage` monta o form do build (mensagem +
+  campo `arquivo` + categoria opcional) mas envia por
+  `chatRoomAttachmentsUpload.upload` (campo `file` + `chat_message_id`), não
+  pelo submit JSON. Só o autor da mensagem (ou admin) anexa — regra do
+  Processor.
+- **Editar** só altera `status` (active/inactive) e `category`; arquivo e
+  mensagem são imutáveis.
+- **Baixar:** ação `api_call` GET com `data_action='download'` na
+  `list_actions`; o `GetAllPage` baixa o binário como Blob com o token
+  (`jwtauth` não aceita `<a href>`) e salva com `cra_original_name`.
+- Renderer novo `bytes` no motor de listagens (`utils/listConstructor.tsx`),
+  usado na coluna Tamanho.
+- Frontend: `chatRoomAttachments.{table,view,upload}.ts` em `services/v1/` e
+  páginas em `pages/v1/chat-rooms/chat-room-attachments/`.
+
+**Validação:** `npm run typecheck` e eslint limpos. Teste funcional com JWT
+(upload, download, editar, excluir pela tela) **pendente**.
+
 ## 7. Próximos passos (fora deste desenho)
 
 - Dicionário JSON estático de palavras proibidas (onde mora, como o backend
   valida antes do `INSERT`).
-- Backend PHP completo de `chat_room_members` (Controller/Request/Processor/
-  Model REST — hoje só existe o Model interno mínimo usado pelo
-  `ChatRoomAttachmentReports`), rotas (18 + 9, mesmo contrato do Timeline) e
-  registro em `route_manager` — **lembrar de atualizar `Config/Filters.php`**
-  (ver nota do §6.2). Com isso as 7 tabelas do módulo ficam com backend
-  completo.
+- ~~Backend PHP completo de `chat_room_members`~~ — **feito em 2026-10-02**
+  (§6.7). As 7 tabelas do módulo têm backend completo.
+- Auto-entrada de `chat_room_members` na primeira interação (UPSERT) e
+  fechamento automático da sala ao atingir 3 bloqueados: ainda integração
+  futura (o módulo de membros não faz isso sozinho).
 - Quando `chat_room_members` ganhar auto-entrada de verdade, revisar
   `ChatRoomAttachmentReports::applyImmediateBlock()` — hoje ele já tenta
   bloquear a matrícula, só não encontra linha pra bloquear.
