@@ -192,6 +192,8 @@ class Filters extends BaseFilters
                 'api/v1/chat-room-warnings-view/*',
                 'api/v1/chat-room-favorites/*',
                 'api/v1/chat-room-favorites-view/*',
+                'api/v1/chat-room-members/*',
+                'api/v1/chat-room-members-view/*',
                 'api/v1/nav-manager/*',
                 'api/v1/menu-manager/*',
                 'api/v1/db-schema/*',

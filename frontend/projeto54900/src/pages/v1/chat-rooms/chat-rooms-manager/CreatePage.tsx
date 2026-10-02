@@ -115,6 +115,7 @@ export default function CreatePage() {
     setTermsLoading(true);
     setTermsError(null);
     try {
+      console.log('TERMS_URL :: ', TERMS_URL);
       const resp = await fetch(TERMS_URL);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       setTermsBlocks(parseTermsBody(await resp.text()));

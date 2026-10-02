@@ -5,8 +5,8 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * Recria as 19 views do banco a partir do dump SQL puro de 2026-10-10, 16:59
- * (202610101659_replace_view.sql — DROP VIEW IF EXISTS + CREATE VIEW de cada
+ * Recria as 19 views do banco a partir do dump SQL puro de 2026-10-02, 16:26
+ * (202610021626_replace_view.sql — DROP VIEW IF EXISTS + CREATE VIEW de cada
  * uma).
  *
  * Lista conferida via `SHOW FULL TABLES WHERE Table_type = 'VIEW'` no banco
@@ -21,15 +21,15 @@ use CodeIgniter\Database\Migration;
  *   view_timeline_post_reports, view_timeline_posts, view_upload_manager,
  *   view_user_directory, view_user_manager.
  *
- * Depende do ReplaceTable20261010: as views apontam pras tabelas do banco.
- * Timestamp da classe (16:59) um minuto apos o SeedTable20261010 (16:58),
+ * Depende do ReplaceTable20261002: as views apontam pras tabelas do banco.
+ * Timestamp da classe (16:26) um minuto apos o SeedTable20261002 (16:25),
  * preservando a ordem de execucao do REMAKE.
  */
-class ReplaceView20261010 extends Migration
+class ReplaceView20261002 extends Migration
 {
     public function up()
     {
-        $this->executeSqlFile(__DIR__ . '/202610101659_replace_view.sql');
+        $this->executeSqlFile(__DIR__ . '/202610021626_replace_view.sql');
     }
 
     public function down()

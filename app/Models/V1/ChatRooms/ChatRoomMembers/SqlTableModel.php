@@ -7,14 +7,11 @@ use App\Models\V1\BaseTableModel;
 /**
  * Model interno da tabela chat_room_members — quem esta na sala.
  *
- * APENAS o Model: este arquivo existe so para que outros Processors do
- * modulo ChatRooms (hoje: ChatRoomAttachmentReports, regra §4.6) possam
- * consultar/bloquear a matricula de um usuario numa sala. Controller/
- * Request/Processor/Rotas do modulo ChatRoomMembers ainda NAO existem —
- * ficam para quando esse recurso for construido de verdade (ver
- * README_modulo_chatrooms.md §7). `role` owner/member; `status`
- * active/blocked/left; `blocked_reason` distingue profanity_3x/
- * attachment_report/manual.
+ * Alem de servir a outros Processors do modulo ChatRooms (ChatRoomAttachmentReports,
+ * regra §4.6, que consultam/bloqueiam a matricula), e a base do recurso
+ * api/v1/chat-room-members (Controller/Request/Processor/Rotas em
+ * ChatRoomMembers). `role` owner/member; `status` active/blocked/left;
+ * `blocked_reason` distingue profanity_3x/attachment_report/manual.
  */
 class SqlTableModel extends BaseTableModel
 {
@@ -39,10 +36,12 @@ class SqlTableModel extends BaseTableModel
 
     protected array $sortableFields = [
         'id', 'chat_rooms_manager_id', 'user_manager_id', 'role', 'status',
-        'created_at', 'updated_at',
+        'blocked_reason', 'blocked_at', 'created_at', 'updated_at',
     ];
 
-    public array $searchFields = [];
+    // Busca textual por nome de sala/usuario fica na view (SqlViewModel);
+    // a tabela so tem ids e enums.
+    public array $searchFields = ['role', 'status', 'blocked_reason'];
 
     /**
      * Matricula de um usuario numa sala (qualquer status), usada pelo

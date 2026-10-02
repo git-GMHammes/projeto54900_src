@@ -126,6 +126,18 @@ export const paths = {
       list: '/v1/chat-messages',
       create: '/v1/chat-messages/create',
     },
+    // ChatRoomMembers — membros das salas de chat (modulo ChatRooms/ChatRoomMembers)
+    chatRoomMembers: {
+      list: '/v1/chat-room-members',
+      create: '/v1/chat-room-members/create',
+      update: (id: RouteId) => `/v1/chat-room-members/update/${id}`,
+    },
+    // ChatRoomAttachments — anexos das mensagens (modulo ChatRooms/ChatRoomAttachments)
+    chatRoomAttachments: {
+      list: '/v1/chat-room-attachments',
+      create: '/v1/chat-room-attachments/create',
+      update: (id: RouteId) => `/v1/chat-room-attachments/update/${id}`,
+    },
   },
 
   // Reservado para o namespace Api\V1A do backend.

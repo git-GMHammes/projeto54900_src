@@ -1,52 +1,22 @@
-/**
- * =========================================================================
- * FILE HEADER — GetAllPage (listagem administrativa de salas de chat)
- * =========================================================================
- *
- * PROPÓSITO GERAL
- *   Lista as salas de `chat_rooms_manager` via API
- *   (`api/v1/chat-rooms-manager-view/get-all` e `/search`), com busca,
- *   ordenação e paginação de servidor e ações por linha. A página NÃO tem
- *   colunas fixas: o que aparece na tabela vem do BANCO, pelo motor de
- *   listagens (`list_manager` + `list_columns` + `list_actions`, slug
- *   `chat-rooms-manager`). Regra completa em
- *   src/markdown/geral/README_render_via_list_constructor.md.
- *
- * ROTA QUE MONTA ESTA PÁGINA
- *   `/v1/chat-rooms-manager` (routes/v1/chat-rooms.routes.tsx, dentro do
- *   RequireAuth; qualquer usuário logado, sem RequireRole).
- *
- * DEPENDÊNCIAS (imports próprios do projeto consumidos aqui)
- *   - components/global/PageHeader, EmptyState, LoadingOverlay (chrome da tela)
- *   - services/http (`http`, `ApiError`) — camada fetch base
- *   - services/v1 (`listManagerTable`, `listColumnsTable`, `listActionsTable`)
- *   - utils/apiResult (`normalizeList`) e utils/formSubmit (`resolveEndpoint`)
- *   - hooks/usePagination, hooks/useDebounce, hooks/useToast
- *   - utils/pagination (`paginationWindow`), routes/paths, types/api
- *   - utils/listConstructor (`str`, `toManager`, `toColumn`, `toAction`,
- *     `cellValue`, `renderCell`, `evalBusinessRule`, `resolveHrefTemplate`)
- *
- * CONSUMIDORES
- *   - routes/v1/chat-rooms.routes.tsx importa este componente em lazy.
- *   - O botão "Nova sala" do PageHeader navega para `paths.v1.chatRooms.create`
- *     (CreatePage); as ações "Editar" levam à UpdatePage deste módulo.
- *
- * PASSO A PASSO PARA CRIAR UMA LISTAGEM SIMILAR (motor de listagens)
- *   1. No banco, criar o registro em `list_manager` (slug, title,
- *      api_get_endpoint, api_search_endpoint, limitOptions) e as linhas de
- *      `list_columns` e `list_actions` desse slug.
- *   2. Copiar este arquivo para `pages/v1/<modulo>/<recurso>/GetAllPage.tsx`
- *      e trocar apenas a constante MANAGER_SLUG pelo slug novo.
- *   3. Ajustar placeholder/EmptyState e as rotas de navegação (paths).
- *   4. Registrar a rota e o item de menu; nunca escrever <thead> à mão.
- *
- * FLUXO PONTA A PONTA
- *   GetAllPage → loadDefinition() (list_manager/list_columns/list_actions)
- *     → loadData() → http.get(apiGetEndpoint|apiSearchEndpoint)
- *     → normalizeList() → renderCell() por coluna → ActionButton
- *     (link ou api_call) → loadData() recarrega a lista.
- * -------------------------------------------------------------------------
- */
+// Lista de membros das salas de chat (chat_room_members) — api/v1/chat-room-members
+//
+// Consumidor do MOTOR DE LISTAGENS (list_manager/list_columns/list_actions,
+// slug 'chat-room-members'): colunas, rotulos, ordenacao e acoes vem do
+// BANCO — nao existe <thead> fixo no codigo. Regra e receita completas em
+// src/markdown/geral/README_render_via_list_constructor.md.
+//
+// Padrao visual espelhado de pages/v1/nav/GetAllPage.tsx (por sua vez
+// espelho de pages/v1/user/user-manager/GetAllPage.tsx):
+//   busca  -> input-group com bi-search (q no api_search_endpoint, view
+//             view_chat_room_members: cr_name/um_username/
+//             uc_name/uc_email)
+//   acoes  -> botao so-icone (list_actions.icon) + tooltip custom
+//   rodape -> "{total} registro(s) · Por pagina" + limite + paginationWindow
+//
+// Acoes cadastradas em list_actions para este slug:
+//   link      Editar  -> /v1/chat-room-members/update/{id}
+//   api_call  Excluir -> DELETE /api/v1/chat-room-members/delete-soft/{id}
+//                        (window.confirm com o confirm_message do banco)
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -77,34 +47,14 @@ import {
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
 
-/**
- * Slug do `list_manager` que descreve esta tela. É a ÚNICA amarração fixa
- * desta página: o resto (título, endpoints, colunas, ações, options de limite)
- * vem do banco. Ao replicar para outro módulo, este é o valor a trocar.
- */
-const MANAGER_SLUG = 'chat-rooms-manager';
+/** Slug do list_manager que descreve esta tela (o resto da lista vem do banco). */
+const MANAGER_SLUG = 'chat-room-members';
 
 /**
- * =========================================================================
- * BLOCO 1 — ActionButton (botão de UMA ação da linha)
- * =========================================================================
- *
- * O QUE FAZ: renderiza a ação de `list_actions` da linha, decidindo pelo
- * `actionType` gravado no banco:
- *   - `link`     → <Link> do react-router para `href_template`, resolvido
- *                  contra os campos da própria linha (ex.: update/{id}).
- *   - `api_call` → dispara HTTP real contra `api_endpoint` (DELETE/PUT/PATCH/
- *                  POST/GET), com `window.confirm` opcional antes.
- *   - `modal`    → não existe neste slug hoje; se aparecer, avisa por toast
- *                  em vez de falhar em silêncio.
- * POR QUE É IMPORTANTE: é o único ponto que transforma a definição do banco em
- * navegação (link) ou escrita real na API (api_call).
- * CONEXÃO: chamado pelo <tbody> da renderização (Bloco 9), recebendo `action`
- * (ListActionRow), `row`, `subject` (1ª coluna, compõe o tooltip), `disabled`
- * (regra de negócio) e `onExecuted` (recarrega a lista).
- * COMO REAPROVEITAR: é genérico — não conhece o módulo chat-rooms, só o formato
- * de `ListActionRow`; serve a qualquer listagem do motor.
- * -------------------------------------------------------------------------
+ * Botao de UMA acao de list_actions na linha: 'link' navega pelo react-router
+ * (href_template com {campos} da linha) e 'api_call' executa HTTP de verdade no
+ * api_endpoint, com confirmacao opcional. 'modal' nao existe neste slug hoje —
+ * se aparecer, avisa em vez de falhar em silencio.
  */
 function ActionButton({
   action,
@@ -208,70 +158,23 @@ function ActionButton({
 }
 
 export default function GetAllPage() {
-  /**
-   * -----------------------------------------------------------------------
-   * BLOCO 2 — usePagination (página/limite/ordenação refletidos na URL)
-   * -----------------------------------------------------------------------
-   * `params` = { page, limit, sort, order } lidos da query string;
-   * `setPage`/`setLimit`/`toggleSort` reescrevem a URL. Como `loadData`
-   * depende de `params`, cada mudança aqui dispara nova busca — a paginação é
-   * de SERVIDOR (limit/offset), não filtra a lista em memória.
-   * -----------------------------------------------------------------------
-   */
   const { params, setPage, setLimit, toggleSort } = usePagination();
 
-  /**
-   * -----------------------------------------------------------------------
-   * BLOCO 3 — GRUPO 1: DEFINIÇÃO (o que a lista é)
-   * -----------------------------------------------------------------------
-   * Carregado UMA vez no mount por loadDefinition(): o registro do
-   * `list_manager` (`manager`) e as listas de `list_columns` (`columns`) e
-   * `list_actions` (`actions`). `defsLoading`/`defsError` controlam o
-   * LoadingOverlay e o EmptyState de erro SÓ da definição — separados do
-   * loading/erro dos dados (Grupo 2), porque definição ausente é erro fatal
-   * (não há tabela para montar) e dado ausente é apenas lista vazia.
-   * -----------------------------------------------------------------------
-   */
+  // GRUPO 1 — DEFINICAO (o que a lista e), carregada uma vez no mount.
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
   const [actions, setActions] = useState<ListActionRow[]>([]);
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
 
-  /**
-   * -----------------------------------------------------------------------
-   * BLOCO 4 — GRUPO 2: DADOS listados
-   * -----------------------------------------------------------------------
-   * `rows`/`total` guardam o retorno da API e alimentam a tabela e o rodapé.
-   * Recarregam a cada mudança de URL (page/limit/sort), de termo de busca ou
-   * depois de uma ação api_call. `dataLoading` usa o LoadingOverlay em modo
-   * overlay, para não sumir com a tabela anterior durante a recarga.
-   * -----------------------------------------------------------------------
-   */
+  // GRUPO 2 — DADOS listados (recarrega a cada mudanca de URL, busca ou acao).
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
 
-  /** Última página possível (mínimo 1); alimenta o rodapé de paginação. */
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / params.limit)), [total, params.limit]);
 
-  /**
-   * =========================================================================
-   * BLOCO 5 — loadDefinition (carrega a definição da listagem do banco)
-   * =========================================================================
-   *
-   * O QUE FAZ: busca todo o `list_manager` (`getNoPagination`), localiza a
-   * linha cujo `slug === MANAGER_SLUG` e, com o id dela, carrega em paralelo
-   * `list_columns` e `list_actions` (ordenados por `sort_order`). Tudo é
-   * convertido pelos mapeadores `toManager`/`toColumn`/`toAction`.
-   * POR QUE É IMPORTANTE: sem definição não há colunas nem ações; os erros
-   * apontam exatamente qual slug não foi encontrado.
-   * CONEXÃO: roda no mount (useEffect logo abaixo); alimenta `loadData` (que
-   * usa `manager.apiGetEndpoint`/`apiSearchEndpoint`) e a renderização.
-   * COMO REAPROVEITAR: igual para outra listagem — só muda MANAGER_SLUG.
-   * -------------------------------------------------------------------------
-   */
   const loadDefinition = useCallback(async () => {
     setDefsLoading(true);
     setDefsError(null);
@@ -301,63 +204,26 @@ export default function GetAllPage() {
     }
   }, []);
 
-  /** Dispara a definição uma única vez no mount (fn estável, deps vazias). */
   useEffect(() => {
     void loadDefinition();
   }, [loadDefinition]);
 
-  /**
-   * -----------------------------------------------------------------------
-   * BLOCO 6 — Busca (input local, atraso de digitação e reset de página)
-   * -----------------------------------------------------------------------
-   * `searchInput` é o texto cru do input; `term` é o valor já passado pelo
-   * useDebounce (400 ms) e sem espaços. Só `term` dispara request: com texto,
-   * a página chama `api_search_endpoint` com `?q=`; vazio, volta ao
-   * `api_get_endpoint`. `prevTerm` guarda o termo anterior para NÃO resetar a
-   * página a cada tecla — só quando o termo efetivamente muda.
-   * -----------------------------------------------------------------------
-   */
+  // Busca ao digitar: com termo, consulta o api_search_endpoint (?q=); vazio,
+  // volta ao api_get_endpoint.
   const [searchInput, setSearchInput] = useState('');
   const term = useDebounce(searchInput, 400).trim();
 
+  // Termo novo sempre recomeca da pagina 1.
   const prevTerm = useRef(term);
-  /** Termo novo sempre recomeça da página 1 (a página atual pode não existir
-      no novo resultado). */
   useEffect(() => {
     if (prevTerm.current === term) return;
     prevTerm.current = term;
     if (params.page !== 1) setPage(1);
   }, [term, params.page, setPage]);
 
-  /**
-   * -----------------------------------------------------------------------
-   * BLOCO 7 — requestSeq (descarte de resposta obsoleta)
-   * -----------------------------------------------------------------------
-   * Contador incremental: cada carga guarda o `seq` do momento e, ao voltar,
-   * só aplica o resultado se ainda for o mais recente. Evita que uma resposta
-   * lenta (digitação rápida, troca de página) sobrescreva uma resposta nova.
-   * -----------------------------------------------------------------------
-   */
+  // Descarta resposta de requisicao antiga (digitacao rapida / troca de pagina).
   const requestSeq = useRef(0);
 
-  /**
-   * =========================================================================
-   * BLOCO 8 — loadData (busca as linhas reais na API)
-   * =========================================================================
-   *
-   * O QUE FAZ: escolhe o endpoint (`api_search_endpoint` quando há termo,
-   * senão `api_get_endpoint`), chama via `http.get` com os parâmetros de
-   * paginação/ordenação (`params`) e, no modo busca, `q`; publica o resultado
-   * com `normalizeList` em `rows`/`total`.
-   * POR QUE É IMPORTANTE: é o único ponto que lê dados de verdade; roda quando
-   * `manager`, `params` (page/limit/sort) ou `term` mudam, e de novo após
-   * cada ação executada por ActionButton.
-   * CONEXÃO: depende de `manager` (Blocos 3 e 5); alimenta a tabela e o rodapé
-   * (Bloco 9). Respeita `requestSeq` (Bloco 7) para descartar respostas velhas.
-   * COMO REAPROVEITAR: o endpoint não é fixo no código — vem do `list_manager`;
-   * a única customização por tela costuma ser a mensagem de erro do catch.
-   * -------------------------------------------------------------------------
-   */
   const loadData = useCallback(async () => {
     // Sequenciador: so existe dado a buscar quando a definicao ja chegou.
     if (!manager?.apiGetEndpoint) return;
@@ -377,46 +243,31 @@ export default function GetAllPage() {
       if (seq !== requestSeq.current) return;
       setRows([]);
       setTotal(0);
-      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar as salas de chat.');
+      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os membros das salas.');
     } finally {
       if (seq === requestSeq.current) setDataLoading(false);
     }
   }, [manager, params, term]);
 
-  /** Recarrega os dados quando page/limit/sort, termo ou manager mudarem. */
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
-  /** Erro exibido na tela: o da definição (fatal) tem prioridade sobre o dos dados. */
   const error = defsError ?? dataError;
 
-  /**
-   * =========================================================================
-   * BLOCO 9 — Renderização (JSX)
-   * =========================================================================
-   *
-   * Ordem dos estados: (1) LoadingOverlay da definição; (2) busca; (3) erro;
-   * (4) vazio, com variante "busca sem resultado" e variante "nada cadastrado";
-   * (5) tabela + rodapé. As colunas vêm de `columns` e as ações de `actions`
-   * (Bloco 5) — nada de <thead> fixo no código.
-   * -------------------------------------------------------------------------
-   */
   return (
     <>
-      <PageHeader title={manager?.title || 'Salas de Chat'} subtitle={manager?.apiGetEndpoint || 'api/v1/chat-rooms-manager'}>
+      <PageHeader title={manager?.title || 'Membros das Salas'} subtitle={manager?.apiGetEndpoint || 'api/v1/chat-room-members'}>
         <button className="btn btn-outline-secondary me-2" onClick={() => void loadData()} disabled={dataLoading}>
           Recarregar
         </button>
-        <Link className="btn btn-primary" to={paths.v1.chatRooms.create}>
-          Nova sala
+        <Link className="btn btn-primary" to={paths.v1.chatRoomMembers.create}>
+          Novo membro
         </Link>
       </PageHeader>
 
       {defsLoading && <LoadingOverlay />}
 
-      {/* Campo de busca: só aparece com a definição carregada; o botão de
-          limpar só existe com texto digitado. O valor é debounced (Bloco 6). */}
       {!defsLoading && !defsError && (
         <div className="mb-3">
           <div className="input-group">
@@ -426,8 +277,8 @@ export default function GetAllPage() {
             <input
               type="text"
               className="form-control"
-              placeholder="Buscar por nome, descricao ou dono"
-              aria-label="Buscar salas de chat por nome, descricao ou dono"
+              placeholder="Buscar por sala, usuario ou nome"
+              aria-label="Buscar membros por sala, usuario ou nome"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -452,19 +303,17 @@ export default function GetAllPage() {
           <EmptyState
             variant="warning"
             eyebrow="Busca"
-            title="Nenhuma sala encontrada"
+            title="Nenhum membro encontrado"
             description={`Nada corresponde a '${searchInput.trim()}'.`}
           />
         ) : (
-          <EmptyState title="Nenhuma sala de chat cadastrada" description="Crie a primeira sala para comecar." />
+          <EmptyState title="Nenhum membro cadastrado" description="Adicione o primeiro membro a uma sala para comecar." />
         ))}
 
       {!defsLoading && !error && (dataLoading || rows.length > 0) && (
         <div className="card border-0 shadow-sm position-relative">
           {dataLoading && <LoadingOverlay overlay />}
 
-          {/* Cabeçalho montado de `columns`; coluna sortável usa
-              toggleSort(sortKey) e marca seta conforme params.sort/order. */}
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
               <thead>
@@ -511,8 +360,6 @@ export default function GetAllPage() {
             </table>
           </div>
 
-          {/* Rodapé: total de registros, seletor de limite (limitOptions do
-              list_manager) e janela de paginação (paginationWindow). */}
           <div className="card-footer bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div className="d-flex align-items-center gap-2 small text-body-secondary">
               <span>{total} registro(s) · Por página</span>
