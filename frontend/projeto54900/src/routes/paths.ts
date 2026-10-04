@@ -119,12 +119,32 @@ export const paths = {
       list: '/v1/chat-rooms-manager',
       create: '/v1/chat-rooms-manager/create',
       update: (id: RouteId) => `/v1/chat-rooms-manager/update/${id}`,
+      chat: (id: RouteId) => `/v1/chat-rooms-manager/chat/${id}`,
     },
-    // ChatMessages — mensagens das salas de chat. Sem update: a API so
-    // aceita status=removed, que vira acao "Remover" na lista (list_actions).
+    // ChatMessages — mensagens das salas de chat. Update: remover (autor,
+    // moderador ou admin) e editar o conteudo (so admin).
     chatMessages: {
       list: '/v1/chat-messages',
       create: '/v1/chat-messages/create',
+      update: (id: RouteId) => `/v1/chat-messages/update/${id}`,
+    },
+    // ChatRoomAttachmentReports — denuncias de anexo (moderacao, so admin)
+    chatRoomAttachmentReports: {
+      list: '/v1/chat-room-attachment-reports',
+      create: '/v1/chat-room-attachment-reports/create',
+      update: (id: RouteId) => `/v1/chat-room-attachment-reports/update/${id}`,
+    },
+    // ChatRoomWarnings — advertências por palavra proibida (só admin)
+    chatRoomWarnings: {
+      list: '/v1/chat-room-warnings',
+      create: '/v1/chat-room-warnings/create',
+      update: (id: RouteId) => `/v1/chat-room-warnings/update/${id}`,
+    },
+    // ChatRoomFavorites — salas favoritas
+    chatRoomFavorites: {
+      list: '/v1/chat-room-favorites',
+      create: '/v1/chat-room-favorites/create',
+      update: (id: RouteId) => `/v1/chat-room-favorites/update/${id}`,
     },
     // ChatRoomMembers — membros das salas de chat (modulo ChatRooms/ChatRoomMembers)
     chatRoomMembers: {

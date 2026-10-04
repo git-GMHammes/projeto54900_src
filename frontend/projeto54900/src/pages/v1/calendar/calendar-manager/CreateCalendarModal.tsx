@@ -136,6 +136,9 @@ export default function CreateCalendarModal({
               <button type="reset" className="btn btn-outline-secondary">
                 Limpar
               </button>
+              <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
+                Voltar
+              </button>
             </div>
           </form>
         )}

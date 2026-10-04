@@ -293,6 +293,10 @@ function buildField(row: ApiRow): AnyFieldSchema {
       // desvincular um FK opcional pela propria lista, nao so pelo botao ✕.
       set('emptyLabel', str(rec.emptyLabel));
       set('maxVisible', int(rec.maxVisible));
+      // Seleção múltipla (listbox): o name do campo deve terminar em [] para o
+      // payload virar lista (ver formDataToPayload). `rows` = altura do listbox.
+      if (rec.multiple === true) set('multiple', true);
+      set('rows', int(rec.rows));
       set('colorKey', str(rec.colorKey));
       if (typeof rec.labelTemplate === 'string') set('labelTemplate', rec.labelTemplate);
       if (Array.isArray(rec.labelKey) || typeof rec.labelKey === 'string') {

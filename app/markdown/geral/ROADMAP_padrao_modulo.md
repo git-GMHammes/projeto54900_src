@@ -359,6 +359,47 @@ O módulo de anexos foge do padrão em **dois pontos**, documentados em
 Novos módulos **não** devem tomar isto como licença para inventar rotas ou
 abrir mão de FK — o desvio vale só para o caso de anexo polimórfico.
 
+## 10.2 CRUD completo de tela (regra de 2026-10-03, vale para todo módulo)
+
+Toda **tabela** e toda **view** com tela precisa ter CRUD completo. Definição
+operacional, item a item (todos obrigatórios quando a operação faz sentido para
+o registro):
+
+| Letra | O que é na tela | Onde fica no banco |
+|---|---|---|
+| **C** — Criar | Botão "Nova ..." na lista + form de cadastro (`criar-...`, POST `.../create`) + `CreatePage` com botão **Voltar** | `form_manager`, `form_groups`, `form_rows`, `form_fields` |
+| **R** — Ler/listar | Lista (`list_manager` sobre a view + `list_columns`) + menu | `list_manager`, `list_columns`, `menu_manager` |
+| **U** — Atualizar | Ação **Editar** na lista (link para `.../update/{id}`) + form de atualização (`editar-...`, PUT `.../update`) + `UpdatePage` com botão **Voltar** | `list_actions` (Editar), `form_manager` |
+| **D** — Excluir | Ação **Excluir** na lista (DELETE `.../delete-soft/{id}`, com confirmação) | `list_actions` (Excluir) |
+| **Mídia** — Visualizar | Ação **Visualizador de Mídias** quando o registro tem anexo (modal `media-viewer`, `MediaViewerModal`) | `list_actions` |
+| **Menu** | Item em `menu_manager` apontando para a lista | `menu_manager` |
+
+Regras:
+
+1. Uma ação de atualização nunca aparece com outro nome (ex.: "Revisar" é
+   **Editar** quando abre o form de atualização). Nome visível = "Editar".
+2. Telas de cadastro e atualização têm botão **Voltar** para a lista principal
+   (item 5 abaixo).
+3. Exclusão é lógica (`delete-soft`) e pede confirmação.
+   Registro excluído logicamente **nunca** aparece em lista comum nem em busca nem
+   por id (filtro aplicado no model base de views, `BaseViewModel::applyLiveScope`,
+   quando a view tem `deleted_at`). Só as telas de excluídos (get-deleted,
+   get-deleted-all, get-all-with-deleted) mostram excluídos.
+4. Quando uma operação não se aplica à tabela (ex.: tabela só escrita pelo
+   sistema), a dispensa precisa estar escrita na doc do módulo com o motivo.
+5. **Botão Voltar em toda tela de cadastro e de atualização.** Toda `CreatePage`
+   e `UpdatePage` de módulo com lista tem um botão "Voltar" ao lado de "Enviar"/"Salvar",
+   que leva à lista principal do módulo (sem salvar). Telas de conta (perfil e
+   segurança) não têm lista e ficam de fora.
+
+6. **Toda ação de lista mostra um toast com o resultado.** Ação que chama a API
+   (Excluir, Bloquear, Favoritar, Remover etc.) mostra um toast de sucesso dizendo o que
+   aconteceu (`notifyActionDone` em `utils/listActionToast.ts`) e, em caso de erro, um
+   toast de erro. Ações de navegação (link) e de visualização (modal) não geram toast de
+   resultado. Toggles com mensagem própria (favoritar, bloquear) dizem o novo estado.
+
+Um item só conta como pronto quando está no banco **e** na tela.
+
 ## 11. Checklist de conformidade (revisão de PR)
 
 - [ ] Caminho e namespace = `V1/<Dominio>/<Modulo>` em todas as camadas.

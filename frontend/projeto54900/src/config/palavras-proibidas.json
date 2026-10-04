@@ -1,0 +1,31 @@
+{
+  "_como_usar": [
+    "Adicione uma palavra por item em 'palavras'. Pode escrever com maiúscula ou minúscula, com ou sem acento: 'Cu', 'cu', 'CU', 'Cú' e 'cú' são tratados igual.",
+    "Só palavras INTEIRAS são bloqueadas. Com 'cu' na lista: 'Vai tomar no cu' é bloqueado; 'Vai tomar no seu custo' e 'cuidado' são permitidos.",
+    "Frases também podem ser cadastradas (ex.: 'vai tomar no cu'). Espaços entre as palavras devem ser exatos."
+  ],
+  "palavras": [
+    "masturbação",
+    "masturba",
+    "siririca",
+    "punheta",
+    "caralho",
+    "bosta",
+    "merda",
+    "foder",
+    "puta",
+    "bôzo",
+    "bozo",
+    "lulá",
+    "lula",
+    "bolsonaro",
+    "xoxota",
+    "xota",
+    "buceta",
+    "pirú",
+    "piru",
+    "piroca",
+    "cu",
+    "cú"
+  ]
+}

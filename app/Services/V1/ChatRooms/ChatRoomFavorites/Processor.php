@@ -152,6 +152,169 @@ class Processor extends BaseTableService
     // Privados
     // -------------------------------------------------------------------------
 
+    /**
+     * Favoritar a sala para o usuário da sessão. Respeita CHAT_FAVORITES_LIMIT
+     * (409 ao passar do limite). Favorito já existente é reativado sem contar de novo.
+     */
+    public function favorite(int $roomId): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return $this->forbidden();
+        }
+
+        if ($this->roomsModel->find($roomId) === null) {
+            return $this->notFound('Sala nao encontrada');
+        }
+
+        $userId = (int) CurrentUser::id();
+        $existing = $this->findFavorite($roomId, $userId);
+
+        if ($existing !== null && ($existing['deleted_at'] ?? null) === null) {
+            return ['success' => true, 'data' => $existing];
+        }
+
+        if ($existing === null && $this->countActive($userId) >= CHAT_FAVORITES_LIMIT) {
+            return [
+                'success' => false,
+                'message' => 'Limite de ' . CHAT_FAVORITES_LIMIT . ' salas favoritas atingido. Desfavorite uma sala para adicionar outra.',
+                'code' => 409,
+            ];
+        }
+
+        if ($existing !== null) {
+            $this->tableModel->restore((int) $existing['id']);
+
+            return ['success' => true, 'data' => $this->findFavorite($roomId, $userId)];
+        }
+
+        $id = $this->tableModel->insert([
+            'chat_rooms_manager_id' => $roomId,
+            'user_manager_id'       => $userId,
+        ]);
+
+        return ['success' => true, 'data' => $this->tableModel->find((int) $id)];
+    }
+
+    /**
+     * Remove a sala dos favoritos do usuário da sessão (exclusão lógica). Idempotente.
+     */
+    public function unfavorite(int $roomId): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return $this->forbidden();
+        }
+
+        $existing = $this->tableModel->where('chat_rooms_manager_id', $roomId)
+            ->where('user_manager_id', (int) CurrentUser::id())
+            ->first();
+
+        if ($existing !== null) {
+            $this->tableModel->delete((int) $existing['id']);
+        }
+
+        return ['success' => true, 'data' => ['chat_rooms_manager_id' => $roomId, 'favorite' => false]];
+    }
+
+    /**
+     * Favoritos do usuário da sessão (sala, status), com o limite vigente.
+     */
+    public function mine(): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return $this->forbidden();
+        }
+
+        $rows = $this->viewModel
+            ->where('crf_user_manager_id', (int) CurrentUser::id())
+            ->where('deleted_at', null)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        $items = array_map(static fn ($row) => [
+            'chat_rooms_manager_id' => (int) $row['crf_chat_rooms_manager_id'],
+            'name'                  => (string) ($row['cr_name'] ?? ''),
+            'status'                => (string) ($row['cr_status'] ?? 'open'),
+        ], $rows);
+
+        return ['success' => true, 'data' => ['items' => $items, 'limit' => CHAT_FAVORITES_LIMIT, 'count' => count($items)]];
+    }
+
+    // -------------------------------------------------------------------------
+    // Leituras da view — escopo por dono no servidor.
+    // Usuário comum só enxerga os próprios favoritos (filtro crf_user_manager_id
+    // forçado com o usuário da sessão). Admin vê todos. Não confiar no cliente.
+    // -------------------------------------------------------------------------
+
+    /** @param array<string, mixed> $filters */
+    private function scopeFilters(array $filters): array
+    {
+        if (!CurrentUser::isAdmin()) {
+            $filters['crf_user_manager_id'] = (int) CurrentUser::id();
+        }
+
+        return $filters;
+    }
+
+    public function findView(array $filters, array $params): array
+    {
+        return parent::findView($this->scopeFilters($filters), $params);
+    }
+
+    public function getAllView(array $params): array
+    {
+        return parent::findView($this->scopeFilters([]), $params);
+    }
+
+    public function getGroupedView(array $multiFilters, array $params): array
+    {
+        if (!CurrentUser::isAdmin()) {
+            $multiFilters['crf_user_manager_id'] = [(int) CurrentUser::id()];
+        }
+
+        return parent::getGroupedView($multiFilters, $params);
+    }
+
+    public function searchView(string $term, array $params, array $filters = []): array
+    {
+        return parent::searchView($term, $params, $this->scopeFilters($filters));
+    }
+
+    public function getView(int $id): ?array
+    {
+        $row = parent::getView($id);
+
+        if ($row === null) {
+            return null;
+        }
+
+        if (!CurrentUser::isAdmin() && (int) ($row['crf_user_manager_id'] ?? 0) !== (int) CurrentUser::id()) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    public function getNoPaginationView(string $sort, string $order, ?int $limit = null): array
+    {
+        if (CurrentUser::isAdmin()) {
+            return parent::getNoPaginationView($sort, $order, $limit);
+        }
+
+        $userId = (int) CurrentUser::id();
+
+        return $this->viewModel->findAllView(
+            $sort,
+            $order,
+            $limit,
+            static fn ($builder) => $builder->where('crf_user_manager_id', $userId),
+        );
+    }
+
+    private function countActive(int $userId): int
+    {
+        return $this->tableModel->where('user_manager_id', $userId)->countAllResults();
+    }
+
     private function findFavorite(int $roomId, int $userId): ?array
     {
         $row = $this->tableModel->withDeleted()

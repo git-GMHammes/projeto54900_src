@@ -160,6 +160,9 @@ export default function CreatePage() {
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Enviando...' : 'Concluir cadastro'}
             </button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.user.profilesList)}>
+              Voltar
+            </button>
           </div>
         </form>
       )}

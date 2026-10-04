@@ -52,6 +52,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '@/context/AuthContext';
+import { CHAT_FAVORITES_EVENT } from '@/hooks/useChatFavoriteRooms';
+import { myFavorites } from '@/services/v1/chatRooms.chat';
+
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
@@ -76,6 +80,7 @@ import {
   resolveHrefTemplate,
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /**
  * Slug do `list_manager` que descreve esta tela. É a ÚNICA amarração fixa
@@ -138,6 +143,40 @@ function ActionButton({
     </span>
   );
 
+  // Favorito: um botão alternado. Vazado = não favorita (clique favorita);
+  // preenchido = favorita (clique desfavorita). Estado vem de row.favorito.
+  if (action.dataAction === 'favorito-toggle') {
+    const isFavorite = row.favorito === 'sim';
+    const roomId = str(row.id);
+    const toggle = async () => {
+      try {
+        if (isFavorite) await http.delete(`/v1/chat-room-favorites/unfavorite/${roomId}`);
+        else await http.post(`/v1/chat-room-favorites/favorite/${roomId}`);
+        toast.success(
+          isFavorite ? `${subject}: removida dos seus favoritos.` : `${subject}: adicionada aos seus favoritos.`,
+          { title: 'Favoritos' },
+        );
+        onExecuted();
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao atualizar os favoritos.', {
+          title: isFavorite ? 'Desfavoritar' : 'Favoritar',
+        });
+      }
+    };
+    return withTooltip(
+      <button
+        type="button"
+        className={`btn btn-sm ${isFavorite ? 'btn-warning' : 'btn-outline-warning'}`}
+        aria-label={isFavorite ? 'Desfavoritar sala' : 'Favoritar sala'}
+        aria-pressed={isFavorite}
+        disabled={disabled}
+        onClick={() => void toggle()}
+      >
+        <i className={`bi bi-star${isFavorite ? '-fill' : ''}`} aria-hidden="true" />
+      </button>,
+    );
+  }
+
   if (action.actionType === 'link') {
     const href = resolveHrefTemplate(action.hrefTemplate, row);
     return withTooltip(
@@ -188,6 +227,7 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
@@ -234,7 +274,14 @@ export default function GetAllPage() {
    */
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
-  const [actions, setActions] = useState<ListActionRow[]>([]);
+  const [actionsAll, setActionsAll] = useState<ListActionRow[]>([]);
+  const { user } = useAuth();
+  // Ação sem `roles` vale para todos; com `roles`, só quem tem o papel.
+  const userRole = user?.role?.slug ?? '';
+  const actions = useMemo(
+    () => actionsAll.filter((a) => a.roles.length === 0 || (userRole !== '' && a.roles.includes(userRole))),
+    [actionsAll, userRole],
+  );
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
 
@@ -249,6 +296,30 @@ export default function GetAllPage() {
    * -----------------------------------------------------------------------
    */
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  // Salas favoritas do usuário da sessão. Cada linha recebe 'favorito' (sim/nao)
+  // para as regras das ações Favoritar (nao) e Desfavoritar (sim).
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+  const [favoriteReload, setFavoriteReload] = useState(0);
+  const rowsView = useMemo(
+    () => rows.map((r): Record<string, unknown> => ({ ...r, favorito: favoriteIds.has(Number(r.id)) ? 'sim' : 'nao' })),
+    [rows, favoriteIds],
+  );
+
+  useEffect(() => {
+    const onChange = () => setFavoriteReload((n) => n + 1);
+    window.addEventListener(CHAT_FAVORITES_EVENT, onChange);
+    return () => window.removeEventListener(CHAT_FAVORITES_EVENT, onChange);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    myFavorites(controller.signal)
+      .then((payload) => setFavoriteIds(new Set(payload.items.map((i) => i.chat_rooms_manager_id))))
+      .catch(() => {
+        if (!controller.signal.aborted) setFavoriteIds(new Set());
+      });
+    return () => controller.abort();
+  }, [favoriteReload]);
   const [total, setTotal] = useState(0);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -292,7 +363,7 @@ export default function GetAllPage() {
         listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
       ]);
       setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
-      setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
+      setActionsAll(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
       setManager(null);
       setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
@@ -486,7 +557,7 @@ export default function GetAllPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => (
+                {rowsView.map((row, i) => (
                   <tr key={str(row.id) || i}>
                     {columns.map((c) => (
                       <td key={c.id}>{renderCell(c, row)}</td>
@@ -500,7 +571,11 @@ export default function GetAllPage() {
                             row={row}
                             subject={columns[0] ? cellValue(columns[0], row) : ''}
                             disabled={!evalBusinessRule(a.businessRule, row)}
-                            onExecuted={() => void loadData()}
+                            onExecuted={() => {
+                              void loadData();
+                              // Favoritar/Desfavoritar atualiza a barra superior (salas favoritas).
+                              window.dispatchEvent(new Event(CHAT_FAVORITES_EVENT));
+                            }}
                           />
                         ))}
                       </td>

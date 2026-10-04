@@ -27,5 +27,5 @@ class SqlViewModel extends BaseViewModel
 
     public array $searchFields = ['cr_name', 'um_username', 'uc_name'];
 
-    public array $filterFields = ['cr_status'];
+    public array $filterFields = ['cr_status', 'crf_user_manager_id'];
 }

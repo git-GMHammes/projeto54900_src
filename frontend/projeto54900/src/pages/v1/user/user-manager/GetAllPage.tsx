@@ -41,6 +41,7 @@ import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listC
 
 import ResetPasswordModal from './ResetPasswordModal';
 import ChangeRoleModal from './ChangeRoleModal';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 const MANAGER_SLUG = 'user-manager';
 
@@ -138,7 +139,8 @@ function ActionButton({
       try {
         await http.put(resolveEndpoint(resolveHrefTemplate(action.apiEndpoint, row)), { status: target });
         toast.success(target === 'blocked' ? 'Usuário bloqueado.' : 'Usuário desbloqueado.', { title: subject || label });
-        onExecuted();
+        notifyActionDone(toast, action, subject);
+      onExecuted();
       } catch (err) {
         toast.error(err instanceof ApiError ? err.message : 'Falha ao alterar o status.', { title: label });
       }
@@ -178,6 +180,7 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });

@@ -140,7 +140,11 @@ class Processor extends BaseTableService
     // -------------------------------------------------------------------------
 
     /**
-     * Resolve o arquivo fisico de um anexo ativo (status = active, nao excluido).
+     * Resolve o arquivo fisico de um anexo nao excluido.
+     *
+     * Anexo ativo: qualquer usuario autenticado (com permissao de tela). Anexo
+     * bloqueado (denuncia confirmada): so admin, para a moderacao revisar o que
+     * foi denunciado. Usuario comum nao ve anexo bloqueado.
      *
      * @return array{row: array, abs_path: string}|null
      */
@@ -148,7 +152,12 @@ class Processor extends BaseTableService
     {
         $row = $this->tableModel->find($id);
 
-        if (!$row || ($row['status'] ?? 'active') !== 'active') {
+        if (!$row) {
+            return null;
+        }
+
+        $isActive = ($row['status'] ?? 'active') === 'active';
+        if (!$isActive && !CurrentUser::isAdmin()) {
             return null;
         }
 

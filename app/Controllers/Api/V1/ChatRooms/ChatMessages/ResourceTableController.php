@@ -36,4 +36,22 @@ class ResourceTableController extends BaseResourceTableController
     {
         return (new UpdateRequest())->rules();
     }
+
+    /**
+     * GET room/{roomId} — mensagens enviadas da sala (membro ativo ou admin).
+     */
+    public function room(int $roomId): ResponseInterface
+    {
+        try {
+            $result = $this->processor->listRoom($roomId);
+
+            if (!$result['success']) {
+                return $this->respondError($result['message'], $result['code'] ?? 403);
+            }
+
+            return $this->respondSuccess($result['data']);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
 }

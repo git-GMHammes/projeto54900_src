@@ -74,11 +74,35 @@ abstract class BaseViewModel extends Model
     // -------------------------------------------------------------------------
 
     /**
+     * Exclusão lógica: registro com deleted_at preenchido nunca aparece nas leituras
+     * normais (listagem, busca, agrupada, sem paginação e por id). Só se aplica quando
+     * a view tem a coluna deleted_at (view_user_directory não tem).
+     */
+    protected function applyLiveScope(object $builder): void
+    {
+        if ($this->hasDeletedColumn()) {
+            $builder->where($this->table . '.deleted_at IS NULL', null, false);
+        }
+    }
+
+    private function hasDeletedColumn(): bool
+    {
+        static $cache = [];
+
+        if (!array_key_exists($this->table, $cache)) {
+            $cache[$this->table] = $this->db->fieldExists('deleted_at', $this->table);
+        }
+
+        return $cache[$this->table];
+    }
+
+    /**
      * Consulta paginada com filtros exatos (ou LIKE para campos em $likeFields).
      */
     public function findPaginatedView(array $filters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+        $this->applyLiveScope($builder);
 
         if ($scope !== null) {
             $scope($builder);
@@ -103,6 +127,7 @@ abstract class BaseViewModel extends Model
     public function findGroupedView(array $multiFilters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+        $this->applyLiveScope($builder);
 
         if ($scope !== null) {
             $scope($builder);
@@ -123,6 +148,7 @@ abstract class BaseViewModel extends Model
     public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order, array $filters = [], ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+        $this->applyLiveScope($builder);
 
         if ($scope !== null) {
             $scope($builder);
@@ -186,10 +212,9 @@ abstract class BaseViewModel extends Model
      */
     public function findById(int $id): ?array
     {
-        $row = $this->db->table($this->table)
-            ->where($this->primaryKey, $id)
-            ->get()
-            ->getRowArray();
+        $builder = $this->db->table($this->table)->where($this->primaryKey, $id);
+        $this->applyLiveScope($builder);
+        $row = $builder->get()->getRowArray();
 
         return $row ?: null;
     }
@@ -219,6 +244,7 @@ abstract class BaseViewModel extends Model
     public function findAllView(string $sort, string $order, ?int $limit = null, ?\Closure $scope = null): array
     {
         $builder = $this->db->table($this->table);
+        $this->applyLiveScope($builder);
 
         if ($scope !== null) {
             $scope($builder);

@@ -53,6 +53,11 @@ Escopo deste documento: só o **schema** (tabelas + views) e as regras de
 negócio previstas para o Processor. Backend PHP, dicionário de palavrões e
 frontend ficam para uma entrega seguinte.
 
+**Objetivo de edição (2026-10-03, decisão do usuário):** o conteúdo da
+mensagem é imutável para o usuário comum, mas **o administrador pode editar**
+o conteúdo de qualquer mensagem. Editar faz parte do objetivo do módulo; a
+regra de imutabilidade vale só para quem não é admin (ver §4, regra 11).
+
 ## 2. Modelo de dados
 
 ### 2.1 `chat_rooms_manager` — a sala
@@ -431,6 +436,11 @@ de usuário autenticado. Resolver do mesmo jeito — o Processor anexa
 10. **Favoritos.** Card (sem limite) para toda sala com linha em
     `chat_room_favorites` do usuário logado; atalho abaixo do NAV mostra só
     as 2 primeiras (regra de exibição do frontend/Processor, não do banco).
+11. **Edição de conteúdo é só do admin.** Usuário comum (autor ou moderador
+    da sala) não altera o `content` de mensagem: pode só remover (`status =
+    removed`). O admin pode alterar o `content` de qualquer mensagem. Edição
+    de conteúdo por admin grava auditoria (quem editou e quando) — o formato
+    dessa auditoria ainda será definido no plano de implementação.
 
 ## 6. Backend PHP
 
@@ -516,9 +526,11 @@ Segundo recurso do módulo com backend. Mesmo espelho estrutural de
    contrário.
 4. **Autor sempre da sessão.** `user_manager_id` do corpo é ignorado; o
    Processor grava sempre `CurrentUser::id()`; `status` sempre nasce `sent`.
-5. **Conteúdo é imutável.** `UpdateRequest` só aceita `status=removed`;
+5. **Conteúdo é imutável para o usuário comum; o admin pode editar** (§4,
+   regra 11). Hoje o `UpdateRequest` só aceita `status=removed` e
    `prepareUpdateData` remove `content`/`chat_rooms_manager_id`/
-   `user_manager_id` de qualquer payload de update, mesmo que enviados.
+   `user_manager_id` de qualquer payload de update. A edição de conteúdo pelo
+   admin está implementada (ver 6.2.2).
 6. **Quem remove.** `update`/`delete-soft`/`delete-restore`/`delete-hard` são
    permitidos ao **autor da mensagem OU ao moderador da sala**
    (`chat_rooms_manager.owner_user_manager_id`) **OU admin** — decisão
@@ -549,6 +561,97 @@ duplicar), e chamada real sem token devolve `401` nos dois grupos
 (`chat-messages` e `chat-messages-view`). Teste funcional completo
 (`create`/`update`/`delete`) com JWT válido fica pendente pelo mesmo motivo
 do §6.1.
+
+#### 6.2.1 Menção e anexo no envio (2026-10-03)
+
+Tela `chat-messages/create` (build `enviar-mensagem`) passou a ter dois
+campos opcionais:
+
+- **Marcar membros** (`mentions[]`, select multiple): cada valor é um
+  `chat_room_members.id` (vínculo). O Processor exige que o vínculo seja da
+  mesma sala e esteja `active`; grava o `user_manager_id` dele em
+  `chat_message_mentions` na mesma transação do create. Vínculo inválido →
+  `422`, nada é gravado. A lista do campo mostra os vínculos de todas as
+  salas (limitação do FormGrid, que não filtra por outro campo); a regra por
+  sala é do backend.
+- **Anexo** (`file`): a tela envia a mensagem primeiro e depois
+  `POST chat-room-attachments/create` com o `chat_message_id` devolvido. Se o
+  anexo falhar, a mensagem continua gravada e a tela avisa.
+
+Alterações feitas direto no banco DEV, sem migration:
+
+- `doc/sql/insert/20261003202227_chat_message_mentions.sql` — tabela
+  `chat_message_mentions` (FK para `chat_messages` e `user_manager`, índice
+  único `chat_message_id` + `user_manager_id`).
+- `doc/sql/insert/20261003202228_enviar_mensagem_mencao_upload.sql` — form_rows
+  167/168 e form_fields 274 (`mentions[]`) e 275 (`file`) no grupo 52 do
+  formulário 29.
+
+Frontend: `formSchema.ts` passou a ler `multiple` e `rows` de
+`select_config_json`. Plano e registros de execução em
+`src/writable/claude/20261003202227_mencao_upload_chat_messages_*`.
+
+Listagem `chat-messages`: nova ação **Visualizador de Mídias**
+(`list_actions` id 79, `data_action` `media-viewer`, `action_type` `modal`).
+Abre `MediaPreview` com os anexos da mensagem. Para isso,
+`SqlViewModel` de `chat-room-attachments` passou a aceitar o filtro
+`cra_chat_message_id` (sem ele o filtro seria ignorado em silêncio). Script em
+`doc/sql/insert/20261003205421_chat_messages_action_media_viewer.sql`.
+A ação "Editar" (decidida e implementada em 2026-10-03): aparece só para admin e
+altera o conteúdo da mensagem (§4, regra 11). Ver a entrada 6.2.2.
+
+#### 6.2.3 Visualizador de Mídias como componente global (2026-10-03)
+
+- `components/global/MediaViewerModal.tsx` é o visualizador reutilizável: recebe
+  `load` (lista de fontes com `fetchBlob` que usa o token) e cria os blob: URLs,
+  liberando-os ao fechar. Fundo **preto** por padrão (`dark`, com
+  `data-bs-theme="dark"` para o texto dos cartões de arquivo).
+- Usado em `chat-messages` (todas as mídias da mensagem) e em
+  `chat-room-attachments` (ação "Visualizador de Mídias", `list_actions` id 86,
+  `data_action` `media-viewer`, roles user e admin).
+- Categorias de anexo em `utils/mediaCategory.ts`.
+- Script: `doc/sql/insert/20261003223000_chat_room_attachments_action_media_viewer.sql`.
+
+#### 6.2.2 Edição de conteúdo pelo admin (2026-10-03)
+
+- `PUT chat-messages/update/{id}` aceita `content` (só admin; usuário comum
+  recebe 403) e `status` (`removed`, como antes). Envio sem nenhum dos dois
+  devolve 422. Conteúdo vazio devolve 422.
+- Cada edição grava em `chat_message_edits` o conteúdo anterior, quem editou
+  (`edited_by_user_manager_id`) e quando (`created_at`), na mesma transação do
+  update. Não há soft delete: o histórico não some.
+- Frontend: ação "Editar" (`list_actions` id 80, link para
+  `/v1/chat-messages/update/{id}`, `roles` `["admin"]`) e tela
+  `pages/v1/chat-rooms/chat-messages/UpdatePage.tsx` com o build
+  `editar-mensagem` (`form_manager` id 34). A listagem filtra as ações pelo papel
+  do usuário (`roles` vazio = todos).
+- Scripts em `doc/sql/insert/20261003212955_chat_message_edits.sql` e
+  `doc/sql/insert/20261003212956_editar_mensagem_admin_build_acao.sql`.
+
+**Pendente:** teste funcional com JWT (create com e sem menção, menção de
+não-membro, upload válido e recusado, download e remoção). Depende de login
+de teste fornecido pelo usuário na sessão.
+
+#### 6.4.1 Tela de denúncias de anexo (2026-10-03)
+
+- Listagem `chat-room-attachment-reports` (`list_manager` id 33, sobre
+  `view_chat_room_attachment_reports`), só admin. Colunas: anexo, denunciante,
+  motivo, status, revisor, revisada em, denunciada em. Busca em descrição, nota,
+  nome do anexo e denunciante.
+- Ações (só admin): **Visualizador de Mídias** (id 87, mostra o anexo denunciado),
+  **Editar** (id 81, link para `/v1/chat-room-attachment-reports/update/{id}`) e
+  **Excluir** (id 88, `delete-soft`, com confirmação). Script:
+  `doc/sql/insert/20261003222526_denuncias_crud_completo_acoes.sql`.
+- Tela de revisão `pages/v1/chat-rooms/chat-room-attachment-reports/UpdatePage.tsx`
+  com o build `revisar-denuncia` (`form_manager` id 35): `status` e `review_note`.
+- Backend: o servidor grava `reviewed_by` (admin da sessão) e `reviewed_at`
+  (agora) em todo update que não seja `pending`; o corpo não define mais esses
+  campos. `reason` e `description` não são editáveis (são do denunciante).
+- Revisar **não desfaz** os bloqueios automáticos do anexo e do autor (§4, regra 6).
+- Scripts: `doc/sql/insert/20261003213612_denuncias_anexo_lista_revisar.sql`.
+
+**Pendente:** teste funcional com admin (revisar e conferir `reviewed_by`) e
+com usuário comum (lista e update recusados).
 
 ### 6.3 `chat_room_attachments` (implementado em 2026-09-29)
 
@@ -614,6 +717,15 @@ nas 3 de exclusão definitiva, `route_manager` com os 27 registros
 (idempotente), e chamada real sem token devolve `401` nos dois grupos e em
 `serve/1`. Teste funcional completo (upload real com JWT válido) fica
 pendente pelo mesmo motivo do §6.1.
+
+#### 6.3.2 Mídia de anexo bloqueado (2026-10-03)
+
+- `resolvePhysical` (leitura e download do anexo): anexo **ativo** vai para
+  qualquer usuário com acesso à tela; anexo **bloqueado** (por denúncia
+  confirmada) só para **admin**, para a moderação revisar o que foi denunciado.
+  Usuário comum recebe "não encontrado" para anexo bloqueado.
+- Sem essa regra, o Visualizador de Mídias da fila de denúncias mostrava "Sem
+  mídias" justamente no caso que a moderação precisa ver.
 
 ### 6.4 `chat_room_attachment_reports` (implementado em 2026-09-29)
 
@@ -874,6 +986,176 @@ INSERT no banco DEV (sem migration). Particularidades:
 
 **Validação:** `npm run typecheck` e eslint limpos. Teste funcional com JWT
 (upload, download, editar, excluir pela tela) **pendente**.
+
+## 6.9 CRUD de tela do módulo (regra de 2026-10-03)
+
+Toda tabela e view do módulo precisa de LIST, FORM de cadastro, FORM de
+atualização e item de MENU (ROADMAP_padrao_modulo.md §10.2). Estado após a
+entrega de 2026-10-03:
+
+| Tabela / view | LIST | Form cadastro | Form atualização | MENU (pai 39 Chat) |
+|---|---|---|---|---|
+| `chat_rooms_manager` | sim (29) | `criar-sala-chat` | `editar-sala-chat` | sim (40) |
+| `chat_messages` | sim (30) | `enviar-mensagem` | `editar-mensagem` (só admin) | sim (41) |
+| `chat_room_members` | sim (31) | `criar-membro-sala` | `editar-membro-sala` | sim (42) |
+| `chat_room_attachments` | sim (32) | `enviar-anexo-chat` | `editar-anexo-chat` | sim (43) |
+| `chat_room_attachment_reports` | sim (33, admin): Editar, Excluir, Visualizador de Mídias | `denunciar-anexo` ("Nova denúncia") | `revisar-denuncia` (ação Editar) | sim (44, admin) |
+| `chat_room_warnings` | sim (34, admin) | `criar-advertencia` | `editar-advertencia` | sim (45, admin) |
+| `chat_room_favorites` | sim (35, admin) | `criar-favorito` | `editar-favorito` | sim (46, admin) |
+| `chat_message_mentions` | não | não | não | não — ver nota |
+| `chat_message_edits` | não | não | não | não — ver nota |
+
+Notas:
+
+- **Lista de favoritos é só admin.** A view não filtra por dono. A tela
+  "minhas favoritas" para usuário comum depende de filtro por dono no backend.
+- **Trocar sala favorita** (`editar-favorito`) não tem semântica de negócio
+  definida; o form existe porque a regra exige. Duplicidade de (sala, usuário)
+  é recusada pelo banco.
+- **Advertências são escritas só pelo admin**, inclusive a criação manual.
+- **`chat_message_mentions` e `chat_message_edits` são tabelas de apoio**
+  (filhas de mensagem), sem tela própria. A dispensa de LIST e de forms
+  precisa ficar explícita aqui e no ROADMAP: sem tela, a informação aparece
+  na mensagem (menções e histórico de edição).
+
+Scripts: `doc/sql/insert/20261003214446_chat_crud_completo_menu_forms.sql`
+(menu, listas, ações, forms). Plano e registros em `src/writable/claude/20261003214445_chat_crud_completo_menu_forms_*`.
+
+**Pendente:** teste funcional com admin e com usuário comum (menu, lista,
+criar, editar, excluir) — depende do login de teste.
+
+## 6.10 Revisão de código do chat (2026-10-03)
+
+Conferido no banco, no backend e no frontend: 7 listas, formulários de cadastro
+e atualização, menu, 42 endpoints (todos protegidos por token), 17 rotas de tela,
+67 arquivos PHP (`php -l`), `tsc` e `eslint`.
+
+**Aplicado (lote A):**
+
+- Rótulo do campo de menção (`form_fields` 274) estava em dupla codificação;
+  corrigido. Script: `doc/sql/insert/20261003224016_chat_mencao_rotulo_travessao.sql`.
+- Botão "Novo anexo" e "Novo membro" nas listas (as rotas de cadastro já existiam).
+- Filtro de papel nas ações das listas de anexos, membros e salas, como nas demais.
+
+**Pendente (lote B, exige plano próprio):**
+
+- Editar e Excluir de salas, membros e anexos aparecem para todos, mas o backend
+  só permite ao dono da sala ou ao autor do anexo. Exige regra por linha com o
+  usuário da sessão no motor de listagem.
+- O seletor de mensagens do formulário de anexo mostra o texto de todas as
+  mensagens, inclusive removidas ou bloqueadas, porque a view não filtra status
+  por padrão. Exige filtro por autor e status.
+- Favoritos só para admin: decisão em aberto.
+- Seletor de membros da menção mostra vínculos de todas as salas.
+
+## 6.11 Entrar, favoritar e tela de chat (2026-10-03)
+
+**Entrar na sala.** Ação "Entrar" na listagem de salas (`list_actions` 89, link
+para `/v1/chat-rooms-manager/chat/{id}`, roles user e admin). Ao abrir a tela,
+o usuário entra na sala: `POST chat-rooms-manager/join/{id}` cria ou reativa o
+vínculo em `chat_room_members` (idempotente). Sala fechada devolve 409; usuário
+inativo ou bloqueado na sala devolve 403.
+
+**Favoritar.** Ações "Favoritar" (`list_actions` 90, POST
+`chat-room-favorites/favorite/{id}`) e "Desfavoritar" (91, DELETE
+`chat-room-favorites/unfavorite/{id}`), roles user e admin. Limite de
+**5 salas favoritas por usuário**, definido em uma única constante
+(`CHAT_FAVORITES_LIMIT`, `app/Config/Constants.php`); ao passar do limite a API
+devolve 409 com a mensagem. Favoritos aparecem na barra superior, depois dos
+favoritos de menu (ícone de chat, link para a tela da sala).
+`GET chat-room-favorites/mine` devolve só os favoritos do usuário da sessão e o limite.
+
+**Tela de chat** (`pages/v1/chat-rooms/chat-rooms-manager/ChatPage.tsx`, rota
+`/v1/chat-rooms-manager/chat/:id`, em **tela cheia**, fora do `RootLayout`: sem
+menu, sem atalhos de favoritos e sem rodapé do site, mas com login exigido via `RequireAuth`):
+cabeçalho com o nome da sala e botão redondo de fechar no canto superior
+direito (volta à lista); lista de mensagens com atualização a cada 5 segundos;
+rodapé fixo com textarea de 3 linhas e, ao lado, os dois ícones empilhados:
+enviar (`bi-send`) em cima e upload (`bi-paperclip`) embaixo, com a altura do
+campo de texto e rótulo acessível. As mensagens são **balões**: as minhas à
+direita (azul), as dos outros à esquerda, cada membro com uma cor de balão
+(na ordem em que aparece na conversa; a paleta repete após 6 membros). A tela é de tela cheia, fora do `RootLayout`
+(sem menu, atalhos de favoritos nem rodapé do site), com login via `RequireAuth`. O envio reusa `chatMessagesTable.create`; o upload reusa
+`chatRoomAttachmentsUpload.upload` (sem texto, a mensagem leva o nome do arquivo).
+
+**Regras novas no backend:**
+
+- Cada mensagem da lista traz seus `attachments` (id, nome, categoria, tamanho).
+  Membro comum recebe os anexos ativos com nome, categoria e tamanho. Anexo
+  bloqueado por denúncia chega a todos só como aviso (`status` `blocked`, sem nome,
+  categoria ou tamanho): no lugar do anexo aparece "O arquivo encaminhado por <autor>
+  recebeu uma denúncia." com ícone de proibido, e um toast amarelo é mostrado na
+  primeira vez que a tela vê o bloqueio. Admin recebe todos com detalhes.
+- Menção com @nome: ao digitar @ no campo, aparece a lista dos membros ativos da sala
+  (setas, Enter ou clique escolhem; Esc fecha). Ao enviar, as menções vão no campo
+  `mentions` (vínculos de `chat_room_members`) e ficam em `chat_message_mentions`.
+  A listagem da sala devolve `mentions` por mensagem e `members` (ativos). Na bolha
+  o @nome aparece destacado, e a bolha mencionada tem borda amarela. O mencionado
+  recebe um toast amarelo, uma vez por mensagem.
+- Dicionário de palavras proibidas: lista em `frontend/projeto54900/src/config/palavras-proibidas.json`
+  (campo `palavras`). Compara palavra inteira, sem diferenciar maiúscula e acento
+  ('cu' bloqueia 'Vai tomar no Cú', mas não 'custo'). No chat, palavra proibida desabilita
+  Enviar e Upload e mostra o aviso. Só o frontend valida por enquanto; o backend ainda não.
+- Denúncia na própria bolha: anexo de **outro** membro traz o ícone de bandeira.
+  Abre o modal com o formulário `denunciar-anexo` (pelo schema, anexo preenchido e
+  desabilitado) e um aviso de que o anexo e o autor são bloqueados na hora.
+  Confirmar cria a denúncia (`POST chat-room-attachment-reports/create`) e recarrega
+  as mensagens: membro comum deixa de ver o anexo bloqueado.
+- Na bolha: foto e vídeo aparecem como miniatura (binário com token, carregado uma
+  vez por anexo) e abrem no `MediaViewerModal`; demais tipos aparecem como cartão
+  com ícone do tipo, nome, tamanho e botão de download (`fetchDownload`).
+- Enviar mensagem exige vínculo ativo na sala (403 "Entre na sala para enviar mensagens").
+- Ler mensagens da sala (`GET chat-messages/room/{roomId}`) exige vínculo ativo ou
+  admin; devolve só mensagens com status `sent`, as últimas 200.
+
+Scripts: `doc/sql/insert/20261003225401_chat_rooms_entrar_favoritar_acoes.sql`.
+Plano: `src/writable/claude/20261003225400_chat_entrar_favoritar_tela_plano.json`.
+
+**Pendente:**
+
+- Teste funcional com usuário comum e com admin (entrar, enviar, upload, favoritar
+  até o limite e desfavoritar, barra superior).
+- A ação Favoritar e Desfavoritar aparecem juntas na linha. O ideal é mostrar só a
+  que faz sentido para cada sala; isso exige informar, na listagem, se a sala já
+  está nos favoritos do usuário.
+- Mensagens da sala atualizam por consulta a cada 5 segundos, não em tempo real.
+
+## 6.12 Favoritos por usuário (2026-10-03)
+
+- **Escopo no servidor.** O `Processor` de favoritos filtra todas as leituras da
+  view (`find`, `get-all`, `get-grouped`, `search`, `get/{id}`, `get-no-pagination`)
+  pelo `crf_user_manager_id` da sessão quando quem consulta não é admin. Admin
+  vê todos. Os endpoints de excluídos (`get-deleted`, `get-deleted-all`,
+  `get-all-with-deleted`) são só admin (`adminonly`).
+- **Tela "Salas favoritas"** (`chat-room-favorites`): roles user e admin. Usuário
+  vê só os próprios favoritos; Editar e Remover dos favoritos valem só para o dono.
+- **Listagem de salas:** cada linha recebe `favorito` (sim/não), calculado a partir
+  de `chat-room-favorites/mine`. Um único botão de estrela alterna: vazada quando a
+  sala não é favorita (clique favorita, POST) e preenchida quando é (clique
+  desfavorita, DELETE). É a ação `list_actions` 90 (`data_action` `favorito-toggle`);
+  a 91 foi desativada (soft delete). Script: `doc/sql/insert/20261003231214_favorito_toggle.sql`.
+- **Barra superior:** o ícone de chat de cada sala favorita aparece depois dos
+  favoritos de menu, só para o usuário que favoritou.
+
+Scripts: `doc/sql/insert/20261003230730_favoritos_por_usuario.sql`.
+Plano: `src/writable/claude/20261003230729_favoritos_por_usuario_plano.json`.
+
+**Pendente:** teste com login de usuário comum (ver só os próprios favoritos,
+não conseguir editar favorito de outro) e com admin (ver todos).
+
+## 6.13 Desbloqueio de membro (2026-10-04)
+
+- Na listagem de membros, a ação **alternada** Bloquear/Desbloquear (`list_actions` 92,
+  `data_action` `bloqueio-toggle`) mostra Bloquear em linha ativa (`PUT` com
+  `{"status": "blocked"}`, sem justificativa: o motivo fica `manual`) e Desbloquear em
+  linha bloqueada (`PUT` com `{"status": "active"}`; o backend limpa `blocked_at` e
+  `blocked_reason`). Cada linha tem três botões: Editar, Excluir e a alternância.
+- Quem pode desbloquear: dono da sala ou admin. Os demais recebem 403.
+- O desbloqueio do membro **não** libera o anexo denunciado. Para liberar o anexo,
+  Editar em Anexos do Chat com status Ativo (autor, dono da sala ou admin).
+- Ações com regra de linha não aplicável agora ficam ocultas na listagem de membros
+  (antes apareciam desabilitadas).
+- Scripts: `doc/sql/insert/20261004001114_chat_room_members_desbloquear.sql` e `doc/sql/insert/20261004001349_chat_room_members_bloquear_toggle.sql`.
 
 ## 7. Próximos passos (fora deste desenho)
 

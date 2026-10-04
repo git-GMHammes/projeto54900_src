@@ -61,5 +61,8 @@ export { chatRoomMembersTable } from './chatRoomMembers.table';
 export { chatRoomMembersView } from './chatRoomMembers.view';
 export { chatRoomAttachmentsTable } from './chatRoomAttachments.table';
 export { chatRoomAttachmentsView } from './chatRoomAttachments.view';
+export { chatRoomAttachmentReportsTable } from './chatRoomAttachmentReports.table';
+export { chatRoomWarningsTable } from './chatRoomWarnings.table';
+export { chatRoomFavoritesTable } from './chatRoomFavorites.table';
 export { chatRoomAttachmentsUpload } from './chatRoomAttachments.upload';
 export { dbSchema } from './dbSchema';
