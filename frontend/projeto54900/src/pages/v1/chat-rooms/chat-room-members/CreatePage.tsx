@@ -119,6 +119,9 @@ export default function CreatePage() {
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Adicionando...' : 'Adicionar'}
             </button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.chatRoomMembers.list)}>
+              Voltar
+            </button>
           </div>
         </form>
       )}

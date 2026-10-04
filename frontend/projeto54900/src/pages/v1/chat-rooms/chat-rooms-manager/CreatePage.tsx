@@ -250,6 +250,9 @@ export default function CreatePage() {
             <button type="submit" className="btn btn-primary" disabled={submitting || !accepted}>
               {submitting ? 'Criando...' : 'Criar'}
             </button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.chatRooms.list)}>
+              Voltar
+            </button>
           </div>
         </form>
       )}

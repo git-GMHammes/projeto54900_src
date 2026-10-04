@@ -45,5 +45,14 @@ export function fetchDownload(id: number | string, signal?: AbortSignal): Promis
   return http.get<Blob>(`${base}/download/${id}`, { responseType: 'blob', signal });
 }
 
-export const chatRoomAttachmentsUpload = { upload, fetchDownload };
+/**
+ * Baixa o binario para exibicao inline (`serve/{id}`) com o token da sessao.
+ * Usado pelo visualizador de midias: o chamador monta um `blob:` URL e o libera ao fechar.
+ * @param id id em chat_room_attachments
+ */
+export function fetchServe(id: number | string, signal?: AbortSignal): Promise<Blob> {
+  return http.get<Blob>(`${base}/serve/${id}`, { responseType: 'blob', signal });
+}
+
+export const chatRoomAttachmentsUpload = { upload, fetchDownload, fetchServe };
 export default chatRoomAttachmentsUpload;

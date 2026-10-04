@@ -83,6 +83,9 @@ export default function CreatePage() {
           <button type="submit" className="btn btn-primary">
             Criar
           </button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.nav.list)}>
+              Voltar
+            </button>
         </div>
       </form>
     </>

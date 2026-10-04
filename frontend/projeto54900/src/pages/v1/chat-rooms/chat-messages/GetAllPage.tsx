@@ -8,8 +8,8 @@
 // Padrao visual espelhado de pages/v1/chat-rooms/chat-rooms-manager/GetAllPage.tsx
 // (por sua vez espelho de pages/v1/nav/GetAllPage.tsx), com UMA diferenca: a
 // acao 'Remover' e um api_call PUT com CORPO FIXO (list_actions.extra_data_json
-// = {"status":"removed"}) — o UpdateRequest do backend so aceita esse status
-// (conteudo de mensagem e imutavel). Por isso o execute() manda action.extraData
+// = {"status":"removed"}). Usuario comum so remove; o conteudo so o admin edita
+// (acao 'Editar', roles admin, link para a UpdatePage). Por isso o execute() manda action.extraData
 // como body em PUT/PATCH/POST, nao so em DELETE/sem corpo como nos espelhos.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,8 +19,18 @@ import { Link } from 'react-router-dom';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import MediaViewerModal from '@/components/global/MediaViewerModal';
+import { toMediaCategory } from '@/utils/mediaCategory';
+import type { MediaSource } from '@/components/global/MediaViewerModal';
+import { useAuth } from '@/context/AuthContext';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import {
+  chatRoomAttachmentsUpload,
+  chatRoomAttachmentsView,
+  listManagerTable,
+  listColumnsTable,
+  listActionsTable,
+} from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
@@ -40,9 +50,31 @@ import {
   resolveHrefTemplate,
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /** Slug do list_manager que descreve esta tela (o resto da lista vem do banco). */
 const MANAGER_SLUG = 'chat-messages';
+
+/** Limite de anexos carregados no visualizador de uma mensagem. */
+const MEDIA_LIMIT = 50;
+
+/** Todas as mídias de UMA mensagem, pela view filtrada por cra_chat_message_id. */
+async function loadMessageSources(messageId: string, signal: AbortSignal): Promise<MediaSource[]> {
+  const raw = await chatRoomAttachmentsView.find(
+    { cra_chat_message_id: messageId },
+    { limit: MEDIA_LIMIT, sort: 'id', order: 'ASC' },
+    { signal },
+  );
+  return normalizeList<Record<string, unknown>>(raw).rows.map((row) => {
+    const id = typeof row.id === 'number' || typeof row.id === 'string' ? row.id : '';
+    return {
+      id,
+      category: toMediaCategory(row.cra_category),
+      name: str(row.cra_original_name) || 'Anexo',
+      fetchBlob: (s: AbortSignal) => chatRoomAttachmentsUpload.fetchServe(id, s),
+    };
+  });
+}
 
 function ActionButton({
   action,
@@ -50,6 +82,7 @@ function ActionButton({
   subject,
   disabled,
   onExecuted,
+  onOpenMedia,
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
@@ -57,6 +90,8 @@ function ActionButton({
   subject: string;
   disabled: boolean;
   onExecuted: () => void;
+  /** Abre o visualizador de midias da linha (data_action 'media-viewer'). */
+  onOpenMedia: (row: Record<string, unknown>) => void;
 }) {
   const toast = useToast();
 
@@ -91,17 +126,22 @@ function ActionButton({
   }
 
   if (action.actionType === 'modal') {
+    const isMedia = action.dataAction === 'media-viewer';
     return withTooltip(
       <button
         type="button"
         className="btn btn-sm btn-outline-primary"
         aria-label={tip}
         disabled={disabled}
-        onClick={() =>
+        onClick={() => {
+          if (isMedia) {
+            onOpenMedia(row);
+            return;
+          }
           toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
             title: action.label,
-          })
-        }
+          });
+        }}
       >
         {content}
       </button>,
@@ -123,6 +163,7 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path, action.extraData ?? undefined);
       else if (method === 'POST') await http.post(path, action.extraData ?? undefined);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
@@ -147,8 +188,18 @@ export default function GetAllPage() {
 
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
-  const [actions, setActions] = useState<ListActionRow[]>([]);
+  const [actionsAll, setActionsAll] = useState<ListActionRow[]>([]);
   const [defsLoading, setDefsLoading] = useState(true);
+  /** Linha cujo visualizador de midias esta aberto (null = fechado). */
+  const [mediaRow, setMediaRow] = useState<Record<string, unknown> | null>(null);
+  const { user } = useAuth();
+
+  // Ação sem `roles` vale para todos; com `roles`, só quem tem o papel (ex.: Editar = admin).
+  const userRole = user?.role?.slug ?? '';
+  const actions = useMemo(
+    () => actionsAll.filter((a) => a.roles.length === 0 || (userRole !== '' && a.roles.includes(userRole))),
+    [actionsAll, userRole],
+  );
   const [defsError, setDefsError] = useState<string | null>(null);
 
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
@@ -178,7 +229,7 @@ export default function GetAllPage() {
         listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
       ]);
       setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
-      setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
+      setActionsAll(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
       setManager(null);
       setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
@@ -328,6 +379,7 @@ export default function GetAllPage() {
                             subject={columns[0] ? cellValue(columns[0], row) : ''}
                             disabled={!evalBusinessRule(a.businessRule, row)}
                             onExecuted={() => void loadData()}
+                            onOpenMedia={setMediaRow}
                           />
                         ))}
                       </td>
@@ -395,6 +447,14 @@ export default function GetAllPage() {
             </nav>
           </div>
         </div>
+      )}
+
+      {mediaRow && (
+        <MediaViewerModal
+          title={`Mídias: ${columns[0] ? cellValue(columns[0], mediaRow) : ''}`}
+          load={(signal) => loadMessageSources(str(mediaRow.id), signal)}
+          onClose={() => setMediaRow(null)}
+        />
       )}
     </>
   );

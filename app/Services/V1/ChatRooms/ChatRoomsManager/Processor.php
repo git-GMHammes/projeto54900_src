@@ -3,7 +3,9 @@
 namespace App\Services\V1\ChatRooms\ChatRoomsManager;
 
 use App\Libraries\Auth\CurrentUser;
+use App\Models\V1\ChatRooms\ChatRoomMembers\SqlTableModel as ChatRoomMembersModel;
 use App\Models\V1\ChatRooms\ChatRoomsManager\SqlTableModel;
+use App\Models\V1\User\UserManager\SqlTableModel as UserManagerModel;
 use App\Models\V1\ChatRooms\ChatRoomsManager\SqlViewModel;
 use App\Services\V1\BaseTableService;
 
@@ -40,11 +42,68 @@ class Processor extends BaseTableService
 {
     protected SqlTableModel $tableModel;
     protected SqlViewModel $viewModel;
+    private ChatRoomMembersModel $membersModel;
+    private UserManagerModel $usersModel;
 
     public function __construct()
     {
-        $this->tableModel = new SqlTableModel();
-        $this->viewModel  = new SqlViewModel();
+        $this->tableModel   = new SqlTableModel();
+        $this->viewModel    = new SqlViewModel();
+        $this->membersModel = new ChatRoomMembersModel();
+        $this->usersModel   = new UserManagerModel();
+    }
+
+    /**
+     * Entrar na sala (ação Entrar). Cria o vínculo de membro do usuário da
+     * sessão, ou reativa o vínculo que saiu. Idempotente: já ativo devolve ok.
+     * Sala fechada: 409. Usuário inativo: 403. Bloqueado na sala: 403.
+     */
+    public function join(int $roomId): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return $this->forbidden('Visitante nao entra em salas');
+        }
+
+        $room = $roomId > 0 ? $this->tableModel->find($roomId) : null;
+        if ($room === null) {
+            return $this->notFound();
+        }
+
+        if (($room['status'] ?? null) !== 'open') {
+            return ['success' => false, 'message' => 'Sala fechada, procure o moderador da sala para entender o motivo.', 'code' => 409];
+        }
+
+        $userId = (int) CurrentUser::id();
+        $user = $this->usersModel->find($userId);
+        if ($user === null || ($user['status'] ?? null) !== 'active') {
+            return $this->forbidden('Somente usuario ativo pode entrar em salas');
+        }
+
+        $member = $this->membersModel->withDeleted()
+            ->where('chat_rooms_manager_id', $roomId)
+            ->where('user_manager_id', $userId)
+            ->first();
+
+        if ($member !== null) {
+            if (($member['status'] ?? null) === 'blocked') {
+                return $this->forbidden('Voce esta bloqueado nesta sala');
+            }
+            if (($member['deleted_at'] ?? null) !== null) {
+                $this->membersModel->restore((int) $member['id']);
+            }
+            if (($member['status'] ?? null) !== 'active') {
+                $this->membersModel->update((int) $member['id'], ['status' => 'active']);
+            }
+        } else {
+            $this->membersModel->insert([
+                'chat_rooms_manager_id' => $roomId,
+                'user_manager_id'       => $userId,
+                'role'                  => 'member',
+                'status'                => 'active',
+            ]);
+        }
+
+        return ['success' => true, 'data' => ['chat_rooms_manager_id' => $roomId, 'joined' => true]];
     }
 
     // -------------------------------------------------------------------------

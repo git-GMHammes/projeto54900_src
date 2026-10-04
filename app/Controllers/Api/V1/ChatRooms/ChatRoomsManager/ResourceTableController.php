@@ -36,4 +36,22 @@ class ResourceTableController extends BaseResourceTableController
     {
         return (new UpdateRequest())->rules();
     }
+
+    /**
+     * POST join/{id} — entrar na sala (membro ativo do usuário da sessão).
+     */
+    public function join(int $id): ResponseInterface
+    {
+        try {
+            $result = $this->processor->join($id);
+
+            if (!$result['success']) {
+                return $this->respondError($result['message'], $result['code'] ?? 409);
+            }
+
+            return $this->respondSuccess($result['data'], 'Você entrou na sala');
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
 }

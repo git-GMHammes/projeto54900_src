@@ -110,13 +110,28 @@ class Processor extends BaseTableService
         return $data;
     }
 
+    /**
+     * Revisão é do servidor: reviewed_by/reviewed_at vêm sempre do admin da
+     * sessão e do relógio do servidor, nunca do corpo. Motivo, descrição,
+     * anexo e denunciante são dados do denunciante e não mudam aqui.
+     */
     protected function prepareUpdateData(int $id, array $data): array
     {
-        unset($data['chat_room_attachment_id'], $data['reporter_user_manager_id']);
+        unset(
+            $data['chat_room_attachment_id'],
+            $data['reporter_user_manager_id'],
+            $data['reason'],
+            $data['description'],
+            $data['reviewed_by'],
+            $data['reviewed_at'],
+        );
 
-        if (array_key_exists('status', $data) && $data['status'] !== 'pending' && empty($data['reviewed_at'])) {
-            $data['reviewed_at'] = date('Y-m-d H:i:s');
+        if (($data['status'] ?? null) === 'pending') {
+            $data['reviewed_by'] = null;
+            $data['reviewed_at'] = null;
+        } else {
             $data['reviewed_by'] = (int) CurrentUser::id();
+            $data['reviewed_at'] = date('Y-m-d H:i:s');
         }
 
         return $data;

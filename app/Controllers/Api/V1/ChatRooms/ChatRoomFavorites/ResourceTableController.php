@@ -36,4 +36,50 @@ class ResourceTableController extends BaseResourceTableController
     {
         return (new UpdateRequest())->rules();
     }
+
+    /**
+     * POST favorite/{roomId} — favorita a sala para o usuário da sessão (limite CHAT_FAVORITES_LIMIT).
+     */
+    public function favorite(int $roomId): ResponseInterface
+    {
+        try {
+            $result = $this->processor->favorite($roomId);
+
+            if (!$result['success']) {
+                return $this->respondError($result['message'], $result['code'] ?? 409);
+            }
+
+            return $this->respondSuccess($result['data'], 'Sala adicionada aos favoritos');
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
+
+    /**
+     * DELETE unfavorite/{roomId} — remove a sala dos favoritos da sessão.
+     */
+    public function unfavorite(int $roomId): ResponseInterface
+    {
+        try {
+            $result = $this->processor->unfavorite($roomId);
+
+            return $this->respondSuccess($result['data'], 'Sala removida dos favoritos');
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
+
+    /**
+     * GET mine — favoritos do usuário da sessão e o limite vigente.
+     */
+    public function mine(): ResponseInterface
+    {
+        try {
+            $result = $this->processor->mine();
+
+            return $this->respondSuccess($result['data']);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
 }

@@ -97,6 +97,7 @@ import PostDetailsModal from './PostDetailsModal';
 import EditPostModal from '../home-feed/EditPostModal';
 import NewCommentModal from '../home-feed/NewCommentModal';
 import NewReportModal from '../home-feed/NewReportModal';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /** Único dado de configuração fixo no código — o slug do `list_manager` desta tela. */
 const MANAGER_SLUG = 'timeline-feed';
@@ -253,6 +254,7 @@ function ActionButton({
       else await http.get(path);
       if (action.dataAction === DATA_ACTION_REACTION_LIKE) onReacted('like');
       else if (action.dataAction === DATA_ACTION_REACTION_DISLIKE) onReacted('dislike');
+      notifyActionDone(toast, action);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });

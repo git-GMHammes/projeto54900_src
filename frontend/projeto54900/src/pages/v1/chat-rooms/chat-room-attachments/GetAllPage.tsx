@@ -26,11 +26,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '@/context/AuthContext';
+
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import { chatRoomAttachmentsUpload, listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import MediaViewerModal from '@/components/global/MediaViewerModal';
+import { toMediaCategory } from '@/utils/mediaCategory';
+import type { MediaSource } from '@/components/global/MediaViewerModal';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
@@ -50,6 +55,7 @@ import {
   resolveHrefTemplate,
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /** Dispara o "salvar como" do navegador para um Blob ja baixado (com token). */
 function saveBlob(blob: Blob, filename: string) {
@@ -72,12 +78,26 @@ const MANAGER_SLUG = 'chat-room-attachments';
  * api_endpoint, com confirmacao opcional. 'modal' nao existe neste slug hoje —
  * se aparecer, avisa em vez de falhar em silencio.
  */
+/** Fonte do visualizador para UM anexo (binário via serve com token). */
+function rowSource(row: Record<string, unknown>): MediaSource[] {
+  const id = typeof row.id === 'number' || typeof row.id === 'string' ? row.id : '';
+  return [
+    {
+      id,
+      category: toMediaCategory(row.cra_category),
+      name: str(row.cra_original_name) || 'Anexo',
+      fetchBlob: (signal: AbortSignal) => chatRoomAttachmentsUpload.fetchServe(id, signal),
+    },
+  ];
+}
+
 function ActionButton({
   action,
   row,
   subject,
   disabled,
   onExecuted,
+  onOpenMedia,
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
@@ -85,6 +105,8 @@ function ActionButton({
   subject: string;
   disabled: boolean;
   onExecuted: () => void;
+  /** Abre o visualizador de mídias da linha (data_action 'media-viewer'). */
+  onOpenMedia: (row: Record<string, unknown>) => void;
 }) {
   const toast = useToast();
 
@@ -129,11 +151,15 @@ function ActionButton({
         className="btn btn-sm btn-outline-primary"
         aria-label={tip}
         disabled={disabled}
-        onClick={() =>
+        onClick={() => {
+          if (action.dataAction === 'media-viewer') {
+            onOpenMedia(row);
+            return;
+          }
           toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
             title: action.label,
-          })
-        }
+          });
+        }}
       >
         {content}
       </button>,
@@ -159,6 +185,7 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
@@ -184,7 +211,16 @@ export default function GetAllPage() {
   // GRUPO 1 — DEFINICAO (o que a lista e), carregada uma vez no mount.
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
-  const [actions, setActions] = useState<ListActionRow[]>([]);
+  const [actionsAll, setActionsAll] = useState<ListActionRow[]>([]);
+  const { user } = useAuth();
+  // Ação sem `roles` vale para todos; com `roles`, só quem tem o papel.
+  const userRole = user?.role?.slug ?? '';
+  const actions = useMemo(
+    () => actionsAll.filter((a) => a.roles.length === 0 || (userRole !== '' && a.roles.includes(userRole))),
+    [actionsAll, userRole],
+  );
+  /** Linha cujo visualizador de midias esta aberto (null = fechado). */
+  const [mediaRow, setMediaRow] = useState<Record<string, unknown> | null>(null);
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
 
@@ -216,7 +252,7 @@ export default function GetAllPage() {
         listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
       ]);
       setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
-      setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
+      setActionsAll(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
       setManager(null);
       setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
@@ -282,6 +318,9 @@ export default function GetAllPage() {
         <button className="btn btn-outline-secondary me-2" onClick={() => void loadData()} disabled={dataLoading}>
           Recarregar
         </button>
+        <Link className="btn btn-primary" to={paths.v1.chatRoomAttachments.create}>
+          Novo anexo
+        </Link>
         <Link className="btn btn-primary" to={paths.v1.chatRoomAttachments.create}>
           Novo anexo
         </Link>
@@ -371,6 +410,7 @@ export default function GetAllPage() {
                             subject={columns[0] ? cellValue(columns[0], row) : ''}
                             disabled={!evalBusinessRule(a.businessRule, row)}
                             onExecuted={() => void loadData()}
+                            onOpenMedia={setMediaRow}
                           />
                         ))}
                       </td>
@@ -438,6 +478,13 @@ export default function GetAllPage() {
             </nav>
           </div>
         </div>
+      )}
+      {mediaRow && (
+        <MediaViewerModal
+          title={`Mídia: ${columns[0] ? cellValue(columns[0], mediaRow) : ''}`}
+          load={() => Promise.resolve(rowSource(mediaRow))}
+          onClose={() => setMediaRow(null)}
+        />
       )}
     </>
   );

@@ -54,6 +54,7 @@ import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listC
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /** Slug do list_manager que descreve esta tela (colunas/acoes vem do banco). */
 const MANAGER_SLUG = 'menu';
@@ -163,6 +164,7 @@ function ActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });

@@ -5,6 +5,7 @@ import { http, ApiError } from '@/services/http';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { resolveHrefTemplate } from '@/utils/listConstructor';
 import type { ListActionRow } from '@/utils/listConstructor';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /**
  * Botão só-ícone de uma ação de `list_actions` para uma linha (calendário ou
@@ -64,6 +65,7 @@ export default function RowActionButton({
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action);
       onExecuted(action);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });

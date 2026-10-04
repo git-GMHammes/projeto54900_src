@@ -15,11 +15,7 @@ class UpdateRequest
     public function rules(): array
     {
         return [
-            'reason'      => 'permit_empty|in_list[nudity,violence,hate,harassment,spam,other]',
-            'description' => 'permit_empty|string',
             'status'      => 'permit_empty|in_list[pending,reviewing,resolved,rejected]',
-            'reviewed_by' => 'permit_empty|is_natural_no_zero',
-            'reviewed_at' => 'permit_empty|valid_date[Y-m-d H:i:s]',
             'review_note' => 'permit_empty|string',
         ];
     }
@@ -27,9 +23,6 @@ class UpdateRequest
     public function messages(): array
     {
         return [
-            'reason' => [
-                'in_list' => 'Motivo invalido: use nudity, violence, hate, harassment, spam ou other',
-            ],
             'status' => [
                 'in_list' => 'Status invalido: use pending, reviewing, resolved ou rejected',
             ],

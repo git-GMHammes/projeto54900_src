@@ -22,6 +22,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '@/context/AuthContext';
+
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
@@ -46,6 +48,7 @@ import {
   resolveHrefTemplate,
 } from '@/utils/listConstructor';
 import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listConstructor';
+import { notifyActionDone } from '@/utils/listActionToast';
 
 /** Slug do list_manager que descreve esta tela (o resto da lista vem do banco). */
 const MANAGER_SLUG = 'chat-room-members';
@@ -87,6 +90,40 @@ function ActionButton({
       </span>
     </span>
   );
+
+  // Bloquear/Desbloquear: uma ação alternada. Linha ativa -> bloqueia (status blocked,
+  // sem justificativa; o motivo fica manual). Linha bloqueada -> desbloqueia (status active).
+  if (action.dataAction === 'bloqueio-toggle') {
+    const blocked = row.crm_status === 'blocked';
+    const label = blocked ? 'Desbloquear' : 'Bloquear';
+    const toggle = async () => {
+      try {
+        await http.put(`/v1/chat-room-members/update/${str(row.id)}`, { status: blocked ? 'active' : 'blocked' });
+        toast.success(
+          blocked ? `${subject}: membro desbloqueado.` : `${subject}: membro bloqueado.`,
+          { title: 'Bloqueio' },
+        );
+        onExecuted();
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Falha ao atualizar o membro.', { title: label });
+      }
+    };
+    return (
+      <span className="icon-action-tooltip ms-2">
+        <button
+          type="button"
+          className={`btn btn-sm ${blocked ? 'btn-success' : 'btn-outline-warning'}`}
+          aria-label={`${label}: ${subject}`}
+          onClick={() => void toggle()}
+        >
+          <i className={`bi bi-${blocked ? 'unlock' : 'lock'}`} aria-hidden="true" />
+        </button>
+        <span className="icon-action-tooltip-bubble icon-action-tooltip-bubble--start" role="tooltip">
+          {label}
+        </span>
+      </span>
+    );
+  }
 
   if (action.actionType === 'link') {
     const href = resolveHrefTemplate(action.hrefTemplate, row);
@@ -134,10 +171,11 @@ function ActionButton({
       const path = resolveEndpoint(resolveHrefTemplate(action.apiEndpoint, row));
       const method = action.httpMethod.toUpperCase();
       if (method === 'DELETE') await http.delete(path);
-      else if (method === 'PUT') await http.put(path);
+      else if (method === 'PUT') await http.put(path, action.extraData ?? undefined);
       else if (method === 'PATCH') await http.patch(path);
       else if (method === 'POST') await http.post(path);
       else await http.get(path);
+      notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
@@ -163,7 +201,14 @@ export default function GetAllPage() {
   // GRUPO 1 — DEFINICAO (o que a lista e), carregada uma vez no mount.
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
-  const [actions, setActions] = useState<ListActionRow[]>([]);
+  const [actionsAll, setActionsAll] = useState<ListActionRow[]>([]);
+  const { user } = useAuth();
+  // Ação sem `roles` vale para todos; com `roles`, só quem tem o papel.
+  const userRole = user?.role?.slug ?? '';
+  const actions = useMemo(
+    () => actionsAll.filter((a) => a.roles.length === 0 || (userRole !== '' && a.roles.includes(userRole))),
+    [actionsAll, userRole],
+  );
   const [defsLoading, setDefsLoading] = useState(true);
   const [defsError, setDefsError] = useState<string | null>(null);
 
@@ -195,7 +240,7 @@ export default function GetAllPage() {
         listActionsTable.find({ list_manager_id: found.id }, { sort: 'sort_order', order: 'ASC', limit: 100 }),
       ]);
       setColumns(normalizeList<Record<string, unknown>>(colsRaw).rows.map(toColumn));
-      setActions(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
+      setActionsAll(normalizeList<Record<string, unknown>>(actsRaw).rows.map(toAction));
     } catch (err) {
       setManager(null);
       setDefsError(err instanceof ApiError ? err.message : 'Falha ao carregar a definicao da listagem.');
@@ -342,7 +387,8 @@ export default function GetAllPage() {
                     ))}
                     {actions.length > 0 && (
                       <td className="text-end text-nowrap">
-                        {actions.map((a) => (
+                        {/* Ação com regra de linha (ex.: Desbloquear só em bloqueados) some quando não se aplica. */}
+                        {actions.filter((a) => evalBusinessRule(a.businessRule, row)).map((a) => (
                           <ActionButton
                             key={a.id}
                             action={a}

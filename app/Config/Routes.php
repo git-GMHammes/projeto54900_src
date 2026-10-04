@@ -261,6 +261,7 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('chat-rooms-manager', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomsManager/EndpointCustom.php';
     });
 
     $routes->group('chat-rooms-manager-view', static function ($routes) {
@@ -269,6 +270,7 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('chat-messages', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatMessages/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatMessages/EndpointCustom.php';
     });
 
     $routes->group('chat-messages-view', static function ($routes) {
@@ -302,6 +304,7 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('chat-room-favorites', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/ChatRooms/ChatRoomFavorites/EndpointCustom.php';
     });
 
     $routes->group('chat-room-favorites-view', static function ($routes) {

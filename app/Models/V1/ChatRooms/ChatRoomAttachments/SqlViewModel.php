@@ -32,5 +32,5 @@ class SqlViewModel extends BaseViewModel
 
     public array $searchFields = ['cra_original_name', 'cr_name', 'um_username', 'uc_name'];
 
-    public array $filterFields = ['cra_category', 'cra_status'];
+    public array $filterFields = ['cra_category', 'cra_status', 'cra_chat_message_id'];
 }

@@ -3,9 +3,13 @@
 // formManagerView.getGrouped -> buildRenderSchema -> FormGrid -> submit para
 // o submit_endpoint do build.
 //
-// Sem UpdatePage: o UpdateRequest do backend so aceita status=removed
-// (mensagem e imutavel apos criada) — isso vira a acao "Remover" na lista,
-// nao uma tela de edicao.
+// Envio em duas etapas: 1) POST da mensagem (JSON, com `mentions[]` opcional);
+// 2) se o campo `file` tiver arquivo, POST do anexo (multipart) com o
+// chat_message_id devolvido. Se o anexo falhar, a mensagem ja existe: o erro
+// e avisado e a tela segue para a lista (evita reenviar a mensagem).
+//
+// Edicao de mensagem existe em outra tela (UpdatePage, so admin): o usuario
+// comum nao edita o conteudo; ele remove pela acao "Remover" da lista.
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -17,7 +21,7 @@ import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
-import { formManagerView } from '@/services/v1';
+import { chatRoomAttachmentsUpload, formManagerView } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList, normalizeItem } from '@/utils/apiResult';
@@ -26,6 +30,12 @@ import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/ut
 import { paths } from '@/routes/paths';
 
 const SLUG = 'enviar-mensagem';
+
+/** Arquivo escolhido no campo `file` do FormGrid (null se vazio). */
+function selectedFile(form: HTMLFormElement): File | null {
+  const value = new FormData(form).get('file');
+  return value instanceof File && value.size > 0 ? value : null;
+}
 
 export default function CreatePage() {
   const navigate = useNavigate();
@@ -77,6 +87,7 @@ export default function CreatePage() {
       }
 
       const payload = formDataToPayload(el);
+      const file = selectedFile(el);
       const send = senderFor(form.meta.httpMethod);
       const path = resolveEndpoint(form.meta.submitEndpoint);
 
@@ -89,6 +100,18 @@ export default function CreatePage() {
           toast.error('Registro criado sem id na resposta.', { title: 'Erro ao enviar' });
           return;
         }
+
+        if (file) {
+          try {
+            await chatRoomAttachmentsUpload.upload({ file, chatMessageId: id });
+          } catch (err) {
+            const detail = err instanceof ApiError ? `${err.message}${errorDetail(err)}` : 'Falha inesperada no anexo.';
+            toast.error(`A mensagem foi enviada, mas o anexo não. ${detail}`, { title: 'Anexo não enviado' });
+            void navigate(paths.v1.chatMessages.list);
+            return;
+          }
+        }
+
         toast.success('Mensagem enviada.', { title: form.meta.title });
         void navigate(paths.v1.chatMessages.list);
       } catch (err) {
@@ -121,6 +144,9 @@ export default function CreatePage() {
           <div className="d-flex gap-2 mt-4 pt-3 border-top">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Enviando...' : 'Enviar'}
+            </button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.chatMessages.list)}>
+              Voltar
             </button>
           </div>
         </form>
