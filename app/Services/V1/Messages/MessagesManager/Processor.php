@@ -3,6 +3,9 @@
 namespace App\Services\V1\Messages\MessagesManager;
 
 use App\Libraries\Auth\CurrentUser;
+use App\Libraries\ForbiddenWords;
+use App\Models\V1\Messages\MessageWarnings\SqlTableModel as WarningsModel;
+use App\Models\V1\Messages\MessageMentions\SqlTableModel as MentionsModel;
 use App\Models\V1\Messages\MessagesManager\SqlTableModel;
 use App\Models\V1\Messages\MessagesManager\SqlViewModel;
 use App\Models\V1\User\UserManager\SqlTableModel as UserManagerModel;
@@ -20,9 +23,9 @@ use App\Services\V1\BaseTableService;
  *    mensagem nasce `scheduled` (invisivel ao destinatario); sem ele nasce
  *    `sent` com `sent_at` = agora. `scheduled_at` no passado e recusado (422).
  *  - O job `messages:dispatch` vira `scheduled` -> `sent` quando a hora chega.
- *  - Update/delete-*: so o remetente ou admin. `content`/`scheduled_at` so
- *    enquanto `scheduled` (409 depois de enviada); `status=removed` cancela a
- *    agendada ou remove a enviada.
+ *  - Update/delete-*: so o remetente ou admin. AREA ADMINISTRATIVA IRRESTRITA:
+ *    `content`/`scheduled_at` mudam em qualquer status (a regra "so agendada" e do
+ *    MODO CHAT, futuro); `status=removed` cancela a agendada ou remove a enviada.
  *  - Visibilidade (tabela e view): remetente ve tudo que enviou; destinatario
  *    ve so o que ja foi enviado (`sent`); admin ve tudo. Linha fora da regra
  *    "nao existe" (404).
@@ -63,7 +66,7 @@ class Processor extends BaseTableService
             return $this->notFound('Remetente nao encontrado');
         }
 
-        if (($sender['status'] ?? null) !== 'active') {
+        if (($sender['status'] ?? null) !== 'active' && !CurrentUser::isAdmin()) { // admin registra em nome de qualquer usuario
             return $this->forbidden('Somente usuario ativo pode enviar mensagens');
         }
 
@@ -76,7 +79,7 @@ class Processor extends BaseTableService
             return $this->notFound('Destinatario nao encontrado');
         }
 
-        if (($recipient['status'] ?? null) !== 'active') {
+        if (($recipient['status'] ?? null) !== 'active' && !CurrentUser::isAdmin()) { // admin envia a qualquer destinatario existente
             return $this->conflict('Destinatario inativo');
         }
 
@@ -157,6 +160,22 @@ class Processor extends BaseTableService
             return $this->forbidden();
         }
 
+        // Filtro de palavrao (admin isento): a mensagem e gravada `blocked` (nunca entregue), gera advertencia e a
+        // chamada responde 422. Nao havendo palavra proibida, segue o fluxo normal.
+        $word = $this->forbiddenWord((string) ($data['content'] ?? ''));
+        if ($word !== null) {
+            $data['status'] = 'blocked';
+            $result         = parent::create($data);
+
+            if (!($result['success'] ?? false)) {
+                return $result;
+            }
+
+            (new WarningsModel())->register((int) $result['data']['id'], (int) CurrentUser::id(), null, $word);
+
+            return $this->blockedByFilter($word);
+        }
+
         return parent::create($data);
     }
 
@@ -180,6 +199,13 @@ class Processor extends BaseTableService
         $incoming = array_intersect_key($this->sanitizeData($data), array_flip(self::UPDATABLE));
         if ($incoming === []) {
             return $this->invalid('Informe ao menos um campo para alterar');
+        }
+
+        if (array_key_exists('content', $incoming) && trim((string) $incoming['content']) !== trim((string) $existing['content'])) {
+            $word = $this->forbiddenWord((string) $incoming['content']);
+            if ($word !== null) {
+                return $this->flagEdit($id, $word);
+            }
         }
 
         $changes = [];
@@ -210,11 +236,6 @@ class Processor extends BaseTableService
             return $this->forbidden('Somente admin altera o status (exceto remover)');
         }
 
-        if ((array_key_exists('content', $changes) || array_key_exists('scheduled_at', $changes))
-            && !$isAdmin && ($existing['status'] ?? null) !== 'scheduled') {
-            return $this->conflict('Mensagem ja enviada nao pode ser alterada');
-        }
-
         if (array_key_exists('content', $changes)) {
             $content = trim((string) $changes['content']);
             if ($content === '') {
@@ -223,7 +244,8 @@ class Processor extends BaseTableService
             $changes['content'] = $content;
         }
 
-        if (array_key_exists('scheduled_at', $changes) && !$isAdmin && !$this->isFuture((string) $changes['scheduled_at'])) {
+        // Data futura so e exigida de quem reagenda uma mensagem ainda agendada (nao-admin).
+        if (array_key_exists('scheduled_at', $changes) && !$isAdmin && ($existing['status'] ?? null) === 'scheduled' && !$this->isFuture((string) $changes['scheduled_at'])) {
             return $this->invalid('A data de envio precisa ser futura');
         }
 
@@ -238,7 +260,7 @@ class Processor extends BaseTableService
             if ($user === null) {
                 return $this->notFound($label . ' nao encontrado');
             }
-            if (($user['status'] ?? null) !== 'active') {
+            if (($user['status'] ?? null) !== 'active' && !CurrentUser::isAdmin()) {
                 return $this->conflict($label . ' inativo');
             }
         }
@@ -519,6 +541,9 @@ class Processor extends BaseTableService
             return $this->notFound('Usuario nao encontrado');
         }
 
+        // Chat: envia na hora as agendadas vencidas (nao depende do cron do messages:dispatch).
+        $this->tableModel->dispatchDue();
+
         $rows = $this->viewModel
             ->groupStart()
                 ->groupStart()
@@ -533,8 +558,13 @@ class Processor extends BaseTableService
                 ->groupEnd()
             ->groupEnd()
             ->where('deleted_at', null)
+            // Ordem por DATA DE ENTREGA (enviada, senao agendada, senao criada), nao por id de criacao.
+            ->orderBy('COALESCE(mm_sent_at, mm_scheduled_at, created_at)', 'DESC', false)
             ->orderBy('id', 'DESC')
             ->findAll(200);
+
+        $rows        = array_reverse($rows);
+        $attachments = $this->tableModel->attachmentsFor(array_map(static fn ($row): int => (int) $row['id'], $rows));
 
         $items = array_map(static fn ($row) => [
             'id'                        => (int) $row['id'],
@@ -548,7 +578,8 @@ class Processor extends BaseTableService
             'sent_at'                   => $row['mm_sent_at'] ?? null,
             'read_at'                   => $row['mm_read_at'] ?? null,
             'created_at'                => (string) ($row['created_at'] ?? ''),
-        ], array_reverse($rows));
+            'attachments'               => $attachments[(int) $row['id']] ?? [],
+        ], $rows);
 
         return ['success' => true, 'data' => ['items' => $items, 'count' => count($items)]];
     }
@@ -572,6 +603,168 @@ class Processor extends BaseTableService
         $marked = $this->tableModel->markRead($userId, $me);
 
         return ['success' => true, 'data' => ['marked' => $marked]];
+    }
+
+    // -------------------------------------------------------------------------
+    // MODO CHAT — regra de estado do chat (a area administrativa segue irrestrita)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Edita uma mensagem NO CHAT: so o remetente (403; quem nem ve = 404) e SO enquanto ela esta
+     * `scheduled` (409 depois de enviada). Aceita `content` (nao vazio) e `scheduled_at` (futuro). Vale para
+     * mensagem privada e de grupo (ambas sao linhas de messages_manager).
+     */
+    public function chatEdit(int $id, array $data): array
+    {
+        $guard = $this->chatGuard($id);
+        if ($guard['error'] !== null) {
+            return $guard['error'];
+        }
+
+        $message = $guard['message'];
+        if ($message['status'] !== 'scheduled') {
+            return $this->conflict('Mensagem ja enviada nao pode ser editada no chat');
+        }
+
+        $data    = $this->removeMasks($this->sanitizeData($data));
+        $changes = [];
+
+        if (array_key_exists('content', $data)) {
+            $content = trim((string) $data['content']);
+            if ($content === '') {
+                return $this->invalid('A mensagem nao pode ficar vazia');
+            }
+            if ($content !== trim((string) $message['content'])) {
+                $word = $this->forbiddenWord($content);
+                if ($word !== null) {
+                    return $this->flagEdit($id, $word);
+                }
+                $changes['content'] = $content;
+            }
+        }
+
+        if (array_key_exists('scheduled_at', $data)) {
+            $scheduledAt = trim((string) $data['scheduled_at']);
+            if ($scheduledAt === '' || !$this->isFuture($scheduledAt)) {
+                return $this->invalid('A data de envio precisa ser futura');
+            }
+            if (strtotime($scheduledAt) !== strtotime((string) $message['scheduled_at'])) {
+                $changes['scheduled_at'] = $scheduledAt;
+            }
+        }
+
+        if (!array_key_exists('content', $data) && !array_key_exists('scheduled_at', $data)) {
+            return $this->invalid('Informe o texto ou a data de envio');
+        }
+
+        if ($changes !== []) {
+            $this->tableModel->update($id, $changes);
+
+            // Texto novo: mantem so as marcacoes (@) cujo "@Nome" continua nele.
+            if (array_key_exists('content', $changes)) {
+                $this->pruneMentions($id, (string) $changes['content']);
+            }
+        }
+
+        return ['success' => true, 'data' => $this->tableModel->find($id)];
+    }
+
+    /** Palavra proibida do texto (null = liberado). Admin e isento (area administrativa irrestrita). */
+    private function forbiddenWord(string $text): ?string
+    {
+        return CurrentUser::isAdmin() ? null : ForbiddenWords::first($text);
+    }
+
+    /** Resposta 422 de mensagem recusada pelo filtro de palavrao. */
+    private function blockedByFilter(string $word): array
+    {
+        return ['success' => false, 'message' => 'Mensagem bloqueada: contem palavra proibida (' . $word . ')', 'code' => 422];
+    }
+
+    /** Edicao com palavrao: o texto NAO muda; registra a advertencia e responde 422. */
+    private function flagEdit(int $messageId, string $word): array
+    {
+        $warnings = new WarningsModel();
+        $warnings->register($messageId, (int) CurrentUser::id(), $warnings->groupIdOfMessage($messageId), $word);
+
+        return ['success' => false, 'message' => 'Texto nao alterado: contem palavra proibida (' . $word . ')', 'code' => 422];
+    }
+
+    /** Remove as marcacoes da mensagem cujo "@Nome" nao aparece mais no texto (comparacao sem diferenca de maiusculas). */
+    private function pruneMentions(int $messageId, string $content): void
+    {
+        $mentions = new MentionsModel();
+        $current  = $mentions->mentionsFor([$messageId])[$messageId] ?? [];
+        if ($current === []) {
+            return;
+        }
+
+        $keep = [];
+        foreach ($current as $mention) {
+            if ($mention['name'] !== '' && mb_stripos($content, '@' . $mention['name']) !== false) {
+                $keep[] = $mention['user_id'];
+            }
+        }
+
+        $mentions->softDeleteExcept($messageId, $keep);
+    }
+
+    /** Apaga a propria mensagem NO CHAT (`status=removed`, em qualquer status); so o remetente. Idempotente. */
+    public function chatRemove(int $id): array
+    {
+        $guard = $this->chatGuard($id);
+        if ($guard['error'] !== null) {
+            return $guard['error'];
+        }
+
+        if ($guard['message']['status'] !== 'removed') {
+            $this->tableModel->update($id, ['status' => 'removed']);
+        }
+
+        return ['success' => true, 'data' => ['id' => $id, 'status' => 'removed']];
+    }
+
+    /**
+     * Guest 403; mensagem inexistente/excluida 404; nao-remetente: 404 se nao a enxerga (nao enviada), senao 403.
+     *
+     * @return array{error: ?array, message: ?array}
+     */
+    private function chatGuard(int $id): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return ['error' => $this->forbidden(), 'message' => null];
+        }
+
+        $message = $this->tableModel->find($id);
+        if ($message === null) {
+            return ['error' => $this->notFound(), 'message' => null];
+        }
+
+        if ((int) $message['sender_user_manager_id'] !== (int) CurrentUser::id()) {
+            return ['error' => $message['status'] === 'sent' ? $this->forbidden('Somente o remetente altera a propria mensagem no chat') : $this->notFound(), 'message' => null];
+        }
+
+        return ['error' => null, 'message' => $message];
+    }
+
+    /**
+     * Mensagens nao lidas do usuario logado — alimenta o contador do menu do modo chat: `private`
+     * (recebidas 1 para 1, `sent`), `group` (mensagens de grupo ainda nao lidas por ele) e `total` (a soma).
+     * Guest nao recebe mensagens: tudo 0.
+     */
+    public function unreadCount(): array
+    {
+        if (CurrentUser::roleSlug() === 'guest') {
+            return ['success' => true, 'data' => ['total' => 0, 'private' => 0, 'group' => 0]];
+        }
+
+        $this->tableModel->dispatchDue();
+
+        $me      = (int) CurrentUser::id();
+        $private = $this->tableModel->countUnread($me);
+        $group   = $this->tableModel->countUnreadGroups($me);
+
+        return ['success' => true, 'data' => ['total' => $private + $group, 'private' => $private, 'group' => $group]];
     }
 
     // -------------------------------------------------------------------------

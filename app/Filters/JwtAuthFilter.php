@@ -4,6 +4,7 @@ namespace App\Filters;
 
 use App\Libraries\Auth\CurrentUser;
 use App\Libraries\Auth\JwtService;
+use App\Libraries\MessageDispatcher;
 use App\Services\V1\Auth\AuthService;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
@@ -18,6 +19,9 @@ use Config\Services;
  * SELECT por requisicao protegida. Usado hoje somente em auth/me — ver
  * Config/Routes/Api/v1/Auth/EndpointAuth.php. Em sucesso, popula CurrentUser
  * para o controller ler.
+ *
+ * Gatilho das mensagens agendadas (sem cron): toda requisicao autenticada tenta entregar as agendadas vencidas, no maximo
+ * 1x por minuto no servidor inteiro (MessageDispatcher::tick). Erro la dentro nunca derruba a requisicao.
  */
 class JwtAuthFilter implements FilterInterface
 {
@@ -40,6 +44,8 @@ class JwtAuthFilter implements FilterInterface
         }
 
         CurrentUser::setClaims($claims);
+
+        MessageDispatcher::tick();
 
         return $request;
     }

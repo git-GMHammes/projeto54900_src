@@ -3,6 +3,8 @@
 // logado; so admin troca), destinatario, texto, status (padrao Enviada), agendamento,
 // "Enviada em" e "Lida em". Escolhendo o agendamento, as duas datas seguintes recebem
 // a mesma data (e continuam editaveis). Message NAO e chat.
+// Anexo (campo `arquivo`): gravada a mensagem, o arquivo sobe em seguida (multipart) com o id devolvido;
+// se o anexo falhar a mensagem ja existe (o erro e avisado e a tela segue para a lista).
 // Mesmo pipeline de CreatePage de chat-room-warnings (formManagerView ->
 // buildRenderSchema -> FormGrid -> submit JSON).
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,13 +18,15 @@ import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
-import { formManagerView } from '@/services/v1';
+import { formManagerView, messageAttachmentsUpload } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList, normalizeItem } from '@/utils/apiResult';
 import type { ApiRow } from '@/types/api';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { fillValues, patchFields } from '@/utils/formSchemaPatch';
+import { avisoPalavrasProibidas } from '@/utils/palavrasProibidas';
+import { selectedFile } from '@/utils/formFile';
 import { paths } from '@/routes/paths';
 
 const SLUG = 'criar-mensagem-direta';
@@ -117,6 +121,12 @@ export default function CreatePage() {
       }
 
       const payload = formDataToPayload(el);
+      const file = selectedFile(el);
+      const blocked = avisoPalavrasProibidas(typeof payload.content === 'string' ? payload.content : '', user?.role?.slug === 'admin');
+      if (blocked) {
+        toast.error(blocked, { title: 'Mensagem bloqueada' });
+        return;
+      }
       const send = senderFor(form.meta.httpMethod);
       const path = resolveEndpoint(form.meta.submitEndpoint);
 
@@ -128,6 +138,17 @@ export default function CreatePage() {
         if (typeof id !== 'string' && typeof id !== 'number') {
           toast.error('Registro criado sem id na resposta.', { title: 'Erro ao enviar' });
           return;
+        }
+
+        if (file) {
+          try {
+            await messageAttachmentsUpload.upload({ file, messageId: id });
+          } catch (err) {
+            const detail = err instanceof ApiError ? `${err.message}${errorDetail(err)}` : 'Falha inesperada no anexo.';
+            toast.error(`A mensagem foi gravada, mas o anexo não. ${detail}`, { title: 'Anexo não enviado' });
+            void navigate(paths.v1.messagesManager.list);
+            return;
+          }
         }
 
         toast.success('Mensagem enviada.', { title: form.meta.title });
@@ -142,7 +163,7 @@ export default function CreatePage() {
         setSubmitting(false);
       }
     },
-    [form, navigate, toast],
+    [form, navigate, toast, user],
   );
 
   return (

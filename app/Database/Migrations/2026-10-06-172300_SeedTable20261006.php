@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Database\Migrations;
+
+use CodeIgniter\Database\Migration;
+
+/**
+ * Popula TODAS as 48 tabelas com o estado de dados de 2026-10-06, 17:23 a
+ * partir de um dump SQL puro (202610061723_seed_table.sql — export
+ * completo, DELETE + INSERT, uma tupla por linha).
+ *
+ * Mesmo padrao de 2026-10-05-213100_SeedTable20261005.php: le o .sql
+ * (mesmo diretorio) e executa statement por statement via
+ * $this->db->query(), sem Forge/Model. Depende do ReplaceTable20261006 (as
+ * tabelas precisam existir antes). Timestamp da classe (17:23) um minuto
+ * apos o ReplaceTable20261006 (17:22), preservando a ordem de execucao do
+ * REMAKE.
+ *
+ * down() nao tem reversao generica — fica vazio de proposito.
+ */
+class SeedTable20261006 extends Migration
+{
+    public function up()
+    {
+        $this->executeSqlFile(__DIR__ . '/202610061723_seed_table.sql');
+    }
+
+    public function down()
+    {
+        // Sem reversao generica para um dump de dados completo.
+    }
+
+    /**
+     * Le um arquivo .sql e executa cada statement separadamente — o driver
+     * MySQLi do CI4 nao roda multiplos ';' numa unica chamada de query().
+     */
+    protected function executeSqlFile(string $path): void
+    {
+        $sql = file_get_contents($path);
+        if ($sql === false) {
+            throw new \RuntimeException("Nao foi possivel ler {$path}");
+        }
+
+        $statements = preg_split('/;\s*[\r\n]+/', $sql);
+
+        foreach ($statements as $statement) {
+            $statement = trim($statement);
+            if ($statement === '') {
+                continue;
+            }
+            $this->db->query($statement);
+        }
+    }
+}

@@ -158,6 +158,30 @@ export const paths = {
       create: '/v1/message-groups-manager/create',
       update: (id: RouteId) => `/v1/message-groups-manager/update/${id}`,
     },
+    // MessageGroupMembers — grupos <-> membros (N:N usuarios x grupos; modulo Messages). `update` recebe o id do GRUPO
+    messageGroupMembers: {
+      list: '/v1/message-group-members-manager',
+      update: (id: RouteId) => `/v1/message-group-members-manager/update/${id}`,
+    },
+    // MessageGroupMessages — mensagem enviada a um grupo (modulo Messages; NAO e chat). `update` recebe o id da LIGACAO
+    messageGroupMessages: {
+      list: '/v1/message-group-messages-manager',
+      create: '/v1/message-group-messages-manager/create',
+      update: (id: RouteId) => `/v1/message-group-messages-manager/update/${id}`,
+    },
+    // MessageAttachments — anexos de mensagens privadas e de grupo (modulo Messages; so lista; o anexo nasce no form da mensagem)
+    messageAttachments: {
+      list: '/v1/message-attachments-manager',
+    },
+    // MessageWarnings — advertencias de palavrao do modulo Messages (so admin; sem cadastro manual). `update` recebe o id da advertencia
+    messageWarnings: {
+      list: '/v1/message-warnings-manager',
+      update: (id: RouteId) => `/v1/message-warnings-manager/update/${id}`,
+    },
+    // MessageChat — MODO CHAT do modulo Messages (conversa 1 para 1 privada e de grupo; NAO e sala de chat)
+    messageChat: {
+      home: '/v1/message-chat',
+    },
     // ChatRoomMembers — membros das salas de chat (modulo ChatRooms/ChatRoomMembers)
     chatRoomMembers: {
       list: '/v1/chat-room-members',

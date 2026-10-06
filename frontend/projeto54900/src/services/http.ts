@@ -80,6 +80,29 @@ export function setAccessTokenGetter(getter: (() => string | null) | null): void
   getAccessToken = getter;
 }
 
+/**
+ * RENOVAÇÃO AUTOMÁTICA: o `AuthContext` registra aqui uma função que troca o refresh_token por um access_token novo
+ * (devolve true se renovou). Quando uma chamada autenticada volta 401, `request` pede a renovação UMA vez e repete a
+ * chamada. Chamadas simultâneas compartilham a mesma renovação (o refresh_token gira a cada uso: duas trocas em paralelo
+ * derrubariam a sessão).
+ */
+let tokenRefresher: (() => Promise<boolean>) | null = null;
+let refreshInFlight: Promise<boolean> | null = null;
+
+export function setTokenRefresher(refresher: (() => Promise<boolean>) | null): void {
+  tokenRefresher = refresher;
+}
+
+function refreshOnce(): Promise<boolean> {
+  if (!tokenRefresher) return Promise.resolve(false);
+  refreshInFlight ??= tokenRefresher()
+    .catch(() => false)
+    .finally(() => {
+      refreshInFlight = null;
+    });
+  return refreshInFlight;
+}
+
 /** true se há access_token na sessão agora (mesmo que o usuário não tenha sido resolvido). */
 export function hasAccessToken(): boolean {
   return Boolean(getAccessToken?.());
@@ -215,6 +238,7 @@ export async function request<T = unknown>(
   method: HttpMethod,
   path: string,
   { params, body, headers, signal, responseType }: RequestOptions = {},
+  retried = false,
 ): Promise<T> {
   const url = buildUrl(path, params);
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
@@ -241,6 +265,11 @@ export async function request<T = unknown>(
   } catch (cause) {
     if (cause instanceof Error && cause.name === 'AbortError') throw cause;
     throw new ApiError('Falha de rede ao contatar a API.', { url });
+  }
+
+  // 401 com token enviado: renova a sessão uma vez e repete a chamada (login/refresh não entram, para não girar em falso).
+  if (response.status === 401 && token && !retried && !/\/auth\/(login|refresh)$/.test(path) && (await refreshOnce())) {
+    return request<T>(method, path, { params, body, headers, signal, responseType }, true);
   }
 
   if (responseType === 'blob' && response.ok) {

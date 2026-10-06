@@ -73,4 +73,54 @@ class ResourceTableController extends BaseResourceTableController
             return $this->respondServerError($e);
         }
     }
+
+    /**
+     * GET unread-count — total de mensagens recebidas ainda nao lidas pelo usuario logado.
+     */
+    public function unreadCount(): ResponseInterface
+    {
+        try {
+            $result = $this->processor->unreadCount();
+
+            return $this->respondSuccess($result['data']);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
+
+    /**
+     * PUT chat/{id} — edita a propria mensagem NO CHAT (so enquanto agendada).
+     */
+    public function chatEdit(int $id): ResponseInterface
+    {
+        try {
+            $result = $this->processor->chatEdit($id, $this->getJsonBody());
+
+            if (!$result['success']) {
+                return $this->respondError($result['message'], $result['code'] ?? 403);
+            }
+
+            return $this->respondSuccess($result['data']);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
+
+    /**
+     * DELETE chat/{id} — apaga a propria mensagem NO CHAT (status=removed).
+     */
+    public function chatRemove(int $id): ResponseInterface
+    {
+        try {
+            $result = $this->processor->chatRemove($id);
+
+            if (!$result['success']) {
+                return $this->respondError($result['message'], $result['code'] ?? 403);
+            }
+
+            return $this->respondSuccess($result['data']);
+        } catch (\Throwable $e) {
+            return $this->respondServerError($e);
+        }
+    }
 }

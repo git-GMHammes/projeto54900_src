@@ -7,8 +7,9 @@
 //  - Só palavras INTEIRAS: 'cu' bloqueia 'vai tomar no cu', mas não 'custo' nem 'cuidado'.
 //  - Frases também valem (espaços são comparados como um espaço só).
 //
-// Usado pelo frontend para impedir o envio. O backend ainda não tem esta
-// validação (ver README_modulo_chatrooms.md, filtro de palavrão).
+// Usado pelo frontend para impedir o envio (chat de salas e módulo Messages). No módulo Messages o BACKEND valida
+// com a mesma regra e o mesmo JSON (App\Libraries\ForbiddenWords): a mensagem é recusada (422), fica bloqueada e gera
+// advertência. O chat de salas ainda não tem esta validação no backend (ver README_modulo_chatrooms.md).
 
 import dicionario from '@/config/palavras-proibidas.json';
 
@@ -40,4 +41,15 @@ export function palavrasProibidasEncontradas(texto: string): string[] {
   const alvo = normalizar(texto);
   if (alvo === '') return [];
   return padroes.filter((p) => p.regex.test(alvo)).map((p) => p.original);
+}
+
+/**
+ * Aviso pronto para o texto de uma mensagem do módulo Messages (admin isento — área administrativa irrestrita).
+ * null = texto liberado.
+ */
+export function avisoPalavrasProibidas(texto: string, isAdmin: boolean): string | null {
+  if (isAdmin) return null;
+  const achadas = palavrasProibidasEncontradas(texto);
+
+  return achadas.length > 0 ? `Palavra proibida: ${achadas.join(', ')}. Remova para enviar.` : null;
 }
