@@ -65,8 +65,10 @@ export default defineConfig(({ mode, command }) => {
       },
     },
     build: {
-      // `dist/` dentro da propria pasta do frontend (padrao do Vite).
-      outDir: 'dist',
+      // Saida direto em src/public/app/ (versionada no git) -> deploy KingHost
+      // via `git pull` no servidor, sem precisar de SCP/FTP manual.
+      outDir: fileURLToPath(new URL('../../public/app', import.meta.url)),
+      emptyOutDir: true,
       sourcemap: mode !== 'production',
     },
   };

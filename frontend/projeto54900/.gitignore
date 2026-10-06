@@ -2,7 +2,6 @@
 node_modules/
 
 # Build (o Vite escreve em ../../public/frontend/projeto54900)
-dist/
 
 # Ambiente local
 .env

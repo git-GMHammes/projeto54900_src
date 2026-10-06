@@ -189,12 +189,18 @@ publicados no host em `:54900` — é o alvo do proxy do dev-server.
 ## Build e deploy
 
 - `npm run build` → `tsc -b` (falha se houver erro de tipo) + `vite build`.
-  Saída **estática** em `src/frontend/projeto54900/dist/` (`build.outDir` no
-  `vite.config.ts`). `dist/` é `.gitignore`.
-- **Deploy:** publicar o **conteúdo de `dist/`** no servidor estático (nginx,
-  Apache, CDN). O app é SPA — o servidor precisa de fallback para `index.html`
-  em rota desconhecida. App numa subpasta: buildar com
-  `VITE_BASE_PATH=/essa/subpasta/` para casar os caminhos dos assets.
+  Saída **estática** direto em `src/public/app/` (`build.outDir` no
+  `vite.config.ts`, relativo). Essa pasta é **versionada no git** (não é
+  `.gitignore`) para o deploy na KingHost ser só `git pull` no servidor —
+  sem SCP/FTP manual.
+- **Deploy (KingHost):** build local com `VITE_BASE_PATH` exportado no shell
+  (nunca `.env` — ver "Ambiente"), ex.:
+  `VITE_BASE_PATH=/projeto54900/public/app/ npm run build`. Commit do
+  conteúdo gerado em `src/public/app/`, push pro repo `projeto54900_src`,
+  depois `git pull` no servidor (ver
+  `src/app/markdown/geral/README_git_kinghost.md`). App é SPA — o backend CI4
+  precisa de fallback para `index.html` em rota desconhecida dentro de
+  `/app/*` (ainda não configurado — ver pendências no README_git_kinghost.md).
 - O `docker-compose.yml` **não** serve mais o frontend; o nginx de lá continua
   só para a API PHP e o proxy `/ws`.
 
