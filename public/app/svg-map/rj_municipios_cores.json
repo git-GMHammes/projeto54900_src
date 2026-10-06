@@ -1,0 +1,462 @@
+[
+  {
+    "CD_MUN": "3300100",
+    "NM_MUN": "Angra dos Reis",
+    "cor": "#28BDA0"
+  },
+  {
+    "CD_MUN": "3300159",
+    "NM_MUN": "Aperibé",
+    "cor": "#9228BD"
+  },
+  {
+    "CD_MUN": "3300209",
+    "NM_MUN": "Araruama",
+    "cor": "#BD2879"
+  },
+  {
+    "CD_MUN": "3300225",
+    "NM_MUN": "Areal",
+    "cor": "#9EBD28"
+  },
+  {
+    "CD_MUN": "3300233",
+    "NM_MUN": "Armação dos Búzios",
+    "cor": "#BD2866"
+  },
+  {
+    "CD_MUN": "3300258",
+    "NM_MUN": "Arraial do Cabo",
+    "cor": "#65BD28"
+  },
+  {
+    "CD_MUN": "3300308",
+    "NM_MUN": "Barra do Piraí",
+    "cor": "#BD2F28"
+  },
+  {
+    "CD_MUN": "3300407",
+    "NM_MUN": "Barra Mansa",
+    "cor": "#6CBD28"
+  },
+  {
+    "CD_MUN": "3300456",
+    "NM_MUN": "Belford Roxo",
+    "cor": "#2858BD"
+  },
+  {
+    "CD_MUN": "3300506",
+    "NM_MUN": "Bom Jardim",
+    "cor": "#286BBD"
+  },
+  {
+    "CD_MUN": "3300605",
+    "NM_MUN": "Bom Jesus do Itabapoana",
+    "cor": "#BD7428"
+  },
+  {
+    "CD_MUN": "3300704",
+    "NM_MUN": "Cabo Frio",
+    "cor": "#2841BD"
+  },
+  {
+    "CD_MUN": "3300803",
+    "NM_MUN": "Cachoeiras de Macacu",
+    "cor": "#28B0BD"
+  },
+  {
+    "CD_MUN": "3300902",
+    "NM_MUN": "Cambuci",
+    "cor": "#3ABD28"
+  },
+  {
+    "CD_MUN": "3300936",
+    "NM_MUN": "Carapebus",
+    "cor": "#28BD7A"
+  },
+  {
+    "CD_MUN": "3300951",
+    "NM_MUN": "Comendador Levy Gasparian",
+    "cor": "#4928BD"
+  },
+  {
+    "CD_MUN": "3301009",
+    "NM_MUN": "Campos dos Goytacazes",
+    "cor": "#33BD28"
+  },
+  {
+    "CD_MUN": "3301108",
+    "NM_MUN": "Cantagalo",
+    "cor": "#7F28BD"
+  },
+  {
+    "CD_MUN": "3301157",
+    "NM_MUN": "Cardoso Moreira",
+    "cor": "#BD9328"
+  },
+  {
+    "CD_MUN": "3301207",
+    "NM_MUN": "Carmo",
+    "cor": "#BD282D"
+  },
+  {
+    "CD_MUN": "3301306",
+    "NM_MUN": "Casimiro de Abreu",
+    "cor": "#28BD3C"
+  },
+  {
+    "CD_MUN": "3301405",
+    "NM_MUN": "Conceição de Macabu",
+    "cor": "#A528BD"
+  },
+  {
+    "CD_MUN": "3301504",
+    "NM_MUN": "Cordeiro",
+    "cor": "#BD4328"
+  },
+  {
+    "CD_MUN": "3301603",
+    "NM_MUN": "Duas Barras",
+    "cor": "#59BD28"
+  },
+  {
+    "CD_MUN": "3301702",
+    "NM_MUN": "Duque de Caxias",
+    "cor": "#28BD5B"
+  },
+  {
+    "CD_MUN": "3301801",
+    "NM_MUN": "Engenheiro Paulo de Frontin",
+    "cor": "#BD28AF"
+  },
+  {
+    "CD_MUN": "3301850",
+    "NM_MUN": "Guapimirim",
+    "cor": "#BD285E"
+  },
+  {
+    "CD_MUN": "3301876",
+    "NM_MUN": "Iguaba Grande",
+    "cor": "#3628BD"
+  },
+  {
+    "CD_MUN": "3301900",
+    "NM_MUN": "Itaboraí",
+    "cor": "#8BBD28"
+  },
+  {
+    "CD_MUN": "3302007",
+    "NM_MUN": "Itaguaí",
+    "cor": "#46BD28"
+  },
+  {
+    "CD_MUN": "3302056",
+    "NM_MUN": "Italva",
+    "cor": "#288ABD"
+  },
+  {
+    "CD_MUN": "3302106",
+    "NM_MUN": "Itaocara",
+    "cor": "#2891BD"
+  },
+  {
+    "CD_MUN": "3302205",
+    "NM_MUN": "Itaperuna",
+    "cor": "#B128BD"
+  },
+  {
+    "CD_MUN": "3302254",
+    "NM_MUN": "Itatiaia",
+    "cor": "#28BD6E"
+  },
+  {
+    "CD_MUN": "3302270",
+    "NM_MUN": "Japeri",
+    "cor": "#28BD29"
+  },
+  {
+    "CD_MUN": "3302304",
+    "NM_MUN": "Laje do Muriaé",
+    "cor": "#BDB228"
+  },
+  {
+    "CD_MUN": "3302403",
+    "NM_MUN": "Macaé",
+    "cor": "#BD6128"
+  },
+  {
+    "CD_MUN": "3302452",
+    "NM_MUN": "Macuco",
+    "cor": "#28BCBD"
+  },
+  {
+    "CD_MUN": "3302502",
+    "NM_MUN": "Magé",
+    "cor": "#BDBD28"
+  },
+  {
+    "CD_MUN": "3302601",
+    "NM_MUN": "Mangaratiba",
+    "cor": "#7B28BD"
+  },
+  {
+    "CD_MUN": "3302700",
+    "NM_MUN": "Maricá",
+    "cor": "#6028BD"
+  },
+  {
+    "CD_MUN": "3302809",
+    "NM_MUN": "Mendes",
+    "cor": "#AABD28"
+  },
+  {
+    "CD_MUN": "3302858",
+    "NM_MUN": "Mesquita",
+    "cor": "#97BD28"
+  },
+  {
+    "CD_MUN": "3302908",
+    "NM_MUN": "Miguel Pereira",
+    "cor": "#BD8C28"
+  },
+  {
+    "CD_MUN": "3303005",
+    "NM_MUN": "Miracema",
+    "cor": "#28BD48"
+  },
+  {
+    "CD_MUN": "3303104",
+    "NM_MUN": "Natividade",
+    "cor": "#28BD8D"
+  },
+  {
+    "CD_MUN": "3303203",
+    "NM_MUN": "Nilópolis",
+    "cor": "#28BD67"
+  },
+  {
+    "CD_MUN": "3303302",
+    "NM_MUN": "Niterói",
+    "cor": "#BDAB28"
+  },
+  {
+    "CD_MUN": "3303401",
+    "NM_MUN": "Nova Friburgo",
+    "cor": "#9A28BD"
+  },
+  {
+    "CD_MUN": "3303500",
+    "NM_MUN": "Nova Iguaçu",
+    "cor": "#BD28B7"
+  },
+  {
+    "CD_MUN": "3303609",
+    "NM_MUN": "Paracambi",
+    "cor": "#28A4BD"
+  },
+  {
+    "CD_MUN": "3303708",
+    "NM_MUN": "Paraíba do Sul",
+    "cor": "#BD3B28"
+  },
+  {
+    "CD_MUN": "3303807",
+    "NM_MUN": "Paraty",
+    "cor": "#BD2885"
+  },
+  {
+    "CD_MUN": "3303856",
+    "NM_MUN": "Paty do Alferes",
+    "cor": "#BD28A3"
+  },
+  {
+    "CD_MUN": "3303906",
+    "NM_MUN": "Petrópolis",
+    "cor": "#282EBD"
+  },
+  {
+    "CD_MUN": "3303955",
+    "NM_MUN": "Pinheiral",
+    "cor": "#78BD28"
+  },
+  {
+    "CD_MUN": "3304003",
+    "NM_MUN": "Piraí",
+    "cor": "#7328BD"
+  },
+  {
+    "CD_MUN": "3304102",
+    "NM_MUN": "Porciúncula",
+    "cor": "#BD2847"
+  },
+  {
+    "CD_MUN": "3304110",
+    "NM_MUN": "Porto Real",
+    "cor": "#28BD86"
+  },
+  {
+    "CD_MUN": "3304128",
+    "NM_MUN": "Quatis",
+    "cor": "#BD2834"
+  },
+  {
+    "CD_MUN": "3304144",
+    "NM_MUN": "Queimados",
+    "cor": "#2839BD"
+  },
+  {
+    "CD_MUN": "3304151",
+    "NM_MUN": "Quissamã",
+    "cor": "#BD8028"
+  },
+  {
+    "CD_MUN": "3304201",
+    "NM_MUN": "Resende",
+    "cor": "#284CBD"
+  },
+  {
+    "CD_MUN": "3304300",
+    "NM_MUN": "Rio Bonito",
+    "cor": "#5528BD"
+  },
+  {
+    "CD_MUN": "3304409",
+    "NM_MUN": "Rio Claro",
+    "cor": "#BD2828"
+  },
+  {
+    "CD_MUN": "3304508",
+    "NM_MUN": "Rio das Flores",
+    "cor": "#B6BD28"
+  },
+  {
+    "CD_MUN": "3304524",
+    "NM_MUN": "Rio das Ostras",
+    "cor": "#BD2890"
+  },
+  {
+    "CD_MUN": "3304557",
+    "NM_MUN": "Rio de Janeiro",
+    "cor": "#287EBD"
+  },
+  {
+    "CD_MUN": "3304607",
+    "NM_MUN": "Santa Maria Madalena",
+    "cor": "#2873BD"
+  },
+  {
+    "CD_MUN": "3304706",
+    "NM_MUN": "Santo Antônio de Pádua",
+    "cor": "#BD4E28"
+  },
+  {
+    "CD_MUN": "3304755",
+    "NM_MUN": "São Francisco de Itabapoana",
+    "cor": "#BD2898"
+  },
+  {
+    "CD_MUN": "3304805",
+    "NM_MUN": "São Fidélis",
+    "cor": "#B828BD"
+  },
+  {
+    "CD_MUN": "3304904",
+    "NM_MUN": "São Gonçalo",
+    "cor": "#28BDAC"
+  },
+  {
+    "CD_MUN": "3305000",
+    "NM_MUN": "São João da Barra",
+    "cor": "#2F28BD"
+  },
+  {
+    "CD_MUN": "3305109",
+    "NM_MUN": "São João de Meriti",
+    "cor": "#BD2872"
+  },
+  {
+    "CD_MUN": "3305133",
+    "NM_MUN": "São José de Ubá",
+    "cor": "#285FBD"
+  },
+  {
+    "CD_MUN": "3305158",
+    "NM_MUN": "São José do Vale do Rio Preto",
+    "cor": "#BD2853"
+  },
+  {
+    "CD_MUN": "3305208",
+    "NM_MUN": "São Pedro da Aldeia",
+    "cor": "#28BD99"
+  },
+  {
+    "CD_MUN": "3305307",
+    "NM_MUN": "São Sebastião do Alto",
+    "cor": "#BD5A28"
+  },
+  {
+    "CD_MUN": "3305406",
+    "NM_MUN": "Sapucaia",
+    "cor": "#6828BD"
+  },
+  {
+    "CD_MUN": "3305505",
+    "NM_MUN": "Saquarema",
+    "cor": "#28BD35"
+  },
+  {
+    "CD_MUN": "3305554",
+    "NM_MUN": "Seropédica",
+    "cor": "#BD6D28"
+  },
+  {
+    "CD_MUN": "3305604",
+    "NM_MUN": "Silva Jardim",
+    "cor": "#BD9F28"
+  },
+  {
+    "CD_MUN": "3305703",
+    "NM_MUN": "Sumidouro",
+    "cor": "#289DBD"
+  },
+  {
+    "CD_MUN": "3305752",
+    "NM_MUN": "Tanguá",
+    "cor": "#BD2840"
+  },
+  {
+    "CD_MUN": "3305802",
+    "NM_MUN": "Teresópolis",
+    "cor": "#84BD28"
+  },
+  {
+    "CD_MUN": "3305901",
+    "NM_MUN": "Trajano de Moraes",
+    "cor": "#4DBD28"
+  },
+  {
+    "CD_MUN": "3306008",
+    "NM_MUN": "Três Rios",
+    "cor": "#28BD54"
+  },
+  {
+    "CD_MUN": "3306107",
+    "NM_MUN": "Valença",
+    "cor": "#4228BD"
+  },
+  {
+    "CD_MUN": "3306156",
+    "NM_MUN": "Varre-Sai",
+    "cor": "#8728BD"
+  },
+  {
+    "CD_MUN": "3306206",
+    "NM_MUN": "Vassouras",
+    "cor": "#28BD4F"
+  },
+  {
+    "CD_MUN": "3306305",
+    "NM_MUN": "Volta Redonda",
+    "cor": "#28BDB7"
+  }
+]

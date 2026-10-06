@@ -13,7 +13,6 @@ writable/debugbar/*
 
 # Frontend React (src/frontend/projeto54900)
 frontend/projeto54900/node_modules/
-frontend/projeto54900/dist/
 frontend/projeto54900/.env
 frontend/projeto54900/.env.local
 frontend/projeto54900/.env.*.local
