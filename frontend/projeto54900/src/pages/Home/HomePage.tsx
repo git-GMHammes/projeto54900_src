@@ -45,6 +45,38 @@ const INFO_CARDS = [
       'Toda a Timeline e exposta por API REST protegida por JWT; as listagens administrativas mostram ao usuario apenas as proprias publicacoes.',
     ],
   },
+  {
+    icon: 'bi-chat-dots-fill',
+    title: 'Salas de chat moderadas',
+    lead: 'Salas abertas a qualquer usuario logado, com um moderador responsavel por manter a ordem.',
+    items: [
+      'Qualquer usuario logado, exceto visitante, entra em qualquer sala sem pedir permissao.',
+      'Quem cria a sala vira dono e moderador, e precisa aceitar a responsabilidade pela moderacao antes de a sala existir.',
+      'Filtro de palavrao: a mensagem barrada nunca aparece para os demais e gera uma advertencia; com 3 advertencias na mesma sala o membro e bloqueado.',
+      'Qualquer membro pode denunciar um anexo; a denuncia bloqueia na hora o anexo e o autor do envio, sem esperar nova chance.',
+      'Com 3 membros bloqueados a sala fecha sozinha, exibindo o aviso de que e preciso procurar o moderador; so o dono reabre.',
+      'Mensagens com anexo (imagem, video ou documento) e marcacao de membros da sala.',
+      'Salas favoritas por usuario e historico completo guardado, com as 100 ultimas mensagens na tela.',
+      'O administrador pode editar o conteudo de uma mensagem, e cada edicao guarda o texto anterior, quem editou e quando.',
+      'Todo o modulo e exposto por API REST protegida por JWT; a moderacao de denuncias e advertencias e exclusiva do administrador.',
+    ],
+  },
+  {
+    icon: 'bi-chat-left-dots-fill',
+    title: 'Mensagens diretas e em grupo',
+    lead: 'Conversas entre usuarios, de 1 para 1 ou para grupos, com agendamento de envio e controle de leitura.',
+    items: [
+      'Tela de Conversas com busca por nome, usuario ou celular, listando os grupos do usuario e todos os contatos ativos.',
+      'Conversa privada e de grupo abertas em modal, com baloes, atualizacao automatica por consulta periodica e envio de anexos.',
+      'Contador de mensagens nao lidas nos cartoes e no menu; no grupo, so conta o que foi enviado depois da entrada do membro.',
+      'Em grupo, cada mensagem mostra quantos membros ja leram, e e possivel marcar usuarios com @ (ate 20 por mensagem).',
+      'Agendamento de envio: a mensagem fica visivel so para quem a escreveu ate a hora marcada, sem depender de cron no servidor.',
+      'Editar so e permitido enquanto a mensagem esta agendada; apagar a propria mensagem vale em qualquer momento.',
+      'Grupos com dono e membros: o dono adiciona, remove e reativa membros, e quem nao participa nem sabe que o grupo existe.',
+      'Filtro de palavrao com advertencia: a mensagem barrada nao e entregue; o administrador consulta as advertencias.',
+      'Listas e formularios administrativos (mensagens, grupos, membros, anexos e advertencias) so para administradores; toda a API e REST protegida por JWT.',
+    ],
+  },
 ];
 
 const infoCardShadowStyle: CSSProperties = {

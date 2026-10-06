@@ -33,11 +33,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/v1/auth.service';
-import { setAccessTokenGetter } from '@/services/http';
+import { ApiError, setAccessTokenGetter, setTokenRefresher } from '@/services/http';
+import { decodeJwt } from '@/utils/jwt';
 import { clear as clearApiDebugLog } from '@/services/apiDebugLog';
 import type { AuthUser } from '@/types/auth';
 
 const REFRESH_TOKEN_KEY = 'projeto54900.refresh_token';
+
+/** Renova o access_token este tanto de segundos ANTES de expirar (e nunca com menos de 5 s de espera). */
+const REFRESH_MARGIN_SECONDS = 60;
 
 export interface AuthApi {
   user: AuthUser | null;
@@ -87,6 +91,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessTokenGetter(() => accessTokenRef.current);
     return () => setAccessTokenGetter(null);
   }, []);
+
+  const timerRef = useRef<number | null>(null);
+
+  /**
+   * Troca o refresh_token salvo por um par novo (access em memória, refresh em localStorage). Falhou de vez
+   * (refresh vencido/revogado): encerra a sessão local e o RequireAuth leva ao login. Devolve true se renovou.
+   */
+  const renewSession = useCallback(async (): Promise<boolean> => {
+    const stored = readStoredRefreshToken();
+    if (!stored) return false;
+    try {
+      const payload = await authService.refresh(stored);
+      accessTokenRef.current = payload.access_token;
+      storeRefreshToken(payload.refresh_token);
+      setUser(payload.user);
+      return true;
+    } catch (err) {
+      // Só derruba a sessão se o servidor recusou o refresh; falha de rede mantém a sessão para tentar de novo.
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
+        accessTokenRef.current = null;
+        storeRefreshToken(null);
+        setUser(null);
+      }
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    setTokenRefresher(renewSession);
+    return () => setTokenRefresher(null);
+  }, [renewSession]);
+
+  // Renovação preventiva: agenda a troca um pouco antes do exp do access_token (reagenda a cada token novo), para o
+  // polling do chat nem chegar a receber 401. Aba em segundo plano pode atrasar o timer — o 401 do http.ts cobre.
+  useEffect(() => {
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    timerRef.current = null;
+    const token = accessTokenRef.current;
+    if (!user || !token) return;
+    const exp = Number(decodeJwt(token)?.payload.exp);
+    if (!Number.isFinite(exp)) return;
+    const waitMs = Math.max(5, exp - Math.floor(Date.now() / 1000) - REFRESH_MARGIN_SECONDS) * 1000;
+    timerRef.current = window.setTimeout(() => {
+      void renewSession();
+    }, waitMs);
+    return () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    };
+  }, [user, renewSession]);
 
   // Refresh silencioso na montagem: se houver refresh_token salvo, tenta
   // trocar por um access_token novo antes de decidir se o usuario esta logado.

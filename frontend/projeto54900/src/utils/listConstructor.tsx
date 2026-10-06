@@ -118,6 +118,12 @@ export interface BusinessRule {
   field: string;
   op: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
   value: unknown;
+  /**
+   * Em list_actions.business_rule_json: com `"hide": true`, a acao e OCULTADA (nao so desabilitada)
+   * quando a regra falha para a linha. Sem o marcador, o comportamento segue o de sempre (botao
+   * desabilitado). Quem honra o marcador e a pagina da lista, via `isActionVisible`.
+   */
+  hide?: boolean;
 }
 
 /** Coerce seguro para string: aceita string/numero, qualquer outra coisa vira ''. */
@@ -391,6 +397,14 @@ function renderIconPart(part: ConcatIconPart, row: Record<string, unknown>, key:
  * porque é derivada do mesmo objeto que `renderCell` consulta.
  */
 export const KNOWN_CELL_FORMATS: readonly string[] = ['text', ...Object.keys(CUSTOM_CELL_RENDERERS)];
+
+/**
+ * A acao aparece na linha? Sem `hide` na regra, sempre (a regra so a desabilita, ver evalBusinessRule);
+ * com `"hide": true`, so quando a regra e verdadeira para a linha.
+ */
+export function isActionVisible(rule: BusinessRule | null, row: Record<string, unknown>): boolean {
+  return rule?.hide !== true || evalBusinessRule(rule, row);
+}
 
 /** Coerce seguro para string usado so na comparacao de evalBusinessRule (nao lanca em tipos inesperados). */
 function safeString(v: unknown): string {

@@ -10,7 +10,9 @@ use CodeIgniter\CLI\CLI;
  * Job do modulo Messages: envia as mensagens agendadas cuja hora chegou
  * (messages_manager.status 'scheduled' -> 'sent', carimba sent_at).
  *
- * Agendar no cron a cada minuto: * * * * * php spark messages:dispatch
+ * USO LOCAL (desenvolvimento). Em producao (hospedagem so com FTP) NAO ha como rodar `spark` nem agendar cron: a entrega
+ * das agendadas e feita pelo gatilho App\Libraries\MessageDispatcher, chamado pelo JwtAuthFilter a cada requisicao
+ * autenticada (no maximo 1x por minuto), e tambem pelas consultas do chat.
  */
 class MessagesDispatch extends BaseCommand
 {

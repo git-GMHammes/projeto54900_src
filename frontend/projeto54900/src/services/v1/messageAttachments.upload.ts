@@ -1,0 +1,61 @@
+// PROPOSITO: endpoints de ARQUIVO do anexo de mensagem (privada ou de grupo) — envio do binario
+// (multipart no proprio `POST create`) e leitura do binario autenticado (`GET serve/{id}` inline e
+// `GET download/{id}` como anexo, ambos `Blob`). Nao e recurso REST padrao, por isso NAO usa
+// createResource. Espelho de app/Config/Routes/Api/v1/Messages/MessageAttachments/EndpointUpload.php
+// (serve/download) + o `create` multipart de EndpointTable.php, grupo api/v1/message-attachments.
+// Mesmo desenho de chatRoomAttachments.upload.ts.
+//
+// POR QUE `Blob` E NAO UMA URL: o grupo esta sob `jwtauth`, que so le o cabecalho `Authorization`;
+// `<a href>`/`<img src>` nao mandam (daria 401).
+//
+// REGRA DO BACKEND: so o remetente da mensagem (ou admin) anexa, em qualquer status (area administrativa
+// irrestrita). `replace: true` troca o anexo atual (o anterior sofre soft delete).
+
+import { http } from '@/services/http';
+import { API_GROUPS } from '@/constants/api';
+
+const base = `/v1/${API_GROUPS.messageAttachments}`;
+
+/** Argumentos de upload({}): o arquivo + a mensagem dona (+ troca do anexo atual e categoria opcional). */
+export interface MessageAttachmentUploadArgs {
+  file: File;
+  messageId: number | string;
+  /** Troca o anexo atual da mensagem (o anterior sofre soft delete). */
+  replace?: boolean | undefined;
+  category?: string | undefined;
+  signal?: AbortSignal | undefined;
+}
+
+/**
+ * Envia o anexo de uma mensagem via multipart/form-data (campo "file" + `messages_manager_id`)
+ * para o `POST create` do grupo.
+ * @returns corpo bruto da resposta (normalizar com utils/apiResult na chamada)
+ */
+export function upload({ file, messageId, replace, category, signal }: MessageAttachmentUploadArgs): Promise<unknown> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('messages_manager_id', String(messageId));
+  if (replace) form.append('replace', '1');
+  if (category) form.append('category', category);
+  return http.post(`${base}/create`, form, signal ? { signal } : undefined);
+}
+
+/**
+ * Baixa o binario do anexo como download (`download/{id}`) com o token da sessao.
+ * @param id id em message_attachments
+ */
+export function fetchDownload(id: number | string, signal?: AbortSignal): Promise<Blob> {
+  return http.get<Blob>(`${base}/download/${id}`, { responseType: 'blob', signal });
+}
+
+/**
+ * Baixa o binario para exibicao inline (`serve/{id}`) com o token da sessao.
+ * Usado pelo visualizador de midias: o chamador monta um `blob:` URL e o libera ao fechar.
+ * @param id id em message_attachments
+ */
+export function fetchServe(id: number | string, signal?: AbortSignal): Promise<Blob> {
+  return http.get<Blob>(`${base}/serve/${id}`, { responseType: 'blob', signal });
+}
+
+export const messageAttachmentsUpload = { upload, fetchDownload, fetchServe };
+export default messageAttachmentsUpload;
