@@ -65,4 +65,9 @@ export { chatRoomAttachmentReportsTable } from './chatRoomAttachmentReports.tabl
 export { chatRoomWarningsTable } from './chatRoomWarnings.table';
 export { chatRoomFavoritesTable } from './chatRoomFavorites.table';
 export { chatRoomAttachmentsUpload } from './chatRoomAttachments.upload';
+export { messagesManagerTable } from './messagesManager.table';
+export { messagesManagerView } from './messagesManager.view';
+export { messagesUsersView } from './messagesUsers.view';
+export { messageGroupsManagerTable } from './messageGroupsManager.table';
+export { messageGroupsManagerView } from './messageGroupsManager.view';
 export { dbSchema } from './dbSchema';

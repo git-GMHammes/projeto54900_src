@@ -39,7 +39,7 @@ Fora da árvore de paths, capturado pelo `errorElement` do nó raiz:
 
 ---
 
-## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário, svg-map e timeline
+## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário, svg-map, timeline e messages
 
 Fonte: `routes/v1/index.tsx` — agrupa tudo sob o prefixo `/v1`, espelhando o
 grupo `api/v1` do backend (`app/Config/Routes.php`).
@@ -299,6 +299,28 @@ misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela (Fase 3).
 (`/v1/timeline-posts/update/{id}`) apontam para rotas que ainda não existem —
 clicar cai no `NotFoundPage`. Ficam para quando a página de
 detalhe/comentários e o formulário de edição de post existirem.
+
+---
+
+### messages — Mensagens diretas e grupos (listas e CRUD de tela)
+
+Fonte: `routes/v1/messages.routes.tsx` — espelha `api/v1/messages-manager(-view)` e
+`api/v1/message-groups-manager(-view)`. Guarda: apenas `RequireAuth`; quem pode
+alterar cada registro é decidido pelo backend (remetente/dono ou admin). Message
+**não é chat**: estas são listas e formulários; a tela de conversa ainda não existe.
+Backend completo — ver
+[`README_modulo_messages.md`](../../../../../app/markdown/geral/README_modulo_messages.md)
+e o estado do frontend em
+[`modulos/messages/README_plano.md`](modulos/messages/README_plano.md).
+
+| Rota                                   | Página                                                      | Observação                                              |
+| -------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------- |
+| `/v1/messages-manager`                 | `pages/v1/messages/messages-manager/GetAllPage`             | lista 36 (`list_manager`), com busca; menu "Lista"      |
+| `/v1/messages-manager/create`          | `pages/v1/messages/messages-manager/CreatePage`             | form 41 `criar-mensagem-direta`                         |
+| `/v1/messages-manager/update/:id`      | `pages/v1/messages/messages-manager/UpdatePage`             | form 42 `editar-mensagem-direta`                        |
+| `/v1/message-groups-manager`           | `pages/v1/messages/message-groups-manager/GetAllPage`       | lista 37, com busca; menu "Grupos"                      |
+| `/v1/message-groups-manager/create`    | `pages/v1/messages/message-groups-manager/CreatePage`       | form 43 `criar-grupo-mensagem`                          |
+| `/v1/message-groups-manager/update/:id`| `pages/v1/messages/message-groups-manager/UpdatePage`       | form 44 `editar-grupo-mensagem`                         |
 
 ---
 

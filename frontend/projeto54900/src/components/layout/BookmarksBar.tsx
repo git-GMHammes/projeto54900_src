@@ -51,7 +51,8 @@ export default function BookmarksBar() {
           `room-${room.chat_rooms_manager_id}`,
           `Chat: ${room.name}`,
           paths.v1.chatRooms.chat(room.chat_rooms_manager_id),
-          'chat-dots',
+          // Balão QUADRADO: o redondo (chat-dots) é do menu Mensagem; os dois não podem se confundir.
+          'chat-square-text',
         ),
       )}
     </div>

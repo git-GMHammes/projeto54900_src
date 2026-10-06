@@ -146,6 +146,18 @@ export const paths = {
       create: '/v1/chat-room-favorites/create',
       update: (id: RouteId) => `/v1/chat-room-favorites/update/${id}`,
     },
+    // MessagesManager — mensagens diretas remetente -> destinatario (modulo Messages; NAO e chat)
+    messagesManager: {
+      list: '/v1/messages-manager',
+      create: '/v1/messages-manager/create',
+      update: (id: RouteId) => `/v1/messages-manager/update/${id}`,
+    },
+    // MessageGroupsManager — grupos de mensagem (modulo Messages; dono + membros)
+    messageGroupsManager: {
+      list: '/v1/message-groups-manager',
+      create: '/v1/message-groups-manager/create',
+      update: (id: RouteId) => `/v1/message-groups-manager/update/${id}`,
+    },
     // ChatRoomMembers — membros das salas de chat (modulo ChatRooms/ChatRoomMembers)
     chatRoomMembers: {
       list: '/v1/chat-room-members',

@@ -23,6 +23,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`deepseek`](#deepseek)       | Análise de entendimento do sistema        |
 | [`diagramas`](#diagramas)     | Gerar diagramas vetoriais de telas      |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco  |
+| [`messages`](#messages)       | Mensagens diretas, nunca um chat          |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter   |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados     |
 | [`navmenu`](#navmenu)         | Config do app e árvore de navegação       |
@@ -151,6 +152,20 @@ dump + markdown revisado antes do `INSERT`, mesmo padrão do `README_menu.md`.
 [`geral/README_form.md`](geral/README_form.md) — índice dos 16 formulários já
 desenhados (todos com `INSERT` executado), organizados por pasta de
 `geral/form/`.
+
+### `messages`
+
+Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento de envio e
+`read_at` — **nunca um chat** (sem sala, conversa ou thread). 4 tabelas
+(`messages_manager`, `message_groups_manager`, `message_group_members`,
+`message_group_messages`) e 5 views, API V1 com 65 rotas (mensagem, resumo por interlocutor e
+grupo), visibilidade restrita a remetente/destinatário/membro/admin, remetente e dono só admin
+altera, e o job `messages:dispatch` (agendada → enviada). Pronto no banco DEV e com CRUD de
+tela. Falta: enviar mensagem para grupo pela API (o create ainda exige destinatário), API de
+membros e de ligação, leitura por membro, marcação de usuário, anexos, filtro de palavrão e o
+agendador do job.
+
+[`geral/README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: schema, API, regras, estado e pendências.
 
 ### `migracao`
 
@@ -282,6 +297,7 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
+- [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
