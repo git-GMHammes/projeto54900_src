@@ -320,6 +320,36 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Messages — mensagens diretas remetente -> destinatario. NUNCA e chat:
+    //             sem sala, conversa ou thread. Agendamento (status scheduled)
+    //             e read_at. 'jwtauth' por wildcard em Config/Filters.php; a
+    //             exclusao definitiva soma 'adminonly' na propria rota.
+    // =========================================================================
+
+    $routes->group('messages-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessagesManager/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Messages/MessagesManager/EndpointCustom.php';
+    });
+
+    $routes->group('messages-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessagesManager/EndPointView.php';
+    });
+
+    // Resumo por interlocutor (view_messages_users): so leitura, escopada ao usuario logado.
+    $routes->group('messages-users-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessagesUsers/EndPointView.php';
+    });
+
+    // Grupos de mensagem (message_groups_manager): dono + membros ativos; 'jwtauth' por wildcard.
+    $routes->group('message-groups-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupsManager/EndpointTable.php';
+    });
+
+    $routes->group('message-groups-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupsManager/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.
     // =========================================================================

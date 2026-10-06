@@ -36,7 +36,7 @@
  * -------------------------------------------------------------------------
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   ChangeEvent,
   ChangeEventHandler,
@@ -103,45 +103,62 @@ export function DataHoraField({ field }: DataHoraFieldProps) {
   const isControlled = field.value !== undefined && field.onChange !== undefined
   const inicial = field.value ?? field.defaultValue ?? ''
 
+  // Data e hora ficam SEMPRE em estado proprio, inclusive no modo controlado: o valor
+  // combinado so existe com data E hora, entao derivar so de `field.value` apagaria a
+  // data escolhida enquanto a hora ainda nao foi preenchida (o campo "nao atualizava").
   const [dataState, setDataState] = useState(() => parteData(inicial))
   const [horaState, setHoraState] = useState(() => parteHora(inicial))
-  const [erro, setErro] = useState<string | null>(null)
+  // O aviso NAO e guardado: e calculado a cada renderizacao a partir do valor atual (so
+  // depois que o campo foi tocado). Assim um aviso velho nunca sobrevive a um valor que
+  // ficou completo, venha ele de digitacao ou de copia feita pelo formulario.
+  const [tocado, setTocado] = useState(false)
+  const [entradaInvalida, setEntradaInvalida] = useState(false)
 
-  const data = isControlled ? parteData(field.value ?? '') : dataState
-  const hora = isControlled ? parteHora(field.value ?? '') : horaState
+  const data = dataState
+  const hora = horaState
   const valorCombinado = combinar(data, hora)
+
+  const nome = field.label ?? field.name ?? field.id ?? 'Data/hora'
+  const algumPreenchido = data !== '' || hora !== ''
+  let erro: string | null = null
+  if (tocado) {
+    if (entradaInvalida) erro = `${nome}: data/hora inválida ou incompleta`
+    else if (field.required && !algumPreenchido) erro = `${nome} é obrigatória`
+    else if (algumPreenchido && (!data || !hora)) erro = `${nome}: preencha data E hora (ou deixe as duas em branco)`
+    else if (data && field.min && data < field.min) erro = `${nome} deve ser a partir de ${field.min}`
+    else if (data && field.max && data > field.max) erro = `${nome} deve ser até ${field.max}`
+  }
+
+  // Modo controlado: quando o pai troca o valor por fora (ex.: copia a data de outro
+  // campo), o estado interno acompanha. Valor igual ao combinado atual nao mexe em nada.
+  const valorPai = field.value
+  useEffect(() => {
+    if (!isControlled) return
+    const externo = valorPai ?? ''
+    if (externo !== combinar(dataState, horaState)) {
+      setDataState(parteData(externo))
+      setHoraState(parteHora(externo))
+      setEntradaInvalida(false)
+    }
+  }, [isControlled, valorPai, dataState, horaState])
 
   function handleDataChange(e: ChangeEvent<HTMLInputElement>) {
     const next = e.target.value
-    if (!isControlled) setDataState(next)
-    setErro(null)
+    setDataState(next)
+    setEntradaInvalida(false)
     emitValue(e, combinar(next, hora), field.onChange)
   }
 
   function handleHoraChange(e: ChangeEvent<HTMLInputElement>) {
     const next = e.target.value
-    if (!isControlled) setHoraState(next)
-    setErro(null)
+    setHoraState(next)
+    setEntradaInvalida(false)
     emitValue(e, combinar(data, next), field.onChange)
   }
 
   function handleBlur(e: FocusEvent<HTMLInputElement>) {
-    const nome = field.label ?? field.name ?? field.id ?? 'Data/hora'
-    const algumPreenchido = data !== '' || hora !== ''
-
-    if (e.target.validity.badInput) {
-      setErro(`${nome}: data/hora inválida ou incompleta`)
-    } else if (field.required && !algumPreenchido) {
-      setErro(`${nome} é obrigatória`)
-    } else if (algumPreenchido && (!data || !hora)) {
-      setErro(`${nome}: preencha data E hora (ou deixe as duas em branco)`)
-    } else if (data && field.min && data < field.min) {
-      setErro(`${nome} deve ser a partir de ${field.min}`)
-    } else if (data && field.max && data > field.max) {
-      setErro(`${nome} deve ser até ${field.max}`)
-    } else {
-      setErro(null)
-    }
+    setTocado(true)
+    setEntradaInvalida(e.target.validity.badInput)
     field.onBlur?.(e)
   }
 

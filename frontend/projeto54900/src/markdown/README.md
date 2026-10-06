@@ -28,6 +28,7 @@ cada resumo termina com o link para o conteúdo completo.
 | [`json`](#json)                    | Campo monta JSON sem digitação           |
 | [`listagem`](#listagem)            | Consumir o motor de listagens            |
 | [`listas`](#listas)                | Estrutura de banco para listagens        |
+| [`mensagens`](#mensagens)         | Listas e CRUD de mensagens               |
 | [`menu`](#menu)                    | Nav e menu: duas tabelas                 |
 | [`modal`](#modal)                  | Padrão único de modal centralizado       |
 | [`node`](#node)                    | Comandos do Node e módulos               |
@@ -209,6 +210,18 @@ funcional) e o motor compartilhado `src/utils/listConstructor.tsx`.
 
 [`geral/README_list_constructor.md`](geral/README_list_constructor.md) — modelo de dados do construtor de listas e estado do frontend.
 
+### `mensagens`
+
+Módulo `messages` (mensagens diretas 1 para 1 ou para grupo, com agendamento; **nunca um
+chat**). Pronto: menu "Mensagem" > "Lista" e "Grupos", e para cada recurso a lista com busca,
+o cadastro e a edição (CRUD de tela) com formulários que trazem quase todas as colunas da
+tabela, remetente/dono preenchido com o usuário logado e select que impede enviar para si
+mesmo. Peças compartilhadas novas: `utils/formSchemaPatch.ts` e a correção do campo
+`datahora`. Falta: tela de conversa estilo chat, lista lateral de interlocutores (o service
+existe sem consumidor), envio para grupo, membros do grupo, marcação de usuário e anexos.
+
+[`geral/modulos/messages/README_plano.md`](geral/modulos/messages/README_plano.md) — módulo messages, estado atual e pendências.
+
 ### `menu`
 
 `nav_manager` (a casca do app: nome, imagem, ícone, versão) e `menu_manager`
@@ -374,3 +387,4 @@ detalhe/edição de post, falta a listagem agrupada por usuário criador.
 
 - [`calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo `calendar` (espelho do Google Calendar): estado atual (só visualização) e roadmap.
 - [`timeline/README_plano.md`](geral/modulos/timeline/README_plano.md) — módulo `timeline` (feed social): backend completo, duas telas de frontend prontas, pendências para continuar depois.
+- [`messages/README_plano.md`](geral/modulos/messages/README_plano.md) — módulo `messages` (mensagens diretas, nunca chat): listas, formulários e CRUD de tela de mensagens e grupos prontos; tela de conversa, envio para grupo e membros pendentes.

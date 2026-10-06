@@ -239,6 +239,8 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   draft: 'text-bg-secondary',
   inactive: 'text-bg-warning',
   blocked: 'text-bg-danger',
+  scheduled: 'text-bg-info',
+  removed: 'text-bg-secondary',
 };
 
 const CUSTOM_CELL_RENDERERS: Record<

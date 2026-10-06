@@ -74,6 +74,11 @@ export const API_GROUPS = {
   chatRoomAttachmentReports: 'chat-room-attachment-reports',
   chatRoomWarnings: 'chat-room-warnings',
   chatRoomFavorites: 'chat-room-favorites',
+  messagesManager: 'messages-manager',
+  messagesManagerView: 'messages-manager-view',
+  messagesUsersView: 'messages-users-view',
+  messageGroupsManager: 'message-groups-manager',
+  messageGroupsManagerView: 'message-groups-manager-view',
   dbSchema: 'db-schema',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];
