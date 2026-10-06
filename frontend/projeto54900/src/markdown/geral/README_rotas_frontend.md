@@ -321,6 +321,15 @@ e o estado do frontend em
 | `/v1/message-groups-manager`           | `pages/v1/messages/message-groups-manager/GetAllPage`       | lista 37, com busca; menu "Grupos"                      |
 | `/v1/message-groups-manager/create`    | `pages/v1/messages/message-groups-manager/CreatePage`       | form 43 `criar-grupo-mensagem`                          |
 | `/v1/message-groups-manager/update/:id`| `pages/v1/messages/message-groups-manager/UpdatePage`       | form 44 `editar-grupo-mensagem`                         |
+| `/v1/message-group-members-manager`    | `pages/v1/messages/message-group-members-manager/GetAllPage`  | lista 38, com busca; menu "Membros"; **Novo** abre o `CreateModal` (2 etapas: form 43 + membros) |
+| `/v1/message-group-messages-manager`   | `pages/v1/messages/message-group-messages-manager/GetAllPage`  | lista 39, com busca; menu "Mensagens de grupo"          |
+| `/v1/message-group-messages-manager/create` | `pages/v1/messages/message-group-messages-manager/CreatePage` | form 45 `criar-mensagem-grupo`                     |
+| `/v1/message-group-messages-manager/update/:id` | `pages/v1/messages/message-group-messages-manager/UpdatePage` | form 46 `editar-mensagem-grupo`; `:id` = ligação mensagem-grupo |
+| `/v1/message-attachments-manager`      | `pages/v1/messages/message-attachments-manager/GetAllPage`    | lista 40, com busca; menu "Anexos"; Baixar, Abrir mensagem, Excluir, Visualizador (sem cadastro: o anexo nasce no form da mensagem) |
+| `/v1/message-warnings-manager`         | `pages/v1/messages/message-warnings-manager/GetAllPage`       | lista 41, com busca; **só admin**; menu "Advertências"; sem cadastro |
+| `/v1/message-warnings-manager/update/:id` | `pages/v1/messages/message-warnings-manager/UpdatePage`    | form 47 `editar-advertencia-mensagem` (só a palavra marcada) |
+| `/v1/message-chat`                     | `pages/v1/messages/chat/ChatHomePage`                         | modo chat, Etapa 1: lista de cards (grupos do usuário + usuários) com busca; abre o `ChatModal`; menu "Conversas" |
+| `/v1/message-group-members-manager/update/:id` | `pages/v1/messages/message-group-members-manager/UpdatePage` | `:id` = grupo; 2 cards (usuários × grupo), grava por `PUT message-group-members/sync/{id}` |
 
 ---
 

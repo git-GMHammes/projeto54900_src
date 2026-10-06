@@ -155,15 +155,14 @@ desenhados (todos com `INSERT` executado), organizados por pasta de
 
 ### `messages`
 
-Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento de envio e
-`read_at` — **nunca um chat** (sem sala, conversa ou thread). 4 tabelas
-(`messages_manager`, `message_groups_manager`, `message_group_members`,
-`message_group_messages`) e 5 views, API V1 com 65 rotas (mensagem, resumo por interlocutor e
-grupo), visibilidade restrita a remetente/destinatário/membro/admin, remetente e dono só admin
-altera, e o job `messages:dispatch` (agendada → enviada). Pronto no banco DEV e com CRUD de
-tela. Falta: enviar mensagem para grupo pela API (o create ainda exige destinatário), API de
-membros e de ligação, leitura por membro, marcação de usuário, anexos, filtro de palavrão e o
-agendador do job.
+Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento, anexo, marcação (@),
+leitura por membro e filtro de palavrão com advertência — **nunca uma sala de chat** (a conversa é
+entre usuários, não uma sala). 8 tabelas e 14 views, **271 rotas** de API V1 (conjunto completo
+Tabela + View por recurso), listas e formulários administrativos (área administrativa **irrestrita**:
+só autorização, sem trava de estado) e o **modo chat** (lista de conversas, conversa privada e de grupo,
+não lidas, regra "só edita enquanto agendada"). Atualização **só por polling** (sem WebSocket) e entrega
+das agendadas **sem cron** (gatilho em toda requisição autenticada; hospedagem só com FTP). Pronto no banco
+DEV. Falta: visibilidade da mensagem de grupo no `messages-manager`, migrations REMAKE e testes permanentes.
 
 [`geral/README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: schema, API, regras, estado e pendências.
 

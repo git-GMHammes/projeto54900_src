@@ -123,6 +123,7 @@ verdade (ou nova tela assumida como definitiva) → `resolveHrefTemplate` +
 | `renderCell(column, row)`              | `cellValue` + tratamento especial por `format` (`CUSTOM_CELL_RENDERERS`) — sempre `ReactNode`                 |
 | `resolveHrefTemplate(template, row)`   | troca **qualquer** `{campo}` no `href_template`/`api_endpoint` pelo valor real da linha (`{id}`, `{slug}`, …) |
 | `evalBusinessRule(rule, row)`          | avalia `business_rule_json` (`eq`/`ne`/`lt`/`lte`/`gt`/`gte`) → `boolean`                                     |
+| `isActionVisible(rule, row)`           | com `"hide": true` na regra, a ação é **ocultada** (não só desabilitada) quando a regra falha; sem o marcador, sempre visível. Só as páginas que filtram por ele honram (hoje: `message-attachments-manager`) |
 | `str`/`num`/`parseJson`                | helpers de normalização usados pelos `toXxx` acima                                                            |
 
 ## Quando aplicar
