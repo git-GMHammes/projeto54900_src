@@ -32,6 +32,7 @@ import { paths } from '@/routes/paths';
 import { useAppConfig } from '@/context/AppConfigContext';
 import { useAuth } from '@/context/AuthContext';
 import { useSiteMenu } from '@/hooks/useSiteMenu';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import type { SiteMenuItem } from '@/hooks/useSiteMenu';
 
 // Fallback usado enquanto o menu carrega e sempre que nav-manager/menu-manager
@@ -47,6 +48,25 @@ const GUEST_NAV: SiteMenuItem[] = [
 ];
 
 const OFFCANVAS_ID = 'siteMenuOffcanvas';
+
+/**
+ * Badge de mensagens nao lidas do modo chat (some quando 0). `floating`: no canto superior direito do
+ * item da BARRA (o item precisa de `position-relative`), FORA do fluxo — assim ele nao aumenta a largura
+ * da barra nem cria rolagem horizontal. Sem `floating` (itens do dropdown), fica em linha.
+ */
+function UnreadBadge({ total, floating = false }: { total: number; floating?: boolean }) {
+  if (total <= 0) return null;
+
+  return (
+    <span
+      className={`badge rounded-pill text-bg-danger ${floating ? 'position-absolute top-0 start-100 translate-middle' : 'ms-2'}`}
+      style={floating ? { fontSize: '0.65rem' } : undefined}
+    >
+      {total > 99 ? '99+' : total}
+      <span className="visually-hidden"> mensagens nao lidas</span>
+    </span>
+  );
+}
 
 /** Remove do NIVEL RAIZ o item cuja rota seja a de login — filhos (submenu) nunca sao tocados. */
 function withoutRootLogin(items: SiteMenuItem[]): SiteMenuItem[] {
@@ -68,6 +88,9 @@ export default function Navbar() {
   else if (bootstrapping) nav = FALLBACK_NAV;
   const offcanvas: SiteMenuItem[] = isAuthenticated && hasMenu ? withoutRootLogin(menu.offcanvas) : [];
   const isAdmin = user?.role?.slug === 'admin';
+  // Contador de nao lidas do modo chat (so com sessao e fora do papel guest). O badge aparece no item
+  // "Conversas" (/v1/message-chat) e no pai dele ("Mensagem").
+  const unread = useUnreadMessages(isAuthenticated && user?.role?.slug !== 'guest');
 
   /** Sair: revoga no backend + limpeza local (AuthContext) e volta para a Home. */
   const handleLogout = async () => {
@@ -102,7 +125,10 @@ export default function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="mainNav">
-            <ul className="navbar-nav ms-auto">
+            {/* flex-wrap: em janelas medias (>= lg e < ~1200 px) os itens do menu somados passam da largura do
+                container e, sem quebrar de linha, vazavam para a direita (texto branco sobre fundo branco) e
+                criavam rolagem horizontal na pagina inteira. Com wrap, os itens que nao cabem descem para a 2a linha. */}
+            <ul className="navbar-nav ms-auto flex-wrap">
               {isAuthenticated && (
                 <li className="nav-item">
                   <button
@@ -132,6 +158,7 @@ export default function Navbar() {
                       >
                         {item.icon && <i className={`bi bi-${item.icon} me-1`} aria-hidden="true" />}
                         {item.label}
+                        {item.children.some((c) => c.to === paths.v1.messageChat.home) && <UnreadBadge total={unread} />}
                       </NavLink>
                     ) : (
                       <a
@@ -144,6 +171,7 @@ export default function Navbar() {
                       >
                         {item.icon && <i className={`bi bi-${item.icon} me-1`} aria-hidden="true" />}
                         {item.label}
+                        {item.children.some((c) => c.to === paths.v1.messageChat.home) && <UnreadBadge total={unread} />}
                       </a>
                     )}
                     <ul className="dropdown-menu dropdown-menu-end">
@@ -151,6 +179,7 @@ export default function Navbar() {
                         <li key={child.to}>
                           <NavLink className="dropdown-item" to={child.to} end={child.end}>
                             {child.label}
+                            {child.to === paths.v1.messageChat.home && <UnreadBadge total={unread} />}
                           </NavLink>
                         </li>
                       ))}

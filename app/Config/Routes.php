@@ -349,6 +349,82 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupsManager/EndPointView.php';
     });
 
+    // Membros dos grupos (message_group_members): liga usuarios a grupos (N:N). Escrita so do
+    // dono do grupo ou admin; 'sync' grava varios vinculos numa transacao.
+    $routes->group('message-group-members', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMembers/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMembers/EndpointCustom.php';
+    });
+
+    $routes->group('message-group-members-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMembers/EndPointView.php';
+    });
+
+    // Usuarios com contagem de grupos (fonte do card de usuarios) e grupos com membros (lista).
+    $routes->group('message-users-groups-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageUsersGroups/EndPointView.php';
+    });
+
+    $routes->group('message-group-memberships-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMemberships/EndPointView.php';
+    });
+
+    // Mensagens de grupo (message_group_messages + messages_manager): envia ao grupo; 'jwtauth' por wildcard.
+    $routes->group('message-group-messages', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMessages/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMessages/EndpointCustom.php';
+    });
+
+    $routes->group('message-group-messages-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupMessages/EndPointView.php';
+    });
+
+    // Anexos de mensagens (message_attachments): upload multipart no create + serve/download; 'jwtauth' por wildcard.
+    $routes->group('message-attachments', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageAttachments/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageAttachments/EndpointUpload.php';
+    });
+
+    $routes->group('message-attachments-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageAttachments/EndPointView.php';
+    });
+
+    // Contatos do chat (view_message_contacts): usuarios ativos, sem o proprio; so leitura; 'jwtauth' por wildcard.
+    $routes->group('message-contacts-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageContacts/EndPointView.php';
+    });
+
+    // Leitura por membro das mensagens de grupo (message_group_reads) e resumo do chat por grupo.
+    $routes->group('message-group-reads', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupReads/EndpointTable.php';
+    });
+
+    $routes->group('message-group-reads-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupReads/EndPointView.php';
+    });
+
+    $routes->group('message-group-chat-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageGroupChat/EndPointView.php';
+    });
+
+    // Marcacao de usuario (@) nas mensagens de grupo (message_mentions).
+    $routes->group('message-mentions', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageMentions/EndpointTable.php';
+    });
+
+    $routes->group('message-mentions-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageMentions/EndPointView.php';
+    });
+
+    // Advertencia de palavrao (message_warnings): TODAS as rotas somam 'adminonly' na propria rota.
+    $routes->group('message-warnings', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageWarnings/EndpointTable.php';
+    });
+
+    $routes->group('message-warnings-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Messages/MessageWarnings/EndPointView.php';
+    });
+
     // =========================================================================
     // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
     //        versao do sistema.

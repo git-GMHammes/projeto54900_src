@@ -1,8 +1,10 @@
 // Formulario de edicao de mensagem — build 'editar-mensagem-direta' (form_manager,
 // tabela messages_manager). Traz todas as colunas do cadastro, preenchidas com o
-// registro. Quem nao e admin so edita texto e data de envio, e so enquanto a mensagem
-// esta agendada (campos travados na tela; o backend recusa com 409/403). Remetente,
-// destinatario, "Enviada em" e "Lida em" so o admin altera.
+// registro. AREA ADMINISTRATIVA IRRESTRITA: texto e data de envio editaveis em qualquer
+// status (a regra "so agendada" e do MODO CHAT). Remetente, destinatario, "Enviada em" e
+// "Lida em" so o admin altera (o backend recusa com 403).
+// Anexo: o campo `arquivo` troca o anexo atual (enviado depois do PUT, com replace); o anexo atual aparece
+// acima do campo, com Baixar e Remover.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,7 +16,7 @@ import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
-import { formManagerView, messagesManagerTable } from '@/services/v1';
+import { formManagerView, messageAttachmentsUpload, messagesManagerTable } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList, normalizeItem } from '@/utils/apiResult';
@@ -22,6 +24,9 @@ import type { ApiRow } from '@/types/api';
 import { toText } from '@/utils/format';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { fillValues, patchFields } from '@/utils/formSchemaPatch';
+import { avisoPalavrasProibidas } from '@/utils/palavrasProibidas';
+import { selectedFile } from '@/utils/formFile';
+import MessageAttachmentCurrent from '../MessageAttachmentCurrent';
 import { paths } from '@/routes/paths';
 
 const SLUG = 'editar-mensagem-direta';
@@ -73,16 +78,13 @@ export default function UpdatePage() {
         sent_at: toText(record.sent_at, ''),
         read_at: toText(record.read_at, ''),
       };
-      // Nao-admin: so texto/data de envio e so enquanto agendada; o resto fica travado.
+      // Remetente, destinatario e datas do sistema: so admin; texto e agendamento: livres.
       const locked = isAdmin ? {} : { disabled: true };
-      const textLocked = isAdmin || values.status === 'scheduled' ? {} : { disabled: true };
       const schema = patchFields(fillValues(built.schema, values), {
         sender_user_manager_id: locked,
         recipient_user_manager_id: locked,
         sent_at: locked,
         read_at: locked,
-        content: textLocked,
-        scheduled_at: textLocked,
       });
       setSenderId(values.sender_user_manager_id ?? '');
       setRecipientId(values.recipient_user_manager_id ?? '');
@@ -130,12 +132,29 @@ export default function UpdatePage() {
       }
 
       const payload = formDataToPayload(el);
+      const file = selectedFile(el);
+      const blocked = avisoPalavrasProibidas(typeof payload.content === 'string' ? payload.content : '', user?.role?.slug === 'admin');
+      if (blocked) {
+        toast.error(blocked, { title: 'Mensagem bloqueada' });
+        return;
+      }
       const send = senderFor(form.meta.httpMethod);
       const path = `${resolveEndpoint(form.meta.submitEndpoint)}/${id}`;
 
       setSubmitting(true);
       try {
         await send(path, payload);
+        if (file) {
+          try {
+            await messageAttachmentsUpload.upload({ file, messageId: id, replace: true });
+          } catch (err) {
+            const detail = err instanceof ApiError ? `${err.message}${errorDetail(err)}` : 'Falha inesperada no anexo.';
+            toast.error(`A mensagem foi gravada, mas o anexo não. ${detail}`, { title: 'Anexo não enviado' });
+            void navigate(paths.v1.messagesManager.list);
+            return;
+          }
+        }
+
         toast.success('Mensagem atualizada.', { title: form.meta.title });
         void navigate(paths.v1.messagesManager.list);
       } catch (err) {
@@ -148,7 +167,7 @@ export default function UpdatePage() {
         setSubmitting(false);
       }
     },
-    [form, id, navigate, toast],
+    [form, id, navigate, toast, user],
   );
 
   return (
@@ -165,6 +184,7 @@ export default function UpdatePage() {
       {!loading && !error && form && schema && (
         <form onSubmit={(e) => void handleSubmit(e)} noValidate>
           <FormGrid schema={schema} />
+          <MessageAttachmentCurrent messageId={id ?? ''} />
           <div className="d-flex gap-2 mt-4 pt-3 border-top">
             <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar'}
