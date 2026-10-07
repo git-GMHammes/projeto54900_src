@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS `aux_cor` (
   `name` varchar(50) DEFAULT NULL,
   `hexadecimal` varchar(50) DEFAULT NULL,
   `rgb` varchar(50) DEFAULT NULL,
-  `created_at` datetime DEFAULT (now()),
-  `updated_at` datetime DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DELETE FROM `aux_cor`;
 INSERT INTO `aux_cor` (`id`, `name`, `hexadecimal`, `rgb`, `created_at`, `updated_at`, `deleted_at`) VALUES
@@ -9670,7 +9670,7 @@ CREATE TABLE IF NOT EXISTS `user_manager` (
   UNIQUE KEY `username` (`username`),
   KEY `user_role_id` (`user_role_id`),
   CONSTRAINT `fk_user_manager_user_role` FOREIGN KEY (`user_role_id`) REFERENCES `user_roles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DELETE FROM `user_manager`;
 INSERT INTO `user_manager` (`id`, `username`, `password_hash`, `token`, `status`, `user_role_id`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`) VALUES

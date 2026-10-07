@@ -1,12 +1,19 @@
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
+;
+/*!40101 SET NAMES utf8 */
+;
+/*!50503 SET NAMES utf8mb4 */
+;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */
+;
+/*!40103 SET TIME_ZONE='+00:00' */
+;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */
+;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */
+;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */
+;
 -- -----------------------------------------------------------------------------
 -- Views do banco codeigniter54900_db — dump formatado em 2026-10-06.
 -- Fonte: definição real de cada view no banco DEV, conferida em 2026-10-06.
@@ -47,7 +54,6 @@ SELECT ac.id AS id,
        ac.updated_at AS updated_at,
        ac.deleted_at AS deleted_at
 FROM aux_cor ac;
-
 -- -----------------------------------------------------------------------------
 -- view_bootstrap_icons
 -- Base: bootstrap_icons bi.
@@ -62,7 +68,6 @@ SELECT bi.id AS id,
        bi.updated_at AS updated_at,
        bi.deleted_at AS deleted_at
 FROM bootstrap_icons bi;
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_event_attachments
 -- Base: calendar_event_attachments cea, com junção à esquerda de
@@ -117,7 +122,6 @@ FROM calendar_event_attachments cea
               ce.id = cea.calendar_event_id
               AND ce.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_event_attendees
 -- Base: calendar_event_attendees ceat, com junção à esquerda de user_profiles
@@ -205,7 +209,6 @@ FROM calendar_event_attendees ceat
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_event_extended_properties
 -- Base: calendar_event_extended_properties ceep, com junção à esquerda de
@@ -258,7 +261,6 @@ FROM calendar_event_extended_properties ceep
               ce.id = ceep.calendar_event_id
               AND ce.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_event_invites
 -- Base: calendar_event_invites cei, com junção à esquerda de user_profiles cuc,
@@ -372,7 +374,6 @@ FROM calendar_event_invites cei
               cuc.user_manager_id = cu.id
               AND cuc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_event_reminders
 -- Base: calendar_event_reminders cer, com junção à esquerda de calendar_events
@@ -424,7 +425,6 @@ FROM calendar_event_reminders cer
               ce.id = cer.calendar_event_id
               AND ce.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_calendar_manager
 -- Base: calendar_manager cm, com junção à esquerda de calendar_events ce.
@@ -489,7 +489,6 @@ FROM calendar_manager cm
               AND ce.deleted_at IS NULL
        )
 WHERE cm.deleted_at IS NULL;
-
 -- -----------------------------------------------------------------------------
 -- view_chat_message_edits
 -- Base: chat_message_edits cme, com junção à esquerda de user_profiles uc,
@@ -545,7 +544,6 @@ FROM chat_message_edits cme
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_message_mentions
 -- Base: chat_message_mentions cmm, com junção à esquerda de user_profiles uc,
@@ -601,7 +599,6 @@ FROM chat_message_mentions cmm
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_messages
 -- Base: chat_messages cm, com junção à esquerda de user_profiles uc,
@@ -671,7 +668,6 @@ FROM chat_messages cm
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_room_attachment_reports
 -- Base: chat_room_attachment_reports crar, com junção à esquerda de
@@ -771,7 +767,6 @@ FROM chat_room_attachment_reports crar
               muc.user_manager_id = mu.id
               AND muc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_room_attachments
 -- Base: chat_room_attachments cra, com junção à esquerda de user_profiles uc,
@@ -853,7 +848,6 @@ FROM chat_room_attachments cra
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_room_favorites
 -- Base: chat_room_favorites crf, com junção à esquerda de user_profiles uc,
@@ -913,7 +907,6 @@ FROM chat_room_favorites crf
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_room_members
 -- Base: chat_room_members crm, com junção à esquerda de user_profiles uc,
@@ -977,7 +970,6 @@ FROM chat_room_members crm
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_room_warnings
 -- Base: chat_room_warnings crw, com junção à esquerda de chat_messages cm,
@@ -1051,7 +1043,6 @@ FROM chat_room_warnings crw
               cm.id = crw.chat_message_id
               AND cm.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_chat_rooms_manager
 -- Base: chat_rooms_manager cr, com junção à esquerda de user_profiles uc,
@@ -1128,7 +1119,6 @@ FROM chat_rooms_manager cr
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_form_manager
 -- Base: form_manager fm, com junção à esquerda de form_fields fc, form_rows fr,
@@ -1225,7 +1215,6 @@ FROM form_manager fm
               AND fc.deleted_at IS NULL
        )
 WHERE fm.deleted_at IS NULL;
-
 -- -----------------------------------------------------------------------------
 -- view_list_actions
 -- Base: list_actions la, com junção à esquerda de list_manager lm.
@@ -1273,7 +1262,6 @@ FROM list_actions la
               lm.id = la.list_manager_id
               AND lm.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_list_columns
 -- Base: list_columns lc, com junção à esquerda de list_manager lm.
@@ -1318,7 +1306,6 @@ FROM list_columns lc
               lm.id = lc.list_manager_id
               AND lm.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_list_manager
 -- Base: list_manager lm.
@@ -1343,7 +1330,6 @@ SELECT lm.id AS id,
        lm.updated_at AS updated_at,
        lm.deleted_at AS deleted_at
 FROM list_manager lm;
-
 -- -----------------------------------------------------------------------------
 -- view_menu_manager
 -- Base: menu_manager mm, com junção à esquerda de menu_manager pm, nav_manager
@@ -1397,7 +1383,6 @@ FROM menu_manager mm
               pm.id = mm.parent_id
               AND pm.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_attachments
 -- Base: message_attachments a, com junção à esquerda de user_profiles rc,
@@ -1426,8 +1411,18 @@ SELECT a.id AS id,
        mgl.message_groups_manager_id AS mgl_message_groups_manager_id,
        mg.name AS mg_name,
        mg.owner_user_manager_id AS mg_owner_user_manager_id,
-       (CASE WHEN (mgl.id IS NOT NULL) THEN 'group' ELSE 'private' END) AS conversation_type,
-       (CASE WHEN (mgl.id IS NOT NULL) THEN 'Grupo' ELSE 'Privada' END) AS conversation_label,
+       (
+              CASE
+                     WHEN (mgl.id IS NOT NULL) THEN 'group'
+                     ELSE 'private'
+              END
+       ) AS conversation_type,
+       (
+              CASE
+                     WHEN (mgl.id IS NOT NULL) THEN 'Grupo'
+                     ELSE 'Privada'
+              END
+       ) AS conversation_label,
        COALESCE(mg.name, rc.name, rm.username) AS destination_name,
        sm.username AS sm_username,
        sc.name AS sc_name,
@@ -1462,7 +1457,6 @@ FROM message_attachments a
               rc.user_manager_id = rm.id
               AND rc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_contacts
 -- Base: user_manager um, com junção à esquerda de user_profiles uc.
@@ -1474,7 +1468,31 @@ SELECT um.id AS id,
        um.status AS um_status,
        uc.name AS uc_name,
        uc.phone AS uc_phone,
-       REGEXP_REPLACE(COALESCE(uc.phone, ''), '[^0-9]', '') AS phone_digits,
+       REPLACE(
+              REPLACE(
+                     REPLACE(
+                            REPLACE(
+                                   REPLACE(
+                                          REPLACE(
+                                                 REPLACE(COALESCE(uc.phone, ''), '(', ''),
+                                                 ')',
+                                                 ''
+                                          ),
+                                          ' ',
+                                          ''
+                                   ),
+                                   '-',
+                                   ''
+                            ),
+                            '.',
+                            ''
+                     ),
+                     '/',
+                     ''
+              ),
+              '+',
+              ''
+       ) AS phone_digits,
        um.created_at AS created_at,
        um.updated_at AS updated_at,
        um.deleted_at AS deleted_at
@@ -1483,7 +1501,6 @@ FROM user_manager um
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_chat_summary
 -- Base: message_group_members gm, com junção interna de message_groups_manager
@@ -1491,7 +1508,9 @@ FROM user_manager um
 -- -----------------------------------------------------------------------------
 DROP VIEW IF EXISTS `view_message_group_chat_summary`;
 CREATE VIEW `view_message_group_chat_summary` AS
-SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
+SELECT (
+              (gm.user_manager_id * 4294967296) + gm.message_groups_manager_id
+       ) AS id,
        gm.user_manager_id AS mgcs_member_user_manager_id,
        gm.message_groups_manager_id AS mgcs_group_id,
        g.name AS mg_name,
@@ -1515,7 +1534,15 @@ SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
                      AND m.status = 'sent'
                      AND m.sender_user_manager_id <> gm.user_manager_id
                      AND m.sent_at >= gm.created_at
-                     AND EXISTS(SELECT 1 FROM message_group_reads r WHERE ((r.messages_manager_id = m.id) AND (r.user_manager_id = gm.user_manager_id) AND (r.deleted_at IS NULL))) IS FALSE
+                     AND EXISTS(
+                            SELECT 1
+                            FROM message_group_reads r
+                            WHERE (
+                                          (r.messages_manager_id = m.id)
+                                          AND (r.user_manager_id = gm.user_manager_id)
+                                          AND (r.deleted_at IS NULL)
+                                   )
+                     ) IS FALSE
        ) AS mgcs_unread_count,
        (
               SELECT m.id
@@ -1527,7 +1554,8 @@ SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
               WHERE l.message_groups_manager_id = g.id
                      AND l.deleted_at IS NULL
                      AND m.status = 'sent'
-              ORDER BY m.sent_at DESC, m.id DESC
+              ORDER BY m.sent_at DESC,
+                     m.id DESC
               LIMIT 1
        ) AS mgcs_last_message_id,
        (
@@ -1540,7 +1568,8 @@ SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
               WHERE l.message_groups_manager_id = g.id
                      AND l.deleted_at IS NULL
                      AND m.status = 'sent'
-              ORDER BY m.sent_at DESC, m.id DESC
+              ORDER BY m.sent_at DESC,
+                     m.id DESC
               LIMIT 1
        ) AS mgcs_last_content,
        (
@@ -1553,7 +1582,8 @@ SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
               WHERE l.message_groups_manager_id = g.id
                      AND l.deleted_at IS NULL
                      AND m.status = 'sent'
-              ORDER BY m.sent_at DESC, m.id DESC
+              ORDER BY m.sent_at DESC,
+                     m.id DESC
               LIMIT 1
        ) AS mgcs_last_sender_user_manager_id,
        (
@@ -1566,7 +1596,8 @@ SELECT ((gm.user_manager_id * 4294967296) + gm.message_groups_manager_id) AS id,
               WHERE l.message_groups_manager_id = g.id
                      AND l.deleted_at IS NULL
                      AND m.status = 'sent'
-              ORDER BY m.sent_at DESC, m.id DESC
+              ORDER BY m.sent_at DESC,
+                     m.id DESC
               LIMIT 1
        ) AS mgcs_last_message_at,
        gm.created_at AS created_at,
@@ -1579,7 +1610,6 @@ FROM message_group_members gm
        )
 WHERE gm.status = 'active'
        AND gm.deleted_at IS NULL;
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_members
 -- Base: message_group_members mgm, com junção à esquerda de user_profiles uc,
@@ -1637,7 +1667,6 @@ FROM message_group_members mgm
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_memberships
 -- Base: message_groups_manager mg, com junção à esquerda de user_profiles uc,
@@ -1660,7 +1689,17 @@ SELECT mg.id AS id,
                      AND m.deleted_at IS NULL
        ) AS members_count,
        (
-              SELECT (CAST(LEFT(GROUP_CONCAT(COALESCE(pc.name, pu.username) ORDER BY COALESCE(pc.name, pu.username) ASC SEPARATOR ', '), 500) AS CHAR charset utf8mb4) collate utf8mb4_general_ci)
+              SELECT (
+                            CAST(
+                                   LEFT(
+                                          GROUP_CONCAT(
+                                                 COALESCE(pc.name, pu.username)
+                                                 ORDER BY COALESCE(pc.name, pu.username) ASC SEPARATOR ', '
+                                          ),
+                                          500
+                                   ) AS CHAR charset utf8mb4
+                            ) collate utf8mb4_general_ci
+                     )
               FROM message_group_members m
                      JOIN user_manager pu ON (
                             pu.id = m.user_manager_id
@@ -1678,7 +1717,46 @@ SELECT mg.id AS id,
        mg.updated_at AS updated_at,
        mg.deleted_at AS deleted_at,
        (
-              SELECT (CAST(LEFT(GROUP_CONCAT(CONCAT_WS(' ', pc.name, pu.username, REGEXP_REPLACE(COALESCE(pc.phone, ''), '[^0-9]', '')) ORDER BY pc.name ASC SEPARATOR ' | '), 1000) AS CHAR charset utf8mb4) collate utf8mb4_general_ci)
+              SELECT (
+                            CAST(
+                                   LEFT(
+                                          GROUP_CONCAT(
+                                                 CONCAT_WS(
+                                                        ' ',
+                                                        pc.name,
+                                                        pu.username,
+                                                        REPLACE(
+                                                               REPLACE(
+                                                                      REPLACE(
+                                                                             REPLACE(
+                                                                                    REPLACE(
+                                                                                           REPLACE(
+                                                                                                  REPLACE(COALESCE(pc.phone, ''), '(', ''),
+                                                                                                  ')',
+                                                                                                  ''
+                                                                                           ),
+                                                                                           ' ',
+                                                                                           ''
+                                                                                    ),
+                                                                                    '-',
+                                                                                    ''
+                                                                             ),
+                                                                             '.',
+                                                                             ''
+                                                                      ),
+                                                                      '/',
+                                                                      ''
+                                                               ),
+                                                               '+',
+                                                               ''
+                                                        )
+                                                 )
+                                                 ORDER BY pc.name ASC SEPARATOR ' | '
+                                          ),
+                                          1000
+                                   ) AS CHAR charset utf8mb4
+                            ) collate utf8mb4_general_ci
+                     )
               FROM message_group_members m
                      JOIN user_manager pu ON (
                             pu.id = m.user_manager_id
@@ -1701,7 +1779,6 @@ FROM message_groups_manager mg
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_messages
 -- Base: message_group_messages mgl, com junção à esquerda de user_profiles sc,
@@ -1772,7 +1849,6 @@ FROM message_group_messages mgl
               sc.user_manager_id = sm.id
               AND sc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_posts
 -- Base: message_group_messages mgl, com junção à esquerda de user_profiles sc,
@@ -1818,7 +1894,6 @@ FROM message_group_messages mgl
               sc.user_manager_id = sm.id
               AND sc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_group_reads
 -- Base: message_group_reads r, com junção à esquerda de user_profiles uc,
@@ -1854,7 +1929,6 @@ FROM message_group_reads r
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_groups_manager
 -- Base: message_groups_manager mg, com junção à esquerda de user_profiles uc,
@@ -1917,7 +1991,6 @@ FROM message_groups_manager mg
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_mentions
 -- Base: message_mentions mt, com junção à esquerda de user_profiles sc,
@@ -1959,7 +2032,6 @@ FROM message_mentions mt
               sc.user_manager_id = sm.id
               AND sc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_users_groups
 -- Base: user_manager um, com junção à esquerda de user_profiles uc. Inclui
@@ -1984,7 +2056,13 @@ SELECT um.id AS id,
                      AND m.deleted_at IS NULL
        ) AS groups_count,
        (
-              SELECT LEFT(GROUP_CONCAT(g.name ORDER BY g.name ASC SEPARATOR ', '), 500)
+              SELECT LEFT(
+                            GROUP_CONCAT(
+                                   g.name
+                                   ORDER BY g.name ASC SEPARATOR ', '
+                            ),
+                            500
+                     )
               FROM message_group_members m
                      JOIN message_groups_manager g ON (
                             g.id = m.message_groups_manager_id
@@ -2002,7 +2080,6 @@ FROM user_manager um
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_message_warnings
 -- Base: message_warnings w, com junção à esquerda de user_profiles uc,
@@ -2032,7 +2109,6 @@ FROM message_warnings w
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_messages_manager
 -- Base: messages_manager mm, com junção à esquerda de message_groups_manager
@@ -2139,7 +2215,6 @@ FROM messages_manager mm
               mg.id = mgl.message_groups_manager_id
               AND mg.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_messages_users
 -- Linhas montadas a partir de agrupamento e união de consultas com contagens
@@ -2147,7 +2222,9 @@ FROM messages_manager mm
 -- -----------------------------------------------------------------------------
 DROP VIEW IF EXISTS `view_messages_users`;
 CREATE VIEW `view_messages_users` AS
-SELECT CAST(((agg.owner_id * 4294967296) + agg.peer_id) AS UNSIGNED) AS id,
+SELECT CAST(
+              ((agg.owner_id * 4294967296) + agg.peer_id) AS UNSIGNED
+       ) AS id,
        agg.owner_id AS mu_owner_user_manager_id,
        agg.peer_id AS mu_peer_user_manager_id,
        agg.messages_count AS mu_messages_count,
@@ -2170,36 +2247,42 @@ SELECT CAST(((agg.owner_id * 4294967296) + agg.peer_id) AS UNSIGNED) AS id,
        COALESCE(lm.sent_at, lm.created_at) AS updated_at,
        NULL AS deleted_at
 FROM (
-       SELECT p.owner_id AS owner_id,
-              p.peer_id AS peer_id,
-              MAX(p.message_id) AS last_id,
-              COUNT(0) AS messages_count,
-              SUM(((p.received = 1) AND (p.read_at IS NULL))) AS unread_count,
-              MIN(p.created_at) AS first_at
-       FROM (
-              SELECT messages_manager.sender_user_manager_id AS owner_id,
-                     messages_manager.recipient_user_manager_id AS peer_id,
-                     messages_manager.id AS message_id,
-                     messages_manager.created_at AS created_at,
-                     messages_manager.read_at AS read_at,
-                     0 AS received
-              FROM messages_manager
-              WHERE messages_manager.deleted_at IS NULL
-                     AND messages_manager.recipient_user_manager_id IS NOT NULL
-                     AND messages_manager.status IN ('scheduled', 'sent')
-              UNION ALL
-              SELECT messages_manager.recipient_user_manager_id AS recipient_user_manager_id,
-                     messages_manager.sender_user_manager_id AS sender_user_manager_id,
-                     messages_manager.id AS id,
-                     messages_manager.created_at AS created_at,
-                     messages_manager.read_at AS read_at,
-                     1 AS `1`
-              FROM messages_manager
-              WHERE messages_manager.deleted_at IS NULL
-                     AND messages_manager.recipient_user_manager_id IS NOT NULL
-                     AND messages_manager.status = 'sent'
-              ) p
-       GROUP BY p.owner_id, p.peer_id
+              SELECT p.owner_id AS owner_id,
+                     p.peer_id AS peer_id,
+                     MAX(p.message_id) AS last_id,
+                     COUNT(0) AS messages_count,
+                     SUM(
+                            (
+                                   (p.received = 1)
+                                   AND (p.read_at IS NULL)
+                            )
+                     ) AS unread_count,
+                     MIN(p.created_at) AS first_at
+              FROM (
+                            SELECT messages_manager.sender_user_manager_id AS owner_id,
+                                   messages_manager.recipient_user_manager_id AS peer_id,
+                                   messages_manager.id AS message_id,
+                                   messages_manager.created_at AS created_at,
+                                   messages_manager.read_at AS read_at,
+                                   0 AS received
+                            FROM messages_manager
+                            WHERE messages_manager.deleted_at IS NULL
+                                   AND messages_manager.recipient_user_manager_id IS NOT NULL
+                                   AND messages_manager.status IN ('scheduled', 'sent')
+                            UNION ALL
+                            SELECT messages_manager.recipient_user_manager_id AS recipient_user_manager_id,
+                                   messages_manager.sender_user_manager_id AS sender_user_manager_id,
+                                   messages_manager.id AS id,
+                                   messages_manager.created_at AS created_at,
+                                   messages_manager.read_at AS read_at,
+                                   1 AS `1`
+                            FROM messages_manager
+                            WHERE messages_manager.deleted_at IS NULL
+                                   AND messages_manager.recipient_user_manager_id IS NOT NULL
+                                   AND messages_manager.status = 'sent'
+                     ) p
+              GROUP BY p.owner_id,
+                     p.peer_id
        ) agg
        JOIN messages_manager lm ON lm.id = agg.last_id
        LEFT JOIN user_manager om ON (
@@ -2218,7 +2301,6 @@ FROM (
               pc.user_manager_id = pm.id
               AND pc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_nav_manager
 -- Base: nav_manager nm.
@@ -2235,7 +2317,6 @@ SELECT nm.id AS id,
        nm.updated_at AS updated_at,
        nm.deleted_at AS deleted_at
 FROM nav_manager nm;
-
 -- -----------------------------------------------------------------------------
 -- view_route_manager
 -- Base: route_manager rm.
@@ -2253,7 +2334,6 @@ SELECT rm.id AS id,
        rm.updated_at AS updated_at,
        rm.deleted_at AS deleted_at
 FROM route_manager rm;
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_manager
 -- Base: timeline_manager tm, com junção à esquerda de user_profiles uc,
@@ -2302,7 +2382,6 @@ FROM timeline_manager tm
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_post_attachments
 -- Base: timeline_post_attachments ta, com junção à esquerda de user_profiles
@@ -2375,7 +2454,6 @@ FROM timeline_post_attachments ta
               uc.user_manager_id = um.id
               AND uc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_post_comments
 -- Base: timeline_post_comments tc, com junção à esquerda de
@@ -2454,7 +2532,6 @@ FROM timeline_post_comments tc
               pc.id = tc.parent_id
               AND pc.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_post_ratings
 -- Base: timeline_post_ratings rt, com junção à esquerda de timeline_posts tp,
@@ -2515,7 +2592,6 @@ FROM timeline_post_ratings rt
               tp.id = rt.timeline_post_id
               AND tp.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_post_reactions
 -- Base: timeline_post_reactions tr, com junção à esquerda de timeline_posts tp,
@@ -2576,7 +2652,6 @@ FROM timeline_post_reactions tr
               tp.id = tr.timeline_post_id
               AND tp.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_post_reports
 -- Base: timeline_post_reports trp, com junção à esquerda de timeline_posts tp,
@@ -2671,7 +2746,6 @@ FROM timeline_post_reports trp
               tp.id = trp.timeline_post_id
               AND tp.deleted_at IS NULL
        );
-
 -- -----------------------------------------------------------------------------
 -- view_timeline_posts
 -- Base: timeline_posts tp, com junção à esquerda de user_profiles rc,
@@ -2830,7 +2904,6 @@ FROM timeline_posts tp
               AND rc.deleted_at IS NULL
        )
 WHERE tp.deleted_at IS NULL;
-
 -- -----------------------------------------------------------------------------
 -- view_upload_manager
 -- Base: uploads u.
@@ -2873,7 +2946,6 @@ SELECT u.id AS id,
        u.updated_at AS updated_at,
        u.deleted_at AS deleted_at
 FROM uploads u;
-
 -- -----------------------------------------------------------------------------
 -- view_user_directory
 -- Base: user_manager um, com junção à esquerda de user_profiles uc.
@@ -2907,7 +2979,6 @@ FROM user_manager um
               AND uc.deleted_at IS NULL
        )
 WHERE um.deleted_at IS NULL;
-
 -- -----------------------------------------------------------------------------
 -- view_user_manager
 -- Base: user_manager um, com junção à esquerda de user_roles ur, user_profiles
@@ -2957,9 +3028,13 @@ FROM user_manager um
               ur.id = um.user_role_id
               AND ur.deleted_at IS NULL
        );
-
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */
+;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */
+;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */
+;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
+;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */
+;
