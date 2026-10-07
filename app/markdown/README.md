@@ -23,6 +23,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | [`deepseek`](#deepseek)       | Análise de entendimento do sistema        |
 | [`diagramas`](#diagramas)     | Gerar diagramas vetoriais de telas      |
 | [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco  |
+| [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost     |
 | [`messages`](#messages)       | Mensagens diretas, nunca um chat          |
 | [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter   |
 | [`modulo`](#modulo)           | Como criar novos módulos padronizados     |
@@ -152,6 +153,28 @@ dump + markdown revisado antes do `INSERT`, mesmo padrão do `README_menu.md`.
 [`geral/README_form.md`](geral/README_form.md) — índice dos 16 formulários já
 desenhados (todos com `INSERT` executado), organizados por pasta de
 `geral/form/`.
+
+### `kinghost`
+
+Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
+chave SSH de deploy gerada no servidor, deploy key cadastrada no GitHub
+(read-only), `~/.ssh/config` com host alternativo, clone manual em
+`~/www/projeto54900` (painel KingHost não efetivou o clone automático). API
+confirmada em `public/`. Frontend React passou a buildar **direto em**
+`src/public/app/` (versionado no git, não mais `dist/` solto) — deploy é só
+`git push` (local, pede confirmação) + `git pull` (servidor). Documenta um bug
+do Git Bash no Windows: sem `MSYS_NO_PATHCONV=1`, `VITE_BASE_PATH=/...` vira
+caminho do Windows e quebra os assets gerados. Credenciais de produção (DB +
+e-mail + URL do frontend): tentativa com `.env` **abandonada** — a KingHost
+desabilita `putenv()`, e `system/Config/DotEnv.php` chama sem guard (fatal
+error); solução final é `SetEnv` num `.htaccess` na raiz do projeto (fora de
+`public/`, nunca servido, nunca versionado — `/.htaccess` no `.gitignore`),
+que popula `$_SERVER` direto sem passar por `putenv()`. Exige `chmod 644`
+(não `600`, senão Apache não lê e devolve 403). Pendências: deploy automático
+via webhook do painel (hoje é `git pull` manual), credenciais de e-mail e
+migração do banco de produção (o usuário faz manualmente via cliente de banco).
+
+[`geral/README_git_kinghost.md`](geral/README_git_kinghost.md) — deploy via git na KingHost: SSH, deploy key, build do frontend e bug do Git Bash.
 
 ### `messages`
 
@@ -299,6 +322,7 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
+- [`README_git_kinghost.md`](geral/README_git_kinghost.md) — deploy via git na hospedagem KingHost: SSH, deploy key, build do frontend em `public/app/`.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
 - [`README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo Calendar/CalendarEventInvites: convite de evento por e-mail com token temporário.
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
