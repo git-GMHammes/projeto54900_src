@@ -11,6 +11,9 @@ writable/uploads/*
 writable/debugbar/*
 !writable/debugbar/index.html
 
+# Credenciais de producao (DB_*, MAIL_*, APP_FRONTEND_URL) - nunca versionado
+/.env
+
 # Frontend React (src/frontend/projeto54900)
 frontend/projeto54900/node_modules/
 frontend/projeto54900/.env
