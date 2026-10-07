@@ -13,6 +13,7 @@ writable/debugbar/*
 
 # Credenciais de producao (DB_*, MAIL_*, APP_FRONTEND_URL) - nunca versionado
 /.env
+/.htaccess
 
 # Frontend React (src/frontend/projeto54900)
 frontend/projeto54900/node_modules/
