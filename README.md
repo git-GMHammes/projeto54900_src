@@ -20,6 +20,7 @@ e os módulos futuros de mapas, documentos e mensageria) todos seguindo o
 - [Tecnologias envolvidas](#tecnologias-envolvidas)
 - [⚠️ Alerta — ambiente e DevOps não commitados](#️-alerta--ambiente-e-devops-não-commitados)
 - [DevOps — detalhamento dos arquivos](#devops--detalhamento-dos-arquivos)
+  - [Atualizar o servidor (KingHost)](#atualizar-o-servidor-kinghost)
 
 ---
 
@@ -315,6 +316,18 @@ O frontend roda **fora do compose**, localmente:
 cd frontend/projeto54900/
 npm run dev
 ```
+
+### Atualizar o servidor (KingHost)
+
+Comando executado **no servidor da KingHost** (via SSH) para trazer o código
+mais recente da branch `main`:
+
+```bash
+cd ~/www/projeto54900
+git pull origin main
+```
+
+Sem credenciais no comando. Não há `composer`, `spark` nem cron na hospedagem.
 
 ---
 
