@@ -1,0 +1,1 @@
+function c(n,o="file"){const e=new FormData(n).get(o);return e instanceof File&&e.size>0?e:null}function a(n,o){const e=URL.createObjectURL(n),t=document.createElement("a");t.href=e,t.download=o,document.body.appendChild(t),t.click(),t.remove(),URL.revokeObjectURL(e)}export{a,c as s};

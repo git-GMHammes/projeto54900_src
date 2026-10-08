@@ -1,0 +1,8 @@
+# Fallback da SPA: rota desconhecida (nao arquivo/pasta) devolve index.html.
+# Sem RewriteBase: funciona em qualquer pasta/host.
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^ index.html [L]
+</IfModule>

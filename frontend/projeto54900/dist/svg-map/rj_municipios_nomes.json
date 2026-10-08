@@ -1,0 +1,554 @@
+[
+    {
+        "CD_MUN": "3300100",
+        "NM_MUN": "Angra dos Reis",
+        "id": 3591,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300159",
+        "NM_MUN": "Aperibé",
+        "id": 3592,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300209",
+        "NM_MUN": "Araruama",
+        "id": 3593,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300225",
+        "NM_MUN": "Areal",
+        "id": 3594,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300233",
+        "NM_MUN": "Armação dos Búzios",
+        "id": 3595,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300258",
+        "NM_MUN": "Arraial do Cabo",
+        "id": 3596,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300308",
+        "NM_MUN": "Barra do Piraí",
+        "id": 3597,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300407",
+        "NM_MUN": "Barra Mansa",
+        "id": 3598,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300456",
+        "NM_MUN": "Belford Roxo",
+        "id": 3599,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300506",
+        "NM_MUN": "Bom Jardim",
+        "id": 3600,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300605",
+        "NM_MUN": "Bom Jesus do Itabapoana",
+        "id": 3601,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300704",
+        "NM_MUN": "Cabo Frio",
+        "id": 3602,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300803",
+        "NM_MUN": "Cachoeiras de Macacu",
+        "id": 3603,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300902",
+        "NM_MUN": "Cambuci",
+        "id": 3604,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300936",
+        "NM_MUN": "Carapebus",
+        "id": 3607,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3300951",
+        "NM_MUN": "Comendador Levy Gasparian",
+        "id": 3611,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301009",
+        "NM_MUN": "Campos dos Goytacazes",
+        "id": 3605,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301108",
+        "NM_MUN": "Cantagalo",
+        "id": 3606,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301157",
+        "NM_MUN": "Cardoso Moreira",
+        "id": 3608,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301207",
+        "NM_MUN": "Carmo",
+        "id": 3609,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301306",
+        "NM_MUN": "Casimiro de Abreu",
+        "id": 3610,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301405",
+        "NM_MUN": "Conceição de Macabu",
+        "id": 3612,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301504",
+        "NM_MUN": "Cordeiro",
+        "id": 3613,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301603",
+        "NM_MUN": "Duas Barras",
+        "id": 3614,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301702",
+        "NM_MUN": "Duque de Caxias",
+        "id": 3615,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301801",
+        "NM_MUN": "Engenheiro Paulo de Frontin",
+        "id": 3616,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301850",
+        "NM_MUN": "Guapimirim",
+        "id": 3617,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301876",
+        "NM_MUN": "Iguaba Grande",
+        "id": 3618,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3301900",
+        "NM_MUN": "Itaboraí",
+        "id": 3619,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302007",
+        "NM_MUN": "Itaguaí",
+        "id": 3620,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302056",
+        "NM_MUN": "Italva",
+        "id": 3621,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302106",
+        "NM_MUN": "Itaocara",
+        "id": 3622,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302205",
+        "NM_MUN": "Itaperuna",
+        "id": 3623,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302254",
+        "NM_MUN": "Itatiaia",
+        "id": 3624,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302270",
+        "NM_MUN": "Japeri",
+        "id": 3625,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302304",
+        "NM_MUN": "Laje do Muriaé",
+        "id": 3626,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302403",
+        "NM_MUN": "Macaé",
+        "id": 3627,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302452",
+        "NM_MUN": "Macuco",
+        "id": 3628,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302502",
+        "NM_MUN": "Magé",
+        "id": 3629,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302601",
+        "NM_MUN": "Mangaratiba",
+        "id": 3630,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302700",
+        "NM_MUN": "Maricá",
+        "id": 3631,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302809",
+        "NM_MUN": "Mendes",
+        "id": 3632,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302858",
+        "NM_MUN": "Mesquita",
+        "id": 3633,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3302908",
+        "NM_MUN": "Miguel Pereira",
+        "id": 3634,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303005",
+        "NM_MUN": "Miracema",
+        "id": 3635,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303104",
+        "NM_MUN": "Natividade",
+        "id": 3636,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303203",
+        "NM_MUN": "Nilópolis",
+        "id": 3637,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303302",
+        "NM_MUN": "Niterói",
+        "id": 3638,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303401",
+        "NM_MUN": "Nova Friburgo",
+        "id": 3639,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303500",
+        "NM_MUN": "Nova Iguaçu",
+        "id": 3640,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303609",
+        "NM_MUN": "Paracambi",
+        "id": 3641,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303708",
+        "NM_MUN": "Paraíba do Sul",
+        "id": 3642,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303807",
+        "NM_MUN": "Paraty",
+        "id": 3643,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303856",
+        "NM_MUN": "Paty do Alferes",
+        "id": 3644,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303906",
+        "NM_MUN": "Petrópolis",
+        "id": 3645,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3303955",
+        "NM_MUN": "Pinheiral",
+        "id": 3646,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304003",
+        "NM_MUN": "Piraí",
+        "id": 3647,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304102",
+        "NM_MUN": "Porciúncula",
+        "id": 3648,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304110",
+        "NM_MUN": "Porto Real",
+        "id": 3649,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304128",
+        "NM_MUN": "Quatis",
+        "id": 3650,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304144",
+        "NM_MUN": "Queimados",
+        "id": 3651,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304151",
+        "NM_MUN": "Quissamã",
+        "id": 3652,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304201",
+        "NM_MUN": "Resende",
+        "id": 3653,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304300",
+        "NM_MUN": "Rio Bonito",
+        "id": 3654,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304409",
+        "NM_MUN": "Rio Claro",
+        "id": 3655,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304508",
+        "NM_MUN": "Rio das Flores",
+        "id": 3656,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304524",
+        "NM_MUN": "Rio das Ostras",
+        "id": 3657,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304557",
+        "NM_MUN": "Rio de Janeiro",
+        "id": 3658,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304607",
+        "NM_MUN": "Santa Maria Madalena",
+        "id": 3659,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304706",
+        "NM_MUN": "Santo Antônio de Pádua",
+        "id": 3660,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304755",
+        "NM_MUN": "São Francisco de Itabapoana",
+        "id": 3662,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304805",
+        "NM_MUN": "São Fidélis",
+        "id": 3661,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3304904",
+        "NM_MUN": "São Gonçalo",
+        "id": 3663,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305000",
+        "NM_MUN": "São João da Barra",
+        "id": 3664,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305109",
+        "NM_MUN": "São João de Meriti",
+        "id": 3665,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305133",
+        "NM_MUN": "São José de Ubá",
+        "id": 3666,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305158",
+        "NM_MUN": "São José do Vale do Rio Preto",
+        "id": 3667,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305208",
+        "NM_MUN": "São Pedro da Aldeia",
+        "id": 3668,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305307",
+        "NM_MUN": "São Sebastião do Alto",
+        "id": 3669,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305406",
+        "NM_MUN": "Sapucaia",
+        "id": 3670,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305505",
+        "NM_MUN": "Saquarema",
+        "id": 3671,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305554",
+        "NM_MUN": "Seropédica",
+        "id": 3672,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305604",
+        "NM_MUN": "Silva Jardim",
+        "id": 3673,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305703",
+        "NM_MUN": "Sumidouro",
+        "id": 3674,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305752",
+        "NM_MUN": "Tanguá",
+        "id": 3675,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305802",
+        "NM_MUN": "Teresópolis",
+        "id": 3676,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3305901",
+        "NM_MUN": "Trajano de Moraes",
+        "id": 3677,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3306008",
+        "NM_MUN": "Três Rios",
+        "id": 3678,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3306107",
+        "NM_MUN": "Valença",
+        "id": 3679,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3306156",
+        "NM_MUN": "Varre-Sai",
+        "id": 3680,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3306206",
+        "NM_MUN": "Vassouras",
+        "id": 3681,
+        "uf_id": 33
+    },
+    {
+        "CD_MUN": "3306305",
+        "NM_MUN": "Volta Redonda",
+        "id": 3682,
+        "uf_id": 33
+    }
+]
