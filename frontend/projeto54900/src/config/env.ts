@@ -81,6 +81,28 @@ function trimTrailingSlash(value: string): string {
 }
 
 /**
+ * Raiz publica do app (ex.: "/projeto54900/public/app"), descoberta em
+ * runtime pela URL do proprio bundle (".../<raiz>/assets/x.js"). Nula em dev
+ * ou quando nao ha "/assets/" na URL. Nao depende de host nem de pasta.
+ */
+function discoverAppRoot(): string | null {
+  if (!import.meta.env.PROD) return null;
+  const path = new URL(import.meta.url).pathname;
+  const idx = path.lastIndexOf('/assets/');
+  return idx < 0 ? null : path.slice(0, idx);
+}
+
+/**
+ * Base da API derivada da raiz do app: a pasta "api" fica ao lado da pasta do
+ * app (ex.: ".../public/app" -> ".../public/api"). Raiz vazia -> "/api".
+ */
+function deriveApiBase(root: string): string {
+  return `${root.replace(/\/[^/]+$/, '')}/api`;
+}
+
+const appRoot = discoverAppRoot();
+
+/**
  * =========================================================================
  * BLOCO 2 — CONTRATO DE AMBIENTE (AppEnv)
  * =========================================================================
@@ -131,8 +153,12 @@ export interface AppEnv {
  * inteiro. Nenhuma outra leitura de import.meta.env deve existir fora daqui.
  *
  * CHAVE         VARIAVEL VITE_        DEFAULT
- * basePath      VITE_BASE_PATH        barra sozinha, normalizada para vazio
- * apiBaseUrl    VITE_API_BASE_URL     /api
+ * basePath      VITE_BASE_PATH        build: raiz descoberta pela URL do bundle;
+ *                                     dev: barra sozinha, normalizada para vazio
+ * apiBaseUrl    VITE_API_BASE_URL     build: pasta "api" ao lado da raiz do app;
+ *                                     dev: /api
+ * (as VITE_ sao apenas override opcional; sem elas o mesmo build roda em
+ * qualquer host/pasta, desde que o app esteja numa pasta "app" ao lado de "api")
  * apiVersion    VITE_API_VERSION      v1
  * wsUrl         VITE_WS_URL           /ws
  * isDev         nativo do Vite        import.meta.env.DEV
@@ -149,8 +175,10 @@ export interface AppEnv {
  * -------------------------------------------------------------------------
  */
 export const env: AppEnv = Object.freeze({
-  basePath: trimTrailingSlash(import.meta.env.VITE_BASE_PATH || '/'),
-  apiBaseUrl: trimTrailingSlash(import.meta.env.VITE_API_BASE_URL || '/api'),
+  basePath: trimTrailingSlash(import.meta.env.VITE_BASE_PATH || appRoot || '/'),
+  apiBaseUrl: trimTrailingSlash(
+    import.meta.env.VITE_API_BASE_URL || (appRoot === null ? '/api' : deriveApiBase(appRoot)),
+  ),
   apiVersion: import.meta.env.VITE_API_VERSION || 'v1',
   wsUrl: import.meta.env.VITE_WS_URL || '/ws',
   isDev: import.meta.env.DEV,
