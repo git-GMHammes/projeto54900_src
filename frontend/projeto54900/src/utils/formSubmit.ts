@@ -8,12 +8,20 @@ import { http } from '@/services/http';
 import type { ApiError } from '@/services/http';
 
 // O submit_endpoint do banco vem como "/api/v1/...". O wrapper http ja prefixa
-// env.apiBaseUrl ("/api"), entao removemos esse prefixo antes de chamar.
+// env.apiBaseUrl, que muda por ambiente (ex.: "/api" em dev, ou
+// "/projeto54900/public/api" em subpasta). Entao removemos, nesta ordem:
+// 1) a base configurada (relativa ou URL absoluta com host), quando presente;
+// 2) o prefixo "/api" do contrato do banco, que e fixo e independe do host.
+// Sem o passo 2, uma base diferente de "/api" gerava ".../api/api/v1/...".
 export function resolveEndpoint(raw: string): string {
   let p = raw.trim();
-  if (!p.startsWith('/')) p = `/${p}`;
   const base = env.apiBaseUrl;
-  if (base && (p === base || p.startsWith(`${base}/`))) p = p.slice(base.length) || '/';
+  if (base && p.startsWith(`${base}/`)) p = p.slice(base.length);
+  else if (base && p === base) p = '/';
+  if (/^https?:\/\//i.test(p)) p = p.replace(/^https?:\/\/[^/]+/i, '');
+  if (!p.startsWith('/')) p = `/${p}`;
+  if (p === '/api') return '/';
+  if (p.startsWith('/api/')) p = p.slice('/api'.length);
   return p;
 }
 

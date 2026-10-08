@@ -2,6 +2,16 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Raiz do app independente de host/pasta: a pasta publicada se chama
+      // "app" (ao lado de "api"). Fixa o <base> nela para os assets relativos
+      // (base './') resolverem em qualquer profundidade de rota. Em dev nao ha
+      // segmento /app/ no caminho e nada e escrito.
+      (function () {
+        var m = location.pathname.match(/^(.*?\/app)(\/|$)/);
+        if (m) document.write('<base href="' + m[1] + '/">');
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />

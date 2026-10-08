@@ -12,7 +12,9 @@ import { fileURLToPath, URL } from 'node:url';
 //                        no build vira '' — nenhuma imagem de teste entra no dist/.
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const base = env.VITE_BASE_PATH || '/';
+  // Build: base relativa './' (o mesmo build roda em qualquer host/pasta; o
+  // index.html fixa o <base>). Dev: '/'. VITE_BASE_PATH continua como override.
+  const base = env.VITE_BASE_PATH || (command === 'build' ? './' : '/');
   const clipartDir = fileURLToPath(new URL('../../../doc/clipart_teste', import.meta.url));
 
   return {
