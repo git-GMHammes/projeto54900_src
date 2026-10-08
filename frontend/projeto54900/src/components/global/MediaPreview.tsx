@@ -13,6 +13,10 @@
  *
  *   <MediaPreview attachments={attachments} />
  *
+ * FUNDO: imagem e vídeo usam `bg-black` (faixas ao redor de mídia vertical ou
+ * com proporção diferente ficam pretas, não claras). Cartões de arquivo mantêm
+ * o fundo do tema.
+ *
  * NÃO faz chamada de rede: recebe os anexos JÁ carregados pelo componente
  * pai (ex.: `PostCard.tsx`, via `timelinePostAttachmentsTable.find(...)`) —
  * mantém este componente puro e reaproveitável fora do módulo Timeline.
@@ -86,7 +90,7 @@ function AttachmentItem({ attachment, onDone }: { attachment: MediaAttachment; o
       <img
         src={attachment.fileUrl}
         alt={attachment.name}
-        className="img-fluid rounded"
+        className="img-fluid rounded bg-black"
         style={{ maxHeight: '420px', width: '100%', objectFit: 'cover' }}
         onLoad={onDone}
         onError={onDone}
@@ -100,7 +104,7 @@ function AttachmentItem({ attachment, onDone }: { attachment: MediaAttachment; o
         src={attachment.fileUrl}
         controls
         preload="auto"
-        className="w-100 rounded"
+        className="w-100 rounded bg-black"
         style={{ maxHeight: '420px' }}
         onLoadedData={onDone}
         onError={onDone}
