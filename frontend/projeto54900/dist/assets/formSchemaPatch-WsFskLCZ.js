@@ -1,0 +1,1 @@
+function l(n,s){return{rows:n.rows.map(t=>({...t,fields:t.fields.map(e=>{const a=e.name?s[e.name]:void 0;return a?{...e,...a}:e})}))}}function r(n,s){return{rows:n.rows.map(t=>({...t,fields:t.fields.map(e=>{const a=e.name?s[e.name]:void 0;return a===void 0||a===""?e:e.type==="select"?{...e,defaultValue:a,values:[a]}:{...e,defaultValue:a}})}))}}export{r as f,l as p};

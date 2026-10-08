@@ -1,0 +1,164 @@
+==================================================
+TERMO DE RESPONSABILIDADE E ACORDO DE CONFIDENCIALIDADE
+FUNÇÃO: MODERADOR DE CHAT
+ACEITE ELETRÔNICO MEDIANTE CHECKBOX
+==================================================
+
+Pelo presente instrumento particular, de um lado a ADMINISTRAÇÃO DO CHAT, doravante denominada CONTRATANTE, e de outro lado o(a) USUÁRIO(A) abaixo identificado(a), doravante denominado(a) MODERADOR, têm entre si justo e acordado o presente Termo de Responsabilidade, que se regerá pelas cláusulas e condições a seguir expostas.
+
+CLÁUSULA 1 - DO OBJETO
+
+1.1. O presente Termo tem por objeto formalizar as condições, deveres, responsabilidades e limitações do MODERADOR no exercício da função de moderação do chat, ambiente virtual, acessível por meio desta plataforma.
+
+1.2. A função de MODERADOR é de natureza estritamente pessoal, temporária, revogável a qualquer tempo e sem necessidade de justificativa prévia pela CONTRATANTE.
+
+CLÁUSULA 2 - DAS ATRIBUIÇÕES DO MODERADOR
+
+2.1. Compete ao MODERADOR, sem prejuízo de outras atribuições que lhe forem conferidas:
+
+a) VIGIAR ativamente as interações ocorridas no chat, monitorando mensagens, imagens, áudios, vídeos, links e quaisquer outros conteúdos publicados;
+
+b) ADVERTIR, de forma clara, educada e registrada, os usuários que apresentarem condutas inadequadas;
+
+c) IDENTIFICAR e coibir comportamentos não desejáveis, incluindo, mas não se limitando a: ofensas, discurso de ódio, racismo, xenofobia, homofobia, transfobia, misoginia, assédio moral ou sexual, ameaças, apologia à violência, conteúdo sexual explícito, pornografia, pedofilia, divulgação de dados pessoais de terceiros (doxxing), spam, divulgação de golpes, links maliciosos, pirataria e demais violações legais;
+
+d) ADOTAR as medidas cabíveis conforme o regimento interno do chat, tais como advertência verbal, advertência formal registrada, silenciamento temporário (mute), remoção de mensagens e encaminhamento à administração para eventual banimento;
+
+e) REGISTRAR, de forma objetiva e cronológica, todas as ocorrências relevantes, advertências aplicadas e medidas tomadas, mantendo histórico passível de auditoria;
+
+f) REPORTAR imediatamente à CONTRATANTE quaisquer situações graves, crimes ou indícios de ilícitos, especialmente aqueles que envolvam menores de idade, ameaças à integridade física ou divulgação de conteúdo ilegal;
+
+g) MANTER sigilo absoluto sobre informações internas, dados de usuários, decisões administrativas e quaisquer assuntos tratados em canais privados da moderação;
+
+h) PRESERVAR a imparcialidade, não favorecendo amigos, conhecidos ou grupos em detrimento de outros usuários;
+
+i) ATUAR com urbanidade, respeito e cordialidade, ainda que no exercício de advertência ou aplicação de sanções.
+
+CLÁUSULA 3 - DAS VEDAÇÕES
+
+3.1. É expressamente VEDADO ao MODERADOR:
+
+a) Utilizar a função para benefício próprio, vingança pessoal, perseguição, assédio ou retaliação contra qualquer usuário;
+
+b) Acessar, copiar, divulgar ou compartilhar dados pessoais de usuários fora dos canais oficiais e das finalidades da moderação;
+
+c) Alterar, apagar ou manipular registros de ocorrências com o intuito de ocultar fatos ou proteger terceiros;
+
+d) Aplicar sanções sem fundamento no regimento interno ou por motivos discriminatórios;
+
+e) Emitir opiniões pessoais em nome da administração sem autorização expressa;
+
+f) Divulgar informações confidenciais a terceiros, inclusive após o término de suas funções;
+
+g) Utilizar linguagem ofensiva, irônica ou desrespeitosa no exercício da moderação;
+
+h) Agir sob efeito de substâncias que comprometam seu discernimento durante o exercício da função.
+
+CLÁUSULA 4 - DA RESPONSABILIDADE CIVIL E CRIMINAL
+
+4.1. O MODERADOR declara estar ciente de que responderá pessoalmente, nas esferas civil, administrativa e criminal, por atos praticados com dolo, culpa, abuso de poder, má-fé ou violação de deveres funcionais, nos termos da legislação brasileira aplicável, incluindo, mas não se limitando a:
+
+a) Código Civil (Lei nº 10.406/2002), especialmente quanto à responsabilidade por atos ilícitos;
+
+b) Código Penal (Decreto-Lei nº 2.848/1940), quanto a crimes contra a honra, ameaça, assédio, divulgação de dados, entre outros;
+
+c) Lei Geral de Proteção de Dados (Lei nº 13.709/2018), quanto ao tratamento indevido de dados pessoais;
+
+d) Marco Civil da Internet (Lei nº 12.965/2014), quanto ao uso adequado de ambientes virtuais;
+
+e) Estatuto da Criança e do Adolescente (Lei nº 8.069/1990), quando houver envolvimento de menores.
+
+4.2. O MODERADOR isenta a CONTRATANTE de qualquer responsabilidade por atos praticados por ele que extrapolem as atribuições previstas neste Termo ou que contrariem a legislação vigente.
+
+CLÁUSULA 5 - DA CONFIDENCIALIDADE
+
+5.1. O MODERADOR obriga-se a manter absoluto sigilo sobre todas as informações a que tiver acesso em razão da função, incluindo dados de usuários, conversas privadas, denúncias, decisões internas e estratégias de moderação.
+
+5.2. A obrigação de confidencialidade permanecerá válida mesmo após o desligamento do MODERADOR, por prazo indeterminado, sob pena de responsabilização civil e criminal.
+
+CLÁUSULA 6 - DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO
+
+6.1. O presente Termo não gera, em nenhuma hipótese, vínculo empregatício, societário, estatutário ou de qualquer outra natureza entre o MODERADOR e a CONTRATANTE.
+
+6.2. A função é exercida de forma voluntária, podendo ser remunerada ou não, conforme acordo prévio entre as partes, sempre sem caracterizar relação de emprego.
+
+CLÁUSULA 7 - DA DURAÇÃO E RESCISÃO
+
+7.1. Este Termo vigorará por prazo indeterminado, a partir do aceite eletrônico, podendo ser rescindido:
+
+a) Por iniciativa do MODERADOR, mediante comunicação formal com antecedência mínima de 07 (sete) dias;
+
+b) Por iniciativa da CONTRATANTE, a qualquer tempo, de forma imediata e sem necessidade de justificativa;
+
+c) Automaticamente, em caso de violação de qualquer cláusula deste Termo.
+
+7.2. A rescisão não exime o MODERADOR das obrigações de confidencialidade e responsabilidade por atos praticados durante o exercício da função.
+
+CLÁUSULA 8 - DAS PENALIDADES
+
+8.1. O descumprimento de qualquer cláusula deste Termo sujeitará o MODERADOR a:
+
+a) Advertência formal;
+
+b) Suspensão imediata da função;
+
+c) Destituição da função de moderador;
+
+d) Responsabilização civil e criminal, quando cabível;
+
+e) Dever de reparar eventuais danos materiais e morais causados à CONTRATANTE ou a terceiros.
+
+CLÁUSULA 9 - DO ACEITE ELETRÔNICO
+
+9.1. O aceite deste Termo se dará de forma exclusivamente eletrônica, mediante a marcação do campo de seleção (checkbox) disponibilizado na interface do sistema, com a seguinte descrição:
+
+"[ ] Li e concordo integralmente com os Termos de Responsabilidade e Confidencialidade da função de Moderador."
+
+9.2. A marcação do referido checkbox e o consequente clique no botão de confirmação ("ACEITO", "CONFIRMO" ou equivalente) EQUIVALEM, para todos os fins de direito, à assinatura manuscrita ou digital do MODERADOR, nos termos do artigo 10, § 2º, da Medida Provisória nº 2.200-2/2001, que institui a Infraestrutura de Chaves Públicas Brasileira (ICP-Brasil), e do artigo 225 do Código Civil, que admite a reprodução eletrônica de fatos jurídicos.
+
+9.3. O aceite eletrônico será registrado pelo sistema com, no mínimo, as seguintes informações, que servirão como prova documental suficiente do consentimento:
+
+a) Identificação do usuário autenticado (login, ID ou e-mail);
+
+b) Data e hora exatas do aceite;
+
+c) Endereço IP do dispositivo utilizado;
+
+d) Identificador único do navegador ou dispositivo (user-agent ou device ID);
+
+e) Versão do Termo aceita;
+
+f) Hash criptográfico do documento aceito, quando aplicável.
+
+9.4. O MODERADOR declara e reconhece que:
+
+a) A marcação do checkbox é ato livre, consciente, informado e sem qualquer vício de vontade;
+
+b) Teve acesso prévio e integral ao conteúdo deste Termo;
+
+c) Não poderá, em nenhuma hipótese, alegar desconhecimento, ausência de leitura ou falta de assinatura física como justificativa para eximir-se das obrigações aqui assumidas;
+
+d) O registro eletrônico do aceite possui plena validade probatória, sendo suficiente para comprovar a manifestação de vontade.
+
+9.5. A CONTRATANTE compromete-se a armazenar os registros do aceite eletrônico pelo prazo mínimo de 05 (cinco) anos, ou prazo superior, caso exigido por lei, preservando a integridade e a autenticidade dos dados.
+
+9.6. Eventual revogação do aceite somente será admitida mediante manifestação expressa do MODERADOR à CONTRATANTE, cessando, a partir de então, todas as atribuições da função, sem prejuízo das obrigações de confidencialidade e responsabilidade por atos pretéritos.
+
+CLÁUSULA 10 - DA ACEITAÇÃO E DECLARAÇÃO DE CAPACIDADE
+
+10.1. Ao marcar o checkbox de aceite, o MODERADOR declara ter lido, compreendido e aceito integralmente todas as cláusulas e condições aqui estabelecidas, comprometendo-se a cumpri-las fielmente.
+
+10.2. Declara, ainda, que todas as informações por ele fornecidas são verdadeiras e que possui plena capacidade civil para assumir as obrigações ora pactuadas.
+
+10.3. Caso o MODERADOR seja menor de 18 (dezoito) anos, o aceite somente será válido mediante representação ou assistência de seu responsável legal, nos termos dos artigos 1.634 e 1.690 do Código Civil, sendo vedada, em qualquer hipótese, a função de moderação a menores de 16 (dezesseis) anos.
+
+DECLARAÇÃO DE ACEITE
+
+[ ] Li e concordo integralmente com os Termos de Responsabilidade e Confidencialidade da função de Moderador.
+
+Ao marcar o campo acima e clicar no botão "ACEITO", o usuário manifesta sua concordância plena e irrestrita com todas as cláusulas deste Termo, nos termos da Cláusula 9.
+
+==================================================
+FIM DO TERMO
+==================================================
+
