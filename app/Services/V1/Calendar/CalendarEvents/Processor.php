@@ -55,20 +55,21 @@ class Processor extends BaseTableService
     // -------------------------------------------------------------------------
 
     /**
-     * IDs de tarefas visiveis ao usuario atual (qualquer convidado), ou null
+     * IDs de tarefas visiveis ao usuario atual (convidado OU criador), ou null
      * quando admin (sem restricao). Usado por User e Guest igualmente: a
-     * leitura de tarefa e por convite, nao por autoria.
+     * tarefa so aparece para quem a gerou (user_manager_id) ou para quem foi
+     * convidado (calendar_event_attendees).
      */
     private function idsForCurrentUser(): ?array
     {
-        return CurrentUser::isAdmin() ? null : $this->tableModel->findInvitedIds((int) CurrentUser::id());
+        return CurrentUser::isAdmin() ? null : $this->tableModel->findVisibleIds((int) CurrentUser::id());
     }
 
     /**
      * Um registro ja carregado (get/getDeleted/getWithDeleted/getAllWithDeleted)
-     * "existe" para quem pediu somente se o usuario for convidado da tarefa;
-     * caso contrario vira 404 no controller — tarefa nao compartilhada
-     * permanece privada mesmo dentro de um calendario visivel.
+     * "existe" para quem pediu somente se o usuario for o criador ou convidado
+     * da tarefa; caso contrario vira 404 no controller — tarefa nao
+     * compartilhada permanece privada mesmo dentro de um calendario visivel.
      */
     private function visibleOrNull(?array $record): ?array
     {
@@ -76,7 +77,13 @@ class Processor extends BaseTableService
             return $record;
         }
 
-        return $this->attendeesModel->existsByUserInEvent((int) $record['id'], (int) CurrentUser::id()) ? $record : null;
+        $userId = (int) CurrentUser::id();
+
+        if ((int) ($record['user_manager_id'] ?? 0) === $userId) {
+            return $record;
+        }
+
+        return $this->attendeesModel->existsByUserInEvent((int) $record['id'], $userId) ? $record : null;
     }
 
     /** Estrutura paginada vazia — usada quando o perfil nao tem nenhuma tarefa visivel. */

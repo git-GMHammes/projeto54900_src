@@ -22,7 +22,7 @@
 //   RemindersModal.tsx      modal "Lembretes"
 //   AttachmentsModal.tsx    modal "Anexos"
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import PageHeader from '@/components/global/PageHeader';
@@ -116,20 +116,39 @@ export default function CalendarManagerGetAllPage() {
       // Calendarios na ordem manual (sort_order, "Ordem" no form Editar — menor
       // primeiro; todos nascem em 0). Eventos de cada calendario vem da data de
       // inicio, do mais recente/futuro para o mais antigo (pedido do usuario).
-      const raw = await calendarManagerView.getNoPagination({ sort: 'cm_sort_order', order: 'ASC' });
-      const { rows } = normalizeList(raw);
-      const grouped = groupCalendarView(rows).map((g) => ({
+      const byStartDesc = (g: CalendarGroup): CalendarGroup => ({
         ...g,
         events: [...g.events].sort((a, b) => eventStart(b).localeCompare(eventStart(a))),
-      }));
-      setGroups(grouped);
+      });
+
+      // 1) Agendas criadas pelo proprio usuario: get-grouped filtrando pelo ID do criador.
+      const myId = user ? Number(user.id) : null;
+      const mine: CalendarGroup[] = [];
+      if (myId !== null && Number.isFinite(myId)) {
+        const rawMine = await calendarManagerView.getGrouped(
+          { cm_user_manager_id: [myId] },
+          { sort: 'cm_sort_order', order: 'ASC', limit: 1000 },
+        );
+        mine.push(...groupCalendarView(normalizeList(rawMine).rows).map(byStartDesc));
+      }
+
+      // 2) Demais agendas visiveis (compartilhadas por convite; admin ve todas), agrupadas
+      // pelo ID do criador. A visibilidade e imposta no back-end; aqui so se ordena.
+      const rawAll = await calendarManagerView.getNoPagination({ sort: 'cm_sort_order', order: 'ASC' });
+      const mineIds = new Set(mine.map((g) => g.calendar.id));
+      const shared = groupCalendarView(normalizeList(rawAll).rows)
+        .filter((g) => !mineIds.has(g.calendar.id))
+        .map(byStartDesc)
+        .sort((a, b) => (a.calendar.userManagerId ?? 0) - (b.calendar.userManagerId ?? 0));
+
+      setGroups([...mine, ...shared]);
     } catch (err) {
       setGroups(null);
       setError(err instanceof ApiError ? err.message : 'Falha ao carregar os calendarios.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   /** Acha um list_manager pela slug (getNoPagination + filtro local — mesmo padrao de FormConstructorListPage.tsx). */
   const findListManager = useCallback(async (slug: string) => {
@@ -265,6 +284,16 @@ export default function CalendarManagerGetAllPage() {
   // Admin não é convidado de nada (idsForCurrentUser() sem restrição no back-end) — nunca
   // mostra Aceitar/Recusar, só as ações tradicionais.
   const isAdmin = user?.role?.slug === 'admin';
+
+  /** ID do criador da agenda usado como chave de secao (0 = sem criador registrado). */
+  const creatorKey = (g: CalendarGroup): number => g.calendar.userManagerId ?? 0;
+
+  /** Titulo da secao: agendas do proprio usuario primeiro, depois as compartilhadas por criador. */
+  const creatorLabel = (g: CalendarGroup): string => {
+    const id = creatorKey(g);
+    if (user && id === Number(user.id)) return 'Minhas agendas';
+    return id === 0 ? 'Compartilhadas (criador não informado)' : `Compartilhadas pelo usuário #${id}`;
+  };
 
   /**
    * Ações de UM evento: enquanto o próprio usuário não aceitou o convite
@@ -424,8 +453,12 @@ export default function CalendarManagerGetAllPage() {
             />
           )}
 
-          {pageGroups.map((group) => (
-            <div className="card border-0 shadow-sm mb-3" key={group.calendar.id}>
+          {pageGroups.map((group, index) => (
+            <Fragment key={group.calendar.id}>
+              {creatorKey(group) !== (index > 0 ? creatorKey(pageGroups[index - 1]!) : null) && (
+                <h2 className="h6 text-body-secondary mt-3 mb-2">{creatorLabel(group)}</h2>
+              )}
+            <div className="card border-0 shadow-sm mb-3">
               <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
                   <strong>{group.calendar.summary}</strong>{' '}
@@ -460,6 +493,7 @@ export default function CalendarManagerGetAllPage() {
                 </div>
               </div>
             </div>
+            </Fragment>
           ))}
 
           {filteredGroups.length > 0 && (

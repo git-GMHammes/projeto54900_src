@@ -149,4 +149,14 @@ class SqlTableModel extends BaseTableModel
 
         return array_map(static fn (array $row): int => (int) $row['id'], $rows);
     }
+
+    /**
+     * IDs das tarefas visiveis ao usuario na LEITURA: as que ele criou
+     * (findOwnerIds) mais as em que consta como convidado (findInvitedIds).
+     * Padrao: cada tarefa so e visivel a quem a gerou ou a quem foi convidado.
+     */
+    public function findVisibleIds(int $userId): array
+    {
+        return array_values(array_unique([...$this->findOwnerIds($userId), ...$this->findInvitedIds($userId)]));
+    }
 }
