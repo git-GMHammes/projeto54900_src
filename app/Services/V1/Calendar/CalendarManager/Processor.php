@@ -242,7 +242,7 @@ class Processor extends BaseTableService
     // evento vem com ce_* NULL. O `id` exposto e o do EVENTO (ce_id), nao o
     // do calendario. Restricao aplicada via Closure (BaseViewModel::$scope):
     // cm_id precisa estar entre os calendarios visiveis ao perfil, E ce_id
-    // precisa ser de uma tarefa em que o usuario foi convidado OU ser NULL
+    // precisa ser de uma tarefa criada pelo usuario ou em que foi convidado OU ser NULL
     // (calendario sem evento continua visivel).
 
     /**
@@ -252,7 +252,7 @@ class Processor extends BaseTableService
      */
     private function buildViewScope(array $calendarIds): \Closure
     {
-        $eventIds = $this->calendarEventsModel->findInvitedIds((int) CurrentUser::id());
+        $eventIds = $this->calendarEventsModel->findVisibleIds((int) CurrentUser::id());
 
         return static function (object $builder) use ($calendarIds, $eventIds): void {
             $builder->whereIn('cm_id', $calendarIds);
@@ -289,7 +289,7 @@ class Processor extends BaseTableService
             return $record;
         }
 
-        $eventIds = $this->calendarEventsModel->findInvitedIds((int) CurrentUser::id());
+        $eventIds = $this->calendarEventsModel->findVisibleIds((int) CurrentUser::id());
 
         return \in_array((int) $ceId, $eventIds, true) ? $record : null;
     }

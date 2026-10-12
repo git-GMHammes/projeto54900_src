@@ -170,6 +170,22 @@ Para um deploy que precise de outros valores (API em outro host, app numa
 subpasta), exportar as chaves `VITE_*` no shell **antes do build** — o Vite lê
 variáveis prefixadas `VITE_` do processo.
 
+**Build independente de host/pasta.** O build não precisa de `VITE_*`: em
+produção `config/env.ts` descobre a raiz do app pela URL do próprio bundle
+(`import.meta.url`) e deriva a API da pasta `api` ao lado dela (ex.:
+`.../public/app` -> `.../public/api`). `vite.config.ts` usa `base: './'` no
+build; o `index.html` fixa o `<base>` na pasta `app` para as rotas profundas
+recarregarem; `public/.htaccess` faz o fallback da SPA. **Convenção fixa de
+deploy:** pasta do front chamada `app`, ao lado de `api` (CodeIgniter). `VITE_*`
+são só override opcional.
+
+**Contrato do `submit_endpoint` (banco).** Sempre começa com `/api/v1/...`,
+independente do host ou da pasta. `resolveEndpoint` (`utils/formSubmit.ts`)
+remove a base configurada (`env.apiBaseUrl`, relativa ou absoluta) e depois o
+prefixo `/api` fixo, deixando `/v1/...` para o `http.ts` prefixar. Nunca
+concatenar `env.apiBaseUrl` com um endpoint do banco sem passar por ele (causa
+da URL `.../api/api/v1/...` em produção em subpasta).
+
 ## Scripts
 
 Rodam **no host** (Node >= 20.19). Nenhuma variável precisa ser exportada — os
