@@ -17,6 +17,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'uploads';
     protected $primaryKey     = 'id';
@@ -100,7 +103,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findDuplicate(string $checksum, string $module, int $referenceId): ?array
     {
-        $row = $this->db->table($this->table)
+        $row = $this->scopedTable()
             ->where('checksum_sha256', $checksum)
             ->where('module', $module)
             ->where('reference_id', $referenceId)

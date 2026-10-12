@@ -39,7 +39,7 @@ class JwtAuthFilter implements FilterInterface
             return $this->unauthorized($request, 'Token de acesso invalido ou expirado.');
         }
 
-        if (!(new AuthService())->sessionActive((int) ($claims['sub'] ?? 0), (string) ($claims['sid'] ?? ''))) {
+        if (!(new AuthService())->sessionActive((int) ($claims['sub'] ?? 0), (string) ($claims['sid'] ?? ''), (int) ($claims['cid'] ?? 0))) {
             return $this->unauthorized($request, 'Sessao encerrada. Faca login novamente.');
         }
 

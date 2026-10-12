@@ -26,7 +26,7 @@ import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { http, ApiError } from '@/services/http';
-import { messageAttachmentsUpload, listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import { messageAttachmentsUpload, listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
 import MediaViewerModal from '@/components/global/MediaViewerModal';
 import { toMediaCategory } from '@/utils/mediaCategory';
 import type { MediaSource } from '@/components/global/MediaViewerModal';
@@ -237,6 +237,12 @@ export default function GetAllPage() {
       if (!found) {
         setManager(null);
         setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
+        return;
+      }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
         return;
       }
       setManager(found);

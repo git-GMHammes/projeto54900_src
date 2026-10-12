@@ -12,7 +12,7 @@ aqui antes do `INSERT` (não migration, não seed — ver aviso em
 **segurança** (`user_manager`: usuário + senha). O `id` gerado aqui é a chave
 que a etapa 2 ([`create_user_profiles.md`](create_user_profiles.md),
 `user_profiles.user_manager_id`) usa pra ligar os dados pessoais a este
-login. Reconstrução fiel do dump `doc/sql/dump/202609201602.sql` (ids antigos
+login. Reconstrução fiel do que existia no banco (ids antigos
 75–76, `form_manager` id=3).
 
 ## O registro `form_manager` (o formulário em si)

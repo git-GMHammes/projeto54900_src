@@ -2,6 +2,7 @@
 
 namespace App\Services\V1;
 
+use App\Exceptions\CompanyScopeException;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 /**
@@ -195,6 +196,10 @@ abstract class BaseTableService extends BaseViewService
             }
 
             return ['success' => true, 'data' => $this->tableModel->find($id)];
+        } catch (CompanyScopeException $e) {
+            log_message('warning', '[' . static::class . '::create] ' . $e->getMessage());
+
+            return ['success' => false, 'message' => 'Registro relacionado inválido', 'code' => 422];
         } catch (DatabaseException $e) {
             log_message('error', '[' . static::class . '::create] DatabaseException: ' . $e->getMessage());
 
@@ -227,6 +232,10 @@ abstract class BaseTableService extends BaseViewService
             $this->tableModel->update($id, $sanitized);
 
             return ['success' => true, 'data' => $this->tableModel->find($id)];
+        } catch (CompanyScopeException $e) {
+            log_message('warning', '[' . static::class . '::update] ' . $e->getMessage());
+
+            return ['success' => false, 'message' => 'Registro relacionado inválido', 'code' => 422];
         } catch (DatabaseException $e) {
             log_message('error', '[' . static::class . '::update] DatabaseException: ' . $e->getMessage());
 

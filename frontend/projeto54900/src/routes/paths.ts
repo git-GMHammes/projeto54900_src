@@ -72,6 +72,64 @@ export const paths = {
     svgMap: {
       view: '/v1/svg-map',
     },
+    // Map — explorador do mapa e mapa de UM registro de qualquer modulo (map_links).
+    map: {
+      explorer: '/v1/map',
+      // `module` = slug registrado em Config/MapLinkables.php (ex.: 'calendar-events').
+      links: (module: string, id: RouteId) => `/v1/map/links/${module}/${id}`,
+    },
+    // MapAdmin — administrativo completo dos 10 recursos do Map (lista + cadastro + edicao).
+    // Trajetos: o cadastro e o planejador do Explorador (paths.v1.map.explorer).
+    // Cache de geocodificacao: so lista/exclusao (escrito pelo proxy map-geo).
+    mapAdmin: {
+      manager: {
+        list: '/v1/map-manager',
+        create: '/v1/map-manager/create',
+        update: (id: RouteId) => `/v1/map-manager/update/${id}`,
+      },
+      icons: {
+        list: '/v1/map-icons',
+        create: '/v1/map-icons/create',
+        update: (id: RouteId) => `/v1/map-icons/update/${id}`,
+      },
+      categories: {
+        list: '/v1/map-categories',
+        create: '/v1/map-categories/create',
+        update: (id: RouteId) => `/v1/map-categories/update/${id}`,
+      },
+      postalCodes: {
+        list: '/v1/map-postal-codes',
+        create: '/v1/map-postal-codes/create',
+        update: (id: RouteId) => `/v1/map-postal-codes/update/${id}`,
+      },
+      addresses: {
+        list: '/v1/map-addresses',
+        create: '/v1/map-addresses/create',
+        update: (id: RouteId) => `/v1/map-addresses/update/${id}`,
+      },
+      points: {
+        list: '/v1/map-points',
+        create: '/v1/map-points/create',
+        update: (id: RouteId) => `/v1/map-points/update/${id}`,
+      },
+      routes: {
+        list: '/v1/map-routes',
+        update: (id: RouteId) => `/v1/map-routes/update/${id}`,
+      },
+      routeStops: {
+        list: '/v1/map-route-stops',
+        create: '/v1/map-route-stops/create',
+        update: (id: RouteId) => `/v1/map-route-stops/update/${id}`,
+      },
+      links: {
+        list: '/v1/map-links',
+        create: '/v1/map-links/create',
+        update: (id: RouteId) => `/v1/map-links/update/${id}`,
+      },
+      geocodeCache: {
+        list: '/v1/map-geocode-cache',
+      },
+    },
     // Timeline — o modulo tem duas telas de feed e as LISTAS PADRAO dos seus
     // recursos. Todas as listas usam o motor do Construtor de Listas
     // (list_manager/list_columns): o slug homonimo da rota define titulo,
@@ -151,6 +209,21 @@ export const paths = {
       list: '/v1/messages-manager',
       create: '/v1/messages-manager/create',
       update: (id: RouteId) => `/v1/messages-manager/update/${id}`,
+    },
+    // CompanyManager — cadastro de empresas (modulo Company; so admin)
+    companyManager: {
+      list: '/v1/company-manager',
+      create: '/v1/company-manager/create',
+      update: (id: RouteId) => `/v1/company-manager/update/${id}`,
+    },
+    // CompanyMembers / CompanyUsers — listas de membros por empresa e de empresas por usuario (so leitura; so admin)
+    companyMembers: { list: '/v1/company-members', update: (id: RouteId) => `/v1/company-members/update/${id}` },
+    companyUsers: { list: '/v1/company-users' },
+    // UserResourceAccess — permissao individual de usuario a form/list (so admin). `create` aceita ?user_manager_id=
+    userResourceAccess: {
+      list: '/v1/user-resource-access',
+      create: '/v1/user-resource-access/create',
+      update: (id: RouteId) => `/v1/user-resource-access/update/${id}`,
     },
     // MessageGroupsManager — grupos de mensagem (modulo Messages; dono + membros)
     messageGroupsManager: {

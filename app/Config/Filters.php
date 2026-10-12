@@ -37,7 +37,9 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'jwtauth'       => JwtAuthFilter::class,
+        'jwtoptional'   => \App\Filters\JwtOptionalFilter::class,
         'adminonly'     => AdminOnlyFilter::class,
+        'endpointaccess' => \App\Filters\EndpointAccessFilter::class,
     ];
 
     /**
@@ -180,6 +182,27 @@ class Filters extends BaseFilters
                 'api/v1/timeline-post-ratings-view/*',
                 'api/v1/timeline-post-reports/*',
                 'api/v1/timeline-post-reports-view/*',
+                'api/v1/map-icons/*',
+                'api/v1/map-icons-view/*',
+                'api/v1/map-manager/*',
+                'api/v1/map-manager-view/*',
+                'api/v1/map-categories/*',
+                'api/v1/map-categories-view/*',
+                'api/v1/map-postal-codes/*',
+                'api/v1/map-postal-codes-view/*',
+                'api/v1/map-addresses/*',
+                'api/v1/map-addresses-view/*',
+                'api/v1/map-points/*',
+                'api/v1/map-points-view/*',
+                'api/v1/map-routes/*',
+                'api/v1/map-routes-view/*',
+                'api/v1/map-route-stops/*',
+                'api/v1/map-route-stops-view/*',
+                'api/v1/map-geocode-cache/*',
+                'api/v1/map-geocode-cache-view/*',
+                'api/v1/map-links/*',
+                'api/v1/map-links-view/*',
+                'api/v1/map-geo/*',
                 'api/v1/chat-rooms-manager/*',
                 'api/v1/chat-rooms-manager-view/*',
                 'api/v1/chat-messages/*',
@@ -217,6 +240,15 @@ class Filters extends BaseFilters
                 'api/v1/message-group-members/*',
                 'api/v1/nav-manager/*',
                 'api/v1/menu-manager/*',
+                'api/v1/company-manager/*',
+                'api/v1/company-manager-view/*',
+                'api/v1/company-members/*',
+                'api/v1/company-members-view/*',
+                'api/v1/company-memberships-view/*',
+                'api/v1/company-users-companies-view/*',
+                'api/v1/user-resource-access/*',
+                'api/v1/user-resource-access-view/*',
+                'api/v1/resource-access/*',
                 'api/v1/db-schema/*',
                 'api/v1/route-manager/*',
             ],
@@ -224,6 +256,12 @@ class Filters extends BaseFilters
         'adminonly' => [
             'before' => [
                 'api/v1/user-manager-view/*',
+            ],
+        ],
+        // SEMPRE depois de jwtauth. Regras em Config/EndpointAccess.php; sem regra = livre.
+        'endpointaccess' => [
+            'before' => [
+                'api/v1/*',
             ],
         ],
     ];

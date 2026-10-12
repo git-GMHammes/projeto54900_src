@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 1490" width="1680" height="1490">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>
+<rect x="0" y="0" width="1680" height="1490" fill="#ffffff"/>
+<text x="40" y="78" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="24" fill="#0f172a" font-weight="bold">Mapa no frontend - componentes react-leaflet e vinculo com qualquer modulo</text>
+<text x="40" y="108" font-family="Consolas,monospace" font-size="13" fill="#334155">Do documento README_mapa.md: rotas, telas, componentes, apoio, services, destino e fluxos. O navegador so fala com a API do projeto; os tiles do</text>
+<text x="40" y="127" font-family="Consolas,monospace" font-size="13" fill="#334155">OpenStreetMap vem direto do OSM.</text>
+<rect x="40" y="158" width="18" height="18" rx="4" fill="#1d4ed8" stroke="none"/>
+<text x="66" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">telas</text>
+<rect x="146" y="158" width="18" height="18" rx="4" fill="#0f766e" stroke="none"/>
+<text x="172" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">componentes</text>
+<rect x="295" y="158" width="18" height="18" rx="4" fill="#4338ca" stroke="none"/>
+<text x="321" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">apoio</text>
+<rect x="401" y="158" width="18" height="18" rx="4" fill="#b45309" stroke="none"/>
+<text x="427" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">services</text>
+<rect x="528" y="158" width="18" height="18" rx="4" fill="#7e22ce" stroke="none"/>
+<text x="554" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">destino</text>
+<rect x="648" y="158" width="18" height="18" rx="4" fill="#15803d" stroke="none"/>
+<text x="674" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#334155">fluxos</text>
+<rect x="40" y="194" width="210" height="112" rx="10" fill="#1d4ed8" stroke="none"/>
+<text x="145.0" y="256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Telas</text>
+<rect x="270" y="194" width="430" height="112" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="485.0" y="232.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Explorador</text>
+<text x="485.0" y="256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">/v1/map</text>
+<text x="485.0" y="274.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">perfil user e admin</text>
+<rect x="740" y="194" width="430" height="112" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="955.0" y="232.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Mapa do registro</text>
+<text x="955.0" y="256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">/v1/map/links/:module/:id</text>
+<text x="955.0" y="274.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">carrega pelos parametros da rota</text>
+<rect x="1210" y="194" width="430" height="112" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="1425.0" y="232.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Administrativo</text>
+<text x="1425.0" y="256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">/v1/map-&lt;recurso&gt;</text>
+<text x="1425.0" y="274.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">10 recursos - perfil admin</text>
+<rect x="40" y="386" width="210" height="112" rx="10" fill="#0f766e" stroke="none"/>
+<text x="145.0" y="448.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Componentes</text>
+<rect x="270" y="386" width="430" height="112" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<text x="485.0" y="424.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">MapExplorer e MapView</text>
+<text x="485.0" y="448.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Leaflet dirigido por props</text>
+<text x="485.0" y="466.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">markers, routes e circles</text>
+<rect x="740" y="386" width="430" height="112" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<text x="955.0" y="424.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Busca e trajeto</text>
+<text x="955.0" y="448.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">AddressSearch e CepSearch</text>
+<text x="955.0" y="466.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">RoutePlanner com paradas</text>
+<rect x="1210" y="386" width="430" height="112" rx="10" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<text x="1425.0" y="424.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Vinculo e localizacao</text>
+<text x="1425.0" y="448.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">MapLinkPicker e MapLinksPanel</text>
+<text x="1425.0" y="466.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">ShareLocation e ViewLocation</text>
+<rect x="40" y="578" width="210" height="112" rx="10" fill="#4338ca" stroke="none"/>
+<text x="145.0" y="640.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Apoio</text>
+<rect x="270" y="578" width="430" height="112" rx="10" fill="#ffffff" stroke="#4338ca" stroke-width="1.5"/>
+<text x="485.0" y="616.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Hooks</text>
+<text x="485.0" y="640.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">useMapLinks</text>
+<text x="485.0" y="658.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">useGeolocation e useGoBack</text>
+<rect x="740" y="578" width="430" height="112" rx="10" fill="#ffffff" stroke="#4338ca" stroke-width="1.5"/>
+<text x="955.0" y="616.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Utilitarios</text>
+<text x="955.0" y="640.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">mapLinks, geoUri</text>
+<text x="955.0" y="658.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">slug com carimbo de tempo</text>
+<rect x="1210" y="578" width="430" height="112" rx="10" fill="#ffffff" stroke="#4338ca" stroke-width="1.5"/>
+<text x="1425.0" y="616.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Tipos</text>
+<text x="1425.0" y="640.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">types/map.ts</text>
+<text x="1425.0" y="658.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">toCoord, formatDuration</text>
+<rect x="40" y="770" width="210" height="112" rx="10" fill="#b45309" stroke="none"/>
+<text x="145.0" y="832.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Services</text>
+<rect x="270" y="770" width="430" height="112" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+<text x="485.0" y="808.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">10 recursos</text>
+<text x="485.0" y="832.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">map*.table.ts</text>
+<text x="485.0" y="850.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">map*.view.ts</text>
+<rect x="740" y="770" width="430" height="112" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+<text x="955.0" y="808.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">mapGeo.ts</text>
+<text x="955.0" y="832.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">status, search e reverse</text>
+<text x="955.0" y="850.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">cep e route</text>
+<rect x="1210" y="770" width="430" height="112" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+<text x="1425.0" y="808.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">FormGrid</text>
+<text x="1425.0" y="832.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">campo cep confirma no ViaCEP</text>
+<text x="1425.0" y="850.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">selects de chave estrangeira</text>
+<rect x="40" y="932" width="1600" height="44" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+<text x="840.0" y="959" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#7c2d12" font-weight="bold" text-anchor="middle">Fronteira - HTTP/JSON para a API CodeIgniter 4  -  Authorization: Bearer &lt;jwt&gt;  -  275 rotas map-* e 5 do proxy map-geo</text>
+<rect x="40" y="1026" width="210" height="112" rx="10" fill="#7e22ce" stroke="none"/>
+<text x="145.0" y="1088.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Destino</text>
+<rect x="270" y="1026" width="430" height="112" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+<text x="485.0" y="1064.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Banco do projeto</text>
+<text x="485.0" y="1088.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">codeigniter54900_db</text>
+<text x="485.0" y="1106.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">10 tabelas e 10 views</text>
+<rect x="740" y="1026" width="430" height="112" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+<text x="955.0" y="1064.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Vinculo universal</text>
+<text x="955.0" y="1088.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">map_links</text>
+<text x="955.0" y="1106.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">21 modulos registrados</text>
+<rect x="1210" y="1026" width="430" height="112" rx="10" fill="#ffffff" stroke="#7e22ce" stroke-width="1.5"/>
+<text x="1425.0" y="1064.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Provedores externos</text>
+<text x="1425.0" y="1088.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">tiles do OpenStreetMap</text>
+<text x="1425.0" y="1106.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Nominatim, ViaCEP e ORS</text>
+<rect x="40" y="1218" width="210" height="112" rx="10" fill="#15803d" stroke="none"/>
+<text x="145.0" y="1280.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">Fluxos</text>
+<rect x="270" y="1218" width="430" height="112" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+<text x="485.0" y="1256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Leitura</text>
+<text x="485.0" y="1280.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Explorador consulta as views</text>
+<text x="485.0" y="1298.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">e desenha no Leaflet</text>
+<rect x="740" y="1218" width="430" height="112" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+<text x="955.0" y="1256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Escrita</text>
+<text x="955.0" y="1280.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Administrativo grava nas tabelas</text>
+<text x="955.0" y="1298.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">com exclusao logica</text>
+<rect x="1210" y="1218" width="430" height="112" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+<text x="1425.0" y="1256.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" fill="#0f172a" font-weight="bold" text-anchor="middle">Compartilhar localizacao</text>
+<text x="1425.0" y="1280.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">geo URI dentro da mensagem</text>
+<text x="1425.0" y="1298.0" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">sem gravar ponto no mapa</text>
+<rect x="40" y="1410" width="1600" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+<text x="840.0" y="1435" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" fill="#475569" text-anchor="middle">Pendente - verificar em tela com login - acao Mapa na Agenda - ORS_API_KEY para o trajeto real - tiles publicos do OSM so para uso leve</text>
+<line x1="955.0" y1="306" x2="955.0" y2="382" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="955.0" y1="498" x2="955.0" y2="574" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="955.0" y1="690" x2="955.0" y2="766" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="955.0" y1="882" x2="955.0" y2="928" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="955.0" y1="976" x2="955.0" y2="1022" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="955.0" y1="1138" x2="955.0" y2="1214" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

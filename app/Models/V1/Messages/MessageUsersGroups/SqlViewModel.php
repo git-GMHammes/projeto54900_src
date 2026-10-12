@@ -11,6 +11,9 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a view traz company_id (um registro por usuario e empresa). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_message_users_groups';
     protected $primaryKey = 'id';

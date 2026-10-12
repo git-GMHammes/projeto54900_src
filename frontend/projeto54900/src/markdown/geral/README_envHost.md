@@ -129,7 +129,7 @@ específico), para agilizar teste manual sem digitar campo por campo.
 
 **Fake fill com ARQUIVO (`timelinePost.ts`) — como funciona e por quê:**
 o texto vai por `setReactValue`; a imagem é sorteada entre
-`doc/clipart_teste/img001..img005.jpg` (fora da raiz do Vite). O navegador
+`img001..img005.jpg` de uma pasta local de imagens de teste (fora da raiz do Vite; caminho definido no `vite.config.ts`). O navegador
 não lê disco local, então o dev-server serve a pasta por `/@fs/<caminho
 absoluto>` — liberada em `server.fs.allow` do `vite.config.ts` (arquivo fora
 dessa lista responde 403) — e o `vite.config.ts` injeta o caminho em
@@ -176,9 +176,9 @@ qualquer mudança nesse componente.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

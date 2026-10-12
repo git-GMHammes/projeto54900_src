@@ -500,8 +500,7 @@ por `Database/Seeds/BootstrapIconsSeeder.php`. Contrato canônico (18 rotas).
 
 Fonte: `Config/Routes/Api/v1/AuxCor/EndpointTable.php` — catálogo de cores
 nomeadas, consumido pelo `SelectField` do frontend quando há `colorKey`.
-Contrato canônico (18 rotas). Populado por
-`doc/sql/insert/20260923135922_aux_cor.sql`.
+Contrato canônico (18 rotas). Populado por INSERT direto no banco DEV (tabela `aux_cor`).
 
 | Método | Rota                                  | Controller::method                                                   |
 | ------ | ------------------------------------- | -------------------------------------------------------------------- |
@@ -1149,6 +1148,201 @@ Fonte: `Config/Routes/Api/v1/Menu/MenuManager/EndpointTable.php` — contrato ca
 
 ---
 
+## Company — Cadastro de empresas
+
+Cadastro de empresas (`company_manager`). O usuário acessa as empresas listadas em
+`user_manager.company_ids` (JSON de ids); em desenvolvimento todos pertencem à
+empresa **DEFAULT** (id 1, não pode ser excluída). Detalhes em
+[`README_modulo_companies.md`](README_modulo_companies.md).
+
+**Filtros:** `jwtauth` (por wildcard de URI) em todas; `adminonly` rota a rota nas
+escritas (`create`, `update`, `delete-*`, `clear-deleted`) — leitura aberta a qualquer autenticado.
+
+### company-manager
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyManager/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-manager/find` | `Api\V1\Company\CompanyManager\ResourceTableController::find` |
+| POST | `/company-manager/get-grouped` | `Api\V1\Company\CompanyManager\ResourceTableController::getGrouped` |
+| GET | `/company-manager/search` | `Api\V1\Company\CompanyManager\ResourceTableController::search` |
+| GET | `/company-manager/get/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::get/$1` |
+| GET | `/company-manager/get-all` | `Api\V1\Company\CompanyManager\ResourceTableController::getAll` |
+| GET | `/company-manager/get-no-pagination` | `Api\V1\Company\CompanyManager\ResourceTableController::getNoPagination` |
+| GET | `/company-manager/get-deleted/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::getDeleted/$1` |
+| GET | `/company-manager/get-with-deleted/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::getWithDeleted/$1` |
+| GET | `/company-manager/get-deleted-all` | `Api\V1\Company\CompanyManager\ResourceTableController::getDeletedAll` |
+| GET | `/company-manager/get-all-with-deleted/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/company-manager/get-all-with-deleted` | `Api\V1\Company\CompanyManager\ResourceTableController::getAllWithDeleted` |
+| POST | `/company-manager/create` | `Api\V1\Company\CompanyManager\ResourceTableController::create` |
+| PUT | `/company-manager/update/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::update/$1` |
+| DELETE | `/company-manager/delete-soft/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/company-manager/delete-restore/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/company-manager/delete-hard/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::deleteHard/$1` |
+| DELETE | `/company-manager/clear-deleted` | `Api\V1\Company\CompanyManager\ResourceTableController::clearDeleted` |
+| DELETE | `/company-manager/clear-deleted/{id}` | `Api\V1\Company\CompanyManager\ResourceTableController::clearDeleted/$1` |
+
+### company-manager-view
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyManager/EndPointView.php` — view `view_company_manager` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-manager-view/find` | `Api\V1\Company\CompanyManager\ResourceViewController::find` |
+| POST | `/company-manager-view/get-grouped` | `Api\V1\Company\CompanyManager\ResourceViewController::getGrouped` |
+| GET | `/company-manager-view/search` | `Api\V1\Company\CompanyManager\ResourceViewController::search` |
+| GET | `/company-manager-view/get/{id}` | `Api\V1\Company\CompanyManager\ResourceViewController::get/$1` |
+| GET | `/company-manager-view/get-all` | `Api\V1\Company\CompanyManager\ResourceViewController::getAll` |
+| GET | `/company-manager-view/get-no-pagination` | `Api\V1\Company\CompanyManager\ResourceViewController::getNoPagination` |
+| GET | `/company-manager-view/get-deleted/{id}` | `Api\V1\Company\CompanyManager\ResourceViewController::getDeleted/$1` |
+| GET | `/company-manager-view/get-all-with-deleted` | `Api\V1\Company\CompanyManager\ResourceViewController::getAllWithDeleted` |
+| GET | `/company-manager-view/get-deleted-all` | `Api\V1\Company\CompanyManager\ResourceViewController::getDeletedAll` |
+
+---
+
+### company-members
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyMembers/EndpointTable.php` + `EndpointCustom.php` — contrato canônico (18 rotas) mais `sync`.
+Vínculo N:N usuário ↔ empresa (espelho de `message-group-members`). Leitura escopada às empresas do usuário; escrita **`adminonly`**.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-members/find` | `Api\V1\Company\CompanyMembers\ResourceTableController::find` |
+| POST | `/company-members/get-grouped` | `Api\V1\Company\CompanyMembers\ResourceTableController::getGrouped` |
+| GET | `/company-members/search` | `Api\V1\Company\CompanyMembers\ResourceTableController::search` |
+| GET | `/company-members/get/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::get/$1` |
+| GET | `/company-members/get-all` | `Api\V1\Company\CompanyMembers\ResourceTableController::getAll` |
+| GET | `/company-members/get-no-pagination` | `Api\V1\Company\CompanyMembers\ResourceTableController::getNoPagination` |
+| GET | `/company-members/get-deleted/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::getDeleted/$1` |
+| GET | `/company-members/get-with-deleted/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::getWithDeleted/$1` |
+| GET | `/company-members/get-deleted-all` | `Api\V1\Company\CompanyMembers\ResourceTableController::getDeletedAll` |
+| GET | `/company-members/get-all-with-deleted/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/company-members/get-all-with-deleted` | `Api\V1\Company\CompanyMembers\ResourceTableController::getAllWithDeleted` |
+| POST | `/company-members/create` | `Api\V1\Company\CompanyMembers\ResourceTableController::create` |
+| PUT | `/company-members/update/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::update/$1` |
+| DELETE | `/company-members/delete-soft/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/company-members/delete-restore/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/company-members/delete-hard/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::deleteHard/$1` |
+| DELETE | `/company-members/clear-deleted` | `Api\V1\Company\CompanyMembers\ResourceTableController::clearDeleted` |
+| DELETE | `/company-members/clear-deleted/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::clearDeleted/$1` |
+| PUT | `/company-members/sync/{id}` | `Api\V1\Company\CompanyMembers\ResourceTableController::sync/$1` |
+
+`sync/{companyId}`: corpo `{"add_user_ids":[..],"remove_user_ids":[..]}` (teto 1000 por lista, tudo ou nada); devolve `added/reactivated/removed/skipped`.
+
+### company-members-view
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyMembers/EndPointView.php` — view `view_company_members` (vínculo + empresa + usuário/perfil), 9 rotas.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-members-view/find` | `Api\V1\Company\CompanyMembers\ResourceViewController::find` |
+| POST | `/company-members-view/get-grouped` | `Api\V1\Company\CompanyMembers\ResourceViewController::getGrouped` |
+| GET | `/company-members-view/search` | `Api\V1\Company\CompanyMembers\ResourceViewController::search` |
+| GET | `/company-members-view/get/{id}` | `Api\V1\Company\CompanyMembers\ResourceViewController::get/$1` |
+| GET | `/company-members-view/get-all` | `Api\V1\Company\CompanyMembers\ResourceViewController::getAll` |
+| GET | `/company-members-view/get-no-pagination` | `Api\V1\Company\CompanyMembers\ResourceViewController::getNoPagination` |
+| GET | `/company-members-view/get-deleted/{id}` | `Api\V1\Company\CompanyMembers\ResourceViewController::getDeleted/$1` |
+| GET | `/company-members-view/get-all-with-deleted` | `Api\V1\Company\CompanyMembers\ResourceViewController::getAllWithDeleted` |
+| GET | `/company-members-view/get-deleted-all` | `Api\V1\Company\CompanyMembers\ResourceViewController::getDeletedAll` |
+
+### company-memberships-view
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyMemberships/EndPointView.php` — view `view_company_memberships` (empresa + `members_count`/`members_names`), 9 rotas; escopo: empresas do usuário.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-memberships-view/find` | `Api\V1\Company\CompanyMemberships\ResourceViewController::find` |
+| POST | `/company-memberships-view/get-grouped` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getGrouped` |
+| GET | `/company-memberships-view/search` | `Api\V1\Company\CompanyMemberships\ResourceViewController::search` |
+| GET | `/company-memberships-view/get/{id}` | `Api\V1\Company\CompanyMemberships\ResourceViewController::get/$1` |
+| GET | `/company-memberships-view/get-all` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getAll` |
+| GET | `/company-memberships-view/get-no-pagination` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getNoPagination` |
+| GET | `/company-memberships-view/get-deleted/{id}` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getDeleted/$1` |
+| GET | `/company-memberships-view/get-all-with-deleted` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getAllWithDeleted` |
+| GET | `/company-memberships-view/get-deleted-all` | `Api\V1\Company\CompanyMemberships\ResourceViewController::getDeletedAll` |
+
+### company-users-companies-view
+
+Fonte: `Config/Routes/Api/v1/Company/CompanyUsersCompanies/EndPointView.php` — view `view_company_users_companies` (usuário + `companies_count`/`companies_names`), 9 rotas. Não-admin só vê usuários `active`.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/company-users-companies-view/find` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::find` |
+| POST | `/company-users-companies-view/get-grouped` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getGrouped` |
+| GET | `/company-users-companies-view/search` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::search` |
+| GET | `/company-users-companies-view/get/{id}` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::get/$1` |
+| GET | `/company-users-companies-view/get-all` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getAll` |
+| GET | `/company-users-companies-view/get-no-pagination` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getNoPagination` |
+| GET | `/company-users-companies-view/get-deleted/{id}` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getDeleted/$1` |
+| GET | `/company-users-companies-view/get-all-with-deleted` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getAllWithDeleted` |
+| GET | `/company-users-companies-view/get-deleted-all` | `Api\V1\Company\CompanyUsersCompanies\ResourceViewController::getDeletedAll` |
+
+---
+
+## User/UserResourceAccess — Permissão individual a form/list
+
+Permissão de um **usuário** a um **form** ou **list**, independente da empresa
+(`user_resource_access`). Precedência na verificação: admin → linha do usuário
+(`allowed` 1/0) → `roles` do form/list. Detalhes em
+[`README_modulo_companies.md`](README_modulo_companies.md).
+
+**Filtros:** `jwtauth` (wildcard) + `adminonly` em TODAS as rotas de CRUD e de view; a única rota
+para usuário comum é `resource-access/check` (desvio sancionado: 1 rota própria).
+
+### user-resource-access
+
+Fonte: `Config/Routes/Api/v1/User/UserResourceAccess/EndpointTable.php` — contrato canônico (18 rotas, todas `adminonly`).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/user-resource-access/find` | `Api\V1\User\UserResourceAccess\ResourceTableController::find` |
+| POST | `/user-resource-access/get-grouped` | `Api\V1\User\UserResourceAccess\ResourceTableController::getGrouped` |
+| GET | `/user-resource-access/search` | `Api\V1\User\UserResourceAccess\ResourceTableController::search` |
+| GET | `/user-resource-access/get/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::get/$1` |
+| GET | `/user-resource-access/get-all` | `Api\V1\User\UserResourceAccess\ResourceTableController::getAll` |
+| GET | `/user-resource-access/get-no-pagination` | `Api\V1\User\UserResourceAccess\ResourceTableController::getNoPagination` |
+| GET | `/user-resource-access/get-deleted/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::getDeleted/$1` |
+| GET | `/user-resource-access/get-with-deleted/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::getWithDeleted/$1` |
+| GET | `/user-resource-access/get-deleted-all` | `Api\V1\User\UserResourceAccess\ResourceTableController::getDeletedAll` |
+| GET | `/user-resource-access/get-all-with-deleted/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/user-resource-access/get-all-with-deleted` | `Api\V1\User\UserResourceAccess\ResourceTableController::getAllWithDeleted` |
+| POST | `/user-resource-access/create` | `Api\V1\User\UserResourceAccess\ResourceTableController::create` |
+| PUT | `/user-resource-access/update/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::update/$1` |
+| DELETE | `/user-resource-access/delete-soft/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/user-resource-access/delete-restore/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/user-resource-access/delete-hard/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::deleteHard/$1` |
+| DELETE | `/user-resource-access/clear-deleted` | `Api\V1\User\UserResourceAccess\ResourceTableController::clearDeleted` |
+| DELETE | `/user-resource-access/clear-deleted/{id}` | `Api\V1\User\UserResourceAccess\ResourceTableController::clearDeleted/$1` |
+
+### user-resource-access-view
+
+Fonte: `Config/Routes/Api/v1/User/UserResourceAccess/EndPointView.php` — view `view_user_resource_access` (9 rotas, todas `adminonly`).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/user-resource-access-view/find` | `Api\V1\User\UserResourceAccess\ResourceViewController::find` |
+| POST | `/user-resource-access-view/get-grouped` | `Api\V1\User\UserResourceAccess\ResourceViewController::getGrouped` |
+| GET | `/user-resource-access-view/search` | `Api\V1\User\UserResourceAccess\ResourceViewController::search` |
+| GET | `/user-resource-access-view/get/{id}` | `Api\V1\User\UserResourceAccess\ResourceViewController::get/$1` |
+| GET | `/user-resource-access-view/get-all` | `Api\V1\User\UserResourceAccess\ResourceViewController::getAll` |
+| GET | `/user-resource-access-view/get-no-pagination` | `Api\V1\User\UserResourceAccess\ResourceViewController::getNoPagination` |
+| GET | `/user-resource-access-view/get-deleted/{id}` | `Api\V1\User\UserResourceAccess\ResourceViewController::getDeleted/$1` |
+| GET | `/user-resource-access-view/get-all-with-deleted` | `Api\V1\User\UserResourceAccess\ResourceViewController::getAllWithDeleted` |
+| GET | `/user-resource-access-view/get-deleted-all` | `Api\V1\User\UserResourceAccess\ResourceViewController::getDeletedAll` |
+
+### resource-access
+
+Fonte: `Config/Routes/Api/v1/Meta/ResourceAccess/Endpoint.php` — verificação do usuário da sessão.
+Query: `type=form|list` + `id=N` ou `slug=...`; resposta `data: { allowed, source, resource_id }`
+(`source`: `admin`, `user`, `role`, `open`, `not_found`).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| GET | `/resource-access/check` | `Api\V1\User\UserResourceAccess\ResourceTableController::check` |
+
+---
+
 ## Meta — Utilitários read-only
 
 ### db-schema
@@ -1193,6 +1387,439 @@ rota pré-cadastrada em vez de digitá-la.
 | DELETE | `/route-manager/clear-deleted`               | `Api\V1\Meta\RouteManager\ResourceTableController::clearDeleted`           |
 | DELETE | `/route-manager/clear-deleted/{id}`          | `Api\V1\Meta\RouteManager\ResourceTableController::clearDeleted/$1`        |
 
+## Map — Mapas, pontos, trajetos e CEP
+
+Módulo `Map` (Leaflet + OpenStreetMap + OpenRouteService + Nominatim): 10 tabelas e 10 views,
+18 rotas por tabela e 9 por view — **270 rotas** (inclui `map-links`, o vínculo universal), mais 5 rotas do proxy `map-geo` (275). Detalhes em
+[`README_modulo_map.md`](README_modulo_map.md).
+
+**Filtros:** `jwtauth` (por wildcard de URI) em todas; `adminonly` rota a rota em
+`delete-hard`, `clear-deleted` e `clear-deleted/{id}` das tabelas. Não há rota pública.
+
+### map-icons
+
+Fonte: `Config/Routes/Api/v1/Map/MapIcons/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-icons/find` | `Api\V1\Map\MapIcons\ResourceTableController::find` |
+| POST | `/map-icons/get-grouped` | `Api\V1\Map\MapIcons\ResourceTableController::getGrouped` |
+| GET | `/map-icons/search` | `Api\V1\Map\MapIcons\ResourceTableController::search` |
+| GET | `/map-icons/get/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::get/$1` |
+| GET | `/map-icons/get-all` | `Api\V1\Map\MapIcons\ResourceTableController::getAll` |
+| GET | `/map-icons/get-no-pagination` | `Api\V1\Map\MapIcons\ResourceTableController::getNoPagination` |
+| GET | `/map-icons/get-deleted/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::getDeleted/$1` |
+| GET | `/map-icons/get-with-deleted/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-icons/get-deleted-all` | `Api\V1\Map\MapIcons\ResourceTableController::getDeletedAll` |
+| GET | `/map-icons/get-all-with-deleted/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-icons/get-all-with-deleted` | `Api\V1\Map\MapIcons\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-icons/create` | `Api\V1\Map\MapIcons\ResourceTableController::create` |
+| PUT | `/map-icons/update/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::update/$1` |
+| DELETE | `/map-icons/delete-soft/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-icons/delete-restore/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-icons/delete-hard/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-icons/clear-deleted` | `Api\V1\Map\MapIcons\ResourceTableController::clearDeleted` |
+| DELETE | `/map-icons/clear-deleted/{id}` | `Api\V1\Map\MapIcons\ResourceTableController::clearDeleted/$1` |
+
+### map-icons-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapIcons/EndPointView.php` — view `view_map_icons` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-icons-view/find` | `Api\V1\Map\MapIcons\ResourceViewController::find` |
+| POST | `/map-icons-view/get-grouped` | `Api\V1\Map\MapIcons\ResourceViewController::getGrouped` |
+| GET | `/map-icons-view/search` | `Api\V1\Map\MapIcons\ResourceViewController::search` |
+| GET | `/map-icons-view/get/{id}` | `Api\V1\Map\MapIcons\ResourceViewController::get/$1` |
+| GET | `/map-icons-view/get-all` | `Api\V1\Map\MapIcons\ResourceViewController::getAll` |
+| GET | `/map-icons-view/get-no-pagination` | `Api\V1\Map\MapIcons\ResourceViewController::getNoPagination` |
+| GET | `/map-icons-view/get-deleted/{id}` | `Api\V1\Map\MapIcons\ResourceViewController::getDeleted/$1` |
+| GET | `/map-icons-view/get-all-with-deleted` | `Api\V1\Map\MapIcons\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-icons-view/get-deleted-all` | `Api\V1\Map\MapIcons\ResourceViewController::getDeletedAll` |
+
+### map-manager
+
+Fonte: `Config/Routes/Api/v1/Map/MapManager/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-manager/find` | `Api\V1\Map\MapManager\ResourceTableController::find` |
+| POST | `/map-manager/get-grouped` | `Api\V1\Map\MapManager\ResourceTableController::getGrouped` |
+| GET | `/map-manager/search` | `Api\V1\Map\MapManager\ResourceTableController::search` |
+| GET | `/map-manager/get/{id}` | `Api\V1\Map\MapManager\ResourceTableController::get/$1` |
+| GET | `/map-manager/get-all` | `Api\V1\Map\MapManager\ResourceTableController::getAll` |
+| GET | `/map-manager/get-no-pagination` | `Api\V1\Map\MapManager\ResourceTableController::getNoPagination` |
+| GET | `/map-manager/get-deleted/{id}` | `Api\V1\Map\MapManager\ResourceTableController::getDeleted/$1` |
+| GET | `/map-manager/get-with-deleted/{id}` | `Api\V1\Map\MapManager\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-manager/get-deleted-all` | `Api\V1\Map\MapManager\ResourceTableController::getDeletedAll` |
+| GET | `/map-manager/get-all-with-deleted/{id}` | `Api\V1\Map\MapManager\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-manager/get-all-with-deleted` | `Api\V1\Map\MapManager\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-manager/create` | `Api\V1\Map\MapManager\ResourceTableController::create` |
+| PUT | `/map-manager/update/{id}` | `Api\V1\Map\MapManager\ResourceTableController::update/$1` |
+| DELETE | `/map-manager/delete-soft/{id}` | `Api\V1\Map\MapManager\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-manager/delete-restore/{id}` | `Api\V1\Map\MapManager\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-manager/delete-hard/{id}` | `Api\V1\Map\MapManager\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-manager/clear-deleted` | `Api\V1\Map\MapManager\ResourceTableController::clearDeleted` |
+| DELETE | `/map-manager/clear-deleted/{id}` | `Api\V1\Map\MapManager\ResourceTableController::clearDeleted/$1` |
+
+### map-manager-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapManager/EndPointView.php` — view `view_map_manager` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-manager-view/find` | `Api\V1\Map\MapManager\ResourceViewController::find` |
+| POST | `/map-manager-view/get-grouped` | `Api\V1\Map\MapManager\ResourceViewController::getGrouped` |
+| GET | `/map-manager-view/search` | `Api\V1\Map\MapManager\ResourceViewController::search` |
+| GET | `/map-manager-view/get/{id}` | `Api\V1\Map\MapManager\ResourceViewController::get/$1` |
+| GET | `/map-manager-view/get-all` | `Api\V1\Map\MapManager\ResourceViewController::getAll` |
+| GET | `/map-manager-view/get-no-pagination` | `Api\V1\Map\MapManager\ResourceViewController::getNoPagination` |
+| GET | `/map-manager-view/get-deleted/{id}` | `Api\V1\Map\MapManager\ResourceViewController::getDeleted/$1` |
+| GET | `/map-manager-view/get-all-with-deleted` | `Api\V1\Map\MapManager\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-manager-view/get-deleted-all` | `Api\V1\Map\MapManager\ResourceViewController::getDeletedAll` |
+
+### map-categories
+
+Fonte: `Config/Routes/Api/v1/Map/MapCategories/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-categories/find` | `Api\V1\Map\MapCategories\ResourceTableController::find` |
+| POST | `/map-categories/get-grouped` | `Api\V1\Map\MapCategories\ResourceTableController::getGrouped` |
+| GET | `/map-categories/search` | `Api\V1\Map\MapCategories\ResourceTableController::search` |
+| GET | `/map-categories/get/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::get/$1` |
+| GET | `/map-categories/get-all` | `Api\V1\Map\MapCategories\ResourceTableController::getAll` |
+| GET | `/map-categories/get-no-pagination` | `Api\V1\Map\MapCategories\ResourceTableController::getNoPagination` |
+| GET | `/map-categories/get-deleted/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::getDeleted/$1` |
+| GET | `/map-categories/get-with-deleted/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-categories/get-deleted-all` | `Api\V1\Map\MapCategories\ResourceTableController::getDeletedAll` |
+| GET | `/map-categories/get-all-with-deleted/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-categories/get-all-with-deleted` | `Api\V1\Map\MapCategories\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-categories/create` | `Api\V1\Map\MapCategories\ResourceTableController::create` |
+| PUT | `/map-categories/update/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::update/$1` |
+| DELETE | `/map-categories/delete-soft/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-categories/delete-restore/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-categories/delete-hard/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-categories/clear-deleted` | `Api\V1\Map\MapCategories\ResourceTableController::clearDeleted` |
+| DELETE | `/map-categories/clear-deleted/{id}` | `Api\V1\Map\MapCategories\ResourceTableController::clearDeleted/$1` |
+
+### map-categories-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapCategories/EndPointView.php` — view `view_map_categories` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-categories-view/find` | `Api\V1\Map\MapCategories\ResourceViewController::find` |
+| POST | `/map-categories-view/get-grouped` | `Api\V1\Map\MapCategories\ResourceViewController::getGrouped` |
+| GET | `/map-categories-view/search` | `Api\V1\Map\MapCategories\ResourceViewController::search` |
+| GET | `/map-categories-view/get/{id}` | `Api\V1\Map\MapCategories\ResourceViewController::get/$1` |
+| GET | `/map-categories-view/get-all` | `Api\V1\Map\MapCategories\ResourceViewController::getAll` |
+| GET | `/map-categories-view/get-no-pagination` | `Api\V1\Map\MapCategories\ResourceViewController::getNoPagination` |
+| GET | `/map-categories-view/get-deleted/{id}` | `Api\V1\Map\MapCategories\ResourceViewController::getDeleted/$1` |
+| GET | `/map-categories-view/get-all-with-deleted` | `Api\V1\Map\MapCategories\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-categories-view/get-deleted-all` | `Api\V1\Map\MapCategories\ResourceViewController::getDeletedAll` |
+
+### map-postal-codes
+
+Fonte: `Config/Routes/Api/v1/Map/MapPostalCodes/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-postal-codes/find` | `Api\V1\Map\MapPostalCodes\ResourceTableController::find` |
+| POST | `/map-postal-codes/get-grouped` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getGrouped` |
+| GET | `/map-postal-codes/search` | `Api\V1\Map\MapPostalCodes\ResourceTableController::search` |
+| GET | `/map-postal-codes/get/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::get/$1` |
+| GET | `/map-postal-codes/get-all` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getAll` |
+| GET | `/map-postal-codes/get-no-pagination` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getNoPagination` |
+| GET | `/map-postal-codes/get-deleted/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getDeleted/$1` |
+| GET | `/map-postal-codes/get-with-deleted/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-postal-codes/get-deleted-all` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getDeletedAll` |
+| GET | `/map-postal-codes/get-all-with-deleted/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-postal-codes/get-all-with-deleted` | `Api\V1\Map\MapPostalCodes\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-postal-codes/create` | `Api\V1\Map\MapPostalCodes\ResourceTableController::create` |
+| PUT | `/map-postal-codes/update/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::update/$1` |
+| DELETE | `/map-postal-codes/delete-soft/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-postal-codes/delete-restore/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-postal-codes/delete-hard/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-postal-codes/clear-deleted` | `Api\V1\Map\MapPostalCodes\ResourceTableController::clearDeleted` |
+| DELETE | `/map-postal-codes/clear-deleted/{id}` | `Api\V1\Map\MapPostalCodes\ResourceTableController::clearDeleted/$1` |
+
+### map-postal-codes-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapPostalCodes/EndPointView.php` — view `view_map_postal_codes` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-postal-codes-view/find` | `Api\V1\Map\MapPostalCodes\ResourceViewController::find` |
+| POST | `/map-postal-codes-view/get-grouped` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getGrouped` |
+| GET | `/map-postal-codes-view/search` | `Api\V1\Map\MapPostalCodes\ResourceViewController::search` |
+| GET | `/map-postal-codes-view/get/{id}` | `Api\V1\Map\MapPostalCodes\ResourceViewController::get/$1` |
+| GET | `/map-postal-codes-view/get-all` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getAll` |
+| GET | `/map-postal-codes-view/get-no-pagination` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getNoPagination` |
+| GET | `/map-postal-codes-view/get-deleted/{id}` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getDeleted/$1` |
+| GET | `/map-postal-codes-view/get-all-with-deleted` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-postal-codes-view/get-deleted-all` | `Api\V1\Map\MapPostalCodes\ResourceViewController::getDeletedAll` |
+
+### map-addresses
+
+Fonte: `Config/Routes/Api/v1/Map/MapAddresses/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-addresses/find` | `Api\V1\Map\MapAddresses\ResourceTableController::find` |
+| POST | `/map-addresses/get-grouped` | `Api\V1\Map\MapAddresses\ResourceTableController::getGrouped` |
+| GET | `/map-addresses/search` | `Api\V1\Map\MapAddresses\ResourceTableController::search` |
+| GET | `/map-addresses/get/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::get/$1` |
+| GET | `/map-addresses/get-all` | `Api\V1\Map\MapAddresses\ResourceTableController::getAll` |
+| GET | `/map-addresses/get-no-pagination` | `Api\V1\Map\MapAddresses\ResourceTableController::getNoPagination` |
+| GET | `/map-addresses/get-deleted/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::getDeleted/$1` |
+| GET | `/map-addresses/get-with-deleted/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-addresses/get-deleted-all` | `Api\V1\Map\MapAddresses\ResourceTableController::getDeletedAll` |
+| GET | `/map-addresses/get-all-with-deleted/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-addresses/get-all-with-deleted` | `Api\V1\Map\MapAddresses\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-addresses/create` | `Api\V1\Map\MapAddresses\ResourceTableController::create` |
+| PUT | `/map-addresses/update/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::update/$1` |
+| DELETE | `/map-addresses/delete-soft/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-addresses/delete-restore/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-addresses/delete-hard/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-addresses/clear-deleted` | `Api\V1\Map\MapAddresses\ResourceTableController::clearDeleted` |
+| DELETE | `/map-addresses/clear-deleted/{id}` | `Api\V1\Map\MapAddresses\ResourceTableController::clearDeleted/$1` |
+
+### map-addresses-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapAddresses/EndPointView.php` — view `view_map_addresses` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-addresses-view/find` | `Api\V1\Map\MapAddresses\ResourceViewController::find` |
+| POST | `/map-addresses-view/get-grouped` | `Api\V1\Map\MapAddresses\ResourceViewController::getGrouped` |
+| GET | `/map-addresses-view/search` | `Api\V1\Map\MapAddresses\ResourceViewController::search` |
+| GET | `/map-addresses-view/get/{id}` | `Api\V1\Map\MapAddresses\ResourceViewController::get/$1` |
+| GET | `/map-addresses-view/get-all` | `Api\V1\Map\MapAddresses\ResourceViewController::getAll` |
+| GET | `/map-addresses-view/get-no-pagination` | `Api\V1\Map\MapAddresses\ResourceViewController::getNoPagination` |
+| GET | `/map-addresses-view/get-deleted/{id}` | `Api\V1\Map\MapAddresses\ResourceViewController::getDeleted/$1` |
+| GET | `/map-addresses-view/get-all-with-deleted` | `Api\V1\Map\MapAddresses\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-addresses-view/get-deleted-all` | `Api\V1\Map\MapAddresses\ResourceViewController::getDeletedAll` |
+
+### map-points
+
+Fonte: `Config/Routes/Api/v1/Map/MapPoints/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-points/find` | `Api\V1\Map\MapPoints\ResourceTableController::find` |
+| POST | `/map-points/get-grouped` | `Api\V1\Map\MapPoints\ResourceTableController::getGrouped` |
+| GET | `/map-points/search` | `Api\V1\Map\MapPoints\ResourceTableController::search` |
+| GET | `/map-points/get/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::get/$1` |
+| GET | `/map-points/get-all` | `Api\V1\Map\MapPoints\ResourceTableController::getAll` |
+| GET | `/map-points/get-no-pagination` | `Api\V1\Map\MapPoints\ResourceTableController::getNoPagination` |
+| GET | `/map-points/get-deleted/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::getDeleted/$1` |
+| GET | `/map-points/get-with-deleted/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-points/get-deleted-all` | `Api\V1\Map\MapPoints\ResourceTableController::getDeletedAll` |
+| GET | `/map-points/get-all-with-deleted/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-points/get-all-with-deleted` | `Api\V1\Map\MapPoints\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-points/create` | `Api\V1\Map\MapPoints\ResourceTableController::create` |
+| PUT | `/map-points/update/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::update/$1` |
+| DELETE | `/map-points/delete-soft/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-points/delete-restore/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-points/delete-hard/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-points/clear-deleted` | `Api\V1\Map\MapPoints\ResourceTableController::clearDeleted` |
+| DELETE | `/map-points/clear-deleted/{id}` | `Api\V1\Map\MapPoints\ResourceTableController::clearDeleted/$1` |
+
+### map-points-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapPoints/EndPointView.php` — view `view_map_points` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-points-view/find` | `Api\V1\Map\MapPoints\ResourceViewController::find` |
+| POST | `/map-points-view/get-grouped` | `Api\V1\Map\MapPoints\ResourceViewController::getGrouped` |
+| GET | `/map-points-view/search` | `Api\V1\Map\MapPoints\ResourceViewController::search` |
+| GET | `/map-points-view/get/{id}` | `Api\V1\Map\MapPoints\ResourceViewController::get/$1` |
+| GET | `/map-points-view/get-all` | `Api\V1\Map\MapPoints\ResourceViewController::getAll` |
+| GET | `/map-points-view/get-no-pagination` | `Api\V1\Map\MapPoints\ResourceViewController::getNoPagination` |
+| GET | `/map-points-view/get-deleted/{id}` | `Api\V1\Map\MapPoints\ResourceViewController::getDeleted/$1` |
+| GET | `/map-points-view/get-all-with-deleted` | `Api\V1\Map\MapPoints\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-points-view/get-deleted-all` | `Api\V1\Map\MapPoints\ResourceViewController::getDeletedAll` |
+
+### map-routes
+
+Fonte: `Config/Routes/Api/v1/Map/MapRoutes/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-routes/find` | `Api\V1\Map\MapRoutes\ResourceTableController::find` |
+| POST | `/map-routes/get-grouped` | `Api\V1\Map\MapRoutes\ResourceTableController::getGrouped` |
+| GET | `/map-routes/search` | `Api\V1\Map\MapRoutes\ResourceTableController::search` |
+| GET | `/map-routes/get/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::get/$1` |
+| GET | `/map-routes/get-all` | `Api\V1\Map\MapRoutes\ResourceTableController::getAll` |
+| GET | `/map-routes/get-no-pagination` | `Api\V1\Map\MapRoutes\ResourceTableController::getNoPagination` |
+| GET | `/map-routes/get-deleted/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::getDeleted/$1` |
+| GET | `/map-routes/get-with-deleted/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-routes/get-deleted-all` | `Api\V1\Map\MapRoutes\ResourceTableController::getDeletedAll` |
+| GET | `/map-routes/get-all-with-deleted/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-routes/get-all-with-deleted` | `Api\V1\Map\MapRoutes\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-routes/create` | `Api\V1\Map\MapRoutes\ResourceTableController::create` |
+| PUT | `/map-routes/update/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::update/$1` |
+| DELETE | `/map-routes/delete-soft/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-routes/delete-restore/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-routes/delete-hard/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-routes/clear-deleted` | `Api\V1\Map\MapRoutes\ResourceTableController::clearDeleted` |
+| DELETE | `/map-routes/clear-deleted/{id}` | `Api\V1\Map\MapRoutes\ResourceTableController::clearDeleted/$1` |
+
+### map-routes-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapRoutes/EndPointView.php` — view `view_map_routes` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-routes-view/find` | `Api\V1\Map\MapRoutes\ResourceViewController::find` |
+| POST | `/map-routes-view/get-grouped` | `Api\V1\Map\MapRoutes\ResourceViewController::getGrouped` |
+| GET | `/map-routes-view/search` | `Api\V1\Map\MapRoutes\ResourceViewController::search` |
+| GET | `/map-routes-view/get/{id}` | `Api\V1\Map\MapRoutes\ResourceViewController::get/$1` |
+| GET | `/map-routes-view/get-all` | `Api\V1\Map\MapRoutes\ResourceViewController::getAll` |
+| GET | `/map-routes-view/get-no-pagination` | `Api\V1\Map\MapRoutes\ResourceViewController::getNoPagination` |
+| GET | `/map-routes-view/get-deleted/{id}` | `Api\V1\Map\MapRoutes\ResourceViewController::getDeleted/$1` |
+| GET | `/map-routes-view/get-all-with-deleted` | `Api\V1\Map\MapRoutes\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-routes-view/get-deleted-all` | `Api\V1\Map\MapRoutes\ResourceViewController::getDeletedAll` |
+
+### map-route-stops
+
+Fonte: `Config/Routes/Api/v1/Map/MapRouteStops/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-route-stops/find` | `Api\V1\Map\MapRouteStops\ResourceTableController::find` |
+| POST | `/map-route-stops/get-grouped` | `Api\V1\Map\MapRouteStops\ResourceTableController::getGrouped` |
+| GET | `/map-route-stops/search` | `Api\V1\Map\MapRouteStops\ResourceTableController::search` |
+| GET | `/map-route-stops/get/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::get/$1` |
+| GET | `/map-route-stops/get-all` | `Api\V1\Map\MapRouteStops\ResourceTableController::getAll` |
+| GET | `/map-route-stops/get-no-pagination` | `Api\V1\Map\MapRouteStops\ResourceTableController::getNoPagination` |
+| GET | `/map-route-stops/get-deleted/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::getDeleted/$1` |
+| GET | `/map-route-stops/get-with-deleted/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-route-stops/get-deleted-all` | `Api\V1\Map\MapRouteStops\ResourceTableController::getDeletedAll` |
+| GET | `/map-route-stops/get-all-with-deleted/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-route-stops/get-all-with-deleted` | `Api\V1\Map\MapRouteStops\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-route-stops/create` | `Api\V1\Map\MapRouteStops\ResourceTableController::create` |
+| PUT | `/map-route-stops/update/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::update/$1` |
+| DELETE | `/map-route-stops/delete-soft/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-route-stops/delete-restore/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-route-stops/delete-hard/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-route-stops/clear-deleted` | `Api\V1\Map\MapRouteStops\ResourceTableController::clearDeleted` |
+| DELETE | `/map-route-stops/clear-deleted/{id}` | `Api\V1\Map\MapRouteStops\ResourceTableController::clearDeleted/$1` |
+
+### map-route-stops-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapRouteStops/EndPointView.php` — view `view_map_route_stops` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-route-stops-view/find` | `Api\V1\Map\MapRouteStops\ResourceViewController::find` |
+| POST | `/map-route-stops-view/get-grouped` | `Api\V1\Map\MapRouteStops\ResourceViewController::getGrouped` |
+| GET | `/map-route-stops-view/search` | `Api\V1\Map\MapRouteStops\ResourceViewController::search` |
+| GET | `/map-route-stops-view/get/{id}` | `Api\V1\Map\MapRouteStops\ResourceViewController::get/$1` |
+| GET | `/map-route-stops-view/get-all` | `Api\V1\Map\MapRouteStops\ResourceViewController::getAll` |
+| GET | `/map-route-stops-view/get-no-pagination` | `Api\V1\Map\MapRouteStops\ResourceViewController::getNoPagination` |
+| GET | `/map-route-stops-view/get-deleted/{id}` | `Api\V1\Map\MapRouteStops\ResourceViewController::getDeleted/$1` |
+| GET | `/map-route-stops-view/get-all-with-deleted` | `Api\V1\Map\MapRouteStops\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-route-stops-view/get-deleted-all` | `Api\V1\Map\MapRouteStops\ResourceViewController::getDeletedAll` |
+
+### map-geocode-cache
+
+Fonte: `Config/Routes/Api/v1/Map/MapGeocodeCache/EndpointTable.php` — contrato canônico (18 rotas).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-geocode-cache/find` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::find` |
+| POST | `/map-geocode-cache/get-grouped` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getGrouped` |
+| GET | `/map-geocode-cache/search` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::search` |
+| GET | `/map-geocode-cache/get/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::get/$1` |
+| GET | `/map-geocode-cache/get-all` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getAll` |
+| GET | `/map-geocode-cache/get-no-pagination` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getNoPagination` |
+| GET | `/map-geocode-cache/get-deleted/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getDeleted/$1` |
+| GET | `/map-geocode-cache/get-with-deleted/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-geocode-cache/get-deleted-all` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getDeletedAll` |
+| GET | `/map-geocode-cache/get-all-with-deleted/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-geocode-cache/get-all-with-deleted` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-geocode-cache/create` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::create` |
+| PUT | `/map-geocode-cache/update/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::update/$1` |
+| DELETE | `/map-geocode-cache/delete-soft/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-geocode-cache/delete-restore/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-geocode-cache/delete-hard/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-geocode-cache/clear-deleted` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::clearDeleted` |
+| DELETE | `/map-geocode-cache/clear-deleted/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceTableController::clearDeleted/$1` |
+
+### map-geocode-cache-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapGeocodeCache/EndPointView.php` — view `view_map_geocode_cache` (9 rotas de leitura).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-geocode-cache-view/find` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::find` |
+| POST | `/map-geocode-cache-view/get-grouped` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getGrouped` |
+| GET | `/map-geocode-cache-view/search` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::search` |
+| GET | `/map-geocode-cache-view/get/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::get/$1` |
+| GET | `/map-geocode-cache-view/get-all` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getAll` |
+| GET | `/map-geocode-cache-view/get-no-pagination` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getNoPagination` |
+| GET | `/map-geocode-cache-view/get-deleted/{id}` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getDeleted/$1` |
+| GET | `/map-geocode-cache-view/get-all-with-deleted` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-geocode-cache-view/get-deleted-all` | `Api\V1\Map\MapGeocodeCache\ResourceViewController::getDeletedAll` |
+
+### map-links
+
+Fonte: `Config/Routes/Api/v1/Map/MapLinks/EndpointTable.php` — contrato canônico (18 rotas). Vínculo universal módulo ↔ mapa.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-links/find` | `Api\V1\Map\MapLinks\ResourceTableController::find` |
+| POST | `/map-links/get-grouped` | `Api\V1\Map\MapLinks\ResourceTableController::getGrouped` |
+| GET | `/map-links/search` | `Api\V1\Map\MapLinks\ResourceTableController::search` |
+| GET | `/map-links/get/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::get/$1` |
+| GET | `/map-links/get-all` | `Api\V1\Map\MapLinks\ResourceTableController::getAll` |
+| GET | `/map-links/get-no-pagination` | `Api\V1\Map\MapLinks\ResourceTableController::getNoPagination` |
+| GET | `/map-links/get-deleted/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::getDeleted/$1` |
+| GET | `/map-links/get-with-deleted/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::getWithDeleted/$1` |
+| GET | `/map-links/get-deleted-all` | `Api\V1\Map\MapLinks\ResourceTableController::getDeletedAll` |
+| GET | `/map-links/get-all-with-deleted/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::getAllWithDeleted/$1` |
+| GET | `/map-links/get-all-with-deleted` | `Api\V1\Map\MapLinks\ResourceTableController::getAllWithDeleted` |
+| POST | `/map-links/create` | `Api\V1\Map\MapLinks\ResourceTableController::create` |
+| PUT | `/map-links/update/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::update/$1` |
+| DELETE | `/map-links/delete-soft/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::deleteSoft/$1` |
+| PATCH | `/map-links/delete-restore/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::deleteRestore/$1` |
+| DELETE | `/map-links/delete-hard/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::deleteHard/$1` |
+| DELETE | `/map-links/clear-deleted` | `Api\V1\Map\MapLinks\ResourceTableController::clearDeleted` |
+| DELETE | `/map-links/clear-deleted/{id}` | `Api\V1\Map\MapLinks\ResourceTableController::clearDeleted/$1` |
+
+### map-links-view
+
+Fonte: `Config/Routes/Api/v1/Map/MapLinks/EndPointView.php` — view `view_map_links` (9 rotas de leitura). Use `find` com `{"ml_module": "...", "ml_reference_id": N}`.
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| POST | `/map-links-view/find` | `Api\V1\Map\MapLinks\ResourceViewController::find` |
+| POST | `/map-links-view/get-grouped` | `Api\V1\Map\MapLinks\ResourceViewController::getGrouped` |
+| GET | `/map-links-view/search` | `Api\V1\Map\MapLinks\ResourceViewController::search` |
+| GET | `/map-links-view/get/{id}` | `Api\V1\Map\MapLinks\ResourceViewController::get/$1` |
+| GET | `/map-links-view/get-all` | `Api\V1\Map\MapLinks\ResourceViewController::getAll` |
+| GET | `/map-links-view/get-no-pagination` | `Api\V1\Map\MapLinks\ResourceViewController::getNoPagination` |
+| GET | `/map-links-view/get-deleted/{id}` | `Api\V1\Map\MapLinks\ResourceViewController::getDeleted/$1` |
+| GET | `/map-links-view/get-all-with-deleted` | `Api\V1\Map\MapLinks\ResourceViewController::getAllWithDeleted` |
+| GET | `/map-links-view/get-deleted-all` | `Api\V1\Map\MapLinks\ResourceViewController::getDeletedAll` |
+
+### map-geo
+
+Fonte: `Config/Routes/Api/v1/Map/MapGeo/EndpointGeo.php` — proxy dos provedores (5 rotas próprias, desvio sancionado do contrato 18/9; `jwtauth`, guest 403).
+
+| Método | Rota | Controller::method |
+| ------ | ---- | ------------------ |
+| GET | `/map-geo/status` | `Api\V1\Map\MapGeo\GeoController::status` |
+| GET | `/map-geo/search` | `Api\V1\Map\MapGeo\GeoController::geocode` |
+| GET | `/map-geo/reverse` | `Api\V1\Map\MapGeo\GeoController::reverse` |
+| GET | `/map-geo/cep/{cep}` | `Api\V1\Map\MapGeo\GeoController::cep/$1` |
+| POST | `/map-geo/route` | `Api\V1\Map\MapGeo\GeoController::route` |
+
+---
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
@@ -1201,9 +1828,9 @@ rota pré-cadastrada em vez de digitá-la.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

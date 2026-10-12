@@ -30,7 +30,7 @@ import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useToast } from '@/hooks/useToast';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listColumnsTable, calendarManagerTable } from '@/services/v1';
+import { listManagerTable, listColumnsTable, calendarManagerTable, checkResourceAccess, isDenied } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
@@ -85,6 +85,12 @@ export default function GetAllPage() {
       if (!found) {
         setManager(null);
         setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
+        return;
+      }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
         return;
       }
       setManager(found);

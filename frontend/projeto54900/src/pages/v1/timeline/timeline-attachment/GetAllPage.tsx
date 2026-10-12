@@ -51,7 +51,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useToast } from '@/hooks/useToast';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listActionsTable, timelinePostAttachmentsUpload } from '@/services/v1';
+import { listManagerTable, listActionsTable, timelinePostAttachmentsUpload, checkResourceAccess, isDenied } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { paginationWindow } from '@/utils/pagination';
@@ -121,6 +121,12 @@ export default function TimelineAttachmentGetAllPage() {
       if (!found) {
         setManager(null);
         setDefsError(`Listagem '${SLUG}' não encontrada em list_manager.`);
+        return;
+      }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
         return;
       }
       setManager(found);

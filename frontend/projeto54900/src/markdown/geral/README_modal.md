@@ -45,9 +45,9 @@ um terceiro se o caso não for genérico (`Modal`) nem confirmação (`ConfirmMo
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

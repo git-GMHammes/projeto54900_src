@@ -34,7 +34,7 @@ $routes->get('get-all-with-deleted/(:num)', 'Api\V1\User\UserProfiles\ResourceTa
 // GET  {{www}}/index.php/api/v1/user-profiles/get-all-with-deleted?page=1&limit=20&sort=id&order=ASC
 $routes->get('get-all-with-deleted', 'Api\V1\User\UserProfiles\ResourceTableController::getAllWithDeleted', ['filter' => ['jwtauth', 'adminonly']]);
 // POST {{www}}/index.php/api/v1/user-profiles/create — PUBLICA: etapa 2 do Cadastro de Usuario
-$routes->post('create', 'Api\V1\User\UserProfiles\ResourceTableController::create');
+$routes->post('create', 'Api\V1\User\UserProfiles\ResourceTableController::create', ['filter' => 'jwtoptional']);
 // PUT  {{www}}/index.php/api/v1/user-profiles/update/{id} — self-service "Editar
 // Perfil": Processor::update() ja restringe nao-admin ao proprio registro.
 $routes->put('update/(:num)', 'Api\V1\User\UserProfiles\ResourceTableController::update/$1', ['filter' => 'jwtauth']);

@@ -73,7 +73,7 @@ a listagem tradicional (base para uma futura tela "timeline deste usuário").
   como ação sobre um post existente (hoje só na listagem clássica; um botão
   no `PostCard` é sugestão futura). **Fake fill (dev-only, 2026-09-28):**
   botão "Fake fill" com o modal aberto — texto médio + imagem aleatória de
-  `doc/clipart_teste` (`dev/fakeFill/timelinePost.ts`; detalhe em
+  uma pasta local de imagens de teste (`dev/fakeFill/timelinePost.ts`; detalhe em
   [`README_envHost.md`](../../README_envHost.md)).
 
 - `NewCommentModal.tsx` (2026-09-28) — modal "Novo comentário" do
@@ -125,7 +125,7 @@ HTTP manual sem token confirmando `401` (proteção `jwtauth` ativa).
      (sob `jwtauth`); `file_url` agora é preenchido com a URL de serve.
    - Frontend: novo tipo de campo **`arquivo`** no FormGrid
      (`components/ui/FormGrid/arquivo`), campo "Anexo" (`file`) no form
-     `timeline-post` (SQL `doc/sql/insert/20260928081213_timeline_post_campo_arquivo.sql`,
+     `timeline-post` (registro em `form_fields`,
      banco DEV); `NewPostModal` envia em 2 etapas (post JSON → anexo
      multipart; falha no anexo mantém o post e avisa); `PostCard` baixa o
      binário com token (`http.ts` `responseType: 'blob'`) e passa um `blob:`

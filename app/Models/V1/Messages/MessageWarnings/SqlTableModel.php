@@ -11,6 +11,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_warnings';
     protected $primaryKey     = 'id';
@@ -38,12 +41,12 @@ class SqlTableModel extends BaseTableModel
     /** Grava a advertencia (direto no model — o registro automatico nao passa pelo Processor admin). Devolve o id. */
     public function register(int $messageId, int $userId, ?int $groupId, string $word): int
     {
-        $ok = $this->db->table($this->table)->insert([
+        $ok = $this->db->table($this->table)->insert($this->withCompany([
             'messages_manager_id'       => $messageId,
             'user_manager_id'           => $userId,
             'message_groups_manager_id' => $groupId,
             'flagged_word'              => mb_substr($word, 0, 150),
-        ]);
+        ]));
 
         return $ok ? (int) $this->db->insertID() : 0;
     }
@@ -51,7 +54,7 @@ class SqlTableModel extends BaseTableModel
     /** Grupo (nao excluido) da mensagem de grupo; null se a mensagem e privada. */
     public function groupIdOfMessage(int $messageId): ?int
     {
-        $row = $this->db->table('message_group_messages')
+        $row = $this->companyTable('message_group_messages')
             ->select('message_groups_manager_id')
             ->where('messages_manager_id', $messageId)
             ->where('deleted_at', null)
@@ -64,7 +67,7 @@ class SqlTableModel extends BaseTableModel
     /** Mensagem (messages_manager) inclusive soft-deletada; null se nao existe. */
     public function findMessage(int $messageId): ?array
     {
-        return $this->db->table('messages_manager')->where('id', $messageId)->get()->getRowArray();
+        return $this->companyTable('messages_manager')->where('id', $messageId)->get()->getRowArray();
     }
 
     /** O usuario existe (nao excluido)? */

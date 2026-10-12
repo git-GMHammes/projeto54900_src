@@ -349,7 +349,7 @@ class Processor extends BaseTableService
             return $record;
         }
 
-        $owner = $this->tableModel->db->table('message_groups_manager')
+        $owner = $this->tableModel->companyTable('message_groups_manager')
             ->where('id', (int) ($record['mgl_message_groups_manager_id'] ?? 0))
             ->where('owner_user_manager_id', $me)
             ->countAllResults();

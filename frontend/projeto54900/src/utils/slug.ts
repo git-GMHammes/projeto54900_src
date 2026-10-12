@@ -30,3 +30,25 @@ export function slugify(texto: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
+/** Carimbo AAAAMMDDHHMMSS (ano, mes, dia, hora, minuto, segundo) do horario local. */
+export function slugStamp(date: Date = new Date()): string {
+  const two = (n: number): string => String(n).padStart(2, '0');
+  return (
+    String(date.getFullYear()) +
+    two(date.getMonth() + 1) +
+    two(date.getDate()) +
+    two(date.getHours()) +
+    two(date.getMinutes()) +
+    two(date.getSeconds())
+  );
+}
+
+/**
+ * Slug unico para cadastro: `slugify(texto)` + `_AAAAMMDDHHMMSS`.
+ * "Engenho Novo" -> "engenho-novo_20261011173327". Texto vazio -> '' (sem carimbo).
+ */
+export function stampedSlug(texto: string, date: Date = new Date()): string {
+  const base = slugify(texto).slice(0, 120);
+  return base === '' ? '' : `${base}_${slugStamp(date)}`;
+}

@@ -79,6 +79,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import { paths } from '@/routes/paths';
+import { companyBasePath } from '@/config/env';
 
 /**
  * =============================================================================
@@ -158,8 +159,15 @@ export default function LoginPage() {
       setSubmitting(true);
       try {
         // O `AuthContext` faz a chamada, guarda os tokens e publica o usuário.
-        await login(username, password);
+        const loginCompanySlug = await login(username, password);
         toast.success('Login realizado com sucesso.', { title: 'Bem-vindo' });
+        // Multiempresa: apos o login a URL ganha o slug da empresa (/<slug>/...). O basename
+        // do router e fixado na carga, entao e navegacao completa; a sessao persiste pelo
+        // refresh_token e o AuthContext a restaura. Sem empresa vinculada, segue sem slug.
+        if (loginCompanySlug) {
+          window.location.assign(`${companyBasePath(loginCompanySlug)}/`);
+          return;
+        }
         // Destino fixo (paths.home) — não há retorno à rota tentada antes do login.
         void navigate(paths.home);
       } catch (err) {

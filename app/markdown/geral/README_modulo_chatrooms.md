@@ -10,12 +10,10 @@ sala vira dono e moderador, responsável por bloquear quem se comportar mal ou
 por fechar a sala.
 
 > **Estado (2026-09-28): schema COMPLETO no banco DEV.** As 7 tabelas e as 7
-> views já estão APLICADAS em `codeigniter54900_db` desde 2026-09-28 (script
-> `doc/sql/insert/20260928154501_chatrooms_tables.sql`). **Correção de
+> views já estão APLICADAS em `codeigniter54900_db` desde 2026-09-28 (DDL direto no banco). **Correção de
 > nomenclatura (2026-09-28):** a tabela mãe virou `chat_rooms_manager` —
 > mesmo padrão de `timeline_manager`/`calendar_manager`/`user_manager`, toda
-> tabela mãe/raiz de módulo leva o sufixo `_manager` — aplicada em
-> `doc/sql/insert/20260928160312_chatrooms_manager_rename.sql`. **Backend PHP
+> tabela mãe/raiz de módulo leva o sufixo `_manager` — aplicada direto no banco. **Backend PHP
 > de `chat_rooms_manager` COMPLETO (2026-09-28):** as 27 rotas (18 de tabela +
 > 9 de view) implementadas, testadas via `spark routes` e uma chamada real
 > (401 correto do `jwtauth` sem token) — ver §6. **Backend PHP de
@@ -383,13 +381,11 @@ nas relacionadas, **sem filtro de exclusão na tabela principal** (as rotas
 | `view_chat_room_warnings`           | `chat_room_warnings` (`crw`)            | sala `cr`; usuário `um`/`uc`; mensagem `cm`                                                              |
 | `view_chat_room_favorites`          | `chat_room_favorites` (`crf`)           | sala `cr`; usuário `um`/`uc`                                                                             |
 
-DDL original das 7 tabelas + 7 views:
-`doc/sql/insert/20260928154501_chatrooms_tables.sql` (aplicado em
+DDL original das 7 tabelas + 7 views (aplicado direto no banco em
 2026-09-28). Correção de nomenclatura da tabela mãe (`chat_rooms` →
 `chat_rooms_manager`, view `view_chat_rooms` → `view_chat_rooms_manager`,
 coluna `chat_room_id` → `chat_rooms_manager_id` nas 4 tabelas filhas que
-apontam para a sala):
-`doc/sql/insert/20260928160312_chatrooms_manager_rename.sql` (aplicado em
+apontam para a sala; aplicado direto no banco em
 2026-09-28).
 
 **"Sou eu que favoritei?"** não fica exposto na view, pelo mesmo motivo do
@@ -488,7 +484,6 @@ anotado):
    de dono deste Processor).
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260928161921_route_manager_chatrooms_manager_sync.sql`
 (27 registros, idempotente).
 
 **Validado:** `php -l` em todos os arquivos, `spark routes` lista as 27 rotas
@@ -543,7 +538,6 @@ Segundo recurso do módulo com backend. Mesmo espelho estrutural de
    garantir o UPSERT em `chat_room_members` antes do insert.
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260929115038_route_manager_chatmessages_sync.sql`
 (27 registros, idempotente).
 
 **`Config/Filters.php` atualizado:** os prefixos `api/v1/chat-messages/*` e
@@ -580,10 +574,9 @@ campos opcionais:
 
 Alterações feitas direto no banco DEV, sem migration:
 
-- `doc/sql/insert/20261003202227_chat_message_mentions.sql` — tabela
-  `chat_message_mentions` (FK para `chat_messages` e `user_manager`, índice
+- Tabela `chat_message_mentions` (FK para `chat_messages` e `user_manager`, índice
   único `chat_message_id` + `user_manager_id`).
-- `doc/sql/insert/20261003202228_enviar_mensagem_mencao_upload.sql` — form_rows
+- `form_rows`
   167/168 e form_fields 274 (`mentions[]`) e 275 (`file`) no grupo 52 do
   formulário 29.
 
@@ -595,8 +588,8 @@ Listagem `chat-messages`: nova ação **Visualizador de Mídias**
 (`list_actions` id 79, `data_action` `media-viewer`, `action_type` `modal`).
 Abre `MediaPreview` com os anexos da mensagem. Para isso,
 `SqlViewModel` de `chat-room-attachments` passou a aceitar o filtro
-`cra_chat_message_id` (sem ele o filtro seria ignorado em silêncio). Script em
-`doc/sql/insert/20261003205421_chat_messages_action_media_viewer.sql`.
+`cra_chat_message_id` (sem ele o filtro seria ignorado em silêncio).
+
 A ação "Editar" (decidida e implementada em 2026-10-03): aparece só para admin e
 altera o conteúdo da mensagem (§4, regra 11). Ver a entrada 6.2.2.
 
@@ -610,7 +603,6 @@ altera o conteúdo da mensagem (§4, regra 11). Ver a entrada 6.2.2.
   `chat-room-attachments` (ação "Visualizador de Mídias", `list_actions` id 86,
   `data_action` `media-viewer`, roles user e admin).
 - Categorias de anexo em `utils/mediaCategory.ts`.
-- Script: `doc/sql/insert/20261003223000_chat_room_attachments_action_media_viewer.sql`.
 
 #### 6.2.2 Edição de conteúdo pelo admin (2026-10-03)
 
@@ -625,8 +617,6 @@ altera o conteúdo da mensagem (§4, regra 11). Ver a entrada 6.2.2.
   `pages/v1/chat-rooms/chat-messages/UpdatePage.tsx` com o build
   `editar-mensagem` (`form_manager` id 34). A listagem filtra as ações pelo papel
   do usuário (`roles` vazio = todos).
-- Scripts em `doc/sql/insert/20261003212955_chat_message_edits.sql` e
-  `doc/sql/insert/20261003212956_editar_mensagem_admin_build_acao.sql`.
 
 **Pendente:** teste funcional com JWT (create com e sem menção, menção de
 não-membro, upload válido e recusado, download e remoção). Depende de login
@@ -640,15 +630,13 @@ de teste fornecido pelo usuário na sessão.
   nome do anexo e denunciante.
 - Ações (só admin): **Visualizador de Mídias** (id 87, mostra o anexo denunciado),
   **Editar** (id 81, link para `/v1/chat-room-attachment-reports/update/{id}`) e
-  **Excluir** (id 88, `delete-soft`, com confirmação). Script:
-  `doc/sql/insert/20261003222526_denuncias_crud_completo_acoes.sql`.
+  **Excluir** (id 88, `delete-soft`, com confirmação)..
 - Tela de revisão `pages/v1/chat-rooms/chat-room-attachment-reports/UpdatePage.tsx`
   com o build `revisar-denuncia` (`form_manager` id 35): `status` e `review_note`.
 - Backend: o servidor grava `reviewed_by` (admin da sessão) e `reviewed_at`
   (agora) em todo update que não seja `pending`; o corpo não define mais esses
   campos. `reason` e `description` não são editáveis (são do denunciante).
 - Revisar **não desfaz** os bloqueios automáticos do anexo e do autor (§4, regra 6).
-- Scripts: `doc/sql/insert/20261003213612_denuncias_anexo_lista_revisar.sql`.
 
 **Pendente:** teste funcional com admin (revisar e conferir `reviewed_by`) e
 com usuário comum (lista e update recusados).
@@ -701,7 +689,6 @@ do módulo Upload, rotas extras `serve`/`download`), não o de
    `clear-deleted` apagam o binário.
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260929120511_route_manager_chatroomattachments_sync.sql`
 (27 registros, idempotente; `serve`/`download` ficam fora, mesmo padrão do
 Timeline).
 
@@ -780,7 +767,6 @@ fila pendente. Namespace `Api\V1\ChatRooms\ChatRoomAttachmentReports`, slug
    escopo desta entrega.
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260929121921_route_manager_chatroomattachmentreports_sync.sql`
 (27 registros, idempotente).
 
 **`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina do
@@ -842,7 +828,6 @@ slug `chat-room-warnings` / `chat-room-warnings-view`.
    `ChatRoomAttachmentReports` para bloquear `chat_room_members`.
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260929123535_route_manager_chatroomwarnings_sync.sql`
 (27 registros, idempotente).
 
 **`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina dos
@@ -900,7 +885,6 @@ existir a linha ou não. Namespace `Api\V1\ChatRooms\ChatRoomFavorites`, slug
    aqui, exigiria editar aquele Processor (não pedido nesta entrega).
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20260929124835_route_manager_chatroomfavorites_sync.sql`
 (27 registros, idempotente).
 
 **`Config/Filters.php` atualizado no mesmo passo**, mesma disciplina dos
@@ -952,7 +936,6 @@ Páginas em `frontend/.../pages/v1/chat-rooms/chat-room-members/`. Cadastro
 da lista/formulários feito por INSERT no banco DEV (sem migration).
 
 **Sincronizado em `route_manager`:**
-`doc/sql/insert/20261002170000_route_manager_chatroommembers_sync.sql`
 (27 registros, idempotente).
 
 **Validação:** `php -l` limpo; `php spark routes` lista as 27 rotas com
@@ -1018,8 +1001,7 @@ Notas:
   precisa ficar explícita aqui e no ROADMAP: sem tela, a informação aparece
   na mensagem (menções e histórico de edição).
 
-Scripts: `doc/sql/insert/20261003214446_chat_crud_completo_menu_forms.sql`
-(menu, listas, ações, forms). Plano e registros em `src/writable/claude/20261003214445_chat_crud_completo_menu_forms_*`.
+Alterações no banco: menu, listas, ações e forms. Plano e registros em `src/writable/claude/20261003214445_chat_crud_completo_menu_forms_*`.
 
 **Pendente:** teste funcional com admin e com usuário comum (menu, lista,
 criar, editar, excluir) — depende do login de teste.
@@ -1033,7 +1015,7 @@ e atualização, menu, 42 endpoints (todos protegidos por token), 17 rotas de te
 **Aplicado (lote A):**
 
 - Rótulo do campo de menção (`form_fields` 274) estava em dupla codificação;
-  corrigido. Script: `doc/sql/insert/20261003224016_chat_mencao_rotulo_travessao.sql`.
+  corrigido..
 - Botão "Novo anexo" e "Novo membro" nas listas (as rotas de cadastro já existiam).
 - Filtro de papel nas ações das listas de anexos, membros e salas, como nas demais.
 
@@ -1108,7 +1090,6 @@ direita (azul), as dos outros à esquerda, cada membro com uma cor de balão
 - Ler mensagens da sala (`GET chat-messages/room/{roomId}`) exige vínculo ativo ou
   admin; devolve só mensagens com status `sent`, as últimas 200.
 
-Scripts: `doc/sql/insert/20261003225401_chat_rooms_entrar_favoritar_acoes.sql`.
 Plano: `src/writable/claude/20261003225400_chat_entrar_favoritar_tela_plano.json`.
 
 **Pendente:**
@@ -1133,11 +1114,10 @@ Plano: `src/writable/claude/20261003225400_chat_entrar_favoritar_tela_plano.json
   de `chat-room-favorites/mine`. Um único botão de estrela alterna: vazada quando a
   sala não é favorita (clique favorita, POST) e preenchida quando é (clique
   desfavorita, DELETE). É a ação `list_actions` 90 (`data_action` `favorito-toggle`);
-  a 91 foi desativada (soft delete). Script: `doc/sql/insert/20261003231214_favorito_toggle.sql`.
+  a 91 foi desativada (soft delete)..
 - **Barra superior:** o ícone de chat de cada sala favorita aparece depois dos
   favoritos de menu, só para o usuário que favoritou.
 
-Scripts: `doc/sql/insert/20261003230730_favoritos_por_usuario.sql`.
 Plano: `src/writable/claude/20261003230729_favoritos_por_usuario_plano.json`.
 
 **Pendente:** teste com login de usuário comum (ver só os próprios favoritos,
@@ -1155,7 +1135,6 @@ não conseguir editar favorito de outro) e com admin (ver todos).
   Editar em Anexos do Chat com status Ativo (autor, dono da sala ou admin).
 - Ações com regra de linha não aplicável agora ficam ocultas na listagem de membros
   (antes apareciam desabilitadas).
-- Scripts: `doc/sql/insert/20261004001114_chat_room_members_desbloquear.sql` e `doc/sql/insert/20261004001349_chat_room_members_bloquear_toggle.sql`.
 
 ## 7. Próximos passos (fora deste desenho)
 

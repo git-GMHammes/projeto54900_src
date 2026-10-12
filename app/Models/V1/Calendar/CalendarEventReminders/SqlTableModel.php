@@ -16,6 +16,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'calendar_event_reminders';
     protected $primaryKey     = 'id';
@@ -55,7 +58,7 @@ class SqlTableModel extends BaseTableModel
         int $minutes,
         ?int $excludeId = null
     ): bool {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where('calendar_event_id', $calendarEventId)
             ->where('method', $method)
             ->where('minutes', $minutes)

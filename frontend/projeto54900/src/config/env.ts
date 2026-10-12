@@ -177,4 +177,47 @@ export const env: AppEnv = Object.freeze({
  * de env.basePath em outro arquivo, ou a regra do valor vazio se perde.
  * -------------------------------------------------------------------------
  */
-export const routerBasename: string = env.basePath === '' ? '/' : env.basePath;
+/**
+ * =========================================================================
+ * BLOCO 5 — SLUG DA EMPRESA NA URL (multiempresa)
+ * =========================================================================
+ *
+ * O QUE FAZ: as rotas pos-login tem o slug da empresa como primeiro segmento
+ * (ex.: /acme/v1/user-profiles). O slug e lido UMA vez, da URL de carga, e
+ * passa a fazer parte do basename do router — assim TODA rota escrita no
+ * codigo (paths.ts, menu vindo do banco, navigate, Link) ganha o prefixo sem
+ * ser alterada. Trocar de empresa = navegacao completa (recarrega o app).
+ *
+ * Segmentos que NAO sao slug: os grupos de versao (v1, v1a...) e as paginas
+ * fixas da raiz. Sem slug na URL (login, cadastro, home), o basename segue
+ * igual ao basePath.
+ *
+ * @see routes/RequireAuth.tsx — valida o slug contra user.companies.
+ * -------------------------------------------------------------------------
+ */
+const RESERVED_ROOT_SEGMENTS = new Set(['acesso-negado']);
+const VERSION_SEGMENT = /^v\d+[a-z]*$/;
+const SLUG_SEGMENT = /^[a-z0-9-]+$/;
+
+function readCompanySlug(): string | null {
+  if (typeof window === 'undefined') return null;
+  const path = window.location.pathname;
+  const rest = env.basePath && path.startsWith(env.basePath) ? path.slice(env.basePath.length) : path;
+  const first = rest.split('/')[1] ?? '';
+  if (!first || RESERVED_ROOT_SEGMENTS.has(first) || VERSION_SEGMENT.test(first)) return null;
+  return SLUG_SEGMENT.test(first) ? first : null;
+}
+
+/** Slug da empresa presente na URL de carga (null em login/cadastro/home). */
+export const companySlug: string | null = readCompanySlug();
+
+/** Monta o prefixo publico para um slug: "<basePath>/<slug>" (usado em redirects completos). */
+export function companyBasePath(slug: string): string {
+  return `${env.basePath}/${slug}`;
+}
+
+export const routerBasename: string = companySlug
+  ? companyBasePath(companySlug)
+  : env.basePath === ''
+    ? '/'
+    : env.basePath;

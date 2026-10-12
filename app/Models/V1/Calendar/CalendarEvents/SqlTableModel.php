@@ -38,6 +38,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'calendar_events';
     protected $primaryKey     = 'id';
@@ -122,7 +125,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findInvitedIds(int $userId): array
     {
-        $rows = $this->db->table('calendar_event_attendees')
+        $rows = $this->companyTable('calendar_event_attendees')
             ->select('calendar_event_attendees.calendar_event_id')
             ->where('calendar_event_attendees.user_manager_id', $userId)
             ->where('calendar_event_attendees.deleted_at IS NULL', null, false)
@@ -141,7 +144,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findOwnerIds(int $userId): array
     {
-        $rows = $this->db->table($this->table)
+        $rows = $this->scopedTable()
             ->select('id')
             ->where('user_manager_id', $userId)
             ->get()

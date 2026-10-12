@@ -12,6 +12,7 @@
 > do backend (`src/app/markdown/geral/`), mas aqui o eixo é **Path React → Página**,
 > não **Método HTTP → Controller**.
 >
+> Multiempresa: após o login o `routerBasename` ganha o slug da empresa (`/<slug>/v1/...`) — ver [`README_rota_empresa_slug.md`](README_rota_empresa_slug.md).
 > Base: `routerBasename` (`env.basePath`, default `/`) + o path abaixo. Em dev:
 > `http://localhost:54910` + path.
 
@@ -244,6 +245,26 @@ Guarda: apenas `RequireAuth` (sem `RequireRole`).
 | -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/v1/svg-map` | `pages/v1/svg-map/SvgMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
 
+### map — Mapa Leaflet e mapa de um registro
+
+Fonte: `routes/v1/map.routes.tsx` (páginas lazy; o Leaflet só carrega nestas telas). Sob `RequireAuth`.
+Detalhes em [`README_mapa.md`](README_mapa.md).
+
+| Path | Página | Observação |
+| ---- | ------ | ---------- |
+| `/v1/map` | `pages/v1/map/explorer/ExplorerPage` | wrapper de `MapExplorer`: escolher mapa, pontos, busca de endereço/CEP e trajeto |
+| `/v1/map/links/:module/:id` | `pages/v1/map/links/LinksPage` | wrapper de `MapLinksPanel`; `module` = slug registrado em `Config/MapLinkables.php` (backend) |
+| `/v1/map-manager`, `/v1/map-manager/create`, `/v1/map-manager/update/:id` | `pages/v1/map/map-manager/{GetAll,Create,Update}Page` | admin; builds `criar-mapa` / `editar-mapa` |
+| `/v1/map-icons` (+ `/create`, `/update/:id`) | `pages/v1/map/map-icons/*` | admin |
+| `/v1/map-categories` (+ `/create`, `/update/:id`) | `pages/v1/map/map-categories/*` | admin |
+| `/v1/map-postal-codes` (+ `/create`, `/update/:id`) | `pages/v1/map/map-postal-codes/*` | admin |
+| `/v1/map-addresses` (+ `/create`, `/update/:id`) | `pages/v1/map/map-addresses/*` | admin |
+| `/v1/map-points` (+ `/create`, `/update/:id`) | `pages/v1/map/map-points/*` | admin |
+| `/v1/map-routes`, `/v1/map-routes/update/:id` | `pages/v1/map/map-routes/{GetAll,Update}Page` | admin; “Novo trajeto” abre `/v1/map` |
+| `/v1/map-route-stops` (+ `/create`, `/update/:id`) | `pages/v1/map/map-route-stops/*` | admin |
+| `/v1/map-links` (+ `/create`, `/update/:id`) | `pages/v1/map/map-links/*` | admin |
+| `/v1/map-geocode-cache` | `pages/v1/map/map-geocode-cache/GetAllPage` | admin; só lista e exclusão |
+
 ### timeline — Feed e listas padrão do módulo
 
 Fonte: `routes/v1/timeline.routes.tsx` — espelha `api/v1/timeline-posts-view`
@@ -267,7 +288,6 @@ e **sem** `list_actions`). O slug do `list_manager` é homônimo da rota — ver
 ["timeline" em `README_list_constructor.md`](README_list_constructor.md).
 As rotas antigas `/v1/form/<slug>` **continuam existindo e funcionando**
 (genéricas), apenas não são mais destino de item de menu.
-SQL da troca no menu DEV: `doc/sql/insert/20260928115754_timeline_rotas_frontend_listas.sql`.
 
 Esta é a listagem **clássica** (Fase 2); a página inicial com feed
 misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela (Fase 3).
@@ -333,6 +353,27 @@ e o estado do frontend em
 
 ---
 
+### company-manager e user-resource-access — Empresas e acesso individual
+
+Fonte: `routes/v1/company.routes.tsx` e `routes/v1/user.routes.tsx`. Guarda: `RequireRole role="admin"`
+(a escrita também é `adminonly` no backend). As telas são wrappers dos componentes globais `ListBuild` e
+`RecordFormBuild` (`components/global/`). Detalhes em
+[`modulos/company-manager/README_plano.md`](modulos/company-manager/README_plano.md).
+
+| Rota | Página | Observação |
+| ---- | ------ | ---------- |
+| `/v1/company-manager` | `pages/v1/company/company-manager/GetAllPage` | lista 42 (`list_manager`), com busca; menu "Empresas" |
+| `/v1/company-manager/create` | `pages/v1/company/company-manager/CreatePage` | form 48 `criar-empresa` |
+| `/v1/company-manager/update/:id` | `pages/v1/company/company-manager/UpdatePage` | form 49 `editar-empresa` |
+| `/v1/company-members` | `pages/v1/company/company-members/GetAllPage` | lista 44 (`view_company_memberships`), com busca; menu "Empresa > Membros"; **Novo** abre o `CreateModal` (2 etapas: form 48 + membros) |
+| `/v1/company-members/update/:id` | `pages/v1/company/company-members/UpdatePage` | `:id` = empresa; 2 cards (usuários × empresa), grava por `PUT company-members/sync/{id}`; só admin |
+| `/v1/company-users` | `pages/v1/company/company-users/GetAllPage` | lista 45 (`view_company_users_companies`), com busca; menu "Empresa > Usuários por empresa"; só leitura |
+| `/v1/user-resource-access` | `pages/v1/user/user-resource-access/GetAllPage` | lista 43, com busca; menu "Empresa > Acesso individual" |
+| `/v1/user-resource-access/create` | `pages/v1/user/user-resource-access/CreatePage` | schema inline (tipo define o select de recurso); aceita `?user_manager_id=` |
+| `/v1/user-resource-access/update/:id` | `pages/v1/user/user-resource-access/UpdatePage` | só o campo Acesso (permitir/negar) muda |
+
+---
+
 ## v1a — Reservado
 
 Fonte: `routes/v1a/index.tsx` — espelha o namespace `Api\V1A` do backend, ainda
@@ -394,9 +435,9 @@ demais papéis.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

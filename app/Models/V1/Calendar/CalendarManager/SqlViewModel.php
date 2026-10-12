@@ -23,6 +23,11 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a linha so aparece se o registro de calendar_manager for da empresa da sessao. */
+    protected string $companyScope = 'via_table';
+    protected string $companyViaTable = 'calendar_manager';
+    protected string $companyViaKey = 'cm_id';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_calendar_manager';
     protected $primaryKey = 'id';

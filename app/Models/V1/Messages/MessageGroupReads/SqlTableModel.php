@@ -11,6 +11,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_group_reads';
     protected $primaryKey     = 'id';
@@ -60,7 +63,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findGroupMessage(int $messageId): ?array
     {
-        return $this->db->table('messages_manager mm')
+        return $this->companyTable('messages_manager mm')
             ->select('mm.id, mm.status, mm.sender_user_manager_id AS sender_id, mgl.message_groups_manager_id AS group_id, mg.owner_user_manager_id AS owner_id')
             ->join('message_group_messages mgl', 'mgl.messages_manager_id = mm.id AND mgl.deleted_at IS NULL')
             ->join('message_groups_manager mg', 'mg.id = mgl.message_groups_manager_id AND mg.deleted_at IS NULL')
@@ -73,7 +76,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table('message_group_members')
+        return $this->companyTable('message_group_members')
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')
@@ -90,7 +93,7 @@ class SqlTableModel extends BaseTableModel
     /** Leitura (mensagem, usuario), inclusive soft-deletada; null se nunca existiu. */
     public function findPair(int $messageId, int $userId): ?array
     {
-        return $this->db->table($this->table)
+        return $this->scopedTable()
             ->where('messages_manager_id', $messageId)
             ->where('user_manager_id', $userId)
             ->get()
@@ -100,11 +103,11 @@ class SqlTableModel extends BaseTableModel
     /** Insere a leitura agora e devolve o id (0 se falhar). */
     public function insertRead(int $messageId, int $userId): int
     {
-        $ok = $this->db->table($this->table)->insert([
+        $ok = $this->db->table($this->table)->insert($this->withCompany([
             'messages_manager_id' => $messageId,
             'user_manager_id'     => $userId,
             'read_at'             => date('Y-m-d H:i:s'),
-        ]);
+        ]));
 
         return $ok ? (int) $this->db->insertID() : 0;
     }
@@ -112,6 +115,6 @@ class SqlTableModel extends BaseTableModel
     /** Reativa uma leitura soft-deletada (limpa deleted_at). */
     public function reactivate(int $id): void
     {
-        $this->db->table($this->table)->where('id', $id)->update(['deleted_at' => null]);
+        $this->scopedTable()->where('id', $id)->update(['deleted_at' => null]);
     }
 }

@@ -48,7 +48,8 @@ export interface AuthApi {
   isAuthenticated: boolean;
   /** true enquanto o refresh silencioso inicial esta em andamento. */
   bootstrapping: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  /** Devolve o slug da empresa pela qual entrou (monta a URL pos-login) ou null. */
+  login: (username: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   /** Recarrega o usuario autenticado (auth/me) — usado apos editar o proprio perfil, para o full_name exibido na Navbar acompanhar a troca. */
   refreshUser: () => Promise<void>;
@@ -169,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     accessTokenRef.current = payload.access_token;
     storeRefreshToken(payload.refresh_token);
     setUser(payload.user);
+    return payload.company_slug ?? payload.user?.company_slug ?? null;
   }, []);
 
   /**

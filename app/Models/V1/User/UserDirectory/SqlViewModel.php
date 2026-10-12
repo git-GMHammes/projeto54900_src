@@ -16,6 +16,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Usuarios so aparecem para a empresa da sessao se forem membros dela (company_members). */
+    protected string $companyScope = 'membership';
+    protected string $membershipKey = 'id';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_user_directory';
     protected $primaryKey = 'id';

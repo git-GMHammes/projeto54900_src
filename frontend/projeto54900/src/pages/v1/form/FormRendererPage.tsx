@@ -22,7 +22,7 @@ import FakeFillButton from '@/components/global/FakeFillButton';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/http';
-import { formManagerView } from '@/services/v1';
+import { formManagerView, checkResourceAccess, isDenied } from '@/services/v1';
 import { buildRenderSchema, isFormPublished } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList } from '@/utils/apiResult';
@@ -49,6 +49,16 @@ export default function FormRendererPage() {
     setLoading(true);
     setError(null);
     try {
+      // Acesso individual (user_resource_access / roles): so com sessao -- o renderizador
+      // tambem serve formularios publicos (ex.: cadastro de usuario) sem login.
+      if (user) {
+        const access = await checkResourceAccess('form', { slug });
+        if (isDenied(access)) {
+          setForm(null);
+          setError('Voce nao tem acesso a este formulario.');
+          return;
+        }
+      }
       const raw = await formManagerView.getGrouped(
         { fm_slug: [slug] },
         { limit: 1000, sort: 'fc_sort_order', order: 'ASC' },
@@ -67,7 +77,7 @@ export default function FormRendererPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, user]);
 
   useEffect(() => {
     void load();

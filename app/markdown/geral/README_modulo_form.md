@@ -7,7 +7,7 @@
 > ⚠️ **2026-09-20 — migrations e seed de `form` abolidos.** As tabelas
 > (`form_manager`/`form_groups`/`form_rows`/`form_fields`/`view_form_manager`)
 > deixaram de ser criadas/versionadas por `Database/Migrations/`. Fonte de
-> verdade agora: dump (`doc/sql/dump/`) + markdown da árvore de dados (mesmo
+> verdade agora: o banco DEV + markdown da árvore de dados (mesmo
 > padrão de [`README_menu.md`](../../../frontend/projeto54900/src/markdown/geral/README_menu.md))
 > → `INSERT` revisado antes de rodar. **Índice completo dos 22 formulários
 > já desenhados (17 com `INSERT` executado; os 5 do módulo Messages/Timeline
@@ -144,7 +144,7 @@ form_fields.help_text → view (fc_help_text) → formSchema.ts buildField()
   utf8mb4;` no script) **e** um `SELECT` de conferência em
   `view_form_manager` logo depois, lendo o texto acentuado de volta — SQL sem
   charset explícito continua proibido (grava acento corrompido). Aceito por
-  decisão do usuário em 2026-09-28 (scripts `doc/sql/insert/20260928*_timeline_*`).
+  decisão do usuário em 2026-09-28.
 - Espelho no frontend:
   [`README_alerta_padroes_ui.md`](../../../frontend/projeto54900/src/markdown/geral/README_alerta_padroes_ui.md)
   (item 8). Origem: 2026-09-20 (form `calendario` publicado sem tooltip) e
@@ -231,9 +231,9 @@ marca apenas o registro-alvo.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

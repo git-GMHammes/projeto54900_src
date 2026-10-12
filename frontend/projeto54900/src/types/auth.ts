@@ -69,6 +69,13 @@ export interface AuthRole {
   slug: string;
 }
 
+/** Empresa ativa que o usuario acessa; `slug` e o primeiro segmento das rotas pos-login. */
+export interface AuthCompany {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface AuthUser {
   id: number;
   username: string;
@@ -76,6 +83,9 @@ export interface AuthUser {
   status: string;
   last_login_at: string | null;
   role: AuthRole | null;
+  companies: AuthCompany[];
+  /** Empresa a que a SESSAO esta amarrada (a do login); so ela e aceita no slug da URL. */
+  company_slug: string | null;
 }
 
 /**
@@ -127,4 +137,6 @@ export interface AuthTokens {
  */
 export interface AuthPayload extends AuthTokens {
   user: AuthUser | null;
+  /** So no login: slug da empresa pela qual o usuario entrou (monta a URL pos-login). */
+  company_slug?: string | null;
 }

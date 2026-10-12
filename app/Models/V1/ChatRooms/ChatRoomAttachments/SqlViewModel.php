@@ -13,6 +13,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a linha so aparece se o registro de chat_room_attachments for da empresa da sessao. */
+    protected string $companyScope = 'via_table';
+    protected string $companyViaTable = 'chat_room_attachments';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_chat_room_attachments';
     protected $primaryKey = 'id';

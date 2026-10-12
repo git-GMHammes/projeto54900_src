@@ -37,7 +37,7 @@ consumidas pelo select **Colunas** de cada LINHA (ver subcard LINHAS).
    - **`card-header`**: só o nome da tabela (`fw-semibold text-nowrap`). Sem mais nada.
    - **`card-body`**: uma **árvore de hierarquia** (`<FormTree>` + `<TreeNode>`,
      [`FormBuilderTree.tsx`](../../pages/v1/form/FormBuilderTree.tsx)) no visual de
-     [`doc/html/estrutura.html`](../../../../../../doc/html/estrutura.html). Cada
+     árvore de estrutura (chevron + ícone + nome). Cada
      nível é uma **linha compacta** (chevron + ícone + `form_<tabela>` + `·
      {nome}` + pill de contagem); clicar expande/recolhe **só a estrutura
      abaixo** (nunca despeja formulário). O formulário de cada nó abre num
@@ -402,9 +402,9 @@ Backend do `user-roles` (módulo read-only, espelha `User/UserManager`):
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

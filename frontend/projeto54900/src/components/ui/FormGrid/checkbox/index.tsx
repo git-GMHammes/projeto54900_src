@@ -23,7 +23,8 @@
  * -------------------------------------------------------------------------
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { getAuthToken } from '@/services/http'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,10 @@ export interface CheckboxFieldSchema {
   /** Nome do grupo — o form submete como name[] */
   name: string
   options: CheckboxOption[]
+  /** Opcoes remotas: GET (array ou { data: [...] }); cada item vira um checkbox (valueKey/labelKey). Sem `src`, vale `options`. */
+  src?: string
+  valueKey?: string
+  labelKey?: string
   /** Exibe os checkboxes em linha (inline) */
   inline?: boolean
   /** Valores pré-selecionados (sobrepõe checked nas options) */
@@ -73,8 +78,45 @@ export function CheckboxField({ field }: CheckboxFieldProps) {
   const isControlled = field.value !== undefined && field.onChange !== undefined
   const [internalValues, setInternalValues] = useState<string[]>(resolveInitial)
   const [erro, setErro] = useState<string | null>(null)
+  const [remoteOptions, setRemoteOptions] = useState<CheckboxOption[]>([])
+
+  // Opcoes remotas (ex.: empresas do cadastro de usuario). O Bearer so vai para path relativo.
+  useEffect(() => {
+    const src = field.src
+    if (!src) return
+    const token = src.startsWith('/') ? getAuthToken() : null
+    const valueKey = field.valueKey ?? 'id'
+    const labelKey = field.labelKey ?? 'name'
+    fetch(src, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.json() as Promise<unknown>)
+      .then(json => {
+        const rec = (json && typeof json === 'object' ? json : null) as Record<string, unknown> | null
+        const list = Array.isArray(json) ? json : (rec?.data ?? rec?.items)
+        if (!Array.isArray(list)) return
+        const loaded = list.map((item: Record<string, unknown>) => ({
+          id: `${field.name}_${String(item[valueKey])}`,
+          value: String(item[valueKey]),
+          label: String(item[labelKey] ?? item[valueKey]),
+        }))
+        setRemoteOptions(loaded)
+      })
+      .catch((e: unknown) => console.warn('[CheckboxField] Falha ao carregar src:', src, e))
+  }, [field.src, field.valueKey, field.labelKey, field.name])
+
+  const options = field.src ? remoteOptions : field.options
+
 
   const selected = isControlled ? (field.value ?? []) : internalValues
+
+  // Obrigatorio sem nenhuma marcacao: invalida o 1o checkbox, entao checkValidity()/submit do
+  // <form> barra o envio (checkbox em grupo nao tem `required` nativo que valide o conjunto).
+  const firstRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    const nome = field.label ?? field.name ?? 'Campo'
+    firstRef.current?.setCustomValidity(
+      field.required && selected.length === 0 ? `Selecione ao menos uma opção em "${nome}"` : '',
+    )
+  }, [field.required, field.label, field.name, selected.length, options.length])
 
   function handleChange(optValue: string, checked: boolean) {
     const next = checked
@@ -105,7 +147,7 @@ export function CheckboxField({ field }: CheckboxFieldProps) {
         </label>
       )}
       <div className={field.className}>
-        {field.options.map(opt => (
+        {options.map((opt, idx) => (
           <div
             key={opt.id}
             className={`form-check${field.inline ? ' form-check-inline' : ''}`}
@@ -113,6 +155,7 @@ export function CheckboxField({ field }: CheckboxFieldProps) {
             <input
               className={`form-check-input${erro ? ' is-invalid' : ''}`}
               type="checkbox"
+              ref={idx === 0 ? firstRef : undefined}
               id={opt.id}
               name={`${field.name}[]`}
               value={opt.value}

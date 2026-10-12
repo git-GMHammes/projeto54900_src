@@ -110,7 +110,7 @@ ação, não tela.
 
 Ao desenhar um novo, seguir o mesmo molde: árvore em markdown (hierarquia
 pura, detalhe só nas tabelas — ver qualquer arquivo acima como referência),
-aprovação, depois `INSERT` em `doc/sql/insert/`. Acrescentar a linha aqui
+aprovação, depois `INSERT` direto no banco DEV. Acrescentar a linha aqui
 **e** no aviso do topo de `README_modulo_form.md` — os dois índices devem
 ficar em sincronia.
 

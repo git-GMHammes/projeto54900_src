@@ -19,6 +19,11 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Usuarios so aparecem para a empresa da sessao se forem membros dela (company_members). */
+    protected string $companyScope = 'membership';
+    protected array $membershipStatuses = ['active', 'pending', 'blocked'];
+    protected string $membershipKey = 'user_manager_id';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'user_profiles';
     protected $primaryKey     = 'id';

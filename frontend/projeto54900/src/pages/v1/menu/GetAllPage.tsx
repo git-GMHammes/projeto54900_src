@@ -28,7 +28,7 @@ import type { ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { paths } from '@/routes/paths';
-import { menuManagerTable, listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import { menuManagerTable, listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useToast } from '@/hooks/useToast';
@@ -429,6 +429,12 @@ export default function GetAllPage() {
       if (!found) {
         setManager(null);
         setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
+        return;
+      }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
         return;
       }
       setManager(found);

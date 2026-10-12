@@ -31,6 +31,7 @@ class UpdateRequest
             'token'         => 'permit_empty|string|max_length[255]',
             'status'        => 'permit_empty|in_list[active,inactive,blocked]',
             'user_role_id'  => 'permit_empty|is_natural_no_zero',
+            'company_ids'   => 'permit_empty',
             'last_login_at' => 'permit_empty|string',
         ];
     }

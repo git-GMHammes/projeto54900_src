@@ -236,6 +236,106 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Map — Modulo Map (Leaflet + OpenStreetMap + OpenRouteService + Nominatim):
+    //        map_icons, map_manager, map_categories, map_postal_codes,
+    //        map_addresses, map_points, map_routes, map_route_stops e
+    //        map_geocode_cache. NAO ha rota publica: todo o modulo exige
+    //        'jwtauth' por wildcard em Config/Filters.php, e as exclusoes
+    //        definitivas somam 'adminonly' na propria rota. Contrato canonico:
+    //        18 rotas por tabela e 9 por view — 9 tabelas + 9 views = 243 rotas.
+    // =========================================================================
+
+    $routes->group('map-icons', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapIcons/EndpointTable.php';
+    });
+
+    $routes->group('map-icons-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapIcons/EndPointView.php';
+    });
+
+    $routes->group('map-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapManager/EndpointTable.php';
+    });
+
+    $routes->group('map-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapManager/EndPointView.php';
+    });
+
+    $routes->group('map-categories', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapCategories/EndpointTable.php';
+    });
+
+    $routes->group('map-categories-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapCategories/EndPointView.php';
+    });
+
+    $routes->group('map-postal-codes', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapPostalCodes/EndpointTable.php';
+    });
+
+    $routes->group('map-postal-codes-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapPostalCodes/EndPointView.php';
+    });
+
+    $routes->group('map-addresses', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapAddresses/EndpointTable.php';
+    });
+
+    $routes->group('map-addresses-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapAddresses/EndPointView.php';
+    });
+
+    $routes->group('map-points', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapPoints/EndpointTable.php';
+    });
+
+    $routes->group('map-points-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapPoints/EndPointView.php';
+    });
+
+    $routes->group('map-routes', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapRoutes/EndpointTable.php';
+    });
+
+    $routes->group('map-routes-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapRoutes/EndPointView.php';
+    });
+
+    $routes->group('map-route-stops', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapRouteStops/EndpointTable.php';
+    });
+
+    $routes->group('map-route-stops-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapRouteStops/EndPointView.php';
+    });
+
+    $routes->group('map-geocode-cache', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapGeocodeCache/EndpointTable.php';
+    });
+
+    $routes->group('map-geocode-cache-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapGeocodeCache/EndPointView.php';
+    });
+
+    // /Map (cont.) — map_links: vinculo universal modulo <-> mapa (CEP, endereco, ponto ou
+    //        rota para qualquer registro de modulo registrado em Config/MapLinkables.php).
+    //        jwtauth por wildcard; adminonly na exclusao definitiva. +27 rotas (total 270).
+
+    $routes->group('map-links', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapLinks/EndpointTable.php';
+    });
+
+    $routes->group('map-links-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapLinks/EndPointView.php';
+    });
+
+    // map-geo: proxy dos provedores de mapa (Nominatim, ViaCEP/BrasilAPI, OpenRouteService).
+    // Desvio sancionado de 18/9 rotas (5 rotas proprias); jwtauth por wildcard.
+    $routes->group('map-geo', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Map/MapGeo/EndpointGeo.php';
+    });
+
+    // =========================================================================
     // /ChatRooms — Modulo ChatRooms: chat_rooms_manager (a sala, dono =
     //              moderador), chat_messages (mensagem da sala),
     //              chat_room_attachments (anexo da mensagem),
@@ -459,6 +559,62 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('menu-manager', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Menu/MenuManager/EndpointTable.php';
+    });
+
+    // =========================================================================
+    // /Company — cadastro de empresas (company_manager). Leitura: qualquer
+    //            usuario autenticado; escrita: 'adminonly' rota a rota.
+    // =========================================================================
+
+    $routes->group('company-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyManager/EndpointTable.php';
+    });
+
+    // Publica: so id/name das empresas ativas (select do cadastro de usuario, sem sessao).
+    $routes->group('company-manager-public', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyManager/EndpointPublic.php';
+    });
+
+    $routes->group('company-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyManager/EndPointView.php';
+    });
+
+    // Membros das empresas (company_members): liga usuarios a empresas (N:N), espelho de
+    // message-group-members. Escrita so admin ('adminonly' rota a rota); 'sync' grava varios
+    // vinculos numa transacao; leitura escopada as empresas do usuario.
+    $routes->group('company-members', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyMembers/EndpointTable.php';
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyMembers/EndpointCustom.php';
+    });
+
+    $routes->group('company-members-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyMembers/EndPointView.php';
+    });
+
+    // Empresas com contagem/nomes de membros (lista) e usuarios com contagem de empresas (card de usuarios).
+    $routes->group('company-memberships-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyMemberships/EndPointView.php';
+    });
+
+    $routes->group('company-users-companies-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Company/CompanyUsersCompanies/EndPointView.php';
+    });
+
+    // =========================================================================
+    // /User/UserResourceAccess — permissao individual de usuario a form/list.
+    //            CRUD todo 'adminonly'; resource-access/check so 'jwtauth'.
+    // =========================================================================
+
+    $routes->group('user-resource-access', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/User/UserResourceAccess/EndpointTable.php';
+    });
+
+    $routes->group('user-resource-access-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/User/UserResourceAccess/EndPointView.php';
+    });
+
+    $routes->group('resource-access', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Meta/ResourceAccess/Endpoint.php';
     });
 
     // =========================================================================

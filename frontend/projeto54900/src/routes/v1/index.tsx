@@ -22,6 +22,7 @@
  *   menu.routes.tsx   -> menuRoutes    menu-manager (itens de menu)
  *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
  *   svgMap.routes.tsx -> svgMapRoutes  svg-map (mapa SVG dos municipios do RJ, rota estatica)
+ *   map.routes.tsx    -> mapRoutes     map (explorador Leaflet) + map/links/:module/:id (mapa de um registro)
  *   timeline.routes.tsx -> timelineRoutes  feed (timeline/timeline-posts) + as 5 listas padrão dos recursos
  *
  * DEPENDÊNCIAS (arquivos próprios do projeto):
@@ -75,9 +76,11 @@ import { navRoutes } from './nav.routes';
 import { menuRoutes } from './menu.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
+import { mapRoutes } from './map.routes';
 import { timelineRoutes } from './timeline.routes';
 import { chatRoomsRoutes } from './chat-rooms.routes';
 import { messagesRoutes } from './messages.routes';
+import { companyRoutes } from './company.routes';
 
 /**
  * =========================================================================
@@ -128,9 +131,11 @@ export const v1Routes: RouteObject = {
         ...menuRoutes,
         ...calendarRoutes,
         ...svgMapRoutes,
+        ...mapRoutes,
         ...timelineRoutes,
         ...chatRoomsRoutes,
         ...messagesRoutes,
+        ...companyRoutes,
       ],
     },
   ],

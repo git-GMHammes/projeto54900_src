@@ -12,6 +12,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Contatos = usuarios; so os membros da empresa da sessao (company_members). */
+    protected string $companyScope = 'membership';
+    protected string $membershipKey = 'id';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_message_contacts';
     protected $primaryKey = 'id';

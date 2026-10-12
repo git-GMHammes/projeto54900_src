@@ -33,7 +33,7 @@ conversa, futura), que deve impô-la por conta própria, sem reintroduzi-la na �
   admin altera; o grupo de uma mensagem de grupo é imutável.
 - Implementação: o Processor não devolve mais 409 por "mensagem já enviada"; a exigência de data **futura** em `scheduled_at`
   só se aplica ao não-admin que reagenda uma mensagem ainda `scheduled`; a ação "Editar" das listas 36 e 39 não tem mais
-  `business_rule_json` (script `20261006100000_area_administrativa_edicao_irrestrita.sql`); as UpdatePage não travam mais os campos.
+  `business_rule_json`; as UpdatePage não travam mais os campos.
 - Ao criar o modo chat, **não** copiar esta liberdade: aplicar a restrição de estado no endpoint/tela do chat.
 - **Listagens administrativas = `get-all` liberado ao admin** (decisão de 2026-10-06): o admin faz qualquer coisa; nenhuma regra de negócio/estado o trava.
   Aliviadas só para o admin (não-admin e o chat seguem iguais): membros (usuário inativo/bloqueado e grupo inativo), mensagem de grupo (grupo inativo; data
@@ -50,8 +50,7 @@ Decisão do usuário (2026-10-06): as listas e formulários administrativos (**L
 **Advertências** 41, mais os formulários 41–47) **não têm relação com "Conversas"** e só são vistos por **Administradores**. "Conversas" (`/v1/message-chat`) é o chat,
 para todo usuário logado (não guest).
 
-- **Onde vale:** `menu_manager` 48–52, `list_manager` 36–40 (e suas `list_actions`) e `form_manager` 41–46 com `roles = ["admin"]` (script
-  `20261006230000_messages_telas_admin_somente_admin.sql`; 54 e a lista 41 já eram admin); no frontend as rotas administrativas ficam sob `RequireRole role="admin"`
+- **Onde vale:** `menu_manager` 48–52, `list_manager` 36–40 (e suas `list_actions`) e `form_manager` 41–46 com `roles = ["admin"]` (54 e a lista 41 já eram admin); no frontend as rotas administrativas ficam sob `RequireRole role="admin"`
   (`routes/v1/messages.routes.tsx`) e só `message-chat` fica de fora. "Mensagem" (47) e "Conversas" (53) seguem `["user", "admin"]`.
 - **O que NÃO muda:** as **rotas da API** continuam abertas ao usuário comum (com as regras de autorização de cada recurso), porque o chat depende delas
   (`messages-manager`, `message-group-messages`, `message-attachments`, `message-group-members-view`, `message-mentions`...). Só a tela administrativa some para quem não é admin.
@@ -291,12 +290,12 @@ visibilidade (destinatário não vê a agendada; terceiro não vê a conversa), 
 **Etapa 3 — não lidas e contador.** Sem mudança de banco; reaproveita `view_messages_users` (`messages-users-view`: `mu_peer_user_manager_id`,
 `mu_unread_count`, `mu_last_message_at`, escopada ao dono). Uma rota nova, leve: **`GET messages-manager/unread-count`** → `{ total }`
 (mensagens recebidas, `status=sent`, `read_at` nulo, não excluídas; **mesmo critério** de `mu_unread_count`; guest = 0) — Processor
-`unreadCount()`, Model `countUnread()`, script `20261006140500_route_manager_messages_unread_count_sync.sql`. Total do módulo = 177 rotas.
+`unreadCount()`, Model `countUnread()`. Total do módulo = 177 rotas.
 Testado: o remetente não conta as próprias; o destinatário soma só as `sent` (a agendada não conta); depois de `read` volta ao inicial;
 terceiro não é afetado; guest 0. **Não lidas de grupo:** Etapa 4 (abaixo).
 
 **Etapa 4 — conversa de grupo e leitura por membro.**
-- **Banco** (`20261006180000_message_group_reads_views.sql`): tabela `message_group_reads` (`messages_manager_id`, `user_manager_id`, `read_at`;
+- **Banco** : tabela `message_group_reads` (`messages_manager_id`, `user_manager_id`, `read_at`;
   `UNIQUE` mensagem+usuário; FKs em cascata); `view_message_group_reads` (leitura + mensagem + grupo + leitor, sem dados pessoais
   sensíveis); `view_message_group_chat_summary` (uma linha por par membro ativo × grupo: `mgcs_unread_count`, `members_count`, última
   mensagem — `id` = membro × 4294967296 + grupo, `deleted_at` sempre NULL).
@@ -316,7 +315,7 @@ terceiro não é afetado; guest 0. **Não lidas de grupo:** Etapa 4 (abaixo).
     (visibilidade = a da mensagem). Enviar: grava a mensagem e, em seguida, sobe o arquivo (`POST message-attachments/create`) com o id dela
     (privada: `id`; grupo: `messages_manager_id` da resposta).
   - **Regra de estado do chat** (a área administrativa segue irrestrita, §0), em rotas próprias de `messages-manager` (**+2 rotas**, total do
-    módulo = 217; `20261006160000_route_manager_messages_chat_edit_remove_sync.sql`): `PUT chat/{id}` edita `content` e/ou `scheduled_at` da
+    módulo = 217): `PUT chat/{id}` edita `content` e/ou `scheduled_at` da
     PRÓPRIA mensagem, **só enquanto `scheduled`** (409 depois de enviada; 403 para outro remetente já enviado; 404 se não a enxerga; guest 403;
     texto vazio e data não futura = 422) e `DELETE chat/{id}` apaga a própria (`status=removed`) em qualquer status (idempotente). Valem para
     mensagem privada e de grupo (ambas são linhas de `messages_manager`).
@@ -326,10 +325,10 @@ terceiro não é afetado; guest 0. **Não lidas de grupo:** Etapa 4 (abaixo).
     anexo em `with` e em `chat` (imagem e documento); apagar/cancelar (idempotente) e sumir da conversa; envio da agendada vencida
     uma vez só; membro não edita mensagem de outro.
 - **Marcação de usuário (@) — só na conversa de GRUPO** (2026-10-06):
-  - **Banco** (`20261006200000_message_mentions_table_view.sql`): tabela `message_mentions` (`messages_manager_id`, `user_manager_id`; `UNIQUE`
+  - **Banco**: tabela `message_mentions` (`messages_manager_id`, `user_manager_id`; `UNIQUE`
     mensagem+usuário; FKs em cascata; mesma estrutura de `chat_message_mentions`) e `view_message_mentions` (marcação + mensagem + grupo +
     marcado + autor, sem dados pessoais sensíveis).
-  - **Conjunto completo de APIs** (**27** rotas novas — total do módulo = 244; `20261006200100_route_manager_messagementions_sync.sql`):
+  - **Conjunto completo de APIs** (**27** rotas novas — total do módulo = 244):
     `message-mentions` (**tabela, 18**) e `message-mentions-view` (**9**). Create: só o **remetente** da mensagem (ou admin) marca (membro que vê = 403;
     quem nem vê = 404; guest 403); a mensagem precisa ser **de grupo**; o marcado precisa ser usuário ativo, **membro ativo do grupo** e diferente do
     remetente (422); até **20** por mensagem; **idempotente** (soft-deletada reativa). Update (troca o marcado) e clear-deleted só admin; delete-soft/restore/hard
@@ -348,10 +347,10 @@ terceiro não é afetado; guest 0. **Não lidas de grupo:** Etapa 4 (abaixo).
     (conversa privada e de grupo, chat e telas administrativas), `PUT messages-manager/chat/{id}`, `PUT messages-manager/update/{id}` e
     `PUT message-group-messages/update/{id}`. **Envio:** a mensagem é gravada `blocked` (nunca entregue; nas de grupo, sem marcações) e a chamada
     responde **422** ("Mensagem bloqueada: contem palavra proibida (X)"); **edição:** o texto NÃO muda e responde 422. Nos dois casos grava a advertência.
-  - **Banco** (`20261006220000_message_warnings_table_view_menu_list_forms.sql`): tabela `message_warnings` (`messages_manager_id`, `user_manager_id`
+  - **Banco**: tabela `message_warnings` (`messages_manager_id`, `user_manager_id`
     = quem tentou, `message_groups_manager_id` NULL = privada, `flagged_word`; FKs em cascata; mesmo desenho de `chat_room_warnings`) e
     `view_message_warnings` (sem dados pessoais sensíveis).
-  - **Conjunto completo de APIs, TODAS `adminonly`** (**27** rotas novas — total do módulo = 271; `20261006220100_route_manager_messagewarnings_sync.sql`):
+  - **Conjunto completo de APIs, TODAS `adminonly`** (**27** rotas novas — total do módulo = 271):
     `message-warnings` (**tabela, 18**) e `message-warnings-view` (**9**). Create manual (admin) exige mensagem e autor existentes (404) e pega o grupo da própria
     mensagem; update só altera `flagged_word`; writes só admin (403 para os demais). A advertência **automática** é gravada direto pelo model
     (`SqlTableModel::register`), sem passar pelo Processor admin.
@@ -426,40 +425,38 @@ usuário = 404.
    público**, ao contrário da sala de chat.
 5. Exclusões: dono ou admin; `clear-deleted` só admin.
 
-## 6. Scripts SQL (`doc/sql/insert/`, aplicados no banco DEV)
+## 6. Alterações no banco DEV (aplicadas por INSERT/DDL direto)
 
-| Script                                                  | O que faz                                                              |
-| ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `20261005193840_messages_manager.sql`                   | tabela `messages_manager` + `view_messages_manager`                    |
-| `20261005200500_route_manager_messagesmanager_sync.sql` | 29 rotas em `route_manager`                                            |
-| `20261005211500_view_messages_users.sql`                | `view_messages_users` (com `deleted_at` NULL)                          |
-| `20261005211600_route_manager_messagesusers_sync.sql`   | 9 rotas                                                                |
-| `20261005222000_messages_lista_menu_list_forms.sql`     | menu "Mensagem" > "Lista", `list_manager` 36, formulários 41 e 42      |
-| `20261005230000_message_groups_tables_views.sql`        | 3 tabelas e 3 views de grupo; `recipient` aceita NULL; recria 2 views  |
-| `20261005233000_route_manager_messagegroupsmanager_sync.sql` | 27 rotas                                                          |
-| `20261006000000_message_groups_menu_list_forms.sql`     | menu "Grupos", `list_manager` 37, formulários 43 e 44                  |
-| `20261006030000_messages_groups_forms_completos.sql`    | campos que faltavam nos 4 formulários (remetente/dono, status, datas)  |
-| `20261006020000_messages_forms_help_content.sql`        | texto de ajuda do campo Mensagem                                       |
-| `20261006080000_message_group_members_views_menu_list.sql` | `view_message_users_groups`, `view_message_group_memberships`, menu "Membros" (id 50), `list_manager` 38 (colunas 204–209, ações 97–98) |
-| `20261006080100_route_manager_messagegroupmembers_sync.sql` | 46 rotas em `route_manager`                                        |
-| `20261006092500_message_group_messages_view_menu_list_forms.sql` | `view_message_group_posts`, menu "Mensagens de grupo" (id 51), `list_manager` 39 (colunas 210–216, ações 99–100), formulários 45 e 46 (campos 311–316) |
-| `20261006092600_route_manager_messagegroupmessages_sync.sql` | 27 rotas em `route_manager`                                       |
-| `20261006100000_area_administrativa_edicao_irrestrita.sql` | remove a regra "só agendada" das ações 93 e 99 e ajusta descrições (§0)  |
-| `20261006103500_message_attachments_table_view_menu_list_forms.sql` | tabela `message_attachments`, `view_message_attachments`, `attachments_count` (2 views), campo `arquivo` nos forms 41/42/45/46 (campos 317–320), menu "Anexos" (id 52), `list_manager` 40 (colunas 219–227, ações 101–105), colunas "Anexos" 217/218 |
-| `20261006103600_route_manager_messageattachments_sync.sql` | 29 rotas em `route_manager`                                        |
-| `20261006125500_message_chat_contacts_view_menu.sql` | `view_message_contacts`, `members_search` em `view_message_group_memberships` (e correção de collation do `members_names`), menu "Conversas" (id 53) |
-| `20261006160000_route_manager_messages_chat_edit_remove_sync.sql` | 2 rotas em `route_manager` (`PUT`/`DELETE messages-manager/chat/{id}`) |
-| `20261006220000_message_warnings_table_view_menu_list_forms.sql` | tabela `message_warnings`, `view_message_warnings`, menu "Advertências" (id 54), `list_manager` 41 (colunas 228–233, ações 106–107), formulário 47 (campo 321) |
-| `20261006220100_route_manager_messagewarnings_sync.sql` | 27 rotas em `route_manager` (todas `adminonly`) |
-| `20261006200000_message_mentions_table_view.sql` | tabela `message_mentions` e `view_message_mentions` |
-| `20261006200100_route_manager_messagementions_sync.sql` | 27 rotas em `route_manager` |
-| `20261006180000_message_group_reads_views.sql` | tabela `message_group_reads`, `view_message_group_reads`, `view_message_group_chat_summary` |
-| `20261006180100_route_manager_messagegroupreads_sync.sql` | 38 rotas em `route_manager` (reads 18 + reads-view 9 + chat-view 9 + 2 do chat de grupo) |
-| `20261006125600_route_manager_messagecontacts_sync.sql` | 9 rotas em `route_manager`                                          |
-| `20261006010000_…`, `…011500_…`, `…013000_menu_40_icone_original.sql` | trocas de ícone de menu; o estado final está em §7 |
+- tabela `messages_manager` + `view_messages_manager`
+- Sincronização de `route_manager` (messagesmanager): 29 rotas em `route_manager`
+- `view_messages_users` (com `deleted_at` NULL)
+- Sincronização de `route_manager` (messagesusers): 9 rotas
+- menu "Mensagem" > "Lista", `list_manager` 36, formulários 41 e 42
+- 3 tabelas e 3 views de grupo; `recipient` aceita NULL; recria 2 views
+- Sincronização de `route_manager` (messagegroupsmanager): 27 rotas
+- menu "Grupos", `list_manager` 37, formulários 43 e 44
+- campos que faltavam nos 4 formulários (remetente/dono, status, datas)
+- texto de ajuda do campo Mensagem
+- `view_message_users_groups`, `view_message_group_memberships`, menu "Membros" (id 50), `list_manager` 38 (colunas 204–209, ações 97–98)
+- Sincronização de `route_manager` (messagegroupmembers): 46 rotas em `route_manager`
+- `view_message_group_posts`, menu "Mensagens de grupo" (id 51), `list_manager` 39 (colunas 210–216, ações 99–100), formulários 45 e 46 (campos 311–316)
+- Sincronização de `route_manager` (messagegroupmessages): 27 rotas em `route_manager`
+- remove a regra "só agendada" das ações 93 e 99 e ajusta descrições (§0)
+- tabela `message_attachments`, `view_message_attachments`, `attachments_count` (2 views), campo `arquivo` nos forms 41/42/45/46 (campos 317–320), menu "Anexos" (id 52), `list_manager` 40 (colunas 219–227, ações 101–105), colunas "Anexos" 217/218
+- Sincronização de `route_manager` (messageattachments): 29 rotas em `route_manager`
+- `view_message_contacts`, `members_search` em `view_message_group_memberships` (e correção de collation do `members_names`), menu "Conversas" (id 53)
+- Sincronização de `route_manager` (messages_chat_edit_remove): 2 rotas em `route_manager` (`PUT`/`DELETE messages-manager/chat/{id}`)
+- tabela `message_warnings`, `view_message_warnings`, menu "Advertências" (id 54), `list_manager` 41 (colunas 228–233, ações 106–107), formulário 47 (campo 321)
+- Sincronização de `route_manager` (messagewarnings): 27 rotas em `route_manager` (todas `adminonly`)
+- tabela `message_mentions` e `view_message_mentions`
+- Sincronização de `route_manager` (messagementions): 27 rotas em `route_manager`
+- tabela `message_group_reads`, `view_message_group_reads`, `view_message_group_chat_summary`
+- Sincronização de `route_manager` (messagegroupreads): 38 rotas em `route_manager` (reads 18 + reads-view 9 + chat-view 9 + 2 do chat de grupo)
+- Sincronização de `route_manager` (messagecontacts): 9 rotas em `route_manager`
+- Trocas de ícone de menu (item 40); o estado final está em §7
 
-Todos idempotentes (ids fixos com `INSERT IGNORE` ou `WHERE NOT EXISTS`); cada um traz o
-rollback no cabeçalho. Os planos de execução ficam em `src/writable/claude/` (ignorada pelo Git).
+Todas as alterações foram idempotentes (ids fixos com `INSERT IGNORE` ou `WHERE NOT EXISTS`). Os planos
+de execução ficam em `src/writable/claude/` (ignorada pelo Git).
 
 ### 6.1 Migrations — rodada REMAKE de 2026-10-05
 
@@ -560,7 +557,6 @@ A ação Editar das listas 36 e 39 aparece em **qualquer status** (§0; a regra 
   2026-10-06); os testes automatizados deste módulo sempre apagam o que criam.
 - `messages_manager.recipient_user_manager_id` aceita NULL **por causa** do grupo; voltar a
   `NOT NULL` só se não houver mensagem de grupo.
-- Rollback do schema: bloco no fim de `20261005230000_message_groups_tables_views.sql`.
 
 ---
 

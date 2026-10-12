@@ -12,6 +12,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_group_members';
     protected $primaryKey     = 'id';
@@ -44,7 +47,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findVisibleIds(int $userId): array
     {
-        $rows = $this->db->table($this->table)
+        $rows = $this->scopedTable()
             ->select('id')
             ->groupStart()
                 ->where('message_groups_manager_id IN (SELECT id FROM message_groups_manager WHERE owner_user_manager_id = ' . $userId . ')', null, false)
@@ -59,7 +62,7 @@ class SqlTableModel extends BaseTableModel
     /** Vinculo (grupo, usuario), inclusive soft-deletado; null se nunca existiu. */
     public function findPair(int $groupId, int $userId): ?array
     {
-        return $this->db->table($this->table)
+        return $this->scopedTable()
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->get()
@@ -69,12 +72,12 @@ class SqlTableModel extends BaseTableModel
     /** Insere um vinculo ativo com papel member e devolve o id (0 se falhar). */
     public function insertMember(int $groupId, int $userId): int
     {
-        $ok = $this->db->table($this->table)->insert([
+        $ok = $this->db->table($this->table)->insert($this->withCompany([
             'message_groups_manager_id' => $groupId,
             'user_manager_id'           => $userId,
             'role'                      => 'member',
             'status'                    => 'active',
-        ]);
+        ]));
 
         return $ok ? (int) $this->db->insertID() : 0;
     }
@@ -82,7 +85,7 @@ class SqlTableModel extends BaseTableModel
     /** Reativa um vinculo existente (limpa deleted_at). */
     public function reactivate(int $id): void
     {
-        $this->db->table($this->table)->where('id', $id)->update([
+        $this->scopedTable()->where('id', $id)->update([
             'status'     => 'active',
             'deleted_at' => null,
         ]);
@@ -91,13 +94,13 @@ class SqlTableModel extends BaseTableModel
     /** Marca o vinculo como removido. */
     public function markRemoved(int $id): void
     {
-        $this->db->table($this->table)->where('id', $id)->update(['status' => 'removed']);
+        $this->scopedTable()->where('id', $id)->update(['status' => 'removed']);
     }
 
     /** Dados do grupo (dono e status), sem soft-deletado; null se nao existe. */
     public function findGroup(int $groupId): ?array
     {
-        return $this->db->table('message_groups_manager')
+        return $this->companyTable('message_groups_manager')
             ->select('id, owner_user_manager_id, status')
             ->where('id', $groupId)
             ->where('deleted_at', null)
@@ -108,7 +111,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table($this->table)
+        return $this->scopedTable()
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')

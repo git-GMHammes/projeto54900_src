@@ -11,13 +11,13 @@ visível para qualquer usuário autenticado.
 
 > **Estado (2026-09-27): módulo COMPLETO no backend.** As 7 tabelas e as 7
 > views já estão APLICADAS no banco DEV (`codeigniter54900_db`) desde
-> 2026-09-26 (script `doc/sql/insert/20260926183935_timeline_tables.sql` +
+> 2026-09-26 (DDL direto no banco +
 > §3.1). As classes PHP (Controller/Request/Processor/Model) dos 7 recursos
 > foram implementadas e testadas em 2026-09-27 (commit `bcbc808`; as 189 rotas
 > testadas uma a uma em `src/writable/claude/timeline_api_testes_resultado.json`,
 > todas passando) — **Etapa D backend concluída**. Os 5 `form_manager` e o
 > `list_manager` do feed (`timeline-feed`) também foram inseridos em
-> 2026-09-27 (`doc/sql/insert/20260927161741_timeline_form_list_menu_seed.sql`)
+> 2026-09-27 (INSERT em `form_*`, `list_*` e `menu_manager`)
 > — **Etapa C concluída**. **Fase 2 (frontend) concluída em 2026-09-27:**
 > listagem clássica do feed em `/v1/timeline-posts`. **Fase 3a (backend)
 > concluída em 2026-09-27:** rota extra `home-feed` com o algoritmo do feed
@@ -383,7 +383,7 @@ rotas de view continuarem enxergando os registros excluídos.
 | `view_timeline_post_ratings` | `timeline_post_ratings` (`rt`) | 12 | `um`, `uc` do autor; `tp` (post) |
 | `view_timeline_post_reports` | `timeline_post_reports` (`trp`) | 19 | `um`, `uc` denunciante; `mu`, `muc` moderador; `tp` (post) |
 
-O DDL dessas 6 views **não** foi gravado em `doc/sql/` (decisão do usuário em
+O DDL dessas 6 views **não** foi gravado em script (decisão do usuário em
 2026-09-26: view construída direto no banco, sem script prévio): cada
 `CREATE VIEW` está registrado no `_no_plano.json` da sua ação, em
 `src/writable/claude/`. Alterar essas views é operação direta no banco DEV, como
@@ -424,7 +424,7 @@ de leitura (Etapa C/D) — hoje só existe o contrato previsto na §5.
    ninguém observa o feed de outro. Filtro `tp_user_manager_id` vindo do
    cliente é descartado; `get/{id}` de post alheio = 404. A listagem
    `timeline-feed` usa `POST get-grouped`
-   (`doc/sql/insert/20260928102459_timeline_feed_get_grouped.sql`). O Home
+   (`list_manager` `timeline-feed`). O Home
    Feed (`home-feed`, feed social) continua com todos os publicados. Os
    endpoints de **tabela** (`timeline-posts/get-all` etc.) seguem sem filtro
    de dono na leitura — lacuna conhecida.
@@ -449,8 +449,8 @@ uma das 7 views tem as **9 de leitura** (7 × 18 + 7 × 9 = 189). Espelho de
 [`Calendar/CalendarManager`](../ROADMAP_padrao_modulo.md) (referência:
 `Config/Routes/Api/v1/Calendar/CalendarManager/EndpointTable.php` e
 `EndPointView.php`). Os 14 grupos estão registrados em `Config/Routes.php` e as
-189 linhas no `route_manager` pelo sync
-`doc/sql/insert/20260926213013_route_manager_timeline_sync.sql` (idempotente por
+189 linhas no `route_manager` por sincronização
+direta (idempotente por
 `layer + object + endpoint`). Mapa completo em
 [`README_rotas_swagger.md`](README_rotas_swagger.md).
 
@@ -626,7 +626,7 @@ o uso é `create`/`update`/`delete-soft` direto pela UI.
 | `list_columns`            | `uc_name` (autor), `tm_title` (timeline), `tp_content`, `tp_published_at`, `likes_count`, `dislikes_count`, `comments_count`, `ratings_avg`, `reposts_count`, `attachments_count`, `tp_status` e um indicador de repost (`tp_repost_of_id`)                                                                                                        |
 | `list_actions`            | **Ver** (`link`), **Comentar** (`link`), **Curtir** (`api_call` POST `timeline-post-reactions/create`), **Avaliar** (`api_call` POST `timeline-post-ratings/create`), **Republicar** (`api_call` POST `timeline-posts/create` com `repost_of_id`), **Denunciar** (`link`), **Editar** (`link`), **Excluir** (`api_call` DELETE `delete-soft/{id}`) |
 
-> **Atualização 2026-09-28 — lista enxuta** (`doc/sql/insert/20260928101518_timeline_feed_lista_enxuta.sql`):
+> **Atualização 2026-09-28 — lista enxuta** (`list_columns` do `timeline-feed`):
 > colunas ativas = Autor, Timeline, Publicação, Publicada em, **Curtidas**
 > (id 82: ícone joia/não-joia + `likes_count`/`dislikes_count`), **Reações**
 > (id 84: comentários, nota média, republicações e "repost de #id" via
@@ -677,7 +677,6 @@ Mesmo padrão da lista `form-manager` do construtor: a página do feed só infor
   da rota). O renderizador `/v1/form/<slug>` **não** foi removido: os 5
   formulários (slug `timeline-settings`, `timeline-post`, `timeline-comment`,
   `timeline-report`, `timeline-attachment`) continuam acessíveis por ele.
-  SQL do menu DEV: `doc/sql/insert/20260928115754_timeline_rotas_frontend_listas.sql`.
   *Pendência:* criar os 5 registros em `list_manager` (+ `list_columns`) para as
   listas mostrarem dados — enquanto não existirem, a rota exibe
   `Listagem '<slug>' não encontrada em list_manager`.
@@ -701,7 +700,7 @@ O que falta aqui é só a Fase 3 (Home Feed) e as páginas de detalhe/edição d
 | 11  | "Editar"/"Ver"/"Comentar" do feed sem página de destino | Não existe formulário de edição de post nem página de detalhe/comentários ainda — os `list_actions` continuam apontando para essas rotas (documentado como lacuna conhecida em `README_rotas_frontend.md`, mesmo padrão de `upload.routes.tsx`), a resolver quando essas telas forem construídas |
 | 12  | Sem estado de sessão no `home-feed` | Decisão do usuário (2026-09-27): não exigir estado de sessão no servidor nem o cliente reenviar lista de IDs vistos. **Atualizado em 2026-09-28:** a ordem global passa a ser recalculada só a partir do `seed` (§5.1) — sem repetição nem buraco entre páginas, e o scroll não para mais quando um balde vem vazio; `pagination.has_more` decide o fim |
 | 13  | Curtir/Avaliar "write-only" na Home Feed — **RESOLVIDO em 2026-09-27** | A view do feed não expunha a reação/nota do próprio usuário autenticado. Resolvido SEM mudar a view: `Processor::homeFeed` anexa `my_reaction_id`/`my_rating` em memória, com 2 queries em lote (não N+1) contra `timeline_post_reactions`/`timeline_post_ratings` — ver §11.3 |
-| 14  | Upload de anexo (`timeline_post_attachments`) — **RESOLVIDO em 2026-09-28** | Envio pelo próprio `POST create` multipart (já existia); `EndpointUpload.php` novo com `serve/{id}`/`download/{id}` (desvio sancionado igual ao do Upload, fora das 18 rotas); `file_url` preenchido com a URL de serve; **1 anexo por publicação** (`Processor::store` → `409`). Frontend: tipo `arquivo` no FormGrid + campo `file` no form `timeline-post` (SQL `doc/sql/insert/20260928081213_timeline_post_campo_arquivo.sql`); binário lido com token como `Blob` (`jwtauth` só aceita header, `<img src>` daria 401) |
+| 14  | Upload de anexo (`timeline_post_attachments`) — **RESOLVIDO em 2026-09-28** | Envio pelo próprio `POST create` multipart (já existia); `EndpointUpload.php` novo com `serve/{id}`/`download/{id}` (desvio sancionado igual ao do Upload, fora das 18 rotas); `file_url` preenchido com a URL de serve; **1 anexo por publicação** (`Processor::store` → `409`). Frontend: tipo `arquivo` no FormGrid + campo `file` no form `timeline-post`; binário lido com token como `Blob` (`jwtauth` só aceita header, `<img src>` daria 401) |
 
 Fora do escopo desta entrega (podem virar recurso depois): seguir timeline,
 mensagem direta, notificação, like/estrela em comentário, denúncia de comentário,
@@ -711,12 +710,11 @@ histórico de edição, `visibility` privada.
 
 1. **Revisão deste documento** e dos 5 desenhos em `form/timeline/` — feito.
 2. **Etapa B — CONCLUÍDA em 2026-09-26**: SQL da estrutura (`CREATE TABLE` das 7 + a view do
-   feed) em `doc/sql/insert/` e aplicação no banco DEV; as 6 views de apoio
+   feed) aplicada no banco DEV; as 6 views de apoio
    foram criadas direto no banco (§3.1).
 3. **Etapa C — CONCLUÍDA em 2026-09-27**: rotas (189, §5), 5 `form_manager`
    (+ groups/rows/fields), 1 `list_manager` do feed (+ columns/actions) e os
-   itens de `menu_manager` (§7) — script
-   `doc/sql/insert/20260927161741_timeline_form_list_menu_seed.sql`.
+   itens de `menu_manager` (§7).
 4. **Etapa D backend — CONCLUÍDA em 2026-09-27**: Controller/Request/Processor/
    Model dos 7 recursos, testados rota a rota (§5). Timeline criada
    automaticamente na primeira publicação (`TimelinePosts::Processor`).

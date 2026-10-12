@@ -14,6 +14,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_groups_manager';
     protected $primaryKey     = 'id';
@@ -47,7 +50,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findVisibleIds(int $userId): array
     {
-        $rows = $this->db->table($this->table)
+        $rows = $this->scopedTable()
             ->select('id')
             ->groupStart()
                 ->where('owner_user_manager_id', $userId)
@@ -62,7 +65,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table('message_group_members')
+        return $this->companyTable('message_group_members')
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')
@@ -73,11 +76,11 @@ class SqlTableModel extends BaseTableModel
     /** Insere o dono como membro (role=owner) do grupo recem-criado. */
     public function addOwnerMember(int $groupId, int $userId): bool
     {
-        return (bool) $this->db->table('message_group_members')->insert([
+        return (bool) $this->db->table('message_group_members')->insert($this->withCompany([
             'message_groups_manager_id' => $groupId,
             'user_manager_id'           => $userId,
             'role'                      => 'owner',
             'status'                    => 'active',
-        ]);
+        ]));
     }
 }
