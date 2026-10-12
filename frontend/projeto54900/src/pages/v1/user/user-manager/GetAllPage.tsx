@@ -4,9 +4,11 @@
 // 'user-manager'). Colunas/rotulos/icones vem do banco; as acoes sao
 // action_type 'modal' e o COMPORTAMENTO e escolhido aqui por
 // list_actions.data_action (ACTION_HANDLERS abaixo):
-//   toggle-status  -> um botao: blocked -> active; active/inactive -> blocked
+//   toggle-status  -> um botao sobre o VINCULO do usuario com a empresa da sessao (cm_status):
+//                     pending -> active (aprovar); blocked -> active (desbloquear); active -> blocked
 //   reset-password -> ResetPasswordModal (PUT { password_hash })
 //   change-role    -> ChangeRoleModal (PUT { user_role_id })
+//   change-companies -> ChangeCompaniesModal (PUT { company_ids })
 // Todas gravam em PUT /api/v1/user-manager/update/{id} (list_actions.api_endpoint).
 // Ver src/markdown/geral/README_list_constructor.md.
 
@@ -18,7 +20,7 @@ import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { http, ApiError } from '@/services/http';
-import { dbSchema, listManagerTable, listColumnsTable, listActionsTable } from '@/services/v1';
+import { dbSchema, listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
 import { normalizeItem, normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
@@ -41,21 +43,26 @@ import type { ListManagerRow, ListColumnRow, ListActionRow } from '@/utils/listC
 
 import ResetPasswordModal from './ResetPasswordModal';
 import ChangeRoleModal from './ChangeRoleModal';
+import ChangeCompaniesModal from './ChangeCompaniesModal';
 import { notifyActionDone } from '@/utils/listActionToast';
 
 const MANAGER_SLUG = 'user-manager';
 
-type ModalActionKey = 'toggle-status' | 'reset-password' | 'change-role';
+type ModalActionKey = 'toggle-status' | 'reset-password' | 'change-role' | 'change-companies';
 
-/** Proximo status do botao unico de bloqueio: bloqueado desbloqueia, qualquer outro bloqueia. */
+/**
+ * Proximo status do botao unico, sobre o vinculo com a empresa (cm_status): 'pending' (cadastro aguardando
+ * aprovacao do admin da empresa) aprova, bloqueado desbloqueia, ativo bloqueia.
+ */
 function nextStatus(current: string): 'active' | 'blocked' {
-  return current === 'blocked' ? 'active' : 'blocked';
+  return current === 'blocked' || current === 'pending' ? 'active' : 'blocked';
 }
 
-// Filtro de status: opcoes vem do enum da tabela; filtro vai na coluna da view.
-const STATUS_TABLE = 'user_manager';
+// Filtro de status do VINCULO com a empresa: opcoes vem do enum de company_members.status; filtro vai na
+// coluna cm_status da view.
+const STATUS_TABLE = 'company_members';
 const STATUS_COLUMN = 'status';
-const STATUS_FILTER = 'um_status';
+const STATUS_FILTER = 'cm_status';
 
 /**
  * Termo da busca enviado em `?q=`. Whatsapp/telefone ficam gravados so com
@@ -91,9 +98,16 @@ function ActionButton({
   // toggle-status: um unico botao cujo icone/rotulo segue o status da linha
   // (bloqueado -> oferece desbloquear). Demais acoes: icone/rotulo do banco.
   const isToggle = action.actionType === 'modal' && action.dataAction === 'toggle-status';
-  const blocked = str(row.um_status) === 'blocked';
-  const icon = isToggle && blocked ? 'unlock-fill' : action.icon;
-  const label = isToggle ? (blocked ? 'Desbloquear usuário' : 'Bloquear usuário') : action.label;
+  const blocked = str(row.cm_status) === 'blocked';
+  const awaiting = str(row.cm_status) === 'pending';
+  const icon = isToggle && awaiting ? 'check-circle-fill' : isToggle && blocked ? 'unlock-fill' : action.icon;
+  const label = isToggle
+    ? awaiting
+      ? 'Aprovar usuário'
+      : blocked
+        ? 'Desbloquear usuário'
+        : 'Bloquear usuário'
+    : action.label;
 
   // Botao so-icone (list_actions.icon); sem icone cadastrado, cai no rotulo.
   const content = icon ? <i className={`bi bi-${icon}`} aria-hidden="true" /> : label;
@@ -133,12 +147,12 @@ function ActionButton({
 
   if (action.actionType === 'modal') {
     const toggleStatus = async () => {
-      const target = nextStatus(str(row.um_status));
-      const question = `${target === 'blocked' ? 'Bloquear' : 'Desbloquear'} o usuário${subject ? ` ${subject}` : ''}?`;
+      const target = nextStatus(str(row.cm_status));
+      const question = `${target === 'blocked' ? 'Bloquear' : awaiting ? 'Aprovar' : 'Desbloquear'} o usuário${subject ? ` ${subject}` : ''}?`;
       if (action.confirm && !window.confirm(action.confirmMessage || question)) return;
       try {
         await http.put(resolveEndpoint(resolveHrefTemplate(action.apiEndpoint, row)), { status: target });
-        toast.success(target === 'blocked' ? 'Usuário bloqueado.' : 'Usuário desbloqueado.', { title: subject || label });
+        toast.success(target === 'blocked' ? 'Usuário bloqueado.' : awaiting ? 'Usuário aprovado.' : 'Usuário desbloqueado.', { title: subject || label });
         notifyActionDone(toast, action, subject);
       onExecuted();
       } catch (err) {
@@ -148,7 +162,11 @@ function ActionButton({
 
     const onClick = () => {
       if (action.dataAction === 'toggle-status') void toggleStatus();
-      else if (action.dataAction === 'reset-password' || action.dataAction === 'change-role') {
+      else if (
+        action.dataAction === 'reset-password' ||
+        action.dataAction === 'change-role' ||
+        action.dataAction === 'change-companies'
+      ) {
         onOpenModal(action.dataAction, row);
       } else {
         toast.error(`Ação '${action.dataAction || action.label}' sem tratamento nesta lista.`, { title: label });
@@ -158,7 +176,7 @@ function ActionButton({
     return withTooltip(
       <button
         type="button"
-        className={`btn btn-sm ${isToggle && !blocked ? 'btn-outline-danger' : 'btn-outline-primary'}`}
+        className={`btn btn-sm ${isToggle && !blocked && !awaiting ? 'btn-outline-danger' : 'btn-outline-primary'}`}
         aria-label={tip}
         disabled={disabled}
         onClick={onClick}
@@ -229,6 +247,12 @@ export default function GetAllPage() {
         setDefsError(`Listagem '${MANAGER_SLUG}' nao encontrada em list_manager.`);
         return;
       }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
+        return;
+      }
       setManager(found);
 
       const [colsRaw, actsRaw] = await Promise.all([
@@ -254,9 +278,9 @@ export default function GetAllPage() {
   const [searchInput, setSearchInput] = useState('');
   const term = normalizeSearchTerm(useDebounce(searchInput, 400));
 
-  // Filtro de status: opcoes = enum_values de user_manager.status via
+  // Filtro de status do vinculo: opcoes = enum_values de company_members.status via
   // db-schema/describe (nada fixo no codigo). Enviado como
-  // filters[um_status] no search (whitelist $filterFields do SqlViewModel).
+  // filters[cm_status] no search (whitelist $filterFields do SqlViewModel).
   const [status, setStatus] = useState('');
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
 
@@ -524,6 +548,12 @@ export default function GetAllPage() {
         userId={modal?.key === 'change-role' ? str(modal.row.id) : null}
         username={modalUsername}
         currentRoleId={modal ? str(modal.row.um_user_role_id) : ''}
+        onClose={closeModal}
+        onSaved={() => void loadData()}
+      />
+      <ChangeCompaniesModal
+        userId={modal?.key === 'change-companies' ? str(modal.row.id) : null}
+        username={modalUsername}
         onClose={closeModal}
         onSaved={() => void loadData()}
       />

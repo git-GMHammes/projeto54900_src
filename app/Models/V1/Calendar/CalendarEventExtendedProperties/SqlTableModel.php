@@ -17,6 +17,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'calendar_event_extended_properties';
     protected $primaryKey     = 'id';
@@ -62,7 +65,7 @@ class SqlTableModel extends BaseTableModel
         string $propertyKey,
         ?int $excludeId = null
     ): bool {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where('calendar_event_id', $calendarEventId)
             ->where('scope', $scope)
             ->where('property_key', $propertyKey)

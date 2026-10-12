@@ -18,7 +18,7 @@ import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
-import { formManagerView, messageAttachmentsUpload } from '@/services/v1';
+import { formManagerView, messageAttachmentsUpload, checkResourceAccess, isDenied } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
 import { normalizeList, normalizeItem } from '@/utils/apiResult';
@@ -55,6 +55,12 @@ export default function CreatePage() {
     setLoading(true);
     setError(null);
     try {
+      // Acesso individual ao formulario (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('form', { slug: SLUG }))) {
+        setForm(null);
+        setError('Voce nao tem acesso a este formulario.');
+        return;
+      }
       const raw = await formManagerView.getGrouped(
         { fm_slug: [SLUG] },
         { limit: 1000, sort: 'fc_sort_order', order: 'ASC' },

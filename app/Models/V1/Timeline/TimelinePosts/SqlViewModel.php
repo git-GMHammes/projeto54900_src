@@ -9,6 +9,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a linha so aparece se o registro de timeline_posts for da empresa da sessao. */
+    protected string $companyScope = 'via_table';
+    protected string $companyViaTable = 'timeline_posts';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_timeline_posts';
     protected $primaryKey = 'id';
@@ -203,7 +207,7 @@ class SqlViewModel extends BaseViewModel
         $reports = $this->db->prefixTable('timeline_post_reports');
         $view    = $this->db->prefixTable($this->table);
 
-        return $this->db->table($this->table)
+        return $this->scopedTable()
             ->select($select)
             ->where('tp_status', 'published')
             ->where(

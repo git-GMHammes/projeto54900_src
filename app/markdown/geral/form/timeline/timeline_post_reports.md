@@ -60,8 +60,7 @@ Uso na Home Feed (2026-09-28): o ícone de bandeira do `PostCard` abre o
 `NewReportModal` (`pages/v1/timeline/home-feed/`) na própria página. O modal
 remove o campo **Publicação** do schema e envia `timeline_post_id` = id do card;
 mostra só Motivo (radio, obrigatório) e Detalhes (opcional). O campo 229 segue
-no banco porque a página admin `/v1/form/timeline-report` o usa. SQL:
-`doc/sql/insert/20260928112046_timeline_report_motivo_radio.sql`.
+no banco porque a página admin `/v1/form/timeline-report` o usa.
 
 Observações de negócio (Processor, Etapa D):
 
@@ -89,9 +88,9 @@ Revisar e então gerar o `INSERT` (`form_manager` → `form_groups` → `form_ro
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

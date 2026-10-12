@@ -13,93 +13,56 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 
 ## Índice
 
-| Palavra-chave                 | Assunto (5 palavras)                      |
-| ----------------------------- | ----------------------------------------- |
-| [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice      |
-| [`chatrooms`](#chatrooms)     | Módulo de salas de chat moderadas         |
-| [`compose`](#compose)         | Setup do ambiente Docker e example public |
-| [`composer`](#composer)       | PHP Composer proibido sem autorização     |
-| [`conexao`](#conexao)         | Conexão de banco por módulo               |
-| [`deepseek`](#deepseek)       | Análise de entendimento do sistema        |
-| [`diagramas`](#diagramas)     | Gerar diagramas vetoriais de telas      |
-| [`formulario`](#formulario)   | Módulo de formulários dinâmicos no banco  |
-| [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost     |
-| [`messages`](#messages)       | Mensagens diretas, nunca um chat          |
-| [`migracao`](#migracao)       | Rodar e reverter migrations CodeIgniter   |
-| [`modulo`](#modulo)           | Como criar novos módulos padronizados     |
-| [`navmenu`](#navmenu)         | Config do app e árvore de navegação       |
-| [`rotas`](#rotas)             | Mapa de todas as rotas REST               |
-| [`schema`](#schema)           | Introspecção do banco por API             |
-| [`timeline`](#timeline)       | Módulo de publicações e timeline          |
-| [`upload`](#upload)           | Módulo de anexos para outros módulos      |
+**1. Entender o sistema**
+
+| #  | Palavra-chave | Assunto (5 palavras) |
+| -- | ------------- | -------------------- |
+| 1 | [`deepseek`](#deepseek) | Análise de entendimento do sistema |
+| 2 | [`diagramas`](#diagramas) | Gerar diagramas vetoriais de telas |
+| 3 | [`modulo`](#modulo) | Como criar novos módulos padronizados |
+
+**2. Ambiente e regras**
+
+| #  | Palavra-chave | Assunto (5 palavras) |
+| -- | ------------- | -------------------- |
+| 4 | [`compose`](#compose) | Setup do ambiente Docker e example public |
+| 5 | [`conexao`](#conexao) | Conexão de banco por módulo |
+| 6 | [`migracao`](#migracao) | Rodar e reverter migrations CodeIgniter |
+| 7 | [`composer`](#composer) | PHP Composer proibido sem autorização |
+
+**3. Base compartilhada**
+
+| #  | Palavra-chave | Assunto (5 palavras) |
+| -- | ------------- | -------------------- |
+| 8 | [`rotas`](#rotas) | Mapa de todas as rotas REST |
+| 9 | [`schema`](#schema) | Introspecção do banco por API |
+| 10 | [`navmenu`](#navmenu) | Config do app e árvore de navegação |
+| 11 | [`formulario`](#formulario) | Módulo de formulários dinâmicos no banco |
+| 12 | [`multiempresa`](#multiempresa) | Login por slug e isolamento por empresa |
+| 13 | [`empresas`](#empresas) | Empresas e acesso individual |
+| 14 | [`upload`](#upload) | Módulo de anexos para outros módulos |
+
+**4. Módulos de negócio**
+
+| #  | Palavra-chave | Assunto (5 palavras) |
+| -- | ------------- | -------------------- |
+| 15 | [`messages`](#messages) | Mensagens diretas, nunca um chat |
+| 16 | [`chatrooms`](#chatrooms) | Módulo de salas de chat moderadas |
+| 17 | [`timeline`](#timeline) | Módulo de publicações e timeline |
+| 18 | [`map`](#map) | Mapas, pontos, trajetos e CEP |
+| 19 | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail |
+
+**5. Operação e manutenção**
+
+| #  | Palavra-chave | Assunto (5 palavras) |
+| -- | ------------- | -------------------- |
+| 20 | [`kinghost`](#kinghost) | Deploy via git na hospedagem KingHost |
+| 21 | [`avaliacao`](#avaliacao) | Valor comercial do sistema, teto |
+| 22 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
 
 ---
 
 ## Resumos
-
-### `atualizacao`
-
-Como manter esta base viva. Todo markdown novo em `src/app/markdown/` exige
-atualizar `README.md`: acrescentar a linha no índice (palavra-chave + frase de
-5 palavras), escrever o bloco de resumo e adicionar o link para o conteúdo
-completo ao fim do próprio resumo. Todo markdown da base começa e termina com um
-link para este `README.md`.
-
-[`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
-
-### `chatrooms`
-
-Salas de chat moderadas: quem cria vira dono/moderador; qualquer usuário
-autenticado (exceto `guest`) entra sem pedir permissão. Sete tabelas —
-`chat_rooms_manager`, `chat_room_members`, `chat_messages`, `chat_room_attachments`
-(anexo em tabela própria, isolada do Upload/Timeline), `chat_room_attachment_reports`
-(denúncia de anexo com bloqueio imediato do autor, sem 3 chances),
-`chat_room_warnings` (advertência automática do filtro de palavrão —
-dicionário JSON estático — 3 delas bloqueiam o membro) e `chat_room_favorites`
-(favorito por usuário, não flag global) — mais as 7 views de apoio, uma por
-tabela. Sala fecha sozinha ao atingir 3 membros bloqueados; só o dono reabre.
-Tela mostra só as últimas 100 mensagens, histórico completo fica no banco.
-Schema aplicado no banco DEV em 2026-09-28
-(`doc/sql/insert/20260928154501_chatrooms_tables.sql`). Backend PHP de
-`chat_rooms_manager` completo (27 rotas, espelha `Timeline/TimelineManager`);
-as outras 6 tabelas, o dicionário de palavrões e o frontend ainda não
-existem.
-
-[`geral/README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views e regras de moderação.
-
-### `compose`
-
-Como levantar o ambiente Docker/Podman do zero: serviços (`mysql`, `adminer`,
-`php`, `node` WebSocket, `nginx`), pastas exigidas pelo build (`docker/php`,
-`docker/mysql`, `docker/node`, `docker/nginx`) e portas expostas no host
-(`54900` app, `54901` mysql, `54902` adminer). `docker-compose.yml` real
-contém credenciais e não deve ser exposto publicamente; usar
-`docker-compose-example.yml` (versionado, só placeholders) como base,
-renomeando e preenchendo credenciais próprias antes de subir a stack.
-
-[`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
-
-### `composer`
-
-O usuário **nunca** autorizou uso de PHP Composer neste projeto. Proibido
-`composer install/require/update/create-project` e criar/editar a pasta
-`vendor/`. Qualquer tarefa que pareça exigir Composer/vendor deve **parar e
-avisar antes de propor plano**, com o texto fixo do alerta. Preferir sempre a
-alternativa nativa do PHP (ex.: `app/Libraries/Auth/JwtService.php` gera JWT
-HS256 só com `hash_hmac`, sem lib externa). Origem: incidente real em
-2026-09-14 — `composer install` rodado e commitado sem autorização, revertido.
-
-[`geral/README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — Composer/vendor proibidos sem autorização explícita.
-
-### `conexao`
-
-Como o sistema conecta aos bancos usando podman e o `docker-compose.yml`. Há a
-conexão `default` (banco `codeigniter54900_db`, credenciais `DB_*` via `env()`)
-e um grupo nomeado por módulo (`mapa`, `agenda`, `chat`, constantes `DB_*` da
-classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
-novo módulo/banco.
-
-[`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
 
 ### `deepseek`
 
@@ -131,63 +94,38 @@ ancorado em nenhum módulo: o módulo aparece apenas como exemplo publicado.
 
 [`geral/diagramas/README_diagrama_timeline_home_feed.drawio`](geral/diagramas/README_diagrama_timeline_home_feed.drawio) — o mesmo exemplo, para editar.
 
-### `formulario`
+### `modulo`
 
-Domínio `Form` da API V1: guarda no banco a definição estrutural de formulários
-dinâmicos (como o `src/public/form_test.html`) e a expõe por APIs REST
-**públicas** (sem JWT). Quatro tabelas encadeadas — `form_manager` (o
-formulário: slug, título, grupo de perfil, rota React, status),
-`form_groups` (subgrupos de contexto), `form_rows` (linhas de 1 a 12 campos) e
-`form_fields` (atributos de qualquer componente do `FormGrid`, em colunas
-explícitas + flags + colunas JSON) — mais a view `view_form_manager` que
-achata os quatro níveis (1 linha por campo) para o front baixar o formulário
-inteiro numa consulta. Segue o padrão de módulo; cada tabela tem as 18 rotas
-canônicas e a view as 9 de leitura (81 no total). Regras de negócio (unicidade
-de slug, FK ativa, teto de 12 do grid, serialização de JSON) nos Processors.
+Padrão **obrigatório** para todo módulo novo da API V1: Routes + Controller +
+Request + Processor/Service + Model + Migration, com classes base e SOLID. Fixa
+a árvore de arquivos, o contrato de rotas (18 de tabela + 10 de view), o
+envelope de resposta e o mapa tipo-de-coluna → regra de validação. Traz o
+checklist para criar um módulo do zero e as pendências em aberto (ex.:
+`DB_GROUP_001` aponta para grupo inexistente).
 
-[`geral/README_modulo_form.md`](geral/README_modulo_form.md) — módulo de formulários dinâmicos da API V1.
+[`geral/ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1.
 
-Migrations/seed de `form` abolidos (2026-09-20) — fonte de verdade agora é
-dump + markdown revisado antes do `INSERT`, mesmo padrão do `README_menu.md`.
+### `compose`
 
-[`geral/README_form.md`](geral/README_form.md) — índice dos 16 formulários já
-desenhados (todos com `INSERT` executado), organizados por pasta de
-`geral/form/`.
+Como levantar o ambiente Docker/Podman do zero: serviços (`mysql`, `adminer`,
+`php`, `node` WebSocket, `nginx`), pastas exigidas pelo build (`docker/php`,
+`docker/mysql`, `docker/node`, `docker/nginx`) e portas expostas no host
+(`54900` app, `54901` mysql, `54902` adminer). `docker-compose.yml` real
+contém credenciais e não deve ser exposto publicamente; usar
+`docker-compose-example.yml` (versionado, só placeholders) como base,
+renomeando e preenchendo credenciais próprias antes de subir a stack.
 
-### `kinghost`
+[`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
 
-Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
-chave SSH de deploy gerada no servidor, deploy key cadastrada no GitHub
-(read-only), `~/.ssh/config` com host alternativo, clone manual em
-`~/www/projeto54900` (painel KingHost não efetivou o clone automático). API
-confirmada em `public/`. Frontend React passou a buildar **direto em**
-`src/public/app/` (versionado no git, não mais `dist/` solto) — deploy é só
-`git push` (local, pede confirmação) + `git pull` (servidor). Documenta um bug
-do Git Bash no Windows: sem `MSYS_NO_PATHCONV=1`, `VITE_BASE_PATH=/...` vira
-caminho do Windows e quebra os assets gerados. Credenciais de produção (DB +
-e-mail + URL do frontend): tentativa com `.env` **abandonada** — a KingHost
-desabilita `putenv()`, e `system/Config/DotEnv.php` chama sem guard (fatal
-error); solução final é `SetEnv` num `.htaccess` na raiz do projeto (fora de
-`public/`, nunca servido, nunca versionado — `/.htaccess` no `.gitignore`),
-que popula `$_SERVER` direto sem passar por `putenv()`. Exige `chmod 644`
-(não `600`, senão Apache não lê e devolve 403). Pendências: deploy automático
-via webhook do painel (hoje é `git pull` manual), credenciais de e-mail e
-migração do banco de produção (o usuário faz manualmente via cliente de banco).
+### `conexao`
 
-[`geral/README_git_kinghost.md`](geral/README_git_kinghost.md) — deploy via git na KingHost: SSH, deploy key, build do frontend e bug do Git Bash.
+Como o sistema conecta aos bancos usando podman e o `docker-compose.yml`. Há a
+conexão `default` (banco `codeigniter54900_db`, credenciais `DB_*` via `env()`)
+e um grupo nomeado por módulo (`mapa`, `agenda`, `chat`, constantes `DB_*` da
+classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
+novo módulo/banco.
 
-### `messages`
-
-Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento, anexo, marcação (@),
-leitura por membro e filtro de palavrão com advertência — **nunca uma sala de chat** (a conversa é
-entre usuários, não uma sala). 8 tabelas e 14 views, **271 rotas** de API V1 (conjunto completo
-Tabela + View por recurso), listas e formulários administrativos (área administrativa **irrestrita**:
-só autorização, sem trava de estado) e o **modo chat** (lista de conversas, conversa privada e de grupo,
-não lidas, regra "só edita enquanto agendada"). Atualização **só por polling** (sem WebSocket) e entrega
-das agendadas **sem cron** (gatilho em toda requisição autenticada; hospedagem só com FTP). Pronto no banco
-DEV. Falta: visibilidade da mensagem de grupo no `messages-manager`, migrations REMAKE e testes permanentes.
-
-[`geral/README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: schema, API, regras, estado e pendências.
+[`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
 
 ### `migracao`
 
@@ -209,32 +147,17 @@ novo REMAKE; todo migrate destrói tudo e refaz tudo (2026-09-24).
 
 [`geral/README_migrate.md`](geral/README_migrate.md) — comandos de migration do CodeIgniter por módulo.
 
-### `modulo`
+### `composer`
 
-Padrão **obrigatório** para todo módulo novo da API V1: Routes + Controller +
-Request + Processor/Service + Model + Migration, com classes base e SOLID. Fixa
-a árvore de arquivos, o contrato de rotas (18 de tabela + 10 de view), o
-envelope de resposta e o mapa tipo-de-coluna → regra de validação. Traz o
-checklist para criar um módulo do zero e as pendências em aberto (ex.:
-`DB_GROUP_001` aponta para grupo inexistente).
+O usuário **nunca** autorizou uso de PHP Composer neste projeto. Proibido
+`composer install/require/update/create-project` e criar/editar a pasta
+`vendor/`. Qualquer tarefa que pareça exigir Composer/vendor deve **parar e
+avisar antes de propor plano**, com o texto fixo do alerta. Preferir sempre a
+alternativa nativa do PHP (ex.: `app/Libraries/Auth/JwtService.php` gera JWT
+HS256 só com `hash_hmac`, sem lib externa). Origem: incidente real em
+2026-09-14 — `composer install` rodado e commitado sem autorização, revertido.
 
-[`geral/ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1.
-
-### `navmenu`
-
-Dois recursos ligados por FK: `nav_manager` (config/branding do app — nome,
-imagem, versão) e `menu_manager` (árvore de itens navegáveis de um nav, FK
-`nav_manager_id` + auto-relacionamento `parent_id`). `menu_manager` guarda
-**todas** as rotas do site na mesma tabela; a distinção "aparece no navbar" é
-feita por faixa de `sort_order` (`<100` = navbar real, `>=1000` = catálogo
-extra, `>=2000` = árvore administrativa exibida só na tela de gestão). O
-Navbar real (`Navbar.tsx` + `useSiteMenu.ts`) lê só a faixa `<100` com
-`parent_id` nulo, com fallback estático se a API falhar. Documenta também um
-bug conhecido (charset `utf8` em vez de `utf8mb4` na conexão `default` —
-título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
-`MenuManagerSeeder`.
-
-[`geral/README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu, convenção de sort_order, bug de charset e seeders.
+[`geral/README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — Composer/vendor proibidos sem autorização explícita.
 
 ### `rotas`
 
@@ -270,14 +193,69 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 
 [`geral/README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — introspecção do banco pela API (`db-schema`).
 
-### `timeline`
+### `navmenu`
 
-Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
-Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais as 7 views: a do feed (`view_timeline_posts`) e uma de apoio por tabela.
-Anexo em tabela própria, isolada do módulo Upload e do Calendar; reação e estrela são ação, não formulário.
-Tabelas, views e as **189 rotas** (7 tabelas × 18 + 7 views × 9) aplicadas no banco DEV e no `Config/Routes.php`/`route_manager` em 2026-09-26; backend PHP (Controller/Request/Processor/Model) implementado e testado rota a rota, e os 5 `form_manager` + o `list_manager` do feed inseridos, em 2026-09-27 — backend completo. Fase 2 do frontend também concluída em 2026-09-27 (listagem clássica do feed em `/v1/timeline-posts`, criação via renderizador genérico, curtir/avaliar/republicar funcionando, menu ativo); falta só a Fase 3 (Home Feed com feed misto/scroll infinito) e as páginas de detalhe/edição de post.
+Dois recursos ligados por FK: `nav_manager` (config/branding do app — nome,
+imagem, versão) e `menu_manager` (árvore de itens navegáveis de um nav, FK
+`nav_manager_id` + auto-relacionamento `parent_id`). `menu_manager` guarda
+**todas** as rotas do site na mesma tabela; a distinção "aparece no navbar" é
+feita por faixa de `sort_order` (`<100` = navbar real, `>=1000` = catálogo
+extra, `>=2000` = árvore administrativa exibida só na tela de gestão). O
+Navbar real (`Navbar.tsx` + `useSiteMenu.ts`) lê só a faixa `<100` com
+`parent_id` nulo, com fallback estático se a API falhar. Documenta também um
+bug conhecido (charset `utf8` em vez de `utf8mb4` na conexão `default` —
+título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
+`MenuManagerSeeder`.
 
-[`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, views (feed e apoio) e regras.
+[`geral/README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu, convenção de sort_order, bug de charset e seeders.
+
+### `formulario`
+
+Domínio `Form` da API V1: guarda no banco a definição estrutural de formulários
+dinâmicos (como o `src/public/form_test.html`) e a expõe por APIs REST
+**públicas** (sem JWT). Quatro tabelas encadeadas — `form_manager` (o
+formulário: slug, título, grupo de perfil, rota React, status),
+`form_groups` (subgrupos de contexto), `form_rows` (linhas de 1 a 12 campos) e
+`form_fields` (atributos de qualquer componente do `FormGrid`, em colunas
+explícitas + flags + colunas JSON) — mais a view `view_form_manager` que
+achata os quatro níveis (1 linha por campo) para o front baixar o formulário
+inteiro numa consulta. Segue o padrão de módulo; cada tabela tem as 18 rotas
+canônicas e a view as 9 de leitura (81 no total). Regras de negócio (unicidade
+de slug, FK ativa, teto de 12 do grid, serialização de JSON) nos Processors.
+
+[`geral/README_modulo_form.md`](geral/README_modulo_form.md) — módulo de formulários dinâmicos da API V1.
+
+Migrations/seed de `form` abolidos (2026-09-20) — fonte de verdade agora é
+dump + markdown revisado antes do `INSERT`, mesmo padrão do `README_menu.md`.
+
+[`geral/README_form.md`](geral/README_form.md) — índice dos 16 formulários já
+desenhados (todos com `INSERT` executado), organizados por pasta de
+`geral/form/`.
+
+### `multiempresa`
+
+Cada empresa é um tenant. O endereço é auto declarado: `/v1/login` e `/default/v1/login` entram na DEFAULT;
+`/<slug-empresa>/v1/login` só aceita usuário com o id da empresa em `company_ids`. Falhas de login são sempre
+a mesma resposta genérica (401), sem revelar motivo. A sessão fica amarrada a UMA empresa (claim `cid`, conferida a
+cada chamada). Os dados são isolados na API por um trait nos models base (`column`, `via_table`, `membership`, `self`):
+39 tabelas de conteúdo ganharam `company_id`, a gravação sempre usa a empresa da sessão e as chaves estrangeiras
+são conferidas entre empresas. Cadastro: só DEFAULT nasce `active`; qualquer outra combinação nasce `inactive`.
+
+[`geral/README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — login por slug, sessão, escopo, migrations, testes e pendências.
+
+[`geral/README_multiempresa_guia_modulos.md`](geral/README_multiempresa_guia_modulos.md) — fluxo de ponta a ponta, modo de escopo por módulo e passo a passo para módulo novo.
+
+### `empresas`
+
+Cadastro de empresas e controle de acesso. Tabela `company_manager` (empresa **DEFAULT** id 1, protegida contra exclusão),
+coluna JSON `user_manager.company_ids` (ids das empresas que o usuário acessa; em **host de desenvolvimento**
+quem nasce sem empresa entra na DEFAULT — o container roda com `ENVIRONMENT=production`, então "dev" é decidido por
+`Config\Company::$devHosts`) e tabela `user_resource_access` (permissão **individual** do usuário a um form ou list,
+independente da empresa). Rota `GET resource-access/check` responde por precedência: admin → linha do usuário
+(`allowed` 1/0) → `roles` do form/list. 101 rotas: CRUD de empresas (leitura aberta, escrita só admin), acesso individual (só admin) e **membros por empresa** (`company_members`, espelho de `message_group_members`: 18 rotas + `sync`, 3 views, escrita só admin, `company_ids` do usuário recalculado a cada vínculo). Menu "Empresa" com submenus.
+Aplicado no banco DEV em 2026-10-11 sem migration (entra no próximo REMAKE autorizado); verificação só no frontend por ora.
+
+[`geral/README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: tabelas, regras, rotas e pendências.
 
 ### `upload`
 
@@ -292,6 +270,66 @@ tabela sem foreign key e 3 rotas extras (`upload` multipart, `serve`,
 como outro módulo anexa/lista/exibe arquivos.
 
 [`geral/README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo de upload/anexos da API V1.
+
+### `messages`
+
+Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento, anexo, marcação (@),
+leitura por membro e filtro de palavrão com advertência — **nunca uma sala de chat** (a conversa é
+entre usuários, não uma sala). 8 tabelas e 14 views, **271 rotas** de API V1 (conjunto completo
+Tabela + View por recurso), listas e formulários administrativos (área administrativa **irrestrita**:
+só autorização, sem trava de estado) e o **modo chat** (lista de conversas, conversa privada e de grupo,
+não lidas, regra "só edita enquanto agendada"). Atualização **só por polling** (sem WebSocket) e entrega
+das agendadas **sem cron** (gatilho em toda requisição autenticada; hospedagem só com FTP). Pronto no banco
+DEV. Falta: visibilidade da mensagem de grupo no `messages-manager`, migrations REMAKE e testes permanentes.
+
+[`geral/README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: schema, API, regras, estado e pendências.
+
+### `chatrooms`
+
+Salas de chat moderadas: quem cria vira dono/moderador; qualquer usuário
+autenticado (exceto `guest`) entra sem pedir permissão. Sete tabelas —
+`chat_rooms_manager`, `chat_room_members`, `chat_messages`, `chat_room_attachments`
+(anexo em tabela própria, isolada do Upload/Timeline), `chat_room_attachment_reports`
+(denúncia de anexo com bloqueio imediato do autor, sem 3 chances),
+`chat_room_warnings` (advertência automática do filtro de palavrão —
+dicionário JSON estático — 3 delas bloqueiam o membro) e `chat_room_favorites`
+(favorito por usuário, não flag global) — mais as 7 views de apoio, uma por
+tabela. Sala fecha sozinha ao atingir 3 membros bloqueados; só o dono reabre.
+Tela mostra só as últimas 100 mensagens, histórico completo fica no banco.
+Schema aplicado no banco DEV em 2026-09-28. Backend PHP de
+`chat_rooms_manager` completo (27 rotas, espelha `Timeline/TimelineManager`);
+as outras 6 tabelas, o dicionário de palavrões e o frontend ainda não
+existem.
+
+[`geral/README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views e regras de moderação.
+
+### `timeline`
+
+Módulo Messages / recorte Timeline: o usuário ganha uma timeline (tabela pai) na primeira publicação e publica posts com anexos.
+Sete tabelas — `timeline_manager`, `timeline_posts` (republicação por `repost_of_id`), `timeline_post_attachments`, `timeline_post_comments`, `timeline_post_reactions`, `timeline_post_ratings` e `timeline_post_reports` — mais as 7 views: a do feed (`view_timeline_posts`) e uma de apoio por tabela.
+Anexo em tabela própria, isolada do módulo Upload e do Calendar; reação e estrela são ação, não formulário.
+Tabelas, views e as **189 rotas** (7 tabelas × 18 + 7 views × 9) aplicadas no banco DEV e no `Config/Routes.php`/`route_manager` em 2026-09-26; backend PHP (Controller/Request/Processor/Model) implementado e testado rota a rota, e os 5 `form_manager` + o `list_manager` do feed inseridos, em 2026-09-27 — backend completo. Fase 2 do frontend também concluída em 2026-09-27 (listagem clássica do feed em `/v1/timeline-posts`, criação via renderizador genérico, curtir/avaliar/republicar funcionando, menu ativo); falta só a Fase 3 (Home Feed com feed misto/scroll infinito) e as páginas de detalhe/edição de post.
+
+[`geral/README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: tabelas, views (feed e apoio) e regras.
+
+### `map`
+
+Módulo de mapas sobre Leaflet + OpenStreetMap + OpenRouteService + Nominatim +
+ViaCEP (nenhum tem banco; tudo persiste no MySQL, banco `default`, prefixo
+`map_`). Desenho aprovado em 2026-10-11 com 10 tabelas e 10 views: `map_links`
+(vínculo universal: qualquer módulo registrado em `Config/MapLinkables.php`, inclusive
+Upload, recebe CEP, endereço, ponto ou rota por `module` + `reference_id`) e `map_icons`,
+`map_manager`, `map_categories`, `map_postal_codes`, `map_addresses`,
+`map_points`, `map_routes`, `map_route_stops` e `map_geocode_cache` (exigido
+pela política do Nominatim). Coordenadas em `DECIMAL(10,7)`, trajeto em GeoJSON.
+Banco DEV aplicado e backend PHP completo (270 rotas + 5 do proxy `map-geo`, `jwtauth` por wildcard,
+`adminonly` na exclusão definitiva, regras de slug/CEP/coordenadas/hash nos
+Processors); frontend pronto (ver `README_mapa.md` do frontend), ainda não verificado em tela. Proxy `map-geo` (Nominatim, CEP por ViaCEP/BrasilAPI,
+trajeto e tempo por OpenRouteService) com cache em `map_geocode_cache`, espaçamento
+de 1 req/s e limite por usuário; a chave do ORS vem só do ambiente do container
+(`ORS_API_KEY`), nunca de arquivo versionado.
+
+[`geral/README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: tabelas, colunas, decisões e pendências.
 
 ### `calendar-event-invites`
 
@@ -310,6 +348,56 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 
 [`geral/README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo de convite de evento por e-mail/token da API V1.
 
+### `kinghost`
+
+Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
+chave SSH de deploy gerada no servidor, deploy key cadastrada no GitHub
+(read-only), `~/.ssh/config` com host alternativo, clone manual em
+`~/www/projeto54900` (painel KingHost não efetivou o clone automático). API
+confirmada em `public/`. Frontend React passou a buildar **direto em**
+`src/public/app/` (versionado no git, não mais `dist/` solto) — deploy é só
+`git push` (local, pede confirmação) + `git pull` (servidor). Documenta um bug
+do Git Bash no Windows: sem `MSYS_NO_PATHCONV=1`, `VITE_BASE_PATH=/...` vira
+caminho do Windows e quebra os assets gerados. Credenciais de produção (DB +
+e-mail + URL do frontend): tentativa com `.env` **abandonada** — a KingHost
+desabilita `putenv()`, e `system/Config/DotEnv.php` chama sem guard (fatal
+error); solução final é `SetEnv` num `.htaccess` na raiz do projeto (fora de
+`public/`, nunca servido, nunca versionado — `/.htaccess` no `.gitignore`),
+que popula `$_SERVER` direto sem passar por `putenv()`. Exige `chmod 644`
+(não `600`, senão Apache não lê e devolve 403). Pendências: deploy automático
+via webhook do painel (hoje é `git pull` manual), credenciais de e-mail e
+migração do banco de produção (o usuário faz manualmente via cliente de banco).
+
+[`geral/README_git_kinghost.md`](geral/README_git_kinghost.md) — deploy via git na KingHost: SSH, deploy key, build do frontend e bug do Git Bash.
+
+### `avaliacao`
+
+Avaliação de mercado (teto), a pedido do usuário em 2026-10-12, dos dois
+modelos de monetização do sistema: venda de código-fonte e assinatura SaaS
+mensal. Resumo do sistema (9 módulos: Form/List builder, Map, Messages,
+ChatRooms, Timeline, Companies multi-tenant, Calendar, Upload, Nav/Menu),
+comparáveis de mercado (Retool/Appsmith, SaaS verticais com mapa/mensageria,
+venda white-label), composição de custo de infraestrutura (servidor, banco
+dedicado, fileserver pesado, APIs de mapa, chaves/licenças/domínio, reserva
+para IA futura, suporte) e a memória de cálculo linha a linha. Um **card único
+de investimento** dilui todos os custos e o lucro no valor total, nas duas
+ofertas: compra do sistema R$ 238.500–374.400 (desenvolvimento + implantação e
+12 meses de operação assistida, markup 50%) e uso mensal por empresa
+R$ 3.000–8.700 (markup 50%; extremo 100%: R$ 4.000–11.600). Ressalva: é
+estimativa de mercado, não proposta comercial fechada.
+
+[`geral/README_avaliacao_comercial_saas.md`](geral/README_avaliacao_comercial_saas.md) — card único de investimento (compra e uso mensal) com custos e lucro diluídos, memória de cálculo e infra.
+
+### `atualizacao`
+
+Como manter esta base viva. Todo markdown novo em `src/app/markdown/` exige
+atualizar `README.md`: acrescentar a linha no índice (palavra-chave + frase de
+5 palavras), escrever o bloco de resumo e adicionar o link para o conteúdo
+completo ao fim do próprio resumo. Todo markdown da base começa e termina com um
+link para este `README.md`.
+
+[`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
+
 ---
 
 ## Conteúdo
@@ -317,8 +405,13 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 ### `geral/`
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
+- [`README_avaliacao_comercial_saas.md`](geral/README_avaliacao_comercial_saas.md) — avaliação de mercado (teto): venda de código-fonte x SaaS mensal, composição de custo de infra e memória de cálculo.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
+- [`README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — multiempresa: login por slug, sessão amarrada à empresa, isolamento de dados na API, cadastro e pendências.
+- [`README_multiempresa_guia_modulos.md`](geral/README_multiempresa_guia_modulos.md) — multiempresa: fluxo completo, escopo por módulo e como incluir módulo novo.
+- [`README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: empresas, `company_ids` do usuário e permissão individual a form/list.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
+- [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
@@ -333,3 +426,14 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 - [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.
 - [`README_rotas_swagger.md`](geral/README_rotas_swagger.md) — mapa de todas as rotas REST da API V1, por módulo.
 - [`ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1 (Routes/Controller/Request/Processor/Model/Migration).
+
+---
+
+### 📌 Metadados do Autor
+
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
+| **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

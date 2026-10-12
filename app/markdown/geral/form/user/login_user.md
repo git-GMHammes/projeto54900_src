@@ -10,8 +10,8 @@ aqui antes do `INSERT` (não migration, não seed — ver aviso em
 
 **O que é:** tela de login (`/v1/user-auth`, `POST /api/v1/auth`) — 1 único
 grupo, 2 campos (`username`, `password_hash`), ambos coluna real de
-`user_manager`. Reconstrução fiel do que existia no dump
-`doc/sql/dump/202609201602.sql` (ids antigos 79–80, `form_manager` id=5),
+`user_manager`. Reconstrução fiel do que existia no banco
+(ids antigos 79–80, `form_manager` id=5),
 revisado.
 
 ## Regra de campo — mesma do `form-constructor`

@@ -15,6 +15,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'messages_manager';
     protected $primaryKey     = 'id';
@@ -51,7 +54,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findVisibleIds(int $userId): array
     {
-        $rows = $this->db->table($this->table)
+        $rows = $this->scopedTable()
             ->select('id')
             ->groupStart()
                 ->where('sender_user_manager_id', $userId)
@@ -77,16 +80,20 @@ class SqlTableModel extends BaseTableModel
     {
         $now = date('Y-m-d H:i:s');
 
-        $this->builder()
-            ->where('status', 'scheduled')
-            ->where('scheduled_at <=', $now)
-            ->where('deleted_at', null)
-            ->set('status', 'sent')
-            ->set('sent_at', 'scheduled_at', false)
-            ->set('updated_at', $now)
-            ->update();
+        // Rotina de sistema: entrega as agendadas de TODAS as empresas, nao so a da sessao que
+        // disparou o tick. So muda status/sent_at; nenhum dado e devolvido a quem chamou.
+        return $this->withoutCompanyScope(function () use ($now): int {
+            $this->builder()
+                ->where('status', 'scheduled')
+                ->where('scheduled_at <=', $now)
+                ->where('deleted_at', null)
+                ->set('status', 'sent')
+                ->set('sent_at', 'scheduled_at', false)
+                ->set('updated_at', $now)
+                ->update();
 
-        return $this->db->affectedRows();
+            return $this->db->affectedRows();
+        });
     }
 
     /**
@@ -129,7 +136,9 @@ class SqlTableModel extends BaseTableModel
     public function countUnreadGroups(int $userId): int
     {
         $row = $this->db->query(
-            'SELECT COALESCE(SUM(mgcs_unread_count), 0) AS c FROM view_message_group_chat_summary WHERE mgcs_member_user_manager_id = ?',
+            'SELECT COALESCE(SUM(s.mgcs_unread_count), 0) AS c FROM view_message_group_chat_summary s'
+            . ' JOIN message_groups_manager g ON g.id = s.mgcs_group_id AND ' . $this->companySql('g')
+            . ' WHERE s.mgcs_member_user_manager_id = ?',
             [$userId]
         )->getRow();
 
@@ -148,7 +157,7 @@ class SqlTableModel extends BaseTableModel
             return [];
         }
 
-        $rows = $this->db->table('message_attachments')
+        $rows = $this->companyTable('message_attachments')
             ->select('id, messages_manager_id, original_name, category, file_size')
             ->whereIn('messages_manager_id', $messageIds)
             ->where('status', 'active')

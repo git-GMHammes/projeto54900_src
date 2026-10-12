@@ -48,6 +48,8 @@ class JwtService
             'role_slug'   => $claims['role_slug'],
             'remote_addr' => $claims['remote_addr'],
             'sid'         => $claims['sid'],
+            // Empresa da sessao (id de company_manager): a sessao nasce amarrada a UMA empresa, a do login.
+            'cid'         => $claims['cid'] ?? null,
             // Enigma de ofuscacao (distracao ao curioso), sem uso em validacao.
             'geheimnis'   => md5($role . $ip . date('d')),
         ]);
@@ -67,6 +69,7 @@ class JwtService
             'exp' => $now + $this->config->refreshTtl,
             'typ' => 'refresh',
             'sub' => $claims['sub'],
+            'cid' => $claims['cid'] ?? null,
         ]);
     }
 

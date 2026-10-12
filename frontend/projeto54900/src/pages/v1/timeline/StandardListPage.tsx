@@ -86,6 +86,8 @@ import {
   listActionsTable,
   timelinePostAttachmentsTable,
   timelinePostAttachmentsUpload,
+  checkResourceAccess,
+  isDenied,
 } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
@@ -263,6 +265,12 @@ export default function StandardListPage({
       if (!found) {
         setManager(null);
         setDefsError(`Listagem '${slug}' não encontrada em list_manager.`);
+        return;
+      }
+      // Acesso individual a esta listagem (user_resource_access / roles).
+      if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
+        setManager(null);
+        setDefsError('Voce nao tem acesso a esta listagem.');
         return;
       }
       setManager(found);

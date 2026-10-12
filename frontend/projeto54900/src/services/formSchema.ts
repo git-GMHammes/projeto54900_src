@@ -162,6 +162,8 @@ interface RawOption {
   id: string;
   value: string;
   label: string;
+  /** Demais chaves textuais do item (ex.: `tile_url`), usadas por `fillFields` do select. */
+  [extra: string]: string;
 }
 
 function optionList(v: unknown): RawOption[] | undefined {
@@ -173,7 +175,15 @@ function optionList(v: unknown): RawOption[] | undefined {
     const rec = item as Record<string, unknown>;
     const value = str(rec.value) ?? str(rec.id);
     if (value === undefined) return;
+    // Chaves extras (so texto/numero) acompanham a opcao: o select as usa em `fillFields`.
+    const extras: Record<string, string> = {};
+    for (const [key, raw] of Object.entries(rec)) {
+      if (key === 'id' || key === 'value' || key === 'label' || key === 'nome') continue;
+      const text = str(raw);
+      if (text !== undefined) extras[key] = text;
+    }
     out.push({
+      ...extras,
       id: str(rec.id) ?? `opt_${i}`,
       value,
       label: str(rec.label) ?? str(rec.nome) ?? value,
@@ -320,6 +330,16 @@ function buildField(row: ApiRow): AnyFieldSchema {
   } else if (type === 'radio' || type === 'checkbox') {
     set('options', optionList(row.fc_options_json) ?? []);
     if (bool(row.fc_inline)) set('inline', true);
+    // Opcoes remotas (checkbox): select_config_json { src, valueKey, labelKey } — um checkbox por item.
+    if (type === 'checkbox') {
+      const cfg = json(row.fc_select_config_json);
+      if (cfg && typeof cfg === 'object') {
+        const rec = cfg as Record<string, unknown>;
+        set('src', str(rec.src));
+        set('valueKey', str(rec.valueKey));
+        set('labelKey', str(rec.labelKey));
+      }
+    }
   } else if (type === 'data' || type === 'datahora') {
     set('min', str(row.fc_min_date));
     set('max', str(row.fc_max_date));

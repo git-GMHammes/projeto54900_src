@@ -31,6 +31,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'calendar_manager';
     protected $primaryKey     = 'id';
@@ -103,7 +106,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findGuestInvitedCalendarIds(int $userId): array
     {
-        $rows = $this->db->table('calendar_events')
+        $rows = $this->companyTable('calendar_events')
             ->select('calendar_events.calendar_id')
             ->join('calendar_event_attendees', 'calendar_event_attendees.calendar_event_id = calendar_events.id')
             ->where('calendar_event_attendees.user_manager_id', $userId)
@@ -123,7 +126,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function hasInvitedEventForCalendar(int $calendarId, int $userId): bool
     {
-        return $this->db->table('calendar_events')
+        return $this->companyTable('calendar_events')
             ->join('calendar_event_attendees', 'calendar_event_attendees.calendar_event_id = calendar_events.id')
             ->where('calendar_events.calendar_id', $calendarId)
             ->where('calendar_event_attendees.user_manager_id', $userId)
@@ -141,7 +144,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findOwnerIds(int $userId): array
     {
-        $rows = $this->db->table($this->table)
+        $rows = $this->scopedTable()
             ->select('id')
             ->where('user_manager_id', $userId)
             ->get()

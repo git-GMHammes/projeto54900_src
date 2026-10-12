@@ -15,6 +15,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_group_messages';
     protected $primaryKey     = 'id';
@@ -70,13 +73,13 @@ class SqlTableModel extends BaseTableModel
     /** Mensagem (messages_manager) inclusive soft-deletada; null se nao existe. */
     public function findMessage(int $messageId): ?array
     {
-        return $this->db->table('messages_manager')->where('id', $messageId)->get()->getRowArray();
+        return $this->companyTable('messages_manager')->where('id', $messageId)->get()->getRowArray();
     }
 
     /** Grupo (dono e status), sem soft-deletado; null se nao existe. */
     public function findGroup(int $groupId): ?array
     {
-        return $this->db->table('message_groups_manager')
+        return $this->companyTable('message_groups_manager')
             ->select('id, owner_user_manager_id, status')
             ->where('id', $groupId)
             ->where('deleted_at', null)
@@ -87,7 +90,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table('message_group_members')
+        return $this->companyTable('message_group_members')
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')
@@ -101,16 +104,16 @@ class SqlTableModel extends BaseTableModel
         $row['recipient_user_manager_id'] = null;
         $row['read_at']                   = null;
 
-        return $this->db->table('messages_manager')->insert($row) ? (int) $this->db->insertID() : 0;
+        return $this->db->table('messages_manager')->insert($this->withCompany($row)) ? (int) $this->db->insertID() : 0;
     }
 
     /** Insere a ligacao mensagem-grupo e devolve o id (0 se falhar). */
     public function insertLink(int $messageId, int $groupId): int
     {
-        $ok = $this->db->table($this->table)->insert([
+        $ok = $this->db->table($this->table)->insert($this->withCompany([
             'messages_manager_id'       => $messageId,
             'message_groups_manager_id' => $groupId,
-        ]);
+        ]));
 
         return $ok ? (int) $this->db->insertID() : 0;
     }
@@ -118,25 +121,25 @@ class SqlTableModel extends BaseTableModel
     /** Atualiza colunas da mensagem. */
     public function updateMessage(int $messageId, array $fields): void
     {
-        $this->db->table('messages_manager')->where('id', $messageId)->update($fields);
+        $this->companyTable('messages_manager')->where('id', $messageId)->update($fields);
     }
 
     /** Marca a mensagem como excluida (soft). */
     public function softDeleteMessage(int $messageId): void
     {
-        $this->db->table('messages_manager')->where('id', $messageId)->update(['deleted_at' => date('Y-m-d H:i:s')]);
+        $this->companyTable('messages_manager')->where('id', $messageId)->update(['deleted_at' => date('Y-m-d H:i:s')]);
     }
 
     /** Restaura a mensagem excluida. */
     public function restoreMessage(int $messageId): void
     {
-        $this->db->table('messages_manager')->where('id', $messageId)->update(['deleted_at' => null]);
+        $this->companyTable('messages_manager')->where('id', $messageId)->update(['deleted_at' => null]);
     }
 
     /** Exclui a mensagem em definitivo (a ligacao sai junto, por FK ON DELETE CASCADE). */
     public function hardDeleteMessage(int $messageId): void
     {
-        $this->db->table('messages_manager')->where('id', $messageId)->delete();
+        $this->companyTable('messages_manager')->where('id', $messageId)->delete();
     }
 
     /**
@@ -146,7 +149,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function deletedMessageIds(?int $id = null): array
     {
-        $builder = $this->db->table($this->table)->select('messages_manager_id')->where('deleted_at IS NOT NULL', null, false);
+        $builder = $this->scopedTable()->select('messages_manager_id')->where('deleted_at IS NOT NULL', null, false);
         if ($id !== null) {
             $builder->where('id', $id);
         }
@@ -177,7 +180,7 @@ class SqlTableModel extends BaseTableModel
                JOIN messages_manager m ON m.id = l.messages_manager_id AND m.deleted_at IS NULL
                LEFT JOIN user_manager um ON um.id = m.sender_user_manager_id
                LEFT JOIN user_profiles uc ON uc.user_manager_id = um.id AND uc.deleted_at IS NULL
-              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL
+              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL AND " . $this->companySql('l') . "
                 AND (m.status = 'sent' OR (m.status = 'scheduled' AND m.sender_user_manager_id = ?))
               ORDER BY COALESCE(m.sent_at, m.scheduled_at, m.created_at) DESC, m.id DESC
               LIMIT " . (int) $limit,
@@ -192,7 +195,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function activeMemberIds(int $groupId): array
     {
-        $rows = $this->db->table('message_group_members')
+        $rows = $this->companyTable('message_group_members')
             ->select('user_manager_id')
             ->where('message_groups_manager_id', $groupId)
             ->where('status', 'active')
@@ -213,7 +216,7 @@ class SqlTableModel extends BaseTableModel
             "SELECT COUNT(0) AS c
                FROM message_group_messages l
                JOIN messages_manager m ON m.id = l.messages_manager_id AND m.deleted_at IS NULL
-              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL
+              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL AND " . $this->companySql('l') . "
                 AND m.status = 'sent' AND m.sender_user_manager_id <> ?
                 AND NOT EXISTS (SELECT 1 FROM message_group_reads r
                                  WHERE r.messages_manager_id = m.id AND r.user_manager_id = ? AND r.deleted_at IS NULL)",
@@ -225,11 +228,11 @@ class SqlTableModel extends BaseTableModel
         }
 
         $this->db->query(
-            "INSERT INTO message_group_reads (messages_manager_id, user_manager_id, read_at, created_at, updated_at)
-             SELECT m.id, ?, NOW(), NOW(), NOW()
+            "INSERT INTO message_group_reads (company_id, messages_manager_id, user_manager_id, read_at, created_at, updated_at)
+             SELECT l.company_id, m.id, ?, NOW(), NOW(), NOW()
                FROM message_group_messages l
                JOIN messages_manager m ON m.id = l.messages_manager_id AND m.deleted_at IS NULL
-              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL
+              WHERE l.message_groups_manager_id = ? AND l.deleted_at IS NULL AND " . $this->companySql('l') . "
                 AND m.status = 'sent' AND m.sender_user_manager_id <> ?
              ON DUPLICATE KEY UPDATE deleted_at = NULL",
             [$userId, $groupId, $userId]

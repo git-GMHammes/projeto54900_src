@@ -15,7 +15,7 @@ em [`README_modulo_form.md`](../../README_modulo_form.md)).
 módulo Form** — o formulário edita a si mesmo. É a mesma ideia dogfooding já
 usada em `list_manager` (ids `form-manager`/`form-groups`/`form-rows`/
 `form-fields`, listagens que leem as próprias tabelas do módulo). Reconstrução
-fiel do que existia no dump `doc/sql/dump/202609201602.sql` (ids antigos
+fiel do que existia no banco (ids antigos
 1–57), revisado e sem os problemas encontrados no form `calendario` (nenhum
 `field_name` diverge da coluna real — ver "Regra de campo" abaixo).
 
@@ -252,9 +252,9 @@ inventar o que não está aqui.
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

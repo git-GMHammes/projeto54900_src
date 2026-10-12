@@ -11,8 +11,8 @@ aqui antes do `INSERT` (não migration, não seed — ver aviso em
 **O que é:** segunda etapa do cadastro — dados pessoais
 (`user_profiles`), ligados à etapa 1
 ([`create_user_manager.md`](create_user_manager.md), `user_manager`) pela
-chave `user_manager_id`. Reconstrução fiel do dump
-`doc/sql/dump/202609201602.sql` (ids antigos 68–74, 77–78, `form_manager`
+chave `user_manager_id`. Reconstrução fiel do que existia
+no banco (ids antigos 68–74, 77–78, `form_manager`
 id=4).
 
 ## A chave que liga as duas etapas

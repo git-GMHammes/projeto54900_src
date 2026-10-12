@@ -11,6 +11,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_mentions';
     protected $primaryKey     = 'id';
@@ -56,7 +59,7 @@ class SqlTableModel extends BaseTableModel
     /** Mensagem de GRUPO (grupo, dono, remetente, status); null se nao e de grupo ou foi excluida. */
     public function findGroupMessage(int $messageId): ?array
     {
-        return $this->db->table('messages_manager mm')
+        return $this->companyTable('messages_manager mm')
             ->select('mm.id, mm.status, mm.sender_user_manager_id AS sender_id, mgl.message_groups_manager_id AS group_id, mg.owner_user_manager_id AS owner_id')
             ->join('message_group_messages mgl', 'mgl.messages_manager_id = mm.id AND mgl.deleted_at IS NULL')
             ->join('message_groups_manager mg', 'mg.id = mgl.message_groups_manager_id AND mg.deleted_at IS NULL')
@@ -69,7 +72,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table('message_group_members')
+        return $this->companyTable('message_group_members')
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')
@@ -86,7 +89,7 @@ class SqlTableModel extends BaseTableModel
     /** Marcacao (mensagem, usuario), inclusive soft-deletada; null se nunca existiu. */
     public function findPair(int $messageId, int $userId): ?array
     {
-        return $this->db->table($this->table)
+        return $this->scopedTable()
             ->where('messages_manager_id', $messageId)
             ->where('user_manager_id', $userId)
             ->get()
@@ -96,13 +99,13 @@ class SqlTableModel extends BaseTableModel
     /** Quantas marcacoes ativas a mensagem ja tem. */
     public function countForMessage(int $messageId): int
     {
-        return $this->db->table($this->table)->where('messages_manager_id', $messageId)->where('deleted_at', null)->countAllResults();
+        return $this->scopedTable()->where('messages_manager_id', $messageId)->where('deleted_at', null)->countAllResults();
     }
 
     /** Insere a marcacao e devolve o id (0 se falhar). */
     public function insertMention(int $messageId, int $userId): int
     {
-        $ok = $this->db->table($this->table)->insert(['messages_manager_id' => $messageId, 'user_manager_id' => $userId]);
+        $ok = $this->db->table($this->table)->insert($this->withCompany(['messages_manager_id' => $messageId, 'user_manager_id' => $userId]));
 
         return $ok ? (int) $this->db->insertID() : 0;
     }
@@ -110,7 +113,7 @@ class SqlTableModel extends BaseTableModel
     /** Reativa uma marcacao soft-deletada (limpa deleted_at). */
     public function reactivate(int $id): void
     {
-        $this->db->table($this->table)->where('id', $id)->update(['deleted_at' => null]);
+        $this->scopedTable()->where('id', $id)->update(['deleted_at' => null]);
     }
 
     /**
@@ -125,7 +128,7 @@ class SqlTableModel extends BaseTableModel
             return [];
         }
 
-        $rows = $this->db->table($this->table . ' t')
+        $rows = $this->companyTable($this->table . ' t')
             ->select('t.messages_manager_id, t.user_manager_id, uc.name AS user_name, um.username AS username')
             ->join('user_manager um', 'um.id = t.user_manager_id', 'left')
             ->join('user_profiles uc', 'uc.user_manager_id = um.id AND uc.deleted_at IS NULL', 'left')
@@ -147,7 +150,7 @@ class SqlTableModel extends BaseTableModel
     /** Remove (soft) as marcacoes da mensagem cujo usuario NAO esta em $keepUserIds. */
     public function softDeleteExcept(int $messageId, array $keepUserIds): void
     {
-        $builder = $this->db->table($this->table)->where('messages_manager_id', $messageId)->where('deleted_at', null);
+        $builder = $this->scopedTable()->where('messages_manager_id', $messageId)->where('deleted_at', null);
         if ($keepUserIds !== []) {
             $builder->whereNotIn('user_manager_id', $keepUserIds);
         }

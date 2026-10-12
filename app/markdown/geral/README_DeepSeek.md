@@ -28,7 +28,7 @@ Fontes lidas para montar esta análise:
 | `README_migrate.md`                                                                                      | modelo REMAKE, comandos `spark` e as proibições                                               |
 | `README_form_builder.md`                                                                                 | construtor de formulários e o padrão árvore + modal                                           |
 | `README_atualiza_readme.md`                                                                              | procedimento obrigatório de manutenção do índice da base                                      |
-| `doc/sql/dump/202609201836.sql`, `doc/sql/insert/*.sql`                                                  | estado real das tabelas de definição (`form_*`, `list_*`, `menu_manager`, `route_manager`)    |
+| banco DEV (`SHOW CREATE TABLE`/`SELECT` nas tabelas de definição)                                        | estado real das tabelas de definição (`form_*`, `list_*`, `menu_manager`, `route_manager`)    |
 | `src/app/Database/Migrations/`                                                                           | conjunto REMAKE vigente                                                                       |
 | `FormBuild.tsx`, `FormConstructorBuildPage.tsx`, `FormConstructorListPage.tsx`, `routes/v1/*.routes.tsx` | cadeia do BUILD no código                                                                     |
 
@@ -155,12 +155,10 @@ o ponto fica registrado em aberto.
   fino (cabeçalho, Voltar, Recarregar) que lê os params e repassa para o
   `FormBuild`. Declarada em `routes/v1/form.routes.tsx` sob
   `RequireRole role="admin"` e registrada em `route_manager`
-  (`layer=frontend`, `object=form-manager`, `action=build`) — evidência:
-  `doc/sql/insert/20260926141038_route_manager_sync.sql`, linha 487.
+  (`layer=frontend`, `object=form-manager`, `action=build`).
 - O botão **Build** é **dado de banco, não código**: `list_actions` id 5,
   `list_manager_id` 7 (`form-manager`), `label='Build'`, `icon='eye'`,
-  `action_type='link'`, `href_template='/v1/form/{slug}'`, `data_action='build'`
-  — evidência: `doc/sql/dump/202609201836.sql`, linha 2711.
+  `action_type='link'`, `href_template='/v1/form/{slug}'`, `data_action='build'`.
 - Cadeia do construtor, para não confundir as telas:
   - `/v1/form-constructor` → `FormConstructorListPage`: listagem do **próprio motor
     de listas**, com `MANAGER_SLUG = 'form-manager'`.
@@ -195,8 +193,7 @@ descreve), mas só a lista `form-manager` tem a ação `Build`.
    Processor/Model), espelhando um módulo existente; documentar em
    `src/app/markdown/geral/README_modulo_<x>.md` + entrada no índice.
 2. **Definição de tela**: formulários e listagens gravados no banco — via
-   `FormBuilderPage`/`ListBuilderPage` ou por INSERT direto no padrão observado em
-   `doc/sql/insert/AAAAMMDDHHMMSS_<assunto>.sql` (o mesmo timestamp do nome).
+   `FormBuilderPage`/`ListBuilderPage` ou por INSERT direto no banco DEV, seguindo o padrão das linhas já existentes.
 3. **Acesso**: item em `menu_manager` apontando para a rota (com a faixa de
    `sort_order` correta), rota lazy em `routes/v1/<modulo>.routes.tsx` +
    `routes/paths.ts`, e registro em `route_manager` (o sync é idempotente por
@@ -258,7 +255,7 @@ Regras que eu entendo e vou seguir:
   `202609251536_replace_table.sql`, `202609251537_seed_table.sql`,
   `202609251538_create_view.sql`. Todo REMAKE sobrescreve o anterior.
 - Há ainda o conjunto anterior sem sufixo de data (`2026-09-20-1817/1818/1819`) e o
-  histórico de migrations removidas em `doc/sql/migrations_historico/removido/`.
+  histórico de migrations removidas (fora do repositório de código).
 
 ### 4.3 O que eu faço e o que eu não faço
 

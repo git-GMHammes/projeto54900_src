@@ -186,6 +186,10 @@ npm run lint       # eslint .
 O backend (API PHP + WebSocket) continua nos containers do `docker-compose.yml`,
 publicados no host em `:54900` — é o alvo do proxy do dev-server.
 
+Os containers rodam com **PODMAN** (não Docker): `podman compose up -d --build`,
+`podman compose restart`. O nome `docker-compose.yml` é só o do arquivo. Ver
+`doc/podman/podman.txt` na raiz do projeto.
+
 ## Build e deploy
 
 - `npm run build` → `tsc -b` (falha se houver erro de tipo) + `vite build`.
@@ -221,6 +225,11 @@ componentes do frontend que não cabem aqui por extenso.
 - Quando um tópico da base vira regra de trabalho, ele também é resumido **neste
   `CLAUDE.md`**, com link para o markdown completo — este arquivo é o ponto de
   entrada; a base é o detalhamento.
+
+Mapa: componentes `components/map/*` (react-leaflet), serviços `services/v1/map*` e as telas `/v1/map` e
+`/v1/map/links/:module/:id`. Qualquer registro de qualquer módulo recebe CEP, endereço, ponto ou rota com
+`<MapLinksPanel module="..." referenceId={id} />`; os provedores só são chamados pelo proxy do backend
+(`map-geo`). Detalhe em [`src/markdown/geral/README_mapa.md`](src/markdown/geral/README_mapa.md).
 
 Tópicos atuais: `atualizacao` (manutenção da base) e `formgrid`
 ([`README_FormGrid.md`](src/markdown/geral/README_FormGrid.md) — fábrica de

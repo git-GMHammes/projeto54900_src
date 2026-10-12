@@ -27,6 +27,16 @@ import { fillDadosDoUsuarioForm } from './dadosDoUsuario';
 import { fillTimelinePostForm } from './timelinePost';
 import { fillTimelineCommentForm } from './timelineComment';
 import { fillTimelineReportForm } from './timelineReport';
+import {
+  fillCategoriaMapaForm,
+  fillCepMapaForm,
+  fillEnderecoMapaForm,
+  fillIconeMapaForm,
+  fillMapaForm,
+  fillParadaTrajetoForm,
+  fillPontoMapaForm,
+  fillVinculoMapaForm,
+} from './mapa';
 
 type FakeFillFn = () => void | Promise<void>;
 
@@ -37,6 +47,15 @@ export const FAKE_FILL_SCRIPTS: Record<string, FakeFillFn> = {
   'timeline-post': fillTimelinePostForm,
   'timeline-comment': fillTimelineCommentForm,
   'timeline-report': fillTimelineReportForm,
+  // Map (administrativo): so os formularios de cadastro.
+  'criar-mapa': fillMapaForm,
+  'criar-icone-mapa': fillIconeMapaForm,
+  'criar-categoria-mapa': fillCategoriaMapaForm,
+  'criar-cep-mapa': fillCepMapaForm,
+  'criar-endereco-mapa': fillEnderecoMapaForm,
+  'criar-ponto-mapa': fillPontoMapaForm,
+  'criar-parada-trajeto': fillParadaTrajetoForm,
+  'criar-vinculo-mapa': fillVinculoMapaForm,
 };
 
 export function getFakeFillScript(slug: string): FakeFillFn | undefined {

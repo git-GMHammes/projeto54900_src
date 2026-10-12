@@ -20,6 +20,9 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** A view traz company_id/cm_status (um registro por usuario e empresa: vinculo pending/active/blocked). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_user_manager';
     protected $primaryKey = 'id';
@@ -46,6 +49,7 @@ class SqlViewModel extends BaseViewModel
         'id',
         'um_username',
         'um_status',
+        'cm_status',
         'um_user_role_id',
         'um_last_login_at',
         'uc_name',
@@ -74,5 +78,6 @@ class SqlViewModel extends BaseViewModel
     /** Filtros exatos aceitos junto da busca (GET /search?filters[um_status]=active) */
     public array $filterFields = [
         'um_status',
+        'cm_status',
     ];
 }

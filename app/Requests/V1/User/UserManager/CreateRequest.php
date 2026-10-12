@@ -31,6 +31,7 @@ class CreateRequest
             'password_hash_confirm' => 'required|matches[password_hash]',
             'token'         => 'permit_empty|string|max_length[255]',
             'user_role_id'  => 'permit_empty|is_natural_no_zero',
+            'company_ids'   => 'permit_empty',
             'last_login_at' => 'permit_empty|string',
         ];
     }

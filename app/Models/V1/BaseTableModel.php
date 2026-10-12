@@ -2,6 +2,7 @@
 
 namespace App\Models\V1;
 
+use App\Models\V1\Concerns\CompanyScoped;
 use CodeIgniter\Model;
 
 /**
@@ -18,6 +19,8 @@ use CodeIgniter\Model;
  */
 abstract class BaseTableModel extends Model
 {
+    use CompanyScoped;
+
     /** Campos que usam LIKE %valor% em findPaginated quando presentes nos filtros. */
     protected array $likeFields = [];
 
@@ -33,6 +36,10 @@ abstract class BaseTableModel extends Model
      */
     protected $allowCallbacks = true;
     protected $afterFind      = ['stripHiddenAfterFind'];
+
+    /** Escopo por empresa (trait CompanyScoped): a empresa da linha vem da sessao e nunca muda. */
+    protected $beforeInsert = ['stampCompanyOnInsert'];
+    protected $beforeUpdate = ['protectCompanyOnUpdate'];
 
     /**
      * Callback afterFind — remove $this->hidden do payload retornado por
@@ -184,7 +191,7 @@ abstract class BaseTableModel extends Model
      */
     public function findPaginated(array $filters, int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyActiveScopeToBuilder($builder);
         $this->applyFilters($builder, $filters);
         $this->applyIdRestriction($builder, $restrictToIds);
@@ -200,7 +207,7 @@ abstract class BaseTableModel extends Model
      */
     public function findGrouped(array $multiFilters, int $page, int $limit, string $sort, string $order): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyActiveScopeToBuilder($builder);
 
         foreach ($multiFilters as $field => $values) {
@@ -218,7 +225,7 @@ abstract class BaseTableModel extends Model
      */
     public function searchByTerm(string $term, array $searchFields, int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyActiveScopeToBuilder($builder);
 
         if ($term !== '' && !empty($searchFields)) {
@@ -243,7 +250,7 @@ abstract class BaseTableModel extends Model
      */
     public function findDeletedPaginated(int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where($this->deletedField . ' IS NOT NULL', null, false);
         $this->applyIdRestriction($builder, $restrictToIds);
 
@@ -255,7 +262,7 @@ abstract class BaseTableModel extends Model
      */
     public function findAllWithDeletedPaginated(int $page, int $limit, string $sort, string $order, ?array $restrictToIds = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyIdRestriction($builder, $restrictToIds);
 
         return $this->paginateBuilder($builder, $page, $limit, $sort, $order);
@@ -272,7 +279,7 @@ abstract class BaseTableModel extends Model
      */
     public function getOrdered(string $sort, string $order, ?int $limit = null, ?array $restrictToIds = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyActiveScopeToBuilder($builder);
         $this->applyIdRestriction($builder, $restrictToIds);
 
@@ -294,7 +301,7 @@ abstract class BaseTableModel extends Model
      */
     public function findOnlyDeleted(int $id): ?array
     {
-        $row = $this->db->table($this->table)
+        $row = $this->scopedTable()
             ->where($this->primaryKey, $id)
             ->where($this->deletedField . ' IS NOT NULL', null, false)
             ->get()
@@ -308,7 +315,7 @@ abstract class BaseTableModel extends Model
      */
     public function findWithDeleted(int $id): ?array
     {
-        $row = $this->db->table($this->table)
+        $row = $this->scopedTable()
             ->where($this->primaryKey, $id)
             ->get()
             ->getRowArray();
@@ -325,7 +332,7 @@ abstract class BaseTableModel extends Model
      */
     public function restore(int $id): void
     {
-        $this->db->table($this->table)
+        $this->scopedTable()
             ->where($this->primaryKey, $id)
             ->update([$this->deletedField => null]);
     }
@@ -338,7 +345,7 @@ abstract class BaseTableModel extends Model
      */
     public function clearDeleted(?int $id = null, ?array $restrictToIds = null): int
     {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where($this->deletedField . ' IS NOT NULL', null, false);
 
         if ($id !== null) {

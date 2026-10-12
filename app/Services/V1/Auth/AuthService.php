@@ -23,26 +23,51 @@ class AuthService
         $this->jwt = new JwtService();
     }
 
+    /** Resposta UNICA para qualquer falha de login (nunca revela o motivo). */
+    private const LOGIN_FAIL_MESSAGE = 'Usuário ou senha inválidos';
+
     /**
+     * Login por empresa: o endereco e auto declarado (/<slug-empresa>/v1/login) e o slug chega em
+     * $companySlug; sem slug, vale a empresa DEFAULT. So entra quem tem o id da empresa em
+     * user_manager.company_ids.
+     *
+     * Toda falha — usuario inexistente, senha errada, usuario inativo/bloqueado, empresa que nao
+     * existe, usuario sem acesso a empresa — devolve a MESMA resposta (401 + LOGIN_FAIL_MESSAGE).
+     * O motivo real vai so para o log do servidor.
+     *
      * @return array{success:bool,message?:string,code?:int,data?:array}
      */
-    public function login(string $username, string $password, string $ip): array
+    public function login(string $username, string $password, string $ip, ?string $companySlug = null): array
     {
         $user = $this->findActiveByUsername($username);
 
-        if ($user === null || !password_verify($password, (string) $user['password_hash'])) {
-            log_message('warning', "[auth] login falhou para username='{$username}' ip={$ip}");
+        // Sem usuario, ainda assim gasta um bcrypt do mesmo custo: o tempo de resposta nao
+        // diferencia "usuario nao existe" de "senha errada".
+        $passwordOk = $user !== null
+            ? password_verify($password, (string) $user['password_hash'])
+            : (password_hash($password, PASSWORD_BCRYPT) === '');
 
-            return ['success' => false, 'message' => 'Usuário ou senha inválidos', 'code' => 401];
+        $reason = null;
+        if ($user === null || !$passwordOk) {
+            $reason = 'credenciais invalidas';
+        } elseif ($user['status'] !== 'active') {
+            $reason = "status={$user['status']}";
+        } else {
+            $companyId = $this->resolveLoginCompanyId($companySlug);
+            if ($companyId === null) {
+                $reason = 'empresa inexistente/inativa';
+            } elseif (!$this->userCanAccessCompany($user, $companyId)) {
+                $reason = "sem acesso a empresa id={$companyId}";
+            }
         }
 
-        if ($user['status'] !== 'active') {
-            log_message('warning', "[auth] login bloqueado (status={$user['status']}) para username='{$username}' ip={$ip}");
+        if ($reason !== null) {
+            log_message('warning', "[auth] login falhou ({$reason}) username='{$username}' empresa='" . ($companySlug ?? 'default') . "' ip={$ip}");
 
-            return ['success' => false, 'message' => 'Usuário inativo ou bloqueado', 'code' => 403];
+            return ['success' => false, 'message' => self::LOGIN_FAIL_MESSAGE, 'code' => 401];
         }
 
-        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip);
+        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip, $companyId);
 
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
@@ -51,9 +76,44 @@ class AuthService
                 'last_login_at' => date('Y-m-d H:i:s'),
             ]);
 
-        log_message('info', "[auth] login ok para username='{$username}' ip={$ip}");
+        log_message('info', "[auth] login ok para username='{$username}' empresa='" . ($companySlug ?? 'default') . "' ip={$ip}");
 
-        return ['success' => true, 'data' => $this->buildAuthPayload((int) $user['id'], $tokens)];
+        $payload = $this->buildAuthPayload((int) $user['id'], $tokens, $companyId);
+        // Empresa pela qual o usuario entrou: o front monta a URL pos-login com este slug.
+        $payload['company_slug'] = $this->findCompanySlugById($companyId);
+
+        return ['success' => true, 'data' => $payload];
+    }
+
+    /** Id da empresa ativa do slug informado (null/vazio = DEFAULT); null se nao existir, inativa ou slug malformado. */
+    private function resolveLoginCompanyId(?string $slug): ?int
+    {
+        $slug = $slug === null ? '' : trim($slug);
+
+        if ($slug === '') {
+            return (int) config('Company')->defaultCompanyId;
+        }
+
+        if (strlen($slug) > 100 || preg_match('/^[a-z0-9-]+$/', $slug) !== 1) {
+            return null;
+        }
+
+        $row = $this->db()->table('company_manager')
+            ->select('id')
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
+
+        return $row !== null ? (int) $row['id'] : null;
+    }
+
+    private function findCompanySlugById(int $companyId): ?string
+    {
+        $row = $this->db()->table('company_manager')->select('slug')->where('id', $companyId)->get()->getRowArray();
+
+        return $row['slug'] ?? null;
     }
 
     /**
@@ -77,13 +137,20 @@ class AuthService
             return ['success' => false, 'message' => 'Refresh token não confere (já usado ou revogado)', 'code' => 401];
         }
 
-        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip);
+        // A sessao e amarrada a empresa do login (claim cid): o refresh a mantem e so renova se o
+        // usuario ainda tem acesso a ela. Token sem cid (anterior a esta regra) exige novo login.
+        $companyId = (int) ($claims['cid'] ?? 0);
+        if ($companyId <= 0 || !$this->userCanAccessCompany($user, $companyId)) {
+            return ['success' => false, 'message' => 'Refresh token inválido ou expirado', 'code' => 401];
+        }
+
+        $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip, $companyId);
 
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
             ->update(['token' => $tokens['sid']]);
 
-        return ['success' => true, 'data' => $this->buildAuthPayload((int) $user['id'], $tokens)];
+        return ['success' => true, 'data' => $this->buildAuthPayload((int) $user['id'], $tokens, $companyId)];
     }
 
     /**
@@ -152,7 +219,7 @@ class AuthService
      * Sessao ativa = usuario ativo, nao excluido, e sid igual ao hash do
      * refresh token gravado em user_manager.token. Usado pelo JwtAuthFilter.
      */
-    public function sessionActive(int $userId, string $sid): bool
+    public function sessionActive(int $userId, string $sid, ?int $companyId = null): bool
     {
         if ($userId <= 0 || $sid === '') {
             return false;
@@ -160,16 +227,47 @@ class AuthService
 
         $user = $this->findActiveById($userId);
 
-        return $user !== null
-            && $user['status'] === 'active'
-            && !empty($user['token'])
-            && hash_equals((string) $user['token'], $sid);
+        if ($user === null
+            || $user['status'] !== 'active'
+            || empty($user['token'])
+            || !hash_equals((string) $user['token'], $sid)) {
+            return false;
+        }
+
+        // $companyId so e informado pelo JwtAuthFilter (rotas protegidas): a sessao morre se a
+        // empresa do login nao existe mais/foi inativada ou o usuario perdeu o acesso a ela.
+        // Logout nao informa: sempre consegue encerrar a propria sessao.
+        return $companyId === null || ($companyId > 0 && $this->userCanAccessCompany($user, $companyId));
+    }
+
+    /**
+     * O usuario tem vinculo ATIVO (company_members.status = 'active': aprovado e nao bloqueado) com a
+     * empresa E a empresa esta ativa e nao excluida. 'pending' e 'blocked' nao entram.
+     */
+    private function userCanAccessCompany(array $user, int $companyId): bool
+    {
+        $member = $this->db()->table('company_members')
+            ->where('company_id', $companyId)
+            ->where('user_manager_id', (int) $user['id'])
+            ->where('status', 'active')
+            ->where('deleted_at', null)
+            ->countAllResults() > 0;
+
+        if (!$member) {
+            return false;
+        }
+
+        return $this->db()->table('company_manager')
+            ->where('id', $companyId)
+            ->where('status', 'active')
+            ->where('deleted_at', null)
+            ->countAllResults() > 0;
     }
 
     /**
      * @return array{success:bool,message?:string,code?:int,data?:array}
      */
-    public function me(int $userId): array
+    public function me(int $userId, ?int $companyId = null): array
     {
         $user = $this->findActiveById($userId);
 
@@ -177,7 +275,7 @@ class AuthService
             return ['success' => false, 'message' => 'Usuário não encontrado', 'code' => 404];
         }
 
-        return ['success' => true, 'data' => $this->userPublicData($user)];
+        return ['success' => true, 'data' => $this->userPublicData($user, $companyId)];
     }
 
     /**
@@ -215,13 +313,13 @@ class AuthService
     // Helpers
     // -------------------------------------------------------------------------
 
-    private function issueTokenPair(int $userId, string $username, ?int $roleId, string $ip): array
+    private function issueTokenPair(int $userId, string $username, ?int $roleId, string $ip, int $companyId): array
     {
         $role = $roleId !== null ? $this->findRole($roleId) : null;
 
         // Refresh primeiro: o hash dele vira o sid do access token e o valor
         // gravado em user_manager.token (os dois tokens nascem pareados).
-        $refreshToken = $this->jwt->issueRefreshToken(['sub' => $userId]);
+        $refreshToken = $this->jwt->issueRefreshToken(['sub' => $userId, 'cid' => $companyId]);
         $sid          = $this->jwt->hashToken($refreshToken);
 
         $accessToken = $this->jwt->issueAccessToken([
@@ -231,6 +329,7 @@ class AuthService
             'role_slug'   => $role['slug'] ?? null,
             'remote_addr' => $ip,
             'sid'         => $sid,
+            'cid'         => $companyId,
         ]);
 
         return [
@@ -241,7 +340,7 @@ class AuthService
         ];
     }
 
-    private function buildAuthPayload(int $userId, array $tokens): array
+    private function buildAuthPayload(int $userId, array $tokens, int $companyId): array
     {
         $user = $this->findActiveById($userId);
 
@@ -250,11 +349,11 @@ class AuthService
             'refresh_token' => $tokens['refresh_token'],
             'token_type'    => 'Bearer',
             'expires_in'    => $tokens['expires_in'],
-            'user'          => $user !== null ? $this->userPublicData($user) : null,
+            'user'          => $user !== null ? $this->userPublicData($user, $companyId) : null,
         ];
     }
 
-    private function userPublicData(array $user): array
+    private function userPublicData(array $user, ?int $companyId = null): array
     {
         $roleId = (int) ($user['user_role_id'] ?? 0) ?: null;
         $role   = $roleId !== null ? $this->findRole($roleId) : null;
@@ -270,7 +369,36 @@ class AuthService
                 'name' => $role['name'],
                 'slug' => $role['slug'],
             ] : null,
+            'companies'     => $this->findCompanies((int) $user['id']),
+            // Empresa a que a SESSAO esta amarrada (a do login); o front so aceita esta na URL.
+            'company_slug'  => $companyId !== null ? $this->findCompanySlugById($companyId) : null,
         ];
+    }
+
+    /**
+     * Empresas ativas a que o usuario tem vinculo ATIVO (company_members). Sem vinculo valido -> lista vazia.
+     *
+     * @return list<array{id:int,name:string,slug:string}>
+     */
+    private function findCompanies(int $userId): array
+    {
+        $rows = $this->db()->table('company_members cm')
+            ->select('co.id, co.name, co.slug')
+            ->join('company_manager co', 'co.id = cm.company_id')
+            ->where('cm.user_manager_id', $userId)
+            ->where('cm.status', 'active')
+            ->where('cm.deleted_at', null)
+            ->where('co.status', 'active')
+            ->where('co.deleted_at', null)
+            ->orderBy('co.id')
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn (array $r): array => [
+            'id'   => (int) $r['id'],
+            'name' => (string) $r['name'],
+            'slug' => (string) $r['slug'],
+        ], $rows);
     }
 
     /** Nome completo (user_profiles.name) do user_manager informado, ou null se não tiver perfil. */

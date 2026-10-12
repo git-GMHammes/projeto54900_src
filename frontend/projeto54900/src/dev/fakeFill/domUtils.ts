@@ -65,6 +65,36 @@ export async function selectComboboxOption(fieldId: string, value: string): Prom
   return true;
 }
 
+/**
+ * Escolhe a PRIMEIRA opcao disponivel de um select remoto do FormGrid (ex.: FK que
+ * carrega a lista por `src`, onde o value nao e conhecido de antemao). Foca o campo e
+ * espera a lista chegar (ate `timeoutMs`). Retorna false (sem lancar) se nao houver
+ * opcao — por exemplo, quando a tabela referenciada ainda esta vazia.
+ */
+export async function selectFirstComboboxOption(fieldId: string, timeoutMs = 3000): Promise<boolean> {
+  const searchInput = document.getElementById(fieldId);
+  if (!(searchInput instanceof HTMLInputElement)) return false;
+
+  searchInput.focus();
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    await nextFrame();
+    const select = searchInput.closest('div')?.querySelector<HTMLSelectElement>('select');
+    const option = select ? Array.from(select.options).find((o) => o.value !== '') : undefined;
+
+    if (select && option) {
+      select.value = option.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }
+
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
+  }
+
+  return false;
+}
+
 function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }

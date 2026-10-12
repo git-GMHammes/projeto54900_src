@@ -20,6 +20,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'calendar_event_attendees';
     protected $primaryKey     = 'id';
@@ -70,7 +73,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function existsByEmailInEvent(int $calendarEventId, string $email, ?int $excludeId = null): bool
     {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where('calendar_event_id', $calendarEventId)
             ->where('email', $email)
             ->where($this->deletedField . ' IS NULL', null, false);
@@ -88,7 +91,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function existsByUserInEvent(int $calendarEventId, int $userManagerId, ?int $excludeId = null): bool
     {
-        $builder = $this->db->table($this->table)
+        $builder = $this->scopedTable()
             ->where('calendar_event_id', $calendarEventId)
             ->where('user_manager_id', $userManagerId)
             ->where($this->deletedField . ' IS NULL', null, false);
@@ -108,7 +111,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function findByUserInEvent(int $calendarEventId, int $userManagerId): ?array
     {
-        $row = $this->db->table($this->table)
+        $row = $this->scopedTable()
             ->where('calendar_event_id', $calendarEventId)
             ->where('user_manager_id', $userManagerId)
             ->where($this->deletedField . ' IS NULL', null, false)

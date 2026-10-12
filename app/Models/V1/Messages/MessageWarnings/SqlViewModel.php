@@ -10,6 +10,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a linha so aparece se o registro de message_warnings for da empresa da sessao. */
+    protected string $companyScope = 'via_table';
+    protected string $companyViaTable = 'message_warnings';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_message_warnings';
     protected $primaryKey = 'id';

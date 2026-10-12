@@ -13,6 +13,9 @@ use App\Models\V1\BaseTableModel;
  */
 class SqlTableModel extends BaseTableModel
 {
+    /** Isolamento por empresa: so enxerga/grava linhas da empresa da sessao (company_id). */
+    protected string $companyScope = 'column';
+
     protected $DBGroup        = DB_GROUP_001;
     protected $table          = 'message_attachments';
     protected $primaryKey     = 'id';
@@ -77,13 +80,13 @@ class SqlTableModel extends BaseTableModel
     /** Mensagem (messages_manager) inclusive soft-deletada; null se nao existe. */
     public function findMessage(int $messageId): ?array
     {
-        return $this->db->table('messages_manager')->where('id', $messageId)->get()->getRowArray();
+        return $this->companyTable('messages_manager')->where('id', $messageId)->get()->getRowArray();
     }
 
     /** Grupo da mensagem (id e dono), ou null se for mensagem privada. */
     public function findMessageGroup(int $messageId): ?array
     {
-        return $this->db->table('message_group_messages mgl')
+        return $this->companyTable('message_group_messages mgl')
             ->select('mgl.message_groups_manager_id AS group_id, mg.owner_user_manager_id AS owner_id')
             ->join('message_groups_manager mg', 'mg.id = mgl.message_groups_manager_id')
             ->where('mgl.messages_manager_id', $messageId)
@@ -95,7 +98,7 @@ class SqlTableModel extends BaseTableModel
     /** O usuario e membro ativo (nao excluido) do grupo? */
     public function isActiveMember(int $groupId, int $userId): bool
     {
-        return $this->db->table('message_group_members')
+        return $this->companyTable('message_group_members')
             ->where('message_groups_manager_id', $groupId)
             ->where('user_manager_id', $userId)
             ->where('status', 'active')
@@ -110,7 +113,7 @@ class SqlTableModel extends BaseTableModel
      */
     public function softDeleteOthers(int $messageId, int $exceptId): int
     {
-        $this->db->table($this->table)
+        $this->scopedTable()
             ->where('messages_manager_id', $messageId)
             ->where('id !=', $exceptId)
             ->where('deleted_at', null)

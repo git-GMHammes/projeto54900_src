@@ -219,6 +219,7 @@ acima.
 | `/v1/timeline` (Home Feed)          | [`README_diagrama_timeline_home_feed.svg`](README_diagrama_timeline_home_feed.svg)               | [`README_diagrama_timeline_home_feed.drawio`](README_diagrama_timeline_home_feed.drawio)           |
 | `/v1/calendar-manager`              | [`README_diagrama_calendar_manager.svg`](README_diagrama_calendar_manager.svg)                   | [`README_diagrama_calendar_manager.drawio`](README_diagrama_calendar_manager.drawio)               |
 | `/v1/chat-rooms-manager/create`     | [`README_diagrama_chat_rooms_manager_create.svg`](README_diagrama_chat_rooms_manager_create.svg) | [`README_diagrama_chat_rooms_manager_create.drawio`](README_diagrama_chat_rooms_manager_create.drawio) |
+| Módulo Map (visão geral em quadros) | [`README_diagrama_map_modulo.svg`](README_diagrama_map_modulo.svg)                               | [`README_diagrama_map_modulo.drawio`](README_diagrama_map_modulo.drawio)                               |
 
 ![Diagrama de camadas da tela /v1/timeline - Home Feed](README_diagrama_timeline_home_feed.svg)
 

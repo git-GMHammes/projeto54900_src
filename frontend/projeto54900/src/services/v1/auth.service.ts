@@ -28,16 +28,20 @@
 import { http } from '@/services/http';
 import { API_GROUPS, DEFAULT_API_VERSION } from '@/constants/api';
 import { normalizeItem } from '@/utils/apiResult';
+import { companySlug } from '@/config/env';
 import type { AuthPayload, AuthUser } from '@/types/auth';
 
 const base = `/${DEFAULT_API_VERSION}/${API_GROUPS.auth}`;
 
 /**
  * Autentica com username/password e retorna o payload de tokens do usuario.
+ * O endereco e auto declarado: /<slug-empresa>/v1/login envia o slug da URL (company_slug);
+ * em /v1/login nada e enviado e o backend usa a empresa DEFAULT. O backend responde com a
+ * mesma mensagem generica para qualquer falha (credencial, empresa inexistente ou sem acesso).
  * @throws Error se a resposta vier sem dados (ex.: corpo vazio inesperado)
  */
 async function login(username: string, password: string): Promise<AuthPayload> {
-  const raw = await http.post(`${base}/login`, { username, password });
+  const raw = await http.post(`${base}/login`, companySlug ? { username, password, company_slug: companySlug } : { username, password });
   const data = normalizeItem<AuthPayload>(raw);
   if (!data) throw new Error('Resposta de login sem dados.');
   return data;

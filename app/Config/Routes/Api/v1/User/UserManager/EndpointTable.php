@@ -28,7 +28,7 @@ $routes->get('get-all-with-deleted/(:num)', 'Api\V1\User\UserManager\ResourceTab
 // GET  {{www}}/index.php/api/v1/user-manager/get-all-with-deleted?page=1&limit=20&sort=id&order=ASC
 $routes->get('get-all-with-deleted', 'Api\V1\User\UserManager\ResourceTableController::getAllWithDeleted', ['filter' => ['jwtauth', 'adminonly']]);
 // POST {{www}}/index.php/api/v1/user-manager/create — PUBLICA: etapa 1 do Cadastro de Usuario
-$routes->post('create', 'Api\V1\User\UserManager\ResourceTableController::create');
+$routes->post('create', 'Api\V1\User\UserManager\ResourceTableController::create', ['filter' => 'jwtoptional']);
 // PUT  {{www}}/index.php/api/v1/user-manager/update/{id}
 $routes->put('update/(:num)', 'Api\V1\User\UserManager\ResourceTableController::update/$1', ['filter' => ['jwtauth', 'adminonly']]);
 // DELETE {{www}}/index.php/api/v1/user-manager/delete-soft/{id}

@@ -56,7 +56,12 @@ class AuthController extends BaseResourceViewController
         }
 
         $body = $this->getRequestBody();
-        $result = $this->service->login((string) $body['username'], (string) $body['password'], $ip);
+        $result = $this->service->login(
+            (string) $body['username'],
+            (string) $body['password'],
+            $ip,
+            isset($body['company_slug']) ? (string) $body['company_slug'] : null
+        );
 
         if (!$result['success']) {
             return $this->respondError($result['message'], $result['code'] ?? 401);
@@ -123,7 +128,7 @@ class AuthController extends BaseResourceViewController
             return $this->respondError('Usuário não autenticado', 401);
         }
 
-        $result = $this->service->me($userId);
+        $result = $this->service->me($userId, CurrentUser::companyId());
 
         if (!$result['success']) {
             return $this->respondError($result['message'], $result['code'] ?? 404);

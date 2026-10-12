@@ -29,6 +29,7 @@
 import { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { paths } from '@/routes/paths';
+import { companySlug, env } from '@/config/env';
 import { useAppConfig } from '@/context/AppConfigContext';
 import { useAuth } from '@/context/AuthContext';
 import { useSiteMenu } from '@/hooks/useSiteMenu';
@@ -99,7 +100,9 @@ export default function Navbar() {
       await logout();
     } finally {
       setLeaving(false);
-      void navigate(paths.home, { replace: true });
+      // Com slug de empresa na URL, sair volta para a raiz sem slug (navegacao completa).
+      if (companySlug) window.location.assign(`${env.basePath}/`);
+      else void navigate(paths.home, { replace: true });
     }
   };
 
@@ -209,6 +212,11 @@ export default function Navbar() {
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li>
                       <h6 className="dropdown-header">{user.full_name ?? user.username}</h6>
+                    </li>
+                    <li>
+                      <span className="dropdown-item-text small text-body-secondary">
+                        Empresa: {user.company_slug ?? 'default'}
+                      </span>
                     </li>
                     <li>
                       <NavLink className="dropdown-item" to={paths.v1.account.profile}>

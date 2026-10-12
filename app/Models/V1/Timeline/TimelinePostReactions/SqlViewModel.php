@@ -9,6 +9,10 @@ use App\Models\V1\BaseViewModel;
  */
 class SqlViewModel extends BaseViewModel
 {
+    /** Isolamento por empresa: a linha so aparece se o registro de timeline_post_reactions for da empresa da sessao. */
+    protected string $companyScope = 'via_table';
+    protected string $companyViaTable = 'timeline_post_reactions';
+
     protected $DBGroup    = DB_GROUP_001;
     protected $table      = 'view_timeline_post_reactions';
     protected $primaryKey = 'id';

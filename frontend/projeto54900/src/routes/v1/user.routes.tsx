@@ -67,6 +67,9 @@ const CreatePage = lazy(() => import('@/pages/v1/user/user-manager/CreatePage'))
 const UpdatePage = lazy(() => import('@/pages/v1/user/user-manager/UpdatePage'));
 const ProfilesCreatePage = lazy(() => import('@/pages/v1/user/user-profiles/CreatePage'));
 const ProfilesGetAllPage = lazy(() => import('@/pages/v1/user/user-profiles/GetAllPage'));
+const AccessGetAllPage = lazy(() => import('@/pages/v1/user/user-resource-access/GetAllPage'));
+const AccessCreatePage = lazy(() => import('@/pages/v1/user/user-resource-access/CreatePage'));
+const AccessUpdatePage = lazy(() => import('@/pages/v1/user/user-resource-access/UpdatePage'));
 
 /**
  * =========================================================================
@@ -111,6 +114,9 @@ export const userProtectedRoutes: RouteObject[] = [
       { path: 'user-manager/:id', element: <GetPage /> },
       { path: 'user-manager/update/:id', element: <UpdatePage /> },
       { path: 'user-profiles', element: <ProfilesGetAllPage /> },
+      { path: 'user-resource-access', element: <AccessGetAllPage /> },
+      { path: 'user-resource-access/create', element: <AccessCreatePage /> },
+      { path: 'user-resource-access/update/:id', element: <AccessUpdatePage /> },
     ],
   },
 ];

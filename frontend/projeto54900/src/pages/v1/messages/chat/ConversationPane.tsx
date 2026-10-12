@@ -16,7 +16,7 @@
 // Rodape: textarea (Enter envia, Shift+Enter quebra a linha), clipe (anexar arquivo — um por mensagem) e relogio
 // (agendar o envio, campo `datahora` do FormGrid). Mensagem so com anexo usa o nome do arquivo como texto (o texto
 // e obrigatorio na API). Nos baloes MEUS: agendada tem Editar (em linha) e Cancelar; enviada tem Apagar.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
@@ -25,8 +25,14 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { ApiError } from '@/services/http';
 import type { ChatAttachment } from '@/services/v1/messagesChat';
+import { splitGeoUri } from '@/utils/geoUri';
+import type { GeoFix } from '@/utils/geoUri';
 import { avisoPalavrasProibidas } from '@/utils/palavrasProibidas';
 import ChatAttachmentView from './ChatAttachmentView';
+
+// Localizacao compartilhada: os modais carregam sob demanda (o Leaflet so entra ao abrir um deles).
+const ShareLocationModal = lazy(() => import('@/components/map/ShareLocationModal'));
+const ViewLocationModal = lazy(() => import('@/components/map/ViewLocationModal'));
 
 /** Intervalo da atualizacao automatica (ms). */
 const POLL_MS = 5000;
@@ -184,6 +190,8 @@ export default function ConversationPane({
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [sending, setSending] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [viewGeo, setViewGeo] = useState<{ geo: GeoFix; author: string } | null>(null);
   // Edicao em linha (so mensagem agendada minha).
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
@@ -324,6 +332,22 @@ export default function ConversationPane({
     }
   };
 
+  /** Envia a localizacao compartilhada (texto com geo URI) pelo mesmo fluxo da conversa; sempre na hora, sem agendar. */
+  const handleShareLocation = async (content: string) => {
+    setSending(true);
+    try {
+      await send(content, null, null, []);
+      stickToBottom.current = true;
+      setShareOpen(false);
+      await refresh();
+    } catch (err) {
+      // O modal mostra o erro; repassa para ele manter-se aberto.
+      throw new Error(err instanceof ApiError ? err.message : 'Falha ao enviar a localização.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (suggestions.length > 0) {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -446,9 +470,26 @@ export default function ConversationPane({
                     </div>
                   ) : (
                     <>
-                      <div>
-                        <MessageText content={m.content} names={m.mentions.map((x) => x.name)} />
-                      </div>
+                      {(() => {
+                        const { text, geo } = splitGeoUri(m.content);
+                        return (
+                          <>
+                            <div>
+                              <MessageText content={text} names={m.mentions.map((x) => x.name)} />
+                            </div>
+                            {geo && (
+                              <button
+                                type="button"
+                                className={`btn btn-sm mt-1 ${m.mine ? 'btn-light' : 'btn-outline-primary'}`}
+                                onClick={() => setViewGeo({ geo, author: m.mine ? 'Você' : (m.author ?? 'alguém') })}
+                              >
+                                <i className="bi bi-geo-alt-fill me-1" aria-hidden="true" />
+                                Ver no mapa
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                       {m.attachments.map((a) => (
                         <ChatAttachmentView key={a.id} attachment={a} mine={m.mine} />
                       ))}
@@ -569,6 +610,9 @@ export default function ConversationPane({
               <button type="button" className="btn btn-outline-secondary" title="Anexar arquivo" aria-label="Anexar arquivo" disabled={sending} onClick={() => fileInputRef.current?.click()}>
                 <i className="bi bi-paperclip" aria-hidden="true" />
               </button>
+              <button type="button" className="btn btn-outline-secondary" title="Compartilhar minha localização" aria-label="Compartilhar minha localização" disabled={sending} onClick={() => setShareOpen(true)}>
+                <i className="bi bi-geo-alt" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 className={`btn ${scheduledAt !== '' ? 'btn-warning' : 'btn-outline-secondary'}`}
@@ -588,6 +632,17 @@ export default function ConversationPane({
           </div>
         </div>
       </div>
+
+      {shareOpen && (
+        <Suspense fallback={null}>
+          <ShareLocationModal onClose={() => setShareOpen(false)} onSend={handleShareLocation} />
+        </Suspense>
+      )}
+      {viewGeo && (
+        <Suspense fallback={null}>
+          <ViewLocationModal geo={viewGeo.geo} title={`Localização de ${viewGeo.author}`} onClose={() => setViewGeo(null)} />
+        </Suspense>
+      )}
     </div>
   );
 }

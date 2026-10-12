@@ -55,7 +55,7 @@ timeline-post
 > **Form enxuto — 2026-09-28** (pedido do usuário: "como em qualquer rede
 > social", só texto + anexo). Timeline, Republicar de, Título e Status saíram
 > do FORM por soft delete (`form_fields` 221/222/223/225, `form_rows`
-> 133/134/136 — SQL `doc/sql/insert/20260928084335_timeline_post_form_enxuto.sql`).
+> 133/134/136).
 > As **colunas continuam** em `timeline_posts`, porque têm uso fora do form:
 > o backend resolve `timeline_manager_id` (timeline do usuário, criada na 1ª
 > publicação) e `status` (`published`); `repost_of_id` vem da ação
@@ -101,9 +101,9 @@ Revisar e então gerar o `INSERT` (`form_manager` → `form_groups` → `form_ro
 
 ### 📌 Metadados do Autor
 
-| Campo | Informação |
-| --- | --- |
-| **Nome** | Gustavo Hammes |
-| **Local** | Rio de Janeiro |
-| **LinkedIn** | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes) |
+| Campo               | Informação                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**            | Gustavo Hammes                                                                                                               |
+| **Local**           | Rio de Janeiro                                                                                                               |
+| **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |

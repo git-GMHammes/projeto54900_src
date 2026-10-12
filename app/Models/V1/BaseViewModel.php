@@ -2,6 +2,7 @@
 
 namespace App\Models\V1;
 
+use App\Models\V1\Concerns\CompanyScoped;
 use CodeIgniter\Model;
 
 /**
@@ -17,6 +18,8 @@ use CodeIgniter\Model;
  */
 abstract class BaseViewModel extends Model
 {
+    use CompanyScoped;
+
     protected $allowedFields = [];
 
     /** Campos que usam LIKE %valor% em findPaginatedView quando presentes nos filtros. */
@@ -101,7 +104,7 @@ abstract class BaseViewModel extends Model
      */
     public function findPaginatedView(array $filters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyLiveScope($builder);
 
         if ($scope !== null) {
@@ -126,7 +129,7 @@ abstract class BaseViewModel extends Model
      */
     public function findGroupedView(array $multiFilters, int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyLiveScope($builder);
 
         if ($scope !== null) {
@@ -147,7 +150,7 @@ abstract class BaseViewModel extends Model
      */
     public function searchByTermView(string $term, int $page, int $limit, string $sort, string $order, array $filters = [], ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyLiveScope($builder);
 
         if ($scope !== null) {
@@ -180,7 +183,7 @@ abstract class BaseViewModel extends Model
      */
     public function findDeletedPaginatedView(int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table)->where('deleted_at IS NOT NULL', null, false);
+        $builder = $this->scopedTable()->where('deleted_at IS NOT NULL', null, false);
 
         if ($scope !== null) {
             $scope($builder);
@@ -194,7 +197,7 @@ abstract class BaseViewModel extends Model
      */
     public function findAllWithDeletedPaginatedView(int $page, int $limit, string $sort, string $order, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
 
         if ($scope !== null) {
             $scope($builder);
@@ -212,7 +215,7 @@ abstract class BaseViewModel extends Model
      */
     public function findById(int $id): ?array
     {
-        $builder = $this->db->table($this->table)->where($this->primaryKey, $id);
+        $builder = $this->scopedTable()->where($this->primaryKey, $id);
         $this->applyLiveScope($builder);
         $row = $builder->get()->getRowArray();
 
@@ -224,7 +227,7 @@ abstract class BaseViewModel extends Model
      */
     public function findDeletedById(int $id): ?array
     {
-        $row = $this->db->table($this->table)
+        $row = $this->scopedTable()
             ->where($this->primaryKey, $id)
             ->where('deleted_at IS NOT NULL', null, false)
             ->get()
@@ -243,7 +246,7 @@ abstract class BaseViewModel extends Model
      */
     public function findAllView(string $sort, string $order, ?int $limit = null, ?\Closure $scope = null): array
     {
-        $builder = $this->db->table($this->table);
+        $builder = $this->scopedTable();
         $this->applyLiveScope($builder);
 
         if ($scope !== null) {

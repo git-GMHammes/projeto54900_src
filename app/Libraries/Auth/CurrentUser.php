@@ -38,6 +38,16 @@ class CurrentUser
         return self::$claims['role_slug'] ?? null;
     }
 
+    /**
+     * Id da empresa a que a sessao esta amarrada (claim cid, definida no login).
+     */
+    public static function companyId(): ?int
+    {
+        $cid = self::$claims['cid'] ?? null;
+
+        return $cid !== null ? (int) $cid : null;
+    }
+
     public static function isAdmin(): bool
     {
         return self::roleSlug() === 'admin';
