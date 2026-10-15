@@ -16,6 +16,9 @@ export default defineConfig(({ mode, command }) => {
   // index.html fixa o <base>). Dev: '/'. VITE_BASE_PATH continua como override.
   const base = env.VITE_BASE_PATH || (command === 'build' ? './' : '/');
   const clipartDir = fileURLToPath(new URL('../../../doc/clipart_teste', import.meta.url));
+  // Markdowns da base de conhecimento do BACKEND (src/app/markdown), lidos pela
+  // pagina /v1/knowledge-base via import.meta.glob. Fora da raiz do Vite.
+  const backendMarkdownDir = fileURLToPath(new URL('../../app/markdown', import.meta.url));
 
   return {
     base,
@@ -50,7 +53,7 @@ export default defineConfig(({ mode, command }) => {
       // dev-only da Timeline (src/dev/fakeFill/timelinePost.ts). So o
       // dev-server usa isto; o build nao referencia essas imagens.
       fs: {
-        allow: [searchForWorkspaceRoot(process.cwd()), clipartDir],
+        allow: [searchForWorkspaceRoot(process.cwd()), clipartDir, backendMarkdownDir],
       },
       // Proxy do dev-server: encaminha /api e /ws para o backend (containers do
       // docker-compose publicados no host em :54900), evitando CORS no dev.

@@ -15,50 +15,51 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 
 **1. Entender o sistema**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 1 | [`deepseek`](#deepseek) | Análise de entendimento do sistema |
-| 2 | [`diagramas`](#diagramas) | Gerar diagramas vetoriais de telas |
-| 3 | [`modulo`](#modulo) | Como criar novos módulos padronizados |
+| #   | Palavra-chave             | Assunto (5 palavras)                  |
+| --- | ------------------------- | ------------------------------------- |
+| 1   | [`deepseek`](#deepseek)   | Análise de entendimento do sistema    |
+| 2   | [`diagramas`](#diagramas) | Gerar diagramas vetoriais de telas    |
+| 3   | [`modulo`](#modulo)       | Como criar novos módulos padronizados |
 
 **2. Ambiente e regras**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 4 | [`compose`](#compose) | Setup do ambiente Docker e example public |
-| 5 | [`conexao`](#conexao) | Conexão de banco por módulo |
-| 6 | [`migracao`](#migracao) | Rodar e reverter migrations CodeIgniter |
-| 7 | [`composer`](#composer) | PHP Composer proibido sem autorização |
+| #   | Palavra-chave           | Assunto (5 palavras)                      |
+| --- | ----------------------- | ----------------------------------------- |
+| 4   | [`compose`](#compose)   | Setup do ambiente Docker e example public |
+| 5   | [`conexao`](#conexao)   | Conexão de banco por módulo               |
+| 6   | [`migracao`](#migracao) | Rodar e reverter migrations CodeIgniter   |
+| 7   | [`composer`](#composer) | PHP Composer proibido sem autorização     |
 
 **3. Base compartilhada**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 8 | [`rotas`](#rotas) | Mapa de todas as rotas REST |
-| 9 | [`schema`](#schema) | Introspecção do banco por API |
-| 10 | [`navmenu`](#navmenu) | Config do app e árvore de navegação |
-| 11 | [`formulario`](#formulario) | Módulo de formulários dinâmicos no banco |
-| 12 | [`multiempresa`](#multiempresa) | Login por slug e isolamento por empresa |
-| 13 | [`empresas`](#empresas) | Empresas e acesso individual |
-| 14 | [`upload`](#upload) | Módulo de anexos para outros módulos |
+| #   | Palavra-chave                   | Assunto (5 palavras)                     |
+| --- | ------------------------------- | ---------------------------------------- |
+| 8   | [`rotas`](#rotas)               | Mapa de todas as rotas REST              |
+| 9   | [`schema`](#schema)             | Introspecção do banco por API            |
+| 10  | [`navmenu`](#navmenu)           | Config do app e árvore de navegação      |
+| 11  | [`formulario`](#formulario)     | Módulo de formulários dinâmicos no banco |
+| 12  | [`multiempresa`](#multiempresa) | Login por slug e isolamento por empresa  |
+| 13  | [`empresas`](#empresas)         | Empresas e acesso individual             |
+| 14  | [`upload`](#upload)             | Módulo de anexos para outros módulos     |
 
 **4. Módulos de negócio**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 15 | [`messages`](#messages) | Mensagens diretas, nunca um chat |
-| 16 | [`chatrooms`](#chatrooms) | Módulo de salas de chat moderadas |
-| 17 | [`timeline`](#timeline) | Módulo de publicações e timeline |
-| 18 | [`map`](#map) | Mapas, pontos, trajetos e CEP |
-| 19 | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail |
+| #   | Palavra-chave                                       | Assunto (5 palavras)              |
+| --- | --------------------------------------------------- | --------------------------------- |
+| 15  | [`messages`](#messages)                             | Mensagens diretas, nunca um chat  |
+| 16  | [`chatrooms`](#chatrooms)                           | Módulo de salas de chat moderadas |
+| 17  | [`timeline`](#timeline)                             | Módulo de publicações e timeline  |
+| 18  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
+| 19  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
 
 **5. Operação e manutenção**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 20 | [`kinghost`](#kinghost) | Deploy via git na hospedagem KingHost |
-| 21 | [`avaliacao`](#avaliacao) | Valor comercial do sistema, teto |
-| 22 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
+| #   | Palavra-chave                 | Assunto (5 palavras)                  |
+| --- | ----------------------------- | ------------------------------------- |
+| 20  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
+| 21  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
+| 22  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
+| 23  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
 
 ---
 
@@ -398,6 +399,16 @@ link para este `README.md`.
 
 [`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
 
+### `podman`
+
+`npm run dev` falha com "Port 54910 is already in use" sem nenhum processo na
+porta. Causa: com o Podman no ar (WSL `networkingMode=mirrored`) o Windows
+bloqueia o bind da faixa oculta `52810–56905`. Solução validada: `wsl --shutdown`,
+`npm run dev` (Vite pega a 54910 primeiro), `podman machine start` e
+`podman compose up -d`. Sem rebuild dos containers.
+
+[`geral/README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — diagnóstico e solução da porta 54910 bloqueada.
+
 ---
 
 ## Conteúdo
@@ -405,6 +416,7 @@ link para este `README.md`.
 ### `geral/`
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
+- [`README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — Vite não sobe na 54910 com Podman ativo (WSL mirrored): causa e ordem de inicialização.
 - [`README_avaliacao_comercial_saas.md`](geral/README_avaliacao_comercial_saas.md) — avaliação de mercado (teto): venda de código-fonte x SaaS mensal, composição de custo de infra e memória de cálculo.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
 - [`README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — multiempresa: login por slug, sessão amarrada à empresa, isolamento de dados na API, cadastro e pendências.

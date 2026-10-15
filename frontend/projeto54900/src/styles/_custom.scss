@@ -12,6 +12,23 @@ dl .text-break {
   overflow-wrap: anywhere;
 }
 
+// Markdown renderizado (components/global/MarkdownView.tsx): o Bootstrap nao
+// estiliza <pre>/<code> de bloco nem limita imagens do conteudo gerado.
+.markdown-view {
+  overflow-wrap: anywhere;
+
+  pre {
+    padding: 0.75rem;
+    border-radius: var(--bs-border-radius);
+    background-color: var(--bs-tertiary-bg);
+    overflow-x: auto;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}
+
 // Árvore de hierarquia do FormBuilderPage (pages/v1/form/FormBuilderTree.tsx),
 // espelha doc/html/estrutura.html. Bootstrap não tem componente de árvore; aqui
 // só o que utilitário não cobre: giro do chevron, realce da linha, guia

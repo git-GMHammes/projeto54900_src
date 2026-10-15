@@ -68,6 +68,10 @@ export const paths = {
       // Destino do link de e-mail do convite de evento (?token=...). Publica.
       acceptInvite: '/v1/convite/aceitar',
     },
+    // knowledge — base de conhecimento (markdowns), so admin (rota estatica, sem API)
+    knowledge: {
+      view: '/v1/knowledge-base',
+    },
     // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
     svgMap: {
       view: '/v1/svg-map',

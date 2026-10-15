@@ -40,7 +40,7 @@ Fora da árvore de paths, capturado pelo `errorElement` do nó raiz:
 
 ---
 
-## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário, svg-map, timeline e messages
+## v1 — Auth, usuários, uploads, formulários, listas, nav, menu, calendário, svg-map, knowledge-base, timeline e messages
 
 Fonte: `routes/v1/index.tsx` — agrupa tudo sob o prefixo `/v1`, espelhando o
 grupo `api/v1` do backend (`app/Config/Routes.php`).
@@ -55,7 +55,7 @@ grupo `api/v1` do backend (`app/Config/Routes.php`).
 | --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `login`, `user-manager/create`, `user-profiles/create`, `convite/aceitar`                 | nenhuma                         | **Públicas** — login, as duas etapas do Cadastro de Usuário, e o destino do link de e-mail do convite de evento |
 | todo o resto do bloco v1                                                                 | `RequireAuth`                   | Sem sessão redireciona para `/v1/login`; durante o refresh silencioso inicial mostra `LoadingOverlay`       |
-| `user-manager*`, `user-profiles`, `form-constructor*`, `form-constructor-claude`, `list-constructor*`, `nav-manager*`, `menu-manager*` | `RequireRole role="admin"`      | Sem o papel `admin` redireciona para `/acesso-negado`                                                       |
+| `user-manager*`, `user-profiles`, `form-constructor*`, `form-constructor-claude`, `list-constructor*`, `nav-manager*`, `menu-manager*`, `knowledge-base` | `RequireRole role="admin"`      | Sem o papel `admin` redireciona para `/acesso-negado`                                                       |
 | `form/:slug`                                                                             | nenhuma (além do `RequireAuth`) | Renderizador genérico de formulário — usado por usuário comum; o caso do slug `calendario` é tratado dentro de `FormRendererPage` |
 
 As guardas vivem em `routes/RequireAuth.tsx` e `routes/RequireRole.tsx` e são
@@ -244,6 +244,23 @@ Guarda: apenas `RequireAuth` (sem `RequireRole`).
 | Path           | Elemento (lazy)                     | Observação                                                                                         |
 | -------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/v1/svg-map` | `pages/v1/svg-map/SvgMapPage`     | SVG inline com tooltip de nome no hover; checklist (`CheckboxField` do FormGrid, controlado) sincronizado com o clique no mapa; marcado = cor do município + nome + bolinha |
+
+### knowledge — Base de conhecimento (rota estática, só admin)
+
+Fonte: `routes/v1/knowledge.routes.tsx` — **não espelha API**: a página só lê os
+`.md` das duas bases (`src/app/markdown/` e `src/markdown/`), embutidos no bundle
+por `import.meta.glob(..., { query: '?raw' })` (um chunk lazy por arquivo). O
+índice é montado lendo a tabela de índice do `README.md` de cada base
+(`services/knowledgeBase.ts`), sem os resumos; cada item abre um collapse do
+Bootstrap (estado React) com os markdowns do tópico renderizados por
+`components/global/MarkdownView.tsx` (`react-markdown` + `remark-gfm`). No
+dev-server, `vite.config.ts` libera a pasta do backend em `server.fs.allow`.
+Guarda: `RequireAuth` + `RequireRole role="admin"` (a base descreve regras
+internas). Item de navbar em `menu_manager`: **pendente**.
+
+| Path                 | Elemento (lazy)                              | Observação                                                                                                       |
+| -------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `/v1/knowledge-base` | `pages/v1/knowledge/KnowledgeBasePage`       | Índice consolidado backend + frontend; clicar num item abre o collapse com o markdown; links entre `.md` abrem o collapse do item dono do arquivo |
 
 ### map — Mapa Leaflet e mapa de um registro
 
