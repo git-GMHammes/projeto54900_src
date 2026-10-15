@@ -2,7 +2,7 @@
 ;
 /*!40101 SET NAMES utf8 */
 ;
-/*!50503 SET NAMES utf8mb4 */
+/*!50503 SET NAMES utf8mb4 COLLATE utf8mb4_general_ci */
 ;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */
 ;
@@ -45,7 +45,7 @@
 -- view_timeline_posts, view_upload_manager, view_user_directory,
 -- view_user_manager, view_user_resource_access.
 -- -----------------------------------------------------------------------------
-SET NAMES utf8mb4;
+SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;
 -- -----------------------------------------------------------------------------
 -- view_aux_cor
 -- -----------------------------------------------------------------------------
@@ -3287,8 +3287,6 @@ FROM user_resource_access ura
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */
 ;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
-;
-/*!40101 SET NAMES @OLD_NAMES */
 ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */
 ;
