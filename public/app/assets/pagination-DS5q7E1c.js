@@ -1,0 +1,1 @@
+function d(e,i,f=2){const n=Math.max(1,i),o=Math.min(Math.max(1,e),n);if(n<=1)return[1];const a=new Set([1,n,o]);for(let t=1;t<=f;t++)o-t>=1&&a.add(o-t),o+t<=n&&a.add(o+t);const p=Array.from(a).sort((t,c)=>t-c),r=[];let s=0;for(const t of p)s&&t-s>1&&r.push("..."),r.push(t),s=t;return r}export{d as p};
