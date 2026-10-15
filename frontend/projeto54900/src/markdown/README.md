@@ -17,56 +17,56 @@ cada resumo termina com o link para o conteúdo completo.
 
 **1. Começar**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 1 | [`node`](#node) | Comandos do Node e módulos |
-| 2 | [`paginas`](#paginas) | Página por módulo, recurso e ação |
-| 3 | [`alerta`](#alerta) | Checklist antes de criar UI |
-| 4 | [`placeholder`](#placeholder) | Placeholder vazio não é bug |
-| 5 | [`comentario`](#comentario) | Comentar código em estilo didático |
+| #   | Palavra-chave                 | Assunto (5 palavras)               |
+| --- | ----------------------------- | ---------------------------------- |
+| 1   | [`node`](#node)               | Comandos do Node e módulos         |
+| 2   | [`paginas`](#paginas)         | Página por módulo, recurso e ação  |
+| 3   | [`alerta`](#alerta)           | Checklist antes de criar UI        |
+| 4   | [`placeholder`](#placeholder) | Placeholder vazio não é bug        |
+| 5   | [`comentario`](#comentario)   | Comentar código em estilo didático |
 
 **2. Telas e navegação**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 6 | [`rotas`](#rotas) | Mapa de todas as rotas React |
-| 7 | [`menu`](#menu) | Nav e menu: duas tabelas |
-| 8 | [`modal`](#modal) | Padrão único de modal centralizado |
-| 9 | [`envhost`](#envhost) | O que isDevHost() libera hoje |
+| #   | Palavra-chave         | Assunto (5 palavras)               |
+| --- | --------------------- | ---------------------------------- |
+| 6   | [`rotas`](#rotas)     | Mapa de todas as rotas React       |
+| 7   | [`menu`](#menu)       | Nav e menu: duas tabelas           |
+| 8   | [`modal`](#modal)     | Padrão único de modal centralizado |
+| 9   | [`envhost`](#envhost) | O que isDevHost() libera hoje      |
 
 **3. Formulários**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 10 | [`formgrid`](#formgrid) | Fábrica de campos dirigida por JSON |
-| 11 | [`render`](#render) | Renderizar formulário só via FormGrid |
-| 12 | [`json`](#json) | Campo monta JSON sem digitação |
-| 13 | [`rota`](#rota) | Campo de rota vira select |
-| 14 | [`construtor`](#construtor) | Página cria formulários via API |
-| 15 | [`builder`](#builder) | Construtor novo: tabela vira formulário |
+| #   | Palavra-chave               | Assunto (5 palavras)                    |
+| --- | --------------------------- | --------------------------------------- |
+| 10  | [`formgrid`](#formgrid)     | Fábrica de campos dirigida por JSON     |
+| 11  | [`render`](#render)         | Renderizar formulário só via FormGrid   |
+| 12  | [`json`](#json)             | Campo monta JSON sem digitação          |
+| 13  | [`rota`](#rota)             | Campo de rota vira select               |
+| 14  | [`construtor`](#construtor) | Página cria formulários via API         |
+| 15  | [`builder`](#builder)       | Construtor novo: tabela vira formulário |
 
 **4. Listagens**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 16 | [`listas`](#listas) | Estrutura de banco para listagens |
-| 17 | [`listagem`](#listagem) | Consumir o motor de listagens |
+| #   | Palavra-chave           | Assunto (5 palavras)              |
+| --- | ----------------------- | --------------------------------- |
+| 16  | [`listas`](#listas)     | Estrutura de banco para listagens |
+| 17  | [`listagem`](#listagem) | Consumir o motor de listagens     |
 
 **5. Módulos de negócio**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 18 | [`empresas`](#empresas) | Empresas e acesso individual |
-| 19 | [`mensagens`](#mensagens) | Listas e CRUD de mensagens |
-| 20 | [`timeline`](#timeline) | Feed social: pronto, com pendências |
-| 21 | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
-| 22 | [`mapa`](#mapa) | Mapa Leaflet e vínculo a módulos |
+| #   | Palavra-chave               | Assunto (5 palavras)                    |
+| --- | --------------------------- | --------------------------------------- |
+| 18  | [`empresas`](#empresas)     | Empresas e acesso individual            |
+| 19  | [`mensagens`](#mensagens)   | Listas e CRUD de mensagens              |
+| 20  | [`timeline`](#timeline)     | Feed social: pronto, com pendências     |
+| 21  | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
+| 22  | [`mapa`](#mapa)             | Mapa Leaflet e vínculo a módulos        |
 
 **6. Manutenção**
 
-| #  | Palavra-chave | Assunto (5 palavras) |
-| -- | ------------- | -------------------- |
-| 23 | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
+| #   | Palavra-chave                 | Assunto (5 palavras)                 |
+| --- | ----------------------------- | ------------------------------------ |
+| 23  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
 
 ---
 
