@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/ca0000001.jpg",
+    "descricao": "Cirurgia cardíaca"
+  },
+  {
+    "id": 2,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/f0000001.jpg",
+    "descricao": "Atendimento em drogaria"
+  },
+  {
+    "id": 3,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/l0000001.jpg",
+    "descricao": "Laboratório de manipulação farmacêutica"
+  },
+  {
+    "id": 4,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/o0000001.jpg",
+    "descricao": "Consulta odontológica"
+  },
+  {
+    "id": 5,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/p0000001.jpg",
+    "descricao": "Atendimento psicológico"
+  },
+  {
+    "id": 6,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/pe0000001.jpg",
+    "descricao": "Consulta pediátrica"
+  },
+  {
+    "id": 7,
+    "tipo": "imagem",
+    "caminho": "/img/bunner/re0000001.jpg",
+    "descricao": "Resgate em ambulância"
+  },
+  {
+    "id": 8,
+    "tipo": "video",
+    "caminho": "/video/bunner/ca00000001.gif",
+    "descricao": "Cirurgia cardíaca"
+  },
+  {
+    "id": 9,
+    "tipo": "video",
+    "caminho": "/video/bunner/f]00000001.gif",
+    "descricao": "Atendimento em drogaria"
+  },
+  {
+    "id": 10,
+    "tipo": "video",
+    "caminho": "/video/bunner/l0000002.gif",
+    "descricao": "Laboratório de manipulação farmacêutica"
+  },
+  {
+    "id": 11,
+    "tipo": "video",
+    "caminho": "/video/bunner/o00000001.gif",
+    "descricao": "Consulta odontológica"
+  },
+  {
+    "id": 12,
+    "tipo": "video",
+    "caminho": "/video/bunner/p00000001.gif",
+    "descricao": "Atendimento psicológico"
+  },
+  {
+    "id": 13,
+    "tipo": "video",
+    "caminho": "/video/bunner/pe00000001.gif",
+    "descricao": "Consulta pediátrica"
+  },
+  {
+    "id": 14,
+    "tipo": "video",
+    "caminho": "/video/bunner/re]00000001.gif",
+    "descricao": "Resgate em ambulância"
+  }
+]

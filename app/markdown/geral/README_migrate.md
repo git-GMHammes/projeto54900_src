@@ -241,6 +241,7 @@ podman compose up -d --build
 
 ``` 
 cd C:\laragon\www\php\habilidade\projeto54900
+cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark migrate
  
 ```

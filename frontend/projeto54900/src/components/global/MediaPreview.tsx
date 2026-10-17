@@ -43,7 +43,8 @@
  * -------------------------------------------------------------------------
  */
 
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { pickFallbackMedia } from '@/utils/timelineFallbackMedia';
 
 export type MediaCategory =
   | 'image'
@@ -61,6 +62,8 @@ export interface MediaAttachment {
   category: MediaCategory;
   fileUrl: string;
   name: string;
+  /** Só em mídia de fallback aleatória: texto da faixa branca deslizante sobre a imagem. */
+  fallbackLabel?: string;
 }
 
 /** Ícone Bootstrap por categoria — só para as categorias que NÃO tocam inline (tudo, exceto image/video). */
@@ -79,22 +82,57 @@ function isInlineMedia(attachment: MediaAttachment): boolean {
   return attachment.category === 'image' || attachment.category === 'video';
 }
 
+/** Faixa branca: texto desliza da direita para a esquerda 2 vezes e depois fixa centralizado. */
+function FallbackBanner({ text }: { text: string }) {
+  const [settled, setSettled] = useState(false);
+  return (
+    <div
+      className="position-absolute top-0 start-0 w-100 bg-white text-dark overflow-hidden text-nowrap rounded-top border-bottom"
+      style={{ padding: '2px 0', textAlign: 'center' }}
+    >
+      {settled ? (
+        <strong>{text}</strong>
+      ) : (
+        <strong className="fallback-banner-text" onAnimationEnd={() => setSettled(true)}>
+          {text}
+        </strong>
+      )}
+    </div>
+  );
+}
+
 /**
  * Um anexo: imagem/vídeo inline, os demais um card com ícone + nome, clicável (abre em nova aba).
  * `onDone` dispara quando a imagem/vídeo termina de carregar OU falha (erro também conta, para
  * quem espera o carregamento nunca ficar preso).
  */
-function AttachmentItem({ attachment, onDone }: { attachment: MediaAttachment; onDone: () => void }) {
+function AttachmentItem({ attachment: original, onDone }: { attachment: MediaAttachment; onDone: () => void }) {
+  // Imagem/vídeo que falha ao carregar é trocado por 1 mídia estática aleatória (nunca falha).
+  const [fallback, setFallback] = useState<MediaAttachment | null>(null);
+  const attachment = fallback ?? original;
+  const handleError = () => {
+    if (fallback === null && isInlineMedia(original)) setFallback(pickFallbackMedia());
+    else onDone();
+  };
+
   if (attachment.category === 'image') {
-    return (
+    const img = (
       <img
         src={attachment.fileUrl}
         alt={attachment.name}
         className="img-fluid rounded bg-black"
         style={{ maxHeight: '420px', width: '100%', objectFit: 'cover' }}
         onLoad={onDone}
-        onError={onDone}
+        onError={handleError}
       />
+    );
+    if (!attachment.fallbackLabel) return img;
+    // Faixa branca SOBREPOSTA ao topo (absolute): não altera o tamanho padrão do anexo.
+    return (
+      <div className="position-relative">
+        {img}
+        <FallbackBanner text={`Publicidade: ${attachment.fallbackLabel}`} />
+      </div>
     );
   }
 
@@ -107,7 +145,7 @@ function AttachmentItem({ attachment, onDone }: { attachment: MediaAttachment; o
         className="w-100 rounded bg-black"
         style={{ maxHeight: '420px' }}
         onLoadedData={onDone}
-        onError={onDone}
+        onError={handleError}
       />
     );
   }

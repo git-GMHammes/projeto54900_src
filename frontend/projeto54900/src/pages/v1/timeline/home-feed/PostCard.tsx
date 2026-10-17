@@ -113,6 +113,7 @@ import {
 } from '@/services/v1';
 import { normalizeItem, normalizeList } from '@/utils/apiResult';
 import { formatDateTime } from '@/utils/format';
+import { pickFallbackMedia } from '@/utils/timelineFallbackMedia';
 import ConfirmModal from '@/components/global/ConfirmModal';
 import MediaPreview from '@/components/global/MediaPreview';
 import type { MediaAttachment, MediaCategory } from '@/components/global/MediaPreview';
@@ -245,7 +246,7 @@ export default function PostCard({
               objectUrls.push(url);
               return { ...meta, fileUrl: url };
             } catch {
-              return null; // binario indisponivel: some so este anexo, nao o card
+              return { ...meta, ...pickFallbackMedia(), id: meta.id }; // binario indisponivel: midia fallback aleatoria
             }
           }),
         );
@@ -258,7 +259,8 @@ export default function PostCard({
       .catch(() => {
         // Sem anexo visivel em caso de falha - nao quebra o card inteiro por causa disso.
         if (!active) return;
-        setMediaReady(true);
+        setAttachments([pickFallbackMedia()]); // lista de anexos indisponivel: midia fallback aleatoria
+        setMediaReady(false);
         setAttachmentsFetched(true);
       });
     return () => {
