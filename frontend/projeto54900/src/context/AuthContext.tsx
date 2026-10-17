@@ -76,6 +76,39 @@ function storeRefreshToken(token: string | null): void {
   }
 }
 
+const REFRESH_LOCK_NAME = 'projeto54900.refresh';
+
+type AuthPayload = Awaited<ReturnType<typeof authService.refresh>>;
+
+/** Roda `fn` em exclusao mutua entre abas (Web Locks); sem a API, roda direto. */
+function withRefreshLock<T>(fn: () => Promise<T>): Promise<T> {
+  return 'locks' in navigator ? navigator.locks.request(REFRESH_LOCK_NAME, fn) : fn();
+}
+
+/**
+ * Troca o refresh_token salvo por um par novo. O refresh_token gira a cada uso (o servidor guarda um unico hash),
+ * entao a troca e serializada entre abas e o token e RELIDO do localStorage dentro do lock — assim quem espera
+ * usa o token que a aba anterior acabou de gravar, nunca um ja gasto. Devolve null se nao ha token salvo.
+ * Recusa do servidor (4xx) apaga o token; falha de rede o preserva para tentar de novo.
+ */
+function rotateRefreshToken(): Promise<AuthPayload | null> {
+  return withRefreshLock(async () => {
+    const stored = readStoredRefreshToken();
+    if (!stored) return null;
+    try {
+      const payload = await authService.refresh(stored);
+      storeRefreshToken(payload.refresh_token);
+      return payload;
+    } catch (err) {
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) storeRefreshToken(null);
+      throw err;
+    }
+  });
+}
+
+/** Refresh inicial em andamento: o StrictMode monta o efeito 2x e nao pode girar o token duas vezes. */
+let bootstrapInFlight: Promise<AuthPayload | null> | null = null;
+
 /**
  * Provider da sessao: guarda o access_token em ref (memoria, nunca
  * persistido) e tenta restaurar a sessao ao montar via refresh silencioso
@@ -100,12 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * (refresh vencido/revogado): encerra a sessão local e o RequireAuth leva ao login. Devolve true se renovou.
    */
   const renewSession = useCallback(async (): Promise<boolean> => {
-    const stored = readStoredRefreshToken();
-    if (!stored) return false;
     try {
-      const payload = await authService.refresh(stored);
+      const payload = await rotateRefreshToken();
+      if (!payload) return false;
       accessTokenRef.current = payload.access_token;
-      storeRefreshToken(payload.refresh_token);
       setUser(payload.user);
       return true;
     } catch (err) {
@@ -145,21 +176,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Refresh silencioso na montagem: se houver refresh_token salvo, tenta
   // trocar por um access_token novo antes de decidir se o usuario esta logado.
   useEffect(() => {
-    const stored = readStoredRefreshToken();
-    if (!stored) {
+    if (!readStoredRefreshToken()) {
       setBootstrapping(false);
       return;
     }
 
-    authService
-      .refresh(stored)
+    bootstrapInFlight ??= rotateRefreshToken().finally(() => {
+      bootstrapInFlight = null;
+    });
+    bootstrapInFlight
       .then((payload) => {
+        if (!payload) return;
         accessTokenRef.current = payload.access_token;
-        storeRefreshToken(payload.refresh_token);
         setUser(payload.user);
       })
       .catch(() => {
-        storeRefreshToken(null);
+        // rotateRefreshToken ja apagou o token se o servidor recusou; falha de rede mantem para a proxima tentativa.
       })
       .finally(() => setBootstrapping(false));
   }, []);
