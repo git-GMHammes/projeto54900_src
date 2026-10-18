@@ -11,6 +11,10 @@
  *   <MapExplorer />                    // usuario escolhe o mapa
  *   <MapExplorer initialMapId={3} />   // abre ja num mapa
  *
+ * LOCALIZACAO: sem centro no map_manager, abre na posicao do navegador (useGeolocation);
+ * negada/indisponivel, abre no Estado do RJ e a busca de endereco prioriza o Sudeste
+ * (utils/mapRegion.ts).
+ *
  * DADOS: map-manager (centro, zoom, tiles), view_map_points (filtro exato
  * pt_map_manager_id) e o proxy map-geo. O mapa e remontado ao trocar de
  * `map_manager` (o centro inicial do Leaflet so vale na criacao).
@@ -26,13 +30,15 @@ import RoutePlanner from '@/components/map/RoutePlanner';
 import type { PlannerStop } from '@/components/map/RoutePlanner';
 import FormGrid from '@/components/ui/FormGrid/Input';
 import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { useToast } from '@/hooks/useToast';
-import { mapManagerTable, mapPointsView } from '@/services/v1';
+import { mapManagerTable, mapPointsView, mapRoutesView, mapRouteStopsView, uploadManagerUpload } from '@/services/v1';
 import type { PaginationInput } from '@/types/api';
 import type { GeoAddress, GeoRouteResult, LatLng, MapManagerRow, MapMarker, MapPolyline, PostalCodeRow, RouteProfile } from '@/types/map';
-import { toCoord } from '@/types/map';
+import { formatDistance, formatDuration, toCoord } from '@/types/map';
 import { normalizeItem, normalizeList } from '@/utils/apiResult';
-import { LINK_COLORS, LINK_ICONS, errorText, safeColor, safeIcon } from '@/utils/mapLinks';
+import { FALLBACK_CENTER, FALLBACK_ZOOM, GPS_ZOOM, searchViewbox } from '@/utils/mapRegion';
+import { LINK_COLORS, LINK_ICONS, PROFILE_COLORS, errorText, parseLineString, safeColor, safeIcon } from '@/utils/mapLinks';
 import type { ApiRow } from '@/types/api';
 
 type Tool = 'address' | 'cep' | 'route';
@@ -57,12 +63,31 @@ function str(value: unknown): string | undefined {
   return typeof value === 'string' && value !== '' ? value : undefined;
 }
 
+function txt(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+}
+
+function num(value: unknown): number | undefined {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
 export default function MapExplorer({ initialMapId }: MapExplorerProps) {
   const toast = useToast();
+  const geo = useGeolocation();
+  const requestGeo = geo.request;
+
+  useEffect(() => {
+    requestGeo();
+  }, [requestGeo]);
 
   const [mapId, setMapId] = useState(initialMapId !== undefined ? String(initialMapId) : '');
   const [manager, setManager] = useState<MapManagerRow | null>(null);
   const [points, setPoints] = useState<ApiRow[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<ApiRow[]>([]);
+  const [savedStops, setSavedStops] = useState<ApiRow[]>([]);
+  // upload_id do icone -> blob: URL (a rota serve exige token, nao serve em <img src>).
+  const [iconImages, setIconImages] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [tool, setTool] = useState<Tool>('address');
@@ -78,6 +103,8 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
     if (mapId === '') {
       setManager(null);
       setPoints([]);
+      setSavedRoutes([]);
+      setSavedStops([]);
       return;
     }
 
@@ -92,13 +119,34 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
       order: 'ASC',
     };
 
+    const routeParams: PaginationInput = {
+      'filters[mr_map_manager_id]': mapId,
+      'filters[mr_status]': 'active',
+      limit: 200,
+      sort: 'id',
+      order: 'ASC',
+    };
+
     Promise.all([
       mapManagerTable.get(mapId, { signal: controller.signal }),
       mapPointsView.search('', params, { signal: controller.signal }),
+      mapRoutesView.search('', routeParams, { signal: controller.signal }),
     ])
-      .then(([managerPayload, pointsPayload]) => {
+      .then(async ([managerPayload, pointsPayload, routesPayload]) => {
+        const routeRows = normalizeList<ApiRow>(routesPayload).rows;
+        const stopPayloads = await Promise.all(
+          routeRows.map((r) =>
+            mapRouteStopsView.search(
+              '',
+              { 'filters[rs_map_route_id]': String(r.id), limit: 200, sort: 'rs_sort_order', order: 'ASC' },
+              { signal: controller.signal },
+            ),
+          ),
+        );
         setManager(normalizeItem<MapManagerRow>(managerPayload));
         setPoints(normalizeList<ApiRow>(pointsPayload).rows);
+        setSavedRoutes(routeRows);
+        setSavedStops(stopPayloads.flatMap((p) => normalizeList<ApiRow>(p).rows));
       })
       .catch((e: unknown) => {
         if (!controller.signal.aborted) setLoadError(errorText(e));
@@ -106,6 +154,35 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
 
     return () => controller.abort();
   }, [mapId, reloadTick]);
+
+  // Icones de pontos do tipo imagem/SVG: baixa cada anexo uma vez e guarda o blob: URL.
+  useEffect(() => {
+    const wanted = [...new Set(points.map((p) => txt(p.mi_upload_id)).filter((id) => id !== '' && id !== 'null'))]
+      .filter((id) => !(id in iconImages));
+    if (wanted.length === 0) return;
+
+    let alive = true;
+    wanted.forEach((id) => {
+      uploadManagerUpload
+        .fetchBlob(id)
+        .then((blob) => {
+          if (alive) setIconImages((prev) => ({ ...prev, [id]: URL.createObjectURL(blob) }));
+        })
+        .catch(() => {
+          if (alive) setIconImages((prev) => ({ ...prev, [id]: '' }));
+        });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [points, iconImages]);
+
+  useEffect(
+    () => () => {
+      Object.values(iconImages).forEach((url) => url && URL.revokeObjectURL(url));
+    },
+    [], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const selectSchema = useMemo<FormGridSchema>(
     () => ({
@@ -135,6 +212,13 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
     [mapId],
   );
 
+  const centerOfManager: LatLng | undefined = useMemo(() => {
+    if (!manager) return undefined;
+    const lat = toCoord(manager.center_lat);
+    const lng = toCoord(manager.center_lng);
+    return lat !== null && lng !== null ? { lat, lng } : undefined;
+  }, [manager]);
+
   const markers = useMemo<MapMarker[]>(() => {
     const out: MapMarker[] = [];
 
@@ -146,11 +230,48 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
         id: `point-${String(p.id)}`,
         position: { lat, lng },
         title: str(p.pt_name) ?? 'Ponto',
-        description: [str(p.mc_name), str(p.ma_street)].filter(Boolean).join('\n'),
+        description: [
+          str(p.pt_description),
+          str(p.mc_name) ? `Categoria: ${String(p.mc_name)}` : undefined,
+          [str(p.ma_street), str(p.ma_number), str(p.ma_city)].filter(Boolean).join(', ') || undefined,
+        ]
+          .filter(Boolean)
+          .join('\n'),
         icon: safeIcon(str(p.mi_icon_class), LINK_ICONS.point),
-        color: safeColor(str(p.mc_color), LINK_COLORS.point),
+        // Cor: a do icone; sem ela, a da categoria; sem ela, a padrao do ponto.
+        color: safeColor(str(p.mi_color) ?? str(p.mc_color), LINK_COLORS.point),
+        ...(iconImages[String(p.mi_upload_id)] ? { imageUrl: iconImages[String(p.mi_upload_id)] } : {}),
+        ...(num(p.mi_size_w) ? { width: num(p.mi_size_w) } : {}),
+        ...(num(p.mi_size_h) ? { height: num(p.mi_size_h) } : {}),
+        ...(p.mi_anchor_x != null && Number.isFinite(Number(p.mi_anchor_x)) ? { anchorX: Number(p.mi_anchor_x) } : {}),
+        ...(p.mi_anchor_y != null && Number.isFinite(Number(p.mi_anchor_y)) ? { anchorY: Number(p.mi_anchor_y) } : {}),
       });
     });
+
+    // Paradas dos trajetos salvos (numeradas na ordem do trajeto).
+    savedStops.forEach((st) => {
+      const lat = toCoord(st.rs_lat);
+      const lng = toCoord(st.rs_lng);
+      if (lat === null || lng === null) return;
+      out.push({
+        id: `saved-stop-${String(st.id)}`,
+        position: { lat, lng },
+        title: `${txt(st.rs_sort_order)}. ${str(st.rs_label) ?? str(st.pt_name) ?? 'Parada'}`,
+        description: [str(st.mr_name), str(st.ma_display_name)].filter(Boolean).join('\n'),
+        icon: 'bi-geo-fill',
+        color: PROFILE_COLORS[String(savedRoutes.find((r) => r.id === st.rs_map_route_id)?.mr_profile)] ?? LINK_COLORS.route,
+      });
+    });
+
+    if (geo.fix && !centerOfManager) {
+      out.push({
+        id: 'me',
+        position: { lat: geo.fix.lat, lng: geo.fix.lng },
+        title: 'Você está aqui',
+        icon: 'bi-person-fill',
+        color: '#0d6efd',
+      });
+    }
 
     if (tool === 'address' && found) {
       out.push({
@@ -190,27 +311,40 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
     }
 
     return out;
-  }, [points, tool, found, postal, stops]);
+  }, [points, savedStops, savedRoutes, iconImages, tool, found, postal, stops, geo.fix, centerOfManager]);
 
-  const lines = useMemo<MapPolyline[]>(
-    () =>
-      tool === 'route' && routeResult
-        ? [{ id: 'explorer-route', coordinates: routeResult.geometry.coordinates, color: LINK_COLORS.route }]
-        : [],
-    [tool, routeResult],
-  );
+  const lines = useMemo<MapPolyline[]>(() => {
+    // Trajetos gravados no mapa (sempre visiveis) + o que esta sendo calculado.
+    const out: MapPolyline[] = [];
+    savedRoutes.forEach((r) => {
+      const coordinates = parseLineString(str(r.mr_geometry));
+      if (coordinates === null) return;
+      out.push({
+        id: `saved-route-${String(r.id)}`,
+        coordinates,
+        color: PROFILE_COLORS[String(r.mr_profile)] ?? LINK_COLORS.route,
+        title: [
+          str(r.mr_name),
+          num(r.mr_distance_m) ? formatDistance(Number(r.mr_distance_m)) : undefined,
+          num(r.mr_duration_s) ? formatDuration(Number(r.mr_duration_s)) : undefined,
+        ]
+          .filter(Boolean)
+          .join(' · '),
+      });
+    });
+    if (tool === 'route' && routeResult) {
+      out.push({ id: 'explorer-route', coordinates: routeResult.geometry.coordinates, color: LINK_COLORS.route });
+    }
+    return out;
+  }, [tool, routeResult, savedRoutes]);
 
   const addStop = useCallback((position: LatLng, label?: string) => {
     setStops((prev) => [...prev, { id: newId(), label: label ?? `Parada ${prev.length + 1}`, position }]);
     setTool('route');
   }, []);
 
-  const centerOfManager: LatLng | undefined = useMemo(() => {
-    if (!manager) return undefined;
-    const lat = toCoord(manager.center_lat);
-    const lng = toCoord(manager.center_lng);
-    return lat !== null && lng !== null ? { lat, lng } : undefined;
-  }, [manager]);
+  const gpsCenter: LatLng | undefined = geo.fix ? { lat: geo.fix.lat, lng: geo.fix.lng } : undefined;
+  const viewbox = useMemo(() => searchViewbox(gpsCenter), [gpsCenter?.lat, gpsCenter?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const postalCoord: LatLng | null = postal
     ? (() => {
@@ -249,7 +383,7 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
 
         {tool === 'address' && (
           <>
-            <AddressSearch onSelect={setFound} />
+            <AddressSearch onSelect={setFound} viewbox={viewbox} origin={gpsCenter} />
             {found && (
               <div className="card card-body py-2 mt-3">
                 <div className="small">{found.display_name}</div>
@@ -289,6 +423,8 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
             profile={profile}
             onProfileChange={setProfile}
             onCalculated={setRouteResult}
+            viewbox={viewbox}
+            origin={gpsCenter}
             mapManagerId={mapId === '' ? undefined : mapId}
             defaultName="Novo trajeto"
             onSaved={(routeId) => {
@@ -302,18 +438,18 @@ export default function MapExplorer({ initialMapId }: MapExplorerProps) {
       <div className="col-lg-8">
         <MapView
           // Remonta quando o mapa escolhido E o registro dele (centro/zoom) ja chegaram: o centro inicial do Leaflet so vale na criacao.
-          key={`${mapId || 'sem-mapa'}-${manager ? String(manager.id) : 'carregando'}`}
+          key={`${mapId || 'sem-mapa'}-${manager ? String(manager.id) : 'carregando'}-${geo.fix ? 'gps' : 'sem-gps'}`}
           height={600}
           markers={markers}
           routes={lines}
-          center={centerOfManager}
-          zoom={manager ? Number(manager.zoom) || 12 : undefined}
+          center={centerOfManager ?? gpsCenter ?? FALLBACK_CENTER}
+          zoom={manager && centerOfManager ? Number(manager.zoom) || 12 : gpsCenter ? GPS_ZOOM : FALLBACK_ZOOM}
           tileUrl={str(manager?.tile_url)}
           attribution={str(manager?.attribution)}
           {...(tool === 'route' ? { onMapClick: (position: LatLng) => addStop(position) } : {})}
         />
         <div className="small text-body-secondary mt-1">
-          {tool === 'route' ? 'Clique no mapa para adicionar paradas ao trajeto.' : `${points.length} ponto(s) neste mapa.`}
+          {tool === 'route' ? 'Clique no mapa para adicionar paradas ao trajeto.' : `${points.length} ponto(s) e ${savedRoutes.length} trajeto(s) neste mapa.`}
         </div>
       </div>
     </div>

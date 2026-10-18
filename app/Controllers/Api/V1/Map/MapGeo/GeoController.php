@@ -8,6 +8,7 @@ use App\Libraries\Map\CepClient;
 use App\Libraries\Map\GeoException;
 use App\Libraries\Map\NominatimClient;
 use App\Libraries\Map\OrsClient;
+use App\Libraries\Map\OsrmClient;
 use App\Libraries\Map\Throttle;
 use App\Models\V1\Map\MapManager\SqlTableModel as MapManagerModel;
 use App\Services\V1\Map\MapRouteStops\Processor as StopsProcessor;
@@ -22,7 +23,7 @@ use Config\Services;
  * NAO segue o conjunto padrao de 18/9 rotas — desvio sancionado, como o
  * db-schema e o Upload. Expoe apenas:
  *   GET  map-geo/status
- *   GET  map-geo/search?q=&limit=&country=
+ *   GET  map-geo/search?q=&limit=&country=&viewbox=
  *   GET  map-geo/reverse?lat=&lng=
  *   GET  map-geo/cep/{cep}[?refresh=1]
  *   POST map-geo/route   { profile?, coordinates: [[lng,lat],...], save? }
@@ -65,11 +66,12 @@ class GeoController extends BaseResourceViewController
                 return $blocked;
             }
 
-            $input  = $this->request->getGet(['q', 'limit', 'country']);
+            $input  = $this->request->getGet(['q', 'limit', 'country', 'viewbox']);
             $errors = $this->validateInput($input, [
                 'q'       => 'required|string|min_length[3]|max_length[200]',
                 'limit'   => 'permit_empty|is_natural_no_zero|less_than_equal_to[10]',
                 'country' => 'permit_empty|alpha|exact_length[2]',
+                'viewbox' => 'permit_empty|regex_match[/^-?\d{1,3}(\.\d+)?(,-?\d{1,3}(\.\d+)?){3}$/]',
             ]);
 
             if ($errors !== []) {
@@ -79,7 +81,8 @@ class GeoController extends BaseResourceViewController
             [$items, $cached] = (new NominatimClient())->search(
                 trim((string) $input['q']),
                 (int) ($input['limit'] ?: 5),
-                $input['country'] ? strtolower((string) $input['country']) : null
+                $input['country'] ? strtolower((string) $input['country']) : null,
+                $input['viewbox'] ? (string) $input['viewbox'] : null
             );
 
             return $this->respondSuccess(['items' => $items, 'count' => count($items), 'cached' => $cached], 'Busca de endereco');
@@ -184,7 +187,7 @@ class GeoController extends BaseResourceViewController
                 }
             }
 
-            [$result, $cached] = (new OrsClient())->directions($profile, $coordinates);
+            [$result, $cached] = $this->directions($profile, $coordinates);
             $result['cached']  = $cached;
 
             if ($save !== null) {
@@ -211,6 +214,33 @@ class GeoController extends BaseResourceViewController
     // -------------------------------------------------------------------------
     // Privados
     // -------------------------------------------------------------------------
+
+    /**
+     * OpenRouteService primeiro; se ele estiver fora (timeout, 5xx, limite, chave), cai para o
+     * OSRM — so para carro. Erro de entrada (422: sem rota possivel) nao dispara a reserva.
+     *
+     * @param list<array{0: float, 1: float}> $coordinates
+     *
+     * @return array{0: array<string, mixed>, 1: bool}
+     */
+    private function directions(string $profile, array $coordinates): array
+    {
+        try {
+            return (new OrsClient())->directions($profile, $coordinates);
+        } catch (GeoException $e) {
+            $osrm = new OsrmClient();
+
+            if ($e->httpStatus() === 422 || !$osrm->supports($profile)) {
+                throw $e;
+            }
+
+            try {
+                return $osrm->directions($profile, $coordinates);
+            } catch (GeoException) {
+                throw $e;
+            }
+        }
+    }
 
     /**
      * Guest nao consulta; teto de consultas por usuario por minuto.
@@ -327,7 +357,7 @@ class GeoController extends BaseResourceViewController
             'duration_s'     => $result['duration_s'],
             'geometry'       => json_encode($result['geometry'], JSON_UNESCAPED_SLASHES),
             'bbox'           => $result['bbox'],
-            'provider'       => 'ors',
+            'provider'       => $result['provider'] ?? 'ors',
             'calculated_at'  => date('Y-m-d H:i:s'),
         ]);
 

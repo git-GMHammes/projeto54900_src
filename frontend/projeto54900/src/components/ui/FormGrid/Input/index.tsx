@@ -72,6 +72,28 @@ import FieldTooltip from '../FieldTooltip'
 
 // ─── Schema de campo texto ────────────────────────────────────────────────────
 
+/**
+ * Botão com ícone colado ao input (Bootstrap `input-group`).
+ *   addon: { icon: 'bi-search', submit: true }          // lupa que envia o <form>
+ *   addon: { icon: 'bi-x-lg', position: 'start', onClick: limpar }
+ */
+export interface TextFieldAddon {
+  /** Classe do Bootstrap Icons. Ex: 'bi-search' */
+  icon: string
+  /** Lado do botão em relação ao input. Padrão: 'end' */
+  position?: 'start' | 'end'
+  /** Tipo 'submit' (envia o <form> pai, inclusive com Enter) em vez de 'button' */
+  submit?: boolean
+  onClick?: () => void
+  /** Texto acessível e tooltip do botão */
+  label?: string
+  disabled?: boolean
+  /** Sufixo de btn-outline-*. Padrão: 'secondary' */
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark'
+  /** Mostra spinner no lugar do ícone */
+  loading?: boolean
+}
+
 export interface TextFieldSchema {
   /** Discriminador — omitir ou definir como 'text' ou 'password' */
   type?: 'text' | 'password'
@@ -81,6 +103,9 @@ export interface TextFieldSchema {
 
   /** Texto do <label> acima do campo */
   label?: string
+
+  /** Botão com ícone ao lado do input (input-group) */
+  addon?: TextFieldAddon
 
   /** Opções do datalist (gera <datalist> automaticamente vinculado ao campo) */
   datalist?: string[]
@@ -519,6 +544,7 @@ function FormGrid({ schema }: FormGridProps) {
               noLetters: _l,
               noSpecialChars: _s,
               title: _title,
+              addon,
               ...inputProps
             } = field
 
@@ -552,16 +578,47 @@ function FormGrid({ schema }: FormGridProps) {
                     )}
                   </label>
                 )}
-                <input
-                  type={_type ?? 'text'}
-                  id={id}
-                  className={`form-control${erro ? ' is-invalid' : ''}${className ? ` ${className}` : ''}`}
-                  list={datalist ? datalistId : restInputProps.list}
-                  {...restInputProps}
-                  {...controlProps}
-                  onChange={e => handleChange(e, field, chave)}
-                  onBlur={e => handleBlur(e, field, chave)}
-                />
+                {(() => {
+                  const control = (
+                    <input
+                      type={_type ?? 'text'}
+                      id={id}
+                      className={`form-control${erro ? ' is-invalid' : ''}${className ? ` ${className}` : ''}`}
+                      list={datalist ? datalistId : restInputProps.list}
+                      {...restInputProps}
+                      {...controlProps}
+                      onChange={e => handleChange(e, field, chave)}
+                      onBlur={e => handleBlur(e, field, chave)}
+                    />
+                  )
+
+                  if (!addon) return control
+
+                  const button = (
+                    <button
+                      type={addon.submit ? 'submit' : 'button'}
+                      className={`btn btn-outline-${addon.variant ?? 'secondary'}`}
+                      aria-label={addon.label}
+                      title={addon.label}
+                      disabled={addon.disabled || restInputProps.disabled}
+                      onClick={addon.onClick}
+                    >
+                      {addon.loading ? (
+                        <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+                      ) : (
+                        <i className={`bi ${addon.icon}`} aria-hidden="true" />
+                      )}
+                    </button>
+                  )
+
+                  return (
+                    <div className="input-group">
+                      {addon.position === 'start' && button}
+                      {control}
+                      {addon.position !== 'start' && button}
+                    </div>
+                  )
+                })()}
                 {datalist && (
                   <datalist id={datalistId}>
                     {datalist.map((opt, i) => (

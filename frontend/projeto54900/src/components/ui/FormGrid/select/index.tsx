@@ -116,6 +116,14 @@ export interface SelectFieldSchema {
   colorKey?: string
 
   /**
+   * Chave do item com o codepoint (inteiro) do glifo do Bootstrap Icons.
+   * Quando presente, cada opção mostra o ícone antes do texto (fonte
+   * 'bootstrap-icons') e o campo exibe o ícone escolhido; o valor gravado
+   * deve ser a classe `bi-...`.
+   */
+  iconKey?: string
+
+  /**
    * Ao escolher uma opção (modo single), copia valores do item para outros
    * campos do mesmo `<form>`: { name_do_campo_destino: chave_do_item }
    * (ex.: { email: 'uc_email', display_name: 'uc_name' }). Chave vazia no item
@@ -551,6 +559,9 @@ export function SelectField({ field }: SelectFieldProps) {
   const selectedColor = field.colorKey && !field.multiple && effectiveValue
     ? asText(allData.find(item => getValue(item, field) === effectiveValue)?.[field.colorKey]) || effectiveValue
     : ''
+  const selectedIcon = field.iconKey && !field.multiple && effectiveValue && /^bi-[a-z0-9-]+$/.test(effectiveValue)
+    ? effectiveValue
+    : ''
   const inputClass = ['form-control field-select-search', erro ? 'is-invalid' : '', field.className ?? '']
     .filter(Boolean).join(' ')
 
@@ -589,12 +600,15 @@ export function SelectField({ field }: SelectFieldProps) {
           const sel = isSelected(val)
           const dis = isOptionDisabled(val)
           const cor = field.colorKey ? asText(item[field.colorKey]) : ''
+          const cp = field.iconKey ? Number(item[field.iconKey]) : 0
+          const glyph = cp > 0 ? `${String.fromCodePoint(cp)}  ` : ''
           return (
             <option
               key={idx}
               value={val}
               disabled={dis}
               style={
+                glyph ? { fontFamily: 'bootstrap-icons, system-ui, sans-serif' } :
                 dis
                   ? { color: '#adb5bd', cursor: 'not-allowed' }
                   : cor
@@ -604,7 +618,7 @@ export function SelectField({ field }: SelectFieldProps) {
                       : undefined
               }
             >
-              {sel && !field.multiple ? `✓ ${lbl}` : lbl}
+              {glyph}{sel && !field.multiple ? `✓ ${lbl}` : lbl}
             </option>
           )
         })}
@@ -637,10 +651,10 @@ export function SelectField({ field }: SelectFieldProps) {
           tabIndex={field.tabIndex}
           value={searchText || displayText}
           style={
-            hasAnyValue || field.colorKey
+            hasAnyValue || field.colorKey || selectedIcon
               ? {
                   paddingRight: hasAnyValue ? '2rem' : undefined,
-                  paddingLeft: field.colorKey ? '2.25rem' : undefined,
+                  paddingLeft: field.colorKey || selectedIcon ? '2.25rem' : undefined,
                 }
               : undefined
           }
@@ -657,6 +671,16 @@ export function SelectField({ field }: SelectFieldProps) {
               transform: 'translateY(-50%)', width: '1.1rem', height: '1.1rem',
               borderRadius: '0.2rem', border: '1px solid #ced4da',
               background: selectedColor || 'transparent', pointerEvents: 'none',
+            }}
+          />
+        )}
+        {selectedIcon && (
+          <i
+            aria-hidden="true"
+            className={`bi ${selectedIcon}`}
+            style={{
+              position: 'absolute', left: '0.65rem', top: '50%',
+              transform: 'translateY(-50%)', fontSize: '1.1rem', pointerEvents: 'none',
             }}
           />
         )}

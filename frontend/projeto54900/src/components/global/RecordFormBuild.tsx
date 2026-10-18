@@ -16,7 +16,7 @@
 // carregamento quando o pai recria o objeto a cada render.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
@@ -58,6 +58,8 @@ export interface RecordFormBuildProps {
    * (voltar a apagar o slug religa o automatico). So no cadastro; na edicao nada muda.
    */
   autoSlug?: { from: string; to: string };
+  /** Conteudo extra dentro do <form>, logo abaixo dos campos (ex.: seletor de ponto no mapa). */
+  afterFields?: ReactNode;
   successMessage: string;
   fallbackTitle: string;
 }
@@ -71,6 +73,7 @@ export default function RecordFormBuild({
   defaults,
   patches,
   autoSlug,
+  afterFields,
   successMessage,
   fallbackTitle,
 }: RecordFormBuildProps) {
@@ -218,6 +221,7 @@ export default function RecordFormBuild({
       {!loading && !error && schema && (
         <form onSubmit={(e) => void handleSubmit(e)} onInput={handleInput} noValidate>
           <FormGrid schema={schema} />
+          {afterFields}
           {/* Dev-only (isDevHost) e so no cadastro: so aparece se houver script registrado para o slug. */}
           {!editing && <FakeFillButton slug={slug} />}
           <div className="d-flex gap-2 mt-4 pt-3 border-top">

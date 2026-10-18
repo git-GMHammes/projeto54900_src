@@ -308,6 +308,7 @@ function buildField(row: ApiRow): AnyFieldSchema {
       if (rec.multiple === true) set('multiple', true);
       set('rows', int(rec.rows));
       set('colorKey', str(rec.colorKey));
+      set('iconKey', str(rec.iconKey));
       if (typeof rec.labelTemplate === 'string') set('labelTemplate', rec.labelTemplate);
       if (Array.isArray(rec.labelKey) || typeof rec.labelKey === 'string') {
         set('labelKey', rec.labelKey);

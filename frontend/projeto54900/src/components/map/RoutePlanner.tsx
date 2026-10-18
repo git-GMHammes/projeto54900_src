@@ -13,6 +13,10 @@
  *                 onProfileChange={setP} onCalculated={setResult}
  *                 mapManagerId={3} defaultName="Entrega #12" onSaved={...} />
  *
+ * IDA/VOLTA: dois campos de endereco (AddressSearch) definem a primeira e a ultima parada;
+ * o clique no mapa (componente pai) continua adicionando paradas. A lista e a fonte unica:
+ * primeira = Ida, ultima = Volta, o meio sao intermediarias. Volta exige Ida definida.
+ *
  * GRAVAR: com `mapManagerId`, aparece o nome do trajeto e o botao "Calcular e
  * gravar", que envia `save` ao proxy (map_routes + map_route_stops numa
  * transacao) e chama `onSaved(routeId, result)`.
@@ -24,10 +28,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import AddressSearch from '@/components/map/AddressSearch';
 import FormGrid from '@/components/ui/FormGrid/Input';
 import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
 import { mapGeo } from '@/services/v1';
-import type { GeoRouteResult, LatLng, RouteProfile } from '@/types/map';
+import type { GeoAddress, GeoRouteResult, LatLng, RouteProfile } from '@/types/map';
 import { ROUTE_PROFILES, formatDistance, formatDuration } from '@/types/map';
 import { errorText } from '@/utils/mapLinks';
 
@@ -48,6 +53,10 @@ export interface RoutePlannerProps {
   defaultName?: string | undefined;
   onSaved?: ((routeId: number, result: GeoRouteResult) => void) | undefined;
   disabled?: boolean | undefined;
+  /** Caixa de prioridade da busca de endereco (ver utils/mapRegion.ts). */
+  viewbox?: string | undefined;
+  /** Posicao do usuario (distancia nos resultados da busca). */
+  origin?: LatLng | undefined;
 }
 
 export default function RoutePlanner({
@@ -60,6 +69,8 @@ export default function RoutePlanner({
   defaultName,
   onSaved,
   disabled = false,
+  viewbox,
+  origin,
 }: RoutePlannerProps) {
   const [name, setName] = useState(defaultName ?? '');
   const [loading, setLoading] = useState(false);
@@ -133,6 +144,25 @@ export default function RoutePlanner({
     onStopsChange(next);
   }
 
+  function stopFromAddress(address: GeoAddress, idPrefix: string): PlannerStop {
+    return {
+      id: `${idPrefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      label: address.display_name.split(',')[0]?.trim() || address.display_name,
+      position: { lat: address.lat, lng: address.lng },
+    };
+  }
+
+  function setOrigin(address: GeoAddress) {
+    const stop = stopFromAddress(address, 'ida');
+    onStopsChange(stops.length === 0 ? [stop] : [stop, ...stops.slice(1)]);
+  }
+
+  function setDestination(address: GeoAddress) {
+    if (stops.length === 0) return;
+    const stop = stopFromAddress(address, 'volta');
+    onStopsChange(stops.length === 1 ? [...stops, stop] : [...stops.slice(0, -1), stop]);
+  }
+
   function remove(index: number) {
     onStopsChange(stops.filter((_, i) => i !== index));
   }
@@ -168,10 +198,35 @@ export default function RoutePlanner({
       <FormGrid schema={schema} />
 
       <div className="mt-3">
+        <AddressSearch
+          label="Ida (origem)"
+          fieldName="route_origin_query"
+          placeholder="Endereço de partida"
+          viewbox={viewbox}
+          origin={origin}
+          disabled={disabled}
+          compact
+          onSelect={setOrigin}
+        />
+      </div>
+      <div className="mt-3">
+        <AddressSearch
+          label="Volta (destino)"
+          fieldName="route_destination_query"
+          placeholder={stops.length === 0 ? 'Defina a ida primeiro' : 'Endereço de chegada'}
+          viewbox={viewbox}
+          origin={origin}
+          disabled={disabled || stops.length === 0}
+          compact
+          onSelect={setDestination}
+        />
+      </div>
+
+      <div className="mt-3">
         <div className="fw-semibold small mb-1">Paradas ({stops.length})</div>
         {stops.length === 0 ? (
           <div className="text-body-secondary small">
-            Clique no mapa ou busque um endereço para adicionar paradas (mínimo 2).
+            Informe a ida e a volta pelos campos acima ou clique no mapa (mínimo 2 paradas).
           </div>
         ) : (
           <ol className="list-group list-group-numbered">
@@ -225,6 +280,9 @@ export default function RoutePlanner({
           )}
           Calcular trajeto
         </button>
+        {mapManagerId === undefined && (
+          <span className="small text-body-secondary align-self-center">Escolha um mapa para gravar o trajeto.</span>
+        )}
         {mapManagerId !== undefined && (
           <button type="button" className="btn btn-success btn-sm" disabled={!canSave} onClick={() => void calculate(true)}>
             <i className="bi bi-save me-1" aria-hidden="true" />

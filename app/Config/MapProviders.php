@@ -31,6 +31,9 @@ class MapProviders extends BaseConfig
     public string $orsKey                   = '';
     public int $maxRoutePoints              = 50;
 
+    // OSRM publico: reserva de rotas (so carro) quando o OpenRouteService falha.
+    public string $osrmUrl                  = 'https://router.project-osrm.org';
+
     // CEP: ViaCEP principal, BrasilAPI como reserva do texto do endereco.
     public string $viaCepUrl                = 'https://viacep.com.br/ws';
     public string $brasilApiUrl             = 'https://brasilapi.com.br/api';

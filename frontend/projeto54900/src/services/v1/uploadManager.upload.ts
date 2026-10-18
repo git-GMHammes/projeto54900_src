@@ -102,5 +102,14 @@ export function serveUrl(id: string | number): string {
   return `${env.apiBaseUrl}${base}/serve/${id}`;
 }
 
-export const uploadManagerUpload = { upload, uploadMultiple, downloadUrl, serveUrl };
+/**
+ * Baixa o binario (inline, `serve/{id}`) com o token da sessao — a rota exige
+ * Authorization, entao nao serve como `<img src>` direto; usar `blob:` URL.
+ * @param id id do registro em uploads
+ */
+export function fetchBlob(id: number | string, signal?: AbortSignal): Promise<Blob> {
+  return http.get<Blob>(`${base}/serve/${id}`, { responseType: 'blob', signal });
+}
+
+export const uploadManagerUpload = { upload, uploadMultiple, downloadUrl, serveUrl, fetchBlob };
 export default uploadManagerUpload;

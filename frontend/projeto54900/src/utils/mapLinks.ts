@@ -103,6 +103,32 @@ export function linkSubtitle(row: MapLinkViewRow): string {
   return parts.join(' · ');
 }
 
+function positive(value: unknown): number | undefined {
+  const n = Number(value);
+  return value != null && Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function pointIconSize(row: MapLinkViewRow): Partial<MapMarker> {
+  const width = positive(row.pt_size_w);
+  const height = positive(row.pt_size_h);
+  const ax = row.pt_anchor_x != null && Number.isFinite(Number(row.pt_anchor_x)) ? Number(row.pt_anchor_x) : undefined;
+  const ay = row.pt_anchor_y != null && Number.isFinite(Number(row.pt_anchor_y)) ? Number(row.pt_anchor_y) : undefined;
+  return {
+    ...(width ? { width } : {}),
+    ...(height ? { height } : {}),
+    ...(ax !== undefined ? { anchorX: ax } : {}),
+    ...(ay !== undefined ? { anchorY: ay } : {}),
+  };
+}
+
+/** Cor do trajeto por perfil de deslocamento. */
+export const PROFILE_COLORS: Record<string, string> = {
+  'driving-car': '#6f42c1',
+  'driving-hgv': '#fd7e14',
+  'cycling-regular': '#198754',
+  'foot-walking': '#0dcaf0',
+};
+
 /** Marcador do vinculo (ponto, endereco ou CEP com coordenada); null para rota ou sem coordenada. */
 export function linkToMarker(row: MapLinkViewRow): MapMarker | null {
   if (row.ml_link_type === 'route') return null;
@@ -116,8 +142,10 @@ export function linkToMarker(row: MapLinkViewRow): MapMarker | null {
     position: { lat, lng },
     title: linkTitle(row),
     description: linkSubtitle(row),
-    icon: LINK_ICONS[row.ml_link_type],
-    color: LINK_COLORS[row.ml_link_type],
+    // Ponto: icone, cor e tamanho do cadastro (icone do ponto ou da categoria).
+    icon: row.ml_link_type === 'point' ? safeIcon(row.pt_icon_class, LINK_ICONS.point) : LINK_ICONS[row.ml_link_type],
+    color: row.ml_link_type === 'point' ? safeColor(row.pt_color, LINK_COLORS.point) : LINK_COLORS[row.ml_link_type],
+    ...(row.ml_link_type === 'point' ? pointIconSize(row) : {}),
   };
 }
 
@@ -153,7 +181,7 @@ export function linkToPolyline(row: MapLinkViewRow): MapPolyline | null {
   return {
     id: `link-${row.id}`,
     coordinates,
-    color: LINK_COLORS.route,
+    color: PROFILE_COLORS[String(row.rt_profile)] ?? LINK_COLORS.route,
     title: linkTitle(row),
   };
 }

@@ -51,15 +51,16 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | 17  | [`timeline`](#timeline)                             | Módulo de publicações e timeline  |
 | 18  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
 | 19  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
+| 20  | [`location`](#location)                             | Locais em árvore recursiva livre  |
 
 **5. Operação e manutenção**
 
 | #   | Palavra-chave                 | Assunto (5 palavras)                  |
 | --- | ----------------------------- | ------------------------------------- |
-| 20  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
-| 21  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
-| 22  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
-| 23  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
+| 21  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
+| 22  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
+| 23  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
+| 24  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
 
 ---
 
@@ -349,6 +350,19 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 
 [`geral/README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo de convite de evento por e-mail/token da API V1.
 
+### `location`
+
+Locais de qualquer escala (galáxia, país, rua, galpão, caixa, pasta) numa só
+tabela recursiva: `location_manager.parent_id` aponta para a própria tabela e é
+nulo no topo, então a árvore se monta de baixo para cima (a caixa adota o
+corredor, que adota o galpão...) ou de cima para baixo. `location_types` guarda
+só rótulos (o tipo não define nível). `view_location_manager` traz `depth`,
+`path_ids` e `path_names` por CTE recursiva. 45 rotas (2 tabelas, 1 view), ciclo
+bloqueado no `Processor` e em trigger, isolamento por empresa. Módulo
+independente; a integração com Map, Produto, Estoque etc. fica para depois.
+
+[`geral/README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: tabelas, rotas, regras e pendências.
+
 ### `kinghost`
 
 Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
@@ -424,6 +438,7 @@ bloqueia o bind da faixa oculta `52810–56905`. Solução validada: `wsl --shut
 - [`README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: empresas, `company_ids` do usuário e permissão individual a form/list.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
 - [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
+- [`README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: 2 tabelas, 1 view, 45 rotas, árvore recursiva por `parent_id` montável de baixo para cima.
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.

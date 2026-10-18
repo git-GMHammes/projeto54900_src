@@ -182,3 +182,47 @@ chat) e as funções do geo URI no Node. **Não verificado em tela.**
 | **Local**           | Rio de Janeiro                                                                                                               |
 | **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
+
+## Localização inicial e viés da busca de endereço
+
+- `MapExplorer` pede a posição ao navegador (`useGeolocation`) ao abrir. Com permissão e sem centro no
+  `map_manager`, o mapa abre na posição do usuário (zoom 14) com o marcador "Você está aqui".
+- Negada, indisponível ou sem https: abre no Estado do RJ (`FALLBACK_CENTER`, zoom 8) — `utils/mapRegion.ts`.
+- A busca de endereço envia `viewbox` (`map-geo/search?viewbox=left,top,right,bottom`): caixa de ~250 km ao redor
+  do usuário ou, sem GPS, o Sudeste do Brasil. O backend (`NominatimClient::search`) busca primeiro DENTRO da caixa
+  (`bounded=1`) e completa com resultados de fora (`bounded=0`, sem repetir), então a região do usuário vem
+  sempre primeiro. O `viewbox` entra na chave de cache (`search2|`).
+
+## Trajeto: Ida e Volta
+
+- `RoutePlanner` tem dois campos de endereço (`AddressSearch`): **Ida (origem)** e **Volta (destino)**. A lista de
+  paradas é a fonte única: primeira = Ida, última = Volta, o meio = intermediárias. O clique no mapa continua
+  adicionando paradas. A Volta só habilita depois de haver uma Ida.
+- Gravar exige mapa escolhido (`mapManagerId`); sem ele aparece o aviso "Escolha um mapa para gravar o trajeto".
+
+## Reserva de rotas (OSRM)
+
+Se o OpenRouteService falhar (timeout, 5xx, 429, chave), `GeoController::directions` tenta o OSRM público
+(`OsrmClient`, `MapProviders::$osrmUrl`) — **só para `driving-car`**; a pé, bicicleta e caminhão seguem
+dependendo do ORS. Erro 422 (sem rota possível) não aciona a reserva. O trajeto gravado leva `provider = 'osrm'`
+em `map_routes` (coluna já livre, sem mudança de tabela). Custo: até 8 s de espera do ORS antes da reserva.
+
+## Escolher o centro do mapa no cadastro (`FormCenterPicker`)
+
+`components/map/FormCenterPicker.tsx` entra no cadastro/edição de Mapa (`map-manager`) via a prop `afterFields`
+do `RecordFormBuild`. Clique no mapa, busca de endereço (lupa) ou "Usar minha localização" preenchem
+`center_lat`, `center_lng` e `zoom`; digitar nesses campos move o marcador. Como o FormGrid é não controlado,
+o componente lê/escreve os inputs pelo nome (setter nativo + evento `input`), sem mudar o banco nem o formulário
+cadastrado em `form_fields`. Props: `latName`, `lngName`, `zoomName`. `MapView` ganhou `onZoomChange`.
+
+`FormCenterPicker` também serve ao cadastro/edição de **ponto** (`map-points`): `latName="lat" lngName="lng" label="ponto"`,
+sem `zoomName` (o zoom não é gravado). O marcador só aparece com coordenada válida; busca/GPS aproximam para zoom 15.
+
+Também usam o `FormCenterPicker` (`lat`/`lng`, sem zoom): endereços (`map-addresses`), CEPs (`map-postal-codes`) e paradas de
+trajeto (`map-route-stops`), no cadastro e na edição. Não há mais formulário de mapa com latitude/longitude só em texto.
+
+## O que do cadastro aparece no mapa (2026-10-17)
+
+- **Ponto:** ícone do ponto, senão o da categoria (`view_map_points.mi_*`); cor = cor do ícone, senão da categoria; tamanho e âncora de `map_icons`; ícone tipo imagem/SVG vira `<img>` via `blob:` (fetch autenticado do upload); popup com descrição, categoria e endereço.
+- **Trajetos gravados** (`map_routes`, ativos do mapa): linha por `mr_geometry`, cor por perfil (`PROFILE_COLORS`), popup com nome, distância e tempo; paradas (`map_route_stops`) numeradas como marcadores.
+- **Vínculos** (`view_map_links.pt_*`): marcador de ponto usa o mesmo ícone/cor/tamanho; trajeto usa a cor do perfil. Ícone imagem/SVG ainda não é desenhado no painel de vínculos.

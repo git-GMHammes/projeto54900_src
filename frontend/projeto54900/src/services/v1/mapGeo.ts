@@ -9,7 +9,7 @@
  * grupo api/v1/map-geo -> Api\V1\Map\MapGeo\GeoController.
  *
  *   status()                 -> GET  map-geo/status
- *   search(q, opts)          -> GET  map-geo/search?q=&limit=&country=
+ *   search(q, opts)          -> GET  map-geo/search?q=&limit=&country=&viewbox=
  *   reverse(lat, lng)        -> GET  map-geo/reverse?lat=&lng=
  *   cep(cep, refresh?)       -> GET  map-geo/cep/{cep}
  *   route(body)              -> POST map-geo/route
@@ -52,12 +52,13 @@ export const mapGeo = {
   /** Endereco ou nome de rua -> lista de resultados georreferenciados. */
   search: async (
     q: string,
-    params: { limit?: number; country?: string } = {},
+    params: { limit?: number; country?: string; viewbox?: string } = {},
     opts?: CallOptions,
   ): Promise<GeoSearchResult> => {
     const query = new URLSearchParams({ q });
     if (params.limit) query.set('limit', String(params.limit));
     if (params.country) query.set('country', params.country);
+    if (params.viewbox) query.set('viewbox', params.viewbox);
     return required(
       normalizeItem<GeoSearchResult>(await http.get(`${base}/search?${query.toString()}`, opts)),
       'search',

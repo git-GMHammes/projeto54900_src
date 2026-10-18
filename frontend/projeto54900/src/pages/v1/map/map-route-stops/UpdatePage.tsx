@@ -2,6 +2,7 @@
 // Wrapper do componente global RecordFormBuild: busca o registro por id e preenche o form.
 import { useParams } from 'react-router-dom';
 
+import FormCenterPicker from '@/components/map/FormCenterPicker';
 import RecordFormBuild from '@/components/global/RecordFormBuild';
 import { mapRouteStopsTable } from '@/services/v1';
 import { toText } from '@/utils/format';
@@ -31,6 +32,7 @@ export default function UpdatePage() {
       recordId={id ?? ''}
       loadRecord={(rid) => mapRouteStopsTable.get(rid)}
       toValues={toValues}
+      afterFields={<FormCenterPicker latName="lat" lngName="lng" label="parada" initialZoom={15} />}
       successMessage="Registro atualizado."
       fallbackTitle={`Editar parada #${id ?? ''}`}
     />

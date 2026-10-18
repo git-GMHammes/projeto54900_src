@@ -618,6 +618,28 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Location — Modulo Location: location_types (tipos de local, rotulos
+    //        globais) e location_manager (arvore recursiva por parent_id, de
+    //        uma pasta ate uma galaxia; construivel de baixo para cima) com a
+    //        view view_location_manager (depth, path_ids, path_names).
+    //        Modulo independente: sem vinculo com outros modulos por ora.
+    //        jwtauth por wildcard; adminonly na exclusao definitiva.
+    //        Contrato canonico: 18 rotas por tabela e 9 por view = 45 rotas.
+    // =========================================================================
+
+    $routes->group('location-types', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Location/LocationTypes/EndpointTable.php';
+    });
+
+    $routes->group('location-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Location/LocationManager/EndpointTable.php';
+    });
+
+    $routes->group('location-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Location/LocationManager/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Meta — utilitarios read-only. db-schema: introspeccao do banco
     //         (lista tabelas e colunas). Desvio sancionado: 3 rotas proprias.
     // =========================================================================
