@@ -214,6 +214,18 @@ export const paths = {
       create: '/v1/messages-manager/create',
       update: (id: RouteId) => `/v1/messages-manager/update/${id}`,
     },
+    // LocationManager / LocationTypes — locais em arvore recursiva e seus tipos (tipos: so admin)
+    locationManager: {
+      list: '/v1/location-manager',
+      create: '/v1/location-manager/create',
+      view: (id: RouteId) => `/v1/location-manager/${id}`,
+      update: (id: RouteId) => `/v1/location-manager/update/${id}`,
+    },
+    locationTypes: {
+      list: '/v1/location-types',
+      create: '/v1/location-types/create',
+      update: (id: RouteId) => `/v1/location-types/update/${id}`,
+    },
     // CompanyManager — cadastro de empresas (modulo Company; so admin)
     companyManager: {
       list: '/v1/company-manager',

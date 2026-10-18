@@ -26,6 +26,8 @@ class MapLinkables extends BaseConfig
         'company-members'           => 'company_members',
         // Anexos (o proprio Upload recebe vinculo)
         'upload-manager'            => 'uploads',
+        // Locais (arvore recursiva)
+        'location-manager'          => 'location_manager',
         // Agenda
         'calendar-manager'          => 'calendar_manager',
         'calendar-events'           => 'calendar_events',

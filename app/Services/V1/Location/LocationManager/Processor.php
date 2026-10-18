@@ -18,8 +18,7 @@ use CodeIgniter\Database\Exceptions\DatabaseException;
  * Regras:
  *  - Guest nao escreve (403).
  *  - Pai precisa existir (na empresa da sessao) e nao pode ser o proprio local
- *    nem um de seus descendentes (ciclo) — 422 / 409. O trigger do banco repete
- *    a barreira.
+ *    nem um de seus descendentes (ciclo) — 422 / 409.
  *  - code e unico entre irmaos (mesmo parent_id) — 409.
  *  - Nao exclui (logica ou definitiva) local que ainda tem filhos — 409.
  *  - Limpeza de excluidos so para admin, folhas primeiro (FK RESTRICT no pai).

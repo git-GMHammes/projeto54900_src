@@ -61,12 +61,13 @@ cada resumo termina com o link para o conteúdo completo.
 | 20  | [`timeline`](#timeline)     | Feed social: pronto, com pendências     |
 | 21  | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
 | 22  | [`mapa`](#mapa)             | Mapa Leaflet e vínculo a módulos        |
+| 23  | [`produtos`](#produtos)     | Produto, movimento, serviço: telas pendentes |
 
 **6. Manutenção**
 
 | #   | Palavra-chave                 | Assunto (5 palavras)                 |
 | --- | ----------------------------- | ------------------------------------ |
-| 23  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
+| 24  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
 
 ---
 
@@ -346,6 +347,12 @@ O `check` de acesso agora vale também nas 24 listas e 24 formulários antigos. 
 
 [`geral/modulos/company-manager/README_plano.md`](geral/modulos/company-manager/README_plano.md) — módulo company_manager no frontend, componentes globais e pendências.
 
+### `locais`
+
+Módulo `location`: locais em árvore recursiva (`/v1/location-manager`, visões Árvore e Tabela) e tipos de local (`/v1/location-types`, admin). Novo componente global `TreeBuild` (árvore por props, lista plana agrupada por `parent_id`). Forms 67–70, listas 56–57 e menu 72–74 por seed SQL. Pendências: telas não abertas no navegador, GetPage e ligação com o Map.
+
+[`geral/modulos/location/README_plano.md`](geral/modulos/location/README_plano.md) — módulo location no frontend, `TreeBuild` e pendências.
+
 ### `mensagens`
 
 Módulo `messages` (mensagens diretas 1 para 1 ou para grupo, com agendamento; **nunca um
@@ -407,6 +414,17 @@ erro; inclui o compartilhamento de localização nas conversas de mensagens (geo
 
 [`geral/README_mapa.md`](geral/README_mapa.md) — componentes do mapa, rotas e como um módulo usa o mapa.
 
+### `produtos`
+
+Bancos e APIs de Produto (54 rotas), Movimento (36) e Serviço (90) estão prontos e
+testados; o frontend dos três ainda não existe. O markdown lista as telas por
+recurso, o seed SQL (forms, listas, menu, `route_manager`), o comportamento
+específico (atributos por catálogo, ações de status do movimento e do pedido),
+os componentes globais a criar (`AttributeEditor`, `StatusActions`, `MeasureField`,
+`StockCard`), as pendências de backend e a ordem sugerida.
+
+[`geral/modulos/product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — o que falta no frontend de produto, movimento e serviço.
+
 ### `atualizacao`
 
 Como manter esta base viva. Todo markdown novo em `src/markdown/` exige atualizar
@@ -449,7 +467,9 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 - [`calendar/README_calendar.md`](geral/modulos/calendar/README_calendar.md) — módulo `calendar` (espelho do Google Calendar): estado atual (só visualização) e roadmap.
 - [`timeline/README_plano.md`](geral/modulos/timeline/README_plano.md) — módulo `timeline` (feed social): backend completo, duas telas de frontend prontas, pendências para continuar depois.
 - [`company-manager/README_plano.md`](geral/modulos/company-manager/README_plano.md) — módulo `company_manager`: empresas e acesso individual a form/list, componentes `ListBuild` e `RecordFormBuild`, pendências.
+- [`location/README_plano.md`](geral/modulos/location/README_plano.md) — módulo `location`: árvore recursiva de locais, tipos, componente `TreeBuild`, seed de form/list/menu, pendências.
 - [`messages/README_plano.md`](geral/modulos/messages/README_plano.md) — módulo `messages` (mensagens diretas, nunca chat): listas, formulários e CRUD de tela de mensagens e grupos prontos; tela de conversa, envio para grupo e membros pendentes.
+- [`product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — módulos `product`, `movement` e `service`: APIs prontas, telas, seed, componentes globais e pendências do frontend.
 
 ---
 

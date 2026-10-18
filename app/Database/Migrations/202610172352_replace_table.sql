@@ -680,6 +680,7 @@ CREATE TABLE IF NOT EXISTS `location_manager` (
   `latitude` decimal(10,7) DEFAULT NULL,
   `longitude` decimal(10,7) DEFAULT NULL,
   `sort_order` int NOT NULL DEFAULT '0',
+  `roles` json NOT NULL DEFAULT (JSON_ARRAY('guest','user','admin')),
   `status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'active',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -1517,50 +1518,6 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-DROP TRIGGER IF EXISTS `trg_location_manager_bi`;
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-DELIMITER //
-CREATE DEFINER=`root`@`localhost` TRIGGER `trg_location_manager_bi` BEFORE INSERT ON `location_manager` FOR EACH ROW BEGIN
-  DECLARE v_parent_company BIGINT;
-  IF NEW.parent_id IS NOT NULL THEN
-    SELECT `company_id` INTO v_parent_company FROM `location_manager` WHERE `id` = NEW.parent_id;
-    IF v_parent_company IS NULL OR v_parent_company <> NEW.company_id THEN
-      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'location_manager: parent_id inexistente ou de outra empresa';
-    END IF;
-  END IF;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
-
-DROP TRIGGER IF EXISTS `trg_location_manager_bu`;
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-DELIMITER //
-CREATE DEFINER=`root`@`localhost` TRIGGER `trg_location_manager_bu` BEFORE UPDATE ON `location_manager` FOR EACH ROW BEGIN
-  DECLARE v_parent_company BIGINT;
-  DECLARE v_cycle INT DEFAULT 0;
-  IF NEW.parent_id IS NOT NULL
-     AND (NOT (NEW.parent_id <=> OLD.parent_id) OR NEW.company_id <> OLD.company_id) THEN
-    IF NEW.parent_id = NEW.id THEN
-      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'location_manager: um local nao pode ser pai de si mesmo';
-    END IF;
-    SELECT `company_id` INTO v_parent_company FROM `location_manager` WHERE `id` = NEW.parent_id;
-    IF v_parent_company IS NULL OR v_parent_company <> NEW.company_id THEN
-      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'location_manager: parent_id inexistente ou de outra empresa';
-    END IF;
-    WITH RECURSIVE anc (`id`, `parent_id`) AS (
-      SELECT `id`, `parent_id` FROM `location_manager` WHERE `id` = NEW.parent_id
-      UNION ALL
-      SELECT l.`id`, l.`parent_id` FROM `location_manager` l JOIN anc a ON l.`id` = a.`parent_id`
-    )
-    SELECT COUNT(*) INTO v_cycle FROM anc WHERE `id` = NEW.id;
-    IF v_cycle > 0 THEN
-      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'location_manager: ciclo na hierarquia de locais';
-    END IF;
-  END IF;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

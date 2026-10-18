@@ -11,15 +11,13 @@ vínculo com Map, Produto, Patrimônio, Estoque, Agenda ou Mensagem. A integraç
 
 ## 1. Banco (`codeigniter54900_db`, conexão `default`)
 
-SQL: `Database/Migrations/202610172321_location_tables.sql` (aplicar pelo cliente `mysql`: tem
-`DELIMITER` nos triggers).
+SQL: `Database/Migrations/202610172321_location_tables.sql` (aplicar pelo cliente `mysql`).
 
 | Objeto | Papel |
 | ------ | ----- |
 | `location_types` | Rótulos de tipo, 32 hoje (geografia: `galaxy` … `number`; ambientes: `condominium`, `building`, `warehouse`, `garage`, `floor`, `aisle`, `room`; mobiliário: `vehicle`, `cabinet`, `shelf`, `pallet`; recipientes: `tank`, `barrel`, `drawer`, `crate`, `bag`, `box`, `folder`, `envelope`, `bottle`, `can`, `jar`, `flask`). O tipo **não define nível**: qualquer tipo pode ficar sob qualquer pai (um líquido-recipiente como garrafa, lata ou pote pode estar em caixa, prateleira ou direto numa sala). Global (sem `company_id`). |
 | `location_manager` | Árvore por lista de adjacência. `company_id`, `parent_id` (FK própria, `RESTRICT`), `location_type_id`, `name`, `code`, `description`, `latitude`/`longitude` (para o Map), `sort_order`, `status`, `deleted_at`. `UNIQUE (parent_id, code)`. |
 | `view_location_manager` | CTE recursiva: `root_id`, `depth` (0 no topo), `path_ids` (`1/5/9`), `path_names` (`País > Estado > ...`), `children_count`, dados do tipo. Percorre também os excluídos; o model esconde-os. |
-| Triggers `trg_location_manager_bi/bu` | Pai de outra empresa, o próprio local como pai e ciclo (pai que é descendente). Repetem a barreira do `Processor`. |
 
 ## 1.1 Ordem de grandeza (`sort_order`)
 
@@ -77,8 +75,9 @@ Isolamento por empresa: `location_manager` em `column`, `view_location_manager` 
 
 - Pronto: banco, 45 rotas, Controllers/Requests/Processors/Models, teste ponta a ponta
   (`src/writable/claude/testes/test_location.sh`, 35 verificações).
-- Pendente: telas (CRUD completo, menu, árvore), registro dos três grupos em `route_manager`,
-  `Config/MapLinkables.php` (ligação com o Map) e a tabela de vínculo genérica para os demais módulos.
+- Frontend (2026-10-18): telas, árvore (`TreeBuild`), menu e `route_manager` prontos — ver o README do frontend em `src/frontend/projeto54900/src/markdown/geral/modulos/location/README_plano.md`; seed `202610181130_location_frontend_seed.sql`.
+- `Config/MapLinkables.php` já registra `location-manager` (tela de visualizar com mapa pronta).
+- Pendente: a tabela de vínculo genérica para os demais módulos.
 - A `view_location_manager` percorre a árvore inteira a cada consulta (CTE). Se o volume crescer,
   considerar coluna `path` materializada ou closure table.
 

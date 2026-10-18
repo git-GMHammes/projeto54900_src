@@ -52,3 +52,16 @@ export function stampedSlug(texto: string, date: Date = new Date()): string {
   const base = slugify(texto).slice(0, 120);
   return base === '' ? '' : `${base}_${slugStamp(date)}`;
 }
+
+/** Sufixo aleatorio de 2 letras (A-Z) e 2 numeros (0-9): "KX42". */
+export function randomSuffix(): string {
+  const letter = (): string => String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  const digit = (): string => String(Math.floor(Math.random() * 10));
+  return letter() + letter() + digit() + digit();
+}
+
+/** Codigo curto para cadastro: `slugify(texto)-SUFIXO`; texto vazio -> so o sufixo. "Sala 3" + "KX42" -> "sala-3-KX42". */
+export function codeWithSuffix(texto: string, suffix: string): string {
+  const base = slugify(texto).slice(0, 40);
+  return base === '' ? suffix : `${base}-${suffix}`;
+}

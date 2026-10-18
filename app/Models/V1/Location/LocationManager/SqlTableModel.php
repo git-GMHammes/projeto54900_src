@@ -29,6 +29,7 @@ class SqlTableModel extends BaseTableModel
         'latitude',
         'longitude',
         'sort_order',
+        'roles',
         'status',
     ];
 

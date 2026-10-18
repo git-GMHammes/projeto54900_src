@@ -640,6 +640,91 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Product — Modulo Product: product_manager (produto, arvore opcional por
+    //        parent_id) e product_attributes (caracteristicas grupo -> campo),
+    //        com as views view_product_manager e view_product_attributes.
+    //        Independente: location_id e opcional (NULL = sem local).
+    //        jwtauth por wildcard; adminonly na exclusao definitiva.
+    //        Contrato canonico: 18 rotas por tabela e 9 por view = 54 rotas.
+    // =========================================================================
+
+    $routes->group('product-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Product/ProductManager/EndpointTable.php';
+    });
+
+    $routes->group('product-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Product/ProductManager/EndPointView.php';
+    });
+
+    $routes->group('product-attributes', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Product/ProductAttributes/EndpointTable.php';
+    });
+
+    $routes->group('product-attributes-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Product/ProductAttributes/EndPointView.php';
+    });
+
+    // =========================================================================
+    // /Movement — Modulo Movement: movement_manager (entrada, saida, separacao,
+    //        desperdicio, encomenda) com view_movement_manager e a view de saldo
+    //        view_movement_stock (somente leitura). Semi-dependente: exige
+    //        product_id; location_id e opcional.
+    //        jwtauth por wildcard; adminonly na exclusao definitiva.
+    //        Contrato canonico: 18 rotas por tabela e 9 por view = 36 rotas.
+    // =========================================================================
+
+    $routes->group('movement-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Movement/MovementManager/EndpointTable.php';
+    });
+
+    $routes->group('movement-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Movement/MovementManager/EndPointView.php';
+    });
+
+    $routes->group('movement-stock-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Movement/MovementStock/EndPointView.php';
+    });
+
+    // =========================================================================
+    // /Service — Modulo Service: service_manager (catalogo, arvore opcional por
+    //        parent_id), service_attributes (caracteristicas grupo -> campo) e
+    //        service_order (pedido, orcamento e execucao) com as views
+    //        view_service_manager, view_service_attributes, view_service_order e
+    //        view_service_summary (somente leitura).
+    //        Independente: sem ligacao com outros modulos.
+    //        jwtauth por wildcard; adminonly na exclusao definitiva.
+    //        Contrato canonico: 18 rotas por tabela e 9 por view = 90 rotas.
+    // =========================================================================
+
+    $routes->group('service-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceManager/EndpointTable.php';
+    });
+
+    $routes->group('service-manager-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceManager/EndPointView.php';
+    });
+
+    $routes->group('service-attributes', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceAttributes/EndpointTable.php';
+    });
+
+    $routes->group('service-attributes-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceAttributes/EndPointView.php';
+    });
+
+    $routes->group('service-order', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceOrder/EndpointTable.php';
+    });
+
+    $routes->group('service-order-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceOrder/EndPointView.php';
+    });
+
+    $routes->group('service-summary-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Service/ServiceSummary/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Meta — utilitarios read-only. db-schema: introspeccao do banco
     //         (lista tabelas e colunas). Desvio sancionado: 3 rotas proprias.
     // =========================================================================
