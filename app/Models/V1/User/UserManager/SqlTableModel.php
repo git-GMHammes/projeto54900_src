@@ -35,6 +35,8 @@ class SqlTableModel extends BaseTableModel
     protected $hidden = [
         'password_hash',
         'token',
+        'token_prev',
+        'token_prev_until',
     ];
 
     /**

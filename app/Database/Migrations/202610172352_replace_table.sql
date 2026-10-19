@@ -1454,6 +1454,8 @@ CREATE TABLE IF NOT EXISTS `user_manager` (
   `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `token_prev` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `token_prev_until` datetime DEFAULT NULL,
   `status` enum('active','inactive','blocked') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'active',
   `user_role_id` bigint DEFAULT '2',
   `company_ids` json DEFAULT NULL COMMENT 'Ids (company_manager.id) das empresas que o usuario pode acessar',

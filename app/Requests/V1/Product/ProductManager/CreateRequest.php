@@ -23,6 +23,7 @@ class CreateRequest
             'stock_max' => 'permit_empty|numeric|greater_than_equal_to[0]',
             'sort_order' => 'permit_empty|integer',
             'roles' => 'permit_empty',
+            'attributes' => 'permit_empty',
         ];
     }
 

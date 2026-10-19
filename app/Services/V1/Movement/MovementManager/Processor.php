@@ -8,6 +8,7 @@ use App\Models\V1\Movement\MovementManager\SqlViewModel;
 use App\Models\V1\Movement\MovementStock\SqlViewModel as StockModel;
 use App\Models\V1\Product\ProductManager\SqlTableModel as ProductModel;
 use App\Services\V1\BaseTableService;
+use App\Services\V1\Concerns\NormalizesRoles;
 
 /**
  * Service de negocio do modulo Movement/MovementManager — movimento de produto.
@@ -31,6 +32,8 @@ use App\Services\V1\BaseTableService;
  */
 class Processor extends BaseTableService
 {
+    use NormalizesRoles;
+
     private const AUTO_DONE = ['entry', 'exit', 'waste'];
 
     protected SqlTableModel $tableModel;
@@ -86,14 +89,14 @@ class Processor extends BaseTableService
         $data['user_manager_id'] = CurrentUser::id();
         $data['occurred_at']     = $data['occurred_at'] ?? date('Y-m-d H:i:s');
 
-        return $data;
+        return $this->normalizeRoles($data);
     }
 
     protected function prepareUpdateData(int $id, array $data): array
     {
         unset($data['product_id'], $data['type'], $data['user_manager_id'], $data['occurred_at'], $data['origin_id']);
 
-        return $data;
+        return $this->normalizeRoles($data);
     }
 
     protected function validateOnUpdate(int $id, array $data): ?array

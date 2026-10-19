@@ -61,13 +61,14 @@ cada resumo termina com o link para o conteúdo completo.
 | 20  | [`timeline`](#timeline)     | Feed social: pronto, com pendências     |
 | 21  | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
 | 22  | [`mapa`](#mapa)             | Mapa Leaflet e vínculo a módulos        |
-| 23  | [`produtos`](#produtos)     | Produto, movimento, serviço: telas pendentes |
+| 23  | [`produtos`](#produtos)     | Produto, movimento, serviço: telas prontas |
 
 **6. Manutenção**
 
 | #   | Palavra-chave                 | Assunto (5 palavras)                 |
 | --- | ----------------------------- | ------------------------------------ |
-| 24  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
+| 24  | [`sessao`](#sessao)           | Sessão única entre abas, janelas     |
+| 25  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
 
 ---
 
@@ -416,14 +417,24 @@ erro; inclui o compartilhamento de localização nas conversas de mensagens (geo
 
 ### `produtos`
 
-Bancos e APIs de Produto (54 rotas), Movimento (36) e Serviço (90) estão prontos e
-testados; o frontend dos três ainda não existe. O markdown lista as telas por
-recurso, o seed SQL (forms, listas, menu, `route_manager`), o comportamento
-específico (atributos por catálogo, ações de status do movimento e do pedido),
-os componentes globais a criar (`AttributeEditor`, `StatusActions`, `MeasureField`,
-`StockCard`), as pendências de backend e a ordem sugerida.
+Telas de Produto (54 rotas), Movimento (36) e Serviço (90): árvores e tabelas,
+detalhes, formulários com `roles` por registro, saldo de estoque e fluxo de status do
+pedido e do movimento, por seed SQL (forms, listas, menu, `route_manager`) e páginas
+finas. Componentes globais novos: `RecordTree`, `TreeListPage`, `RecordDetail`,
+`RecordFormWithRoles`, `AttributeEditor`, `StatusActions`, `StockCard`. Pendências:
+telas não abertas no navegador, API sem filtro por `roles`, catálogos duplicados.
 
-[`geral/modulos/product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — o que falta no frontend de produto, movimento e serviço.
+[`geral/modulos/product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — frontend de produto, movimento e serviço: telas, seed, componentes e pendências.
+
+### `sessao`
+
+O login vale para todas as abas e janelas do mesmo navegador. O `access_token` fica em
+memória e o `refresh_token` no `localStorage`; como o servidor guarda uma sessão por
+usuário, cada refresh invalida o token das outras abas. As abas se coordenam por
+`BroadcastChannel`: a aba nova adota a sessão de quem já tem uma (sem girar o token),
+quem renova avisa as demais e o logout propaga. Chamadas à API esperam o refresh inicial.
+
+[`geral/README_sessao_entre_abas.md`](geral/README_sessao_entre_abas.md) — sessão compartilhada entre abas: problema, mecanismos e conferência.
 
 ### `atualizacao`
 
@@ -461,6 +472,7 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 - [`README_render_via_list_constructor.md`](geral/README_render_via_list_constructor.md) — listagem renderiza via o motor `list_manager`/`list_columns`/`list_actions`, não tabela manual.
 - [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
 - [`README_rota_empresa_slug.md`](geral/README_rota_empresa_slug.md) — rota multiempresa com slug da empresa na URL.
+- [`README_sessao_entre_abas.md`](geral/README_sessao_entre_abas.md) — sessão compartilhada entre abas e janelas: adoção da sessão, aviso de renovação, logout propagado e portão de sessão.
 
 ### `geral/modulos/`
 
@@ -469,7 +481,7 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 - [`company-manager/README_plano.md`](geral/modulos/company-manager/README_plano.md) — módulo `company_manager`: empresas e acesso individual a form/list, componentes `ListBuild` e `RecordFormBuild`, pendências.
 - [`location/README_plano.md`](geral/modulos/location/README_plano.md) — módulo `location`: árvore recursiva de locais, tipos, componente `TreeBuild`, seed de form/list/menu, pendências.
 - [`messages/README_plano.md`](geral/modulos/messages/README_plano.md) — módulo `messages` (mensagens diretas, nunca chat): listas, formulários e CRUD de tela de mensagens e grupos prontos; tela de conversa, envio para grupo e membros pendentes.
-- [`product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — módulos `product`, `movement` e `service`: APIs prontas, telas, seed, componentes globais e pendências do frontend.
+- [`product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — módulos `product`, `movement` e `service`: telas, seed, componentes globais e pendências do frontend.
 
 ---
 

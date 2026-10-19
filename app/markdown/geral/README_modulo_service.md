@@ -66,10 +66,21 @@ Contrato canônico do [`ROADMAP_padrao_modulo.md`](ROADMAP_padrao_modulo.md): 90
 Isolamento por empresa: tabelas em `column`, views em `via_table`; chaves para outra empresa (serviço, pai, usuários) o
 model recusa (`CompanyScoped`).
 
+## 4.1 Serviço e características no mesmo envio
+
+`POST service-manager/create` e `PUT service-manager/update/{id}` aceitam `attributes`: lista **completa** de
+`{group_code, field_code, value, unit?, label?}`, gravada junto com o serviço na mesma transação; no update a lista substitui as
+características do serviço (`[]` apaga todas). Sem a chave, as características não mudam. Mesmo contrato do Produto
+(trait `Services/V1/Concerns/ReplacesAttributes`, ver [`README_modulo_product.md`](README_modulo_product.md)): itens sem `value` são
+ignorados; `group_code`/`field_code` minúsculos (1 a 50), `value` até 500, `unit` até 30, `label` até 100, no máximo 500 itens; 422 se
+inválido e nada é gravado. `roles` aceita lista (`["admin","user"]`).
+
 ## 5. Estado e pendências
 
 - Pronto: banco, 90 rotas e teste ponta a ponta (`src/writable/claude/testes/test_service.sh`, 71 verificações, duas empresas).
-- Pendente: frontend; validação de `group_code`/`field_code` contra o catálogo; cadastro de clientes (hoje texto livre); financeiro (hoje só `paid_at`).
+- Frontend: cadastro e edição completos (núcleo + características); demais telas e pendências em
+  [`README_pendencias.md`](../../../frontend/projeto54900/src/markdown/geral/modulos/product-movement-service/README_pendencias.md).
+- Pendente: filtro de leitura por `roles`; validação de `group_code`/`field_code` contra o catálogo; cadastro de clientes (hoje texto livre); financeiro (hoje só `paid_at`).
 - Sem tabela de avaliações: a nota fica no pedido.
 
 ---

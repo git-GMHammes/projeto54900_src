@@ -29,6 +29,7 @@ class CreateRequest
             'status' => 'permit_empty|in_list[draft,active,inactive,discontinued]',
             'sort_order' => 'permit_empty|integer',
             'roles' => 'permit_empty',
+            'attributes' => 'permit_empty',
         ];
     }
 

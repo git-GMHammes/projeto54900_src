@@ -7,6 +7,7 @@ use App\Models\V1\Service\ServiceManager\SqlTableModel as ServiceModel;
 use App\Models\V1\Service\ServiceOrder\SqlTableModel;
 use App\Models\V1\Service\ServiceOrder\SqlViewModel;
 use App\Services\V1\BaseTableService;
+use App\Services\V1\Concerns\NormalizesRoles;
 
 /**
  * Service de negocio do modulo Service/ServiceOrder — pedido, orcamento e execucao.
@@ -32,6 +33,8 @@ use App\Services\V1\BaseTableService;
  */
 class Processor extends BaseTableService
 {
+    use NormalizesRoles;
+
     private const OPEN = ['requested', 'quoted', 'accepted', 'scheduled', 'in_progress'];
 
     /** Transicoes permitidas a partir de cada estado aberto. */
@@ -92,13 +95,14 @@ class Processor extends BaseTableService
         $data['billing_unit'] = $data['billing_unit'] ?? ($service['billing_unit'] ?? '1');
         $data['currency']     = $data['currency'] ?? ($service['currency'] ?? 'BRL');
 
-        return $data;
+        return $this->normalizeRoles($data);
     }
 
     protected function prepareUpdateData(int $id, array $data): array
     {
         unset($data['service_id'], $data['parent_id'], $data['code'], $data['created_by'], $data['requested_at']);
 
+        $data     = $this->normalizeRoles($data);
         $existing = $this->tableModel->find($id);
         $next     = $data['status'] ?? null;
 

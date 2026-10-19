@@ -3,9 +3,12 @@
 namespace App\Services\V1\Product\ProductManager;
 
 use App\Libraries\Auth\CurrentUser;
+use App\Models\V1\Product\ProductAttributes\SqlTableModel as AttributesModel;
 use App\Models\V1\Product\ProductManager\SqlTableModel;
 use App\Models\V1\Product\ProductManager\SqlViewModel;
 use App\Services\V1\BaseTableService;
+use App\Services\V1\Concerns\NormalizesRoles;
+use App\Services\V1\Concerns\ReplacesAttributes;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 /**
@@ -22,11 +25,19 @@ use CodeIgniter\Database\Exceptions\DatabaseException;
  *  - code e unico na empresa (inclusive entre excluidos) — 409.
  *  - Nao exclui (logica ou definitiva) produto que ainda tem filhos — 409.
  *  - Limpeza de excluidos so para admin, folhas primeiro (FK RESTRICT no pai).
+ *  - `attributes` (opcional) no create/update: lista COMPLETA de caracteristicas
+ *    [{group_code, field_code, value, unit?, label?}]. Grava produto e caracteristicas na mesma
+ *    transacao; no update substitui todas as caracteristicas do produto. Sem a chave, nada muda
+ *    nas caracteristicas. Itens sem value sao ignorados — 422 se o formato for invalido.
  */
 class Processor extends BaseTableService
 {
+    use NormalizesRoles;
+    use ReplacesAttributes;
+
     /** Trava contra laco infinito ao subir a arvore (dados corrompidos). */
     private const MAX_DEPTH = 1000;
+
 
     protected SqlTableModel $tableModel;
     protected SqlViewModel $viewModel;
@@ -40,6 +51,16 @@ class Processor extends BaseTableService
     // -------------------------------------------------------------------------
     // Hooks
     // -------------------------------------------------------------------------
+
+    protected function prepareData(array $data): array
+    {
+        return $this->normalizeRoles($data);
+    }
+
+    protected function prepareUpdateData(int $id, array $data): array
+    {
+        return $this->normalizeRoles($data);
+    }
 
     protected function validateOnCreate(array $data): ?array
     {
@@ -88,7 +109,7 @@ class Processor extends BaseTableService
             return $this->fail('Operacao nao permitida para este usuario', 403);
         }
 
-        return parent::create($data);
+        return $this->createWithAttributes($data);
     }
 
     public function update(int $id, array $data): array
@@ -97,7 +118,7 @@ class Processor extends BaseTableService
             return $this->fail('Operacao nao permitida para este usuario', 403);
         }
 
-        return parent::update($id, $data);
+        return $this->updateWithAttributes($id, $data);
     }
 
     public function deleteSoft(int $id): array
@@ -240,6 +261,16 @@ class Processor extends BaseTableService
         arsort($depth);
 
         return array_keys($depth);
+    }
+
+    protected function attributesModel(): object
+    {
+        return new AttributesModel();
+    }
+
+    protected function attributesOwnerKey(): string
+    {
+        return 'product_id';
     }
 
     private function fail(string $message, int $code): array

@@ -24,6 +24,8 @@
 import { fillCalendarioForm } from './calendario';
 import { fillCadastroEventoForm } from './cadastroEvento';
 import { fillDadosDoUsuarioForm } from './dadosDoUsuario';
+import { fillProdutoCirurgicoForm } from './produtoCirurgico';
+import { fillServicoVariadoForm } from './servicoVariado';
 import { fillTimelinePostForm } from './timelinePost';
 import { fillTimelineCommentForm } from './timelineComment';
 import { fillTimelineReportForm } from './timelineReport';
@@ -56,6 +58,10 @@ export const FAKE_FILL_SCRIPTS: Record<string, FakeFillFn> = {
   'criar-ponto-mapa': fillPontoMapaForm,
   'criar-parada-trajeto': fillParadaTrajetoForm,
   'criar-vinculo-mapa': fillVinculoMapaForm,
+  // Produto: cadastro completo (nucleo + caracteristicas) com material para cirurgias.
+  'criar-produto': fillProdutoCirurgicoForm,
+  // Servico: cadastro completo (nucleo + caracteristicas) com servicos de ramos variados.
+  'criar-servico': fillServicoVariadoForm,
 };
 
 export function getFakeFillScript(slug: string): FakeFillFn | undefined {

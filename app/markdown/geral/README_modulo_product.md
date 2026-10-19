@@ -47,6 +47,15 @@ Contrato canônico do [`ROADMAP_padrao_modulo.md`](ROADMAP_padrao_modulo.md): 54
 `location_id` e `parent_id` de outra empresa: o model recusa (`CompanyScoped` confere as FKs) e a API responde 422.
 Isolamento por empresa: tabelas em `column`, views em `via_table`.
 
+## 3.1 Produto e características no mesmo envio
+
+`POST product-manager/create` e `PUT product-manager/update/{id}` aceitam `attributes`: lista **completa** de
+`{group_code, field_code, value, unit?, label?}`. A API grava produto e características na mesma transação; no update a lista
+substitui as características do produto (`[]` apaga todas). Sem a chave, as características não mudam. Itens sem `value` são
+ignorados; `group_code`/`field_code` minúsculos (1 a 50), `value` até 500, `unit` até 30, `label` até 100, no máximo 500 itens — 422 se
+inválido, e nada é gravado. `roles` aceita lista (`["admin","user"]`) e é gravado como JSON (`[]` = todos). A lógica é a trait
+`Services/V1/Concerns/ReplacesAttributes`, a mesma do Serviço.
+
 ## 4. Estado
 
 - Pronto: banco, 54 rotas e teste ponta a ponta (`src/writable/claude/testes/test_movement.sh`, cobre Product e Movement).

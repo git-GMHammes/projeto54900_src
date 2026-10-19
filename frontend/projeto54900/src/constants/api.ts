@@ -96,6 +96,23 @@ export const API_GROUPS = {
   locationManager: 'location-manager',
   locationManagerView: 'location-manager-view',
   locationTypes: 'location-types',
+  // Product — produto e caracteristicas (api/v1/product-*)
+  productManager: 'product-manager',
+  productManagerView: 'product-manager-view',
+  productAttributes: 'product-attributes',
+  productAttributesView: 'product-attributes-view',
+  // Movement — movimento de produto e saldo (api/v1/movement-*)
+  movementManager: 'movement-manager',
+  movementManagerView: 'movement-manager-view',
+  movementStockView: 'movement-stock-view',
+  // Service — servico, caracteristicas, pedido e resumo (api/v1/service-*)
+  serviceManager: 'service-manager',
+  serviceManagerView: 'service-manager-view',
+  serviceAttributes: 'service-attributes',
+  serviceAttributesView: 'service-attributes-view',
+  serviceOrder: 'service-order',
+  serviceOrderView: 'service-order-view',
+  serviceSummaryView: 'service-summary-view',
   companyManager: 'company-manager',
   companyManagerView: 'company-manager-view',
   companyMembers: 'company-members',
