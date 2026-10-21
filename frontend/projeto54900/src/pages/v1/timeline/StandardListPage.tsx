@@ -321,7 +321,8 @@ export default function StandardListPage({
               const blob = await timelinePostAttachmentsUpload.fetchBlob(meta.id, controller.signal);
               return { ...meta, fileUrl: URL.createObjectURL(blob) };
             } catch {
-              return null;
+              // imagem/vídeo indisponível: segue com fileUrl vazio (MediaPreview mostra a mídia de fallback).
+              return meta.category === 'image' || meta.category === 'video' ? meta : null;
             }
           }),
         );

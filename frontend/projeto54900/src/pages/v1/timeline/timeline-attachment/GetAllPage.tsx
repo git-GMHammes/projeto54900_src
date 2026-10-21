@@ -185,7 +185,8 @@ export default function TimelineAttachmentGetAllPage() {
             const blob = await timelinePostAttachmentsUpload.fetchBlob(media.id);
             return { row, media: { ...media, fileUrl: URL.createObjectURL(blob) } };
           } catch {
-            return null; // binário indisponível: some só este card, não a página inteira
+            // binário indisponível: imagem/vídeo segue com fileUrl vazio (MediaPreview mostra a mídia de fallback).
+            return media.category === 'image' || media.category === 'video' ? { row, media } : null;
           }
         }),
       );

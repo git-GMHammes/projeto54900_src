@@ -86,7 +86,8 @@ export default function MessageAttachmentCurrent({ messageId }: MessageAttachmen
 
           return [item.id, url] as const;
         } catch {
-          return null;
+          // imagem/vídeo indisponível: segue com fileUrl vazio (MediaPreview mostra a mídia de fallback).
+          return item.category === 'image' || item.category === 'video' ? ([item.id, ''] as const) : null;
         }
       }),
     ).then((entries) => {
@@ -106,7 +107,7 @@ export default function MessageAttachmentCurrent({ messageId }: MessageAttachmen
       items.flatMap((item) => {
         const url = blobUrls[item.id];
 
-        return url ? [{ id: item.id, category: item.category, fileUrl: url, name: item.name }] : [];
+        return url !== undefined ? [{ id: item.id, category: item.category, fileUrl: url, name: item.name }] : [];
       }),
     [items, blobUrls],
   );

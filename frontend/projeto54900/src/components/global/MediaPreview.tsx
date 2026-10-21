@@ -108,7 +108,10 @@ function FallbackBanner({ text }: { text: string }) {
  */
 function AttachmentItem({ attachment: original, onDone }: { attachment: MediaAttachment; onDone: () => void }) {
   // Imagem/vídeo que falha ao carregar é trocado por 1 mídia estática aleatória (nunca falha).
-  const [fallback, setFallback] = useState<MediaAttachment | null>(null);
+  // `fileUrl` vazio em imagem/vídeo = binário que o pai não conseguiu obter: já nasce em fallback.
+  const [fallback, setFallback] = useState<MediaAttachment | null>(() =>
+    original.fileUrl === '' && isInlineMedia(original) ? pickFallbackMedia() : null,
+  );
   const attachment = fallback ?? original;
   const handleError = () => {
     if (fallback === null && isInlineMedia(original)) setFallback(pickFallbackMedia());

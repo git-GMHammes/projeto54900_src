@@ -50,7 +50,8 @@ export default function ChatAttachmentView({ attachment, mine }: ChatAttachmentV
         setBlobUrl(created);
       })
       .catch(() => {
-        if (!cancelled) setFailed(true);
+        // binário indisponível: o MediaPreview troca por mídia de fallback (fileUrl vazio).
+        if (!cancelled) setBlobUrl('');
       });
 
     return () => {

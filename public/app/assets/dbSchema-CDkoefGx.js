@@ -1,0 +1,1 @@
+import{x as s,U as c,V as n}from"./index-Bq5LMSvW.js";const t=`/${c}/${n.dbSchema}`,m={tables:e=>s.get(`${t}/tables`,e),columns:(e,o)=>s.get(`${t}/columns/${encodeURIComponent(e)}`,o),describe:(e,o)=>s.get(`${t}/describe/${encodeURIComponent(e)}`,o)};export{m as d};

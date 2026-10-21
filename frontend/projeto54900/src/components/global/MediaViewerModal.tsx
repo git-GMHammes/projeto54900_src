@@ -73,7 +73,10 @@ export default function MediaViewerModal({ title, load, onClose, dark = true }: 
               objectUrls.push(url);
               return { id: source.id, category: source.category, name: source.name, fileUrl: url };
             } catch {
-              return null; // binário indisponível: some só este item
+              // binário indisponível: imagem/vídeo segue com fileUrl vazio (MediaPreview mostra a mídia de fallback).
+              return source.category === 'image' || source.category === 'video'
+                ? { id: source.id, category: source.category, name: source.name, fileUrl: '' }
+                : null;
             }
           }),
         );

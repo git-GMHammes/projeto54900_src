@@ -6,6 +6,7 @@
  */
 
 import fallbackList from '@/config/timelineFallbackMedia.json';
+import { env } from '@/config/env';
 import type { MediaAttachment } from '@/components/global/MediaPreview';
 
 export function pickFallbackMedia(): MediaAttachment {
@@ -13,7 +14,7 @@ export function pickFallbackMedia(): MediaAttachment {
   return {
     id: `fallback-${item.id}`,
     category: 'image',
-    fileUrl: encodeURI(item.caminho), // nomes com ']' exigem encode
+    fileUrl: `${env.basePath}${encodeURI(item.caminho)}`, // basePath: app publicado em subpasta; ']' exige encode
     name: item.descricao,
     fallbackLabel: item.descricao,
   };
