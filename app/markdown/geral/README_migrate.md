@@ -373,6 +373,87 @@ pelo grupo dentro do `run()`.
    ```
 4. Conferir: `SPARK migrate:status` e `SPARK migrate:status -g <grupo>`.
 
+## Subir o banco no servidor KingHost (MySQL 5.7) — leia antes de importar
+
+Produção (KingHost) roda **MySQL 5.7.29**; o banco local (Podman) roda **MySQL 8.0**.
+O snapshot dos 3 pares `.sql` é exportado do local, então sai com sintaxe do MySQL 8
+que o 5.7 não aceita. Produção não tem `spark`: a importação é manual (HeidiSQL ou
+cliente `mysql`).
+
+### 1. Compatibilidade com MySQL 5.7 (conferir após CADA exportação/REMAKE)
+
+| Sintaxe do MySQL 8 (gerada pelo export) | Erro no 5.7 | Troca |
+| --- | --- | --- |
+| `regexp_replace(coalesce(phone,''),'[^0-9]','')` nas views | `1305 FUNCTION regexp_replace does not exist` | `replace(replace(replace(replace(replace(coalesce(phone,''),'(',''),')',''),'-',''),' ',''),'+','')` |
+| `WITH RECURSIVE tree AS (...)` em `view_location_manager` | `1064 syntax error near 'recursive'` | auto-joins de profundidade fixa (8 níveis, `n0..n7`) no lugar do CTE |
+| `roles json NOT NULL DEFAULT (json_array(...))` | `CREATE TABLE` falha e a tabela NÃO é criada | `roles json DEFAULT NULL` |
+
+Checagem rápida antes de subir (deve retornar 0 ocorrências):
+```bash
+grep -niE "regexp_replace|with recursive|DEFAULT \(json_array|json_table|utf8mb4_0900" \
+  202610182152_replace_table.sql 202610182153_seed_table.sql 202610182154_replace_view.sql
+```
+Tabelas afetadas por `roles`: `location_manager`, `movement_manager`, `product_manager`,
+`service_manager`, `service_order`. Efeito: `roles` fica NULL quando o INSERT não informa.
+
+### 2. Encoding — texto acentuado virou `CalendÃ¡rios` / `AuditÃ³rio`
+Causa: o HeidiSQL leu o `.sql` (UTF-8 sem BOM) como ANSI e gravou o texto já corrompido.
+O arquivo está correto; o erro é da importação. Não colocar BOM (o `.php` da migration
+lê o `.sql`). Importar sempre assim:
+```bash
+mysql --default-character-set=utf8mb4 -h <host> -u <usuario> -p <banco> < 202610182153_seed_table.sql
+```
+(a senha é pedida no prompt; nunca em arquivo). No HeidiSQL: **Arquivo > Carregar arquivo
+SQL** e escolher **UTF-8** no seletor de codificação — não arrastar o arquivo. O seed faz
+`DELETE FROM` antes de cada `INSERT`; para corrigir, basta recarregá-lo.
+
+### 3. Ordem e conferência (o HeidiSQL segue em frente após erro — o script "roda" mesmo falhando)
+1. `*_replace_table.sql` — **apaga e recria todas as tabelas (perde dados)**.
+2. Conferir a contagem; deve bater com o número de `CREATE` do arquivo:
+   ```sql
+   SELECT table_type, COUNT(*) FROM information_schema.tables
+   WHERE table_schema = '<banco>' GROUP BY table_type;
+   ```
+   ```bash
+   grep -c "^CREATE TABLE" 202610182152_replace_table.sql   # BASE TABLE esperadas
+   grep -c "^CREATE VIEW"  202610182154_replace_view.sql    # VIEW esperadas
+   ```
+3. `*_seed_table.sql` (com UTF-8, ver item 2).
+4. `*_replace_view.sql`.
+5. Conferir colunas de uma tabela crítica: `SHOW COLUMNS FROM user_manager;` deve ter
+   `token_prev`, `token_prev_until`, `company_ids`.
+
+### 4. Sintomas e causa
+| Sintoma | Causa provável |
+| --- | --- |
+| `1054 Unknown column 'um.company_ids'` ao criar view | `user_manager` do servidor é versão antiga; o `replace_table` não rodou até o fim |
+| `1146 Table ... doesn't exist` ao criar view | o `CREATE TABLE` dela falhou (ver tabela de compatibilidade) |
+| Login "não dá erro" e volta para a Home; 401 em `nav-manager/find`, `auth/refresh` | `UPDATE user_manager` do login falha (`Unknown column 'token_prev'`): tabela desatualizada. Sem gravar a sessão, todo token novo é recusado |
+| Acentos quebrados | importação sem UTF-8 (item 2) |
+
+Se faltar só coluna e não puder perder dados, usar `ALTER TABLE ... ADD COLUMN` (sem DROP):
+```sql
+ALTER TABLE user_manager
+  ADD COLUMN token_prev varchar(255) DEFAULT NULL AFTER token,
+  ADD COLUMN token_prev_until datetime DEFAULT NULL AFTER token_prev,
+  ADD COLUMN company_ids json DEFAULT NULL AFTER user_role_id;
+```
+Depois do reimport, limpar o Local Storage do navegador (sessão antiga) e logar de novo.
+
+### 5. Diagnóstico de login/401 em produção
+- Logs do CodeIgniter: `~/www/projeto54900/writable/logs/log-AAAA-MM-DD.log`
+  (`tail -n 40 log-AAAA-MM-DD.log`). Em produção o `threshold` é 4: só erros — as linhas
+  `[auth]` (warning/info) não aparecem.
+- Navegador: F12, aba **Rede**, clicar na requisição 401 e ler a aba **Resposta**:
+  "Token de acesso ausente" (cabeçalho não chega), "invalido ou expirado" (chave/relógio),
+  "Sessao encerrada" (token do usuário não confere ou sem vínculo em `company_members`).
+
+### 6. Colação
+Local e servidor usam `utf8mb4_general_ci` (as tabelas já declaram a colação por coluna).
+Local: `ALTER DATABASE codeigniter54900_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`
+e `command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` no
+serviço `mysql` do `docker-compose.yml` (vale ao recriar o container).
+
 ## Observações do projeto
 
 - **Conexão `default`** (`codeigniter54900_db`): credenciais lidas via `env()`

@@ -155,6 +155,25 @@ chmod 644 .htaccess
 - Confirmar se o usuário `habilida##_add#` tem grant nos bancos dos módulos (`projeto54900_mapa`, `projeto54900_agenda`, `projeto54900_chat`) além de `habilidade15` — hoje `app/Config/Database.php` monta **todos** os grupos com as mesmas credenciais, só trocando o nome do database
 - Migração do banco de produção: o usuário vai fazer manualmente via cliente de banco (não via `spark migrate` nesta sessão)
 
+## 9. Banco de produção (MySQL 5.7) — checklist ao subir commit + banco
+
+O servidor roda MySQL 5.7.29 e o local MySQL 8.0. Detalhes, tabelas de erro e comandos
+em [README_migrate.md](README_migrate.md#subir-o-banco-no-servidor-kinghost-mysql-57--leia-antes-de-importar).
+Resumo para não repetir os problemas de 2026-10-21:
+
+1. Depois de exportar um novo snapshot do local, rodar o `grep` de compatibilidade (sem
+   `regexp_replace`, `WITH RECURSIVE`, `DEFAULT (json_array`, `utf8mb4_0900`) e reaplicar as
+   trocas — o export sobrescreve as correções.
+2. Importar com UTF-8 explícito (`mysql --default-character-set=utf8mb4 ... < arquivo.sql`
+   ou HeidiSQL com UTF-8 no seletor). Arrastar o arquivo gera `CalendÃ¡rios`.
+3. Ordem: `replace_table` (apaga dados) -> conferir contagem de tabelas -> `seed_table` ->
+   `replace_view`. O HeidiSQL continua após erro: conferir a contagem de `BASE TABLE`/`VIEW`
+   e `SHOW COLUMNS FROM user_manager` (`token_prev`, `token_prev_until`, `company_ids`).
+4. Deploy do código: build do frontend + `git push`, depois `cd ~/www/projeto54900 && git pull origin main`
+   no servidor. Limpar o Local Storage do navegador após reimportar o banco.
+5. Erro de login/401 após subir: ler `writable/logs/log-*.log` (só erros em produção) e a
+   aba Rede do navegador (texto da resposta do 401).
+
 ## Status final
 - [x] Chave SSH gerada no servidor
 - [x] Deploy key cadastrada no GitHub (read-only)
