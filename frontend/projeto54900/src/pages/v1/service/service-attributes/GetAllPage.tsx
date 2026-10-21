@@ -7,6 +7,7 @@ export default function GetAllPage() {
   return (
     <ListBuild
       slug="service-attributes"
+      backFallback={paths.v1.serviceManager.list}
       createPath={paths.v1.serviceAttributes.create}
       createLabel="Nova característica"
       searchPlaceholder="Buscar por serviço, grupo, campo ou valor"
