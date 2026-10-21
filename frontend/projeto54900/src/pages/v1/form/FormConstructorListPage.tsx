@@ -229,7 +229,7 @@ function ActionButton({
       notifyActionDone(toast, action);
       onExecuted();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
@@ -357,7 +357,7 @@ export default function FormConstructorListPage() {
       // Acesso individual a esta listagem (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
         setManager(null);
-        setDefsError('Voce nao tem acesso a esta listagem.');
+        setDefsError('Você não tem acesso a esta listagem.');
         return;
       }
       setManager(found);
@@ -436,7 +436,7 @@ export default function FormConstructorListPage() {
     } catch (err) {
       setRows([]);
       setTotal(0);
-      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os formularios.');
+      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os formulários.');
     } finally {
       setDataLoading(false);
     }
@@ -509,7 +509,7 @@ export default function FormConstructorListPage() {
           Recarregar
         </button>
         <Link className="btn btn-primary" to={paths.v1.form.create}>
-          Novo formulario
+          Novo formulário
         </Link>
       </PageHeader>
 
@@ -525,7 +525,7 @@ export default function FormConstructorListPage() {
           variant="warning"
           eyebrow="Lista vazia"
           title="Nenhum formulario"
-          description="Crie o primeiro em 'Novo formulario'."
+          description="Crie o primeiro em 'Novo formulário'."
         />
       )}
 

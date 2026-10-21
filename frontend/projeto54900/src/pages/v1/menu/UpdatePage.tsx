@@ -74,7 +74,7 @@ export default function UpdatePage() {
         const row = normalizeItem<ApiRow>(res);
         if (cancelled) return;
         if (!row) {
-          setError('Item de menu nao encontrado.');
+          setError('Item de menu não encontrado.');
           return;
         }
         setNavManagerId(toText(row.nav_manager_id, ''));
@@ -136,7 +136,7 @@ export default function UpdatePage() {
         fields: [
           {
             col: 4,
-            label: 'Titulo',
+            label: 'Título',
             required: true,
             value: title,
             onChange: (e) => setTitle(e.target.value),
@@ -200,7 +200,7 @@ export default function UpdatePage() {
             type: 'checkbox',
             col: 2,
             name: 'is_bookmark',
-            title: 'Marca o item para aparecer na lista de favoritos do usuario.',
+            title: 'Marca o item para aparecer na lista de favoritos do usuário.',
             options: [{ id: 'is_bookmark', value: '1', label: 'Favorito' }],
             value: isBookmark ? ['1'] : [],
             onChange: (values) => setIsBookmark(values.includes('1')),
@@ -214,7 +214,7 @@ export default function UpdatePage() {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!id || !navManagerId || !title.trim()) {
-        toast.error('Nav e titulo sao obrigatorios.', { title: 'Campos faltando' });
+        toast.error('Nav e título são obrigatórios.', { title: 'Campos faltando' });
         return;
       }
       const payload: Record<string, unknown> = {

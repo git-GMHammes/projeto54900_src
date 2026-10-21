@@ -59,7 +59,7 @@ export default function KnowledgeBasePage() {
         if (!cancelled) setItems(list);
       })
       .catch(() => {
-        if (!cancelled) setError('Nao foi possivel carregar o indice da base de conhecimento.');
+        if (!cancelled) setError('Não foi possível carregar o indice da base de conhecimento.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

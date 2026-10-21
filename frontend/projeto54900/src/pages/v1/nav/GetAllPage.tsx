@@ -140,7 +140,7 @@ function ActionButton({
       notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
@@ -191,7 +191,7 @@ export default function GetAllPage() {
       // Acesso individual a esta listagem (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
         setManager(null);
-        setDefsError('Voce nao tem acesso a esta listagem.');
+        setDefsError('Você não tem acesso a esta listagem.');
         return;
       }
       setManager(found);
@@ -283,7 +283,7 @@ export default function GetAllPage() {
             <input
               type="text"
               className="form-control"
-              placeholder="Buscar por titulo ou versao"
+              placeholder="Buscar por título ou versão"
               aria-label="Buscar navs por titulo ou versao"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}

@@ -122,7 +122,7 @@ function ActionButton({
       notifyActionDone(toast, action, subject);
       onExecuted();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
@@ -171,7 +171,7 @@ export default function GetAllPage() {
       // Acesso individual a esta listagem (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
         setManager(null);
-        setDefsError('Voce nao tem acesso a esta listagem.');
+        setDefsError('Você não tem acesso a esta listagem.');
         return;
       }
       setManager(found);
@@ -251,7 +251,7 @@ export default function GetAllPage() {
       if (seq !== requestSeq.current) return;
       setRows([]);
       setTotal(0);
-      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuarios.');
+      setDataError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuários.');
     } finally {
       if (seq === requestSeq.current) setDataLoading(false);
     }
@@ -270,7 +270,7 @@ export default function GetAllPage() {
           Recarregar
         </button>
         <Link className="btn btn-primary" to={paths.v1.user.create}>
-          Novo usuario
+          Novo usuário
         </Link>
       </PageHeader>
 
@@ -339,7 +339,7 @@ export default function GetAllPage() {
             variant="warning"
             eyebrow="Lista vazia"
             title="Nenhum usuario"
-            description="Crie o primeiro em 'Novo usuario'."
+            description="Crie o primeiro em 'Novo usuário'."
           />
         )
       )}

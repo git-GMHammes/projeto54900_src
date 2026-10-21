@@ -28,7 +28,7 @@ export default function AceitarConvitePage() {
 
     if (!token) {
       setStatus('error');
-      setMessage('Link de convite invalido: token ausente.');
+      setMessage('Link de convite inválido: token ausente.');
       return;
     }
 
@@ -41,7 +41,7 @@ export default function AceitarConvitePage() {
         // senha: precisa checar o e-mail 2 (credenciais) antes de logar.
         setMessage(
           result?.data?.account_created
-            ? 'Cadastro realizado com sucesso! Enviamos um e-mail com seu usuario e senha — confira sua caixa de entrada (e o spam) para confirmar os dados de acesso antes de fazer login.'
+            ? 'Cadastro realizado com sucesso! Enviamos um e-mail com seu usuário e senha — confira sua caixa de entrada (e o spam) para confirmar os dados de acesso antes de fazer login.'
             : 'Convite aceito! Faca login para ver o evento e responder ao convite.',
         );
       })

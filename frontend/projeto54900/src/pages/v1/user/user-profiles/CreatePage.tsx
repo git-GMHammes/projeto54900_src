@@ -85,7 +85,7 @@ export default function CreatePage() {
       setForm(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }
@@ -138,7 +138,7 @@ export default function CreatePage() {
   return (
     <>
       <PageHeader
-        title={form?.meta.title ?? 'Dados do usuario'}
+        title={form?.meta.title ?? 'Dados do usuário'}
         subtitle={form?.meta.description ?? 'POST api/v1/user-profiles/create'}
       />
 
@@ -146,8 +146,8 @@ export default function CreatePage() {
 
       {!loading && !userManagerId && (
         <EmptyState
-          title="Falta o usuario de origem"
-          description="Esta tela precisa de ?user_manager_id= na URL — venha pelo passo 1 (Novo usuario)."
+          title="Falta o usuário de origem"
+          description="Esta tela precisa de ?user_manager_id= na URL — venha pelo passo 1 (Novo usuário)."
         />
       )}
 

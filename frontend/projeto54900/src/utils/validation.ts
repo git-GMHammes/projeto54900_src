@@ -30,7 +30,7 @@ export type ValidationSchema<K extends string = string> = Record<K, Validator[]>
 /** Erro se o valor for null/undefined/string vazia (apos trim). @param label nome do campo usado na mensagem */
 export function required(value: unknown, label = 'Campo'): string {
   const empty = value === null || value === undefined || toText(value, '').trim() === '';
-  return empty ? `${label} e obrigatorio.` : '';
+  return empty ? `${label} é obrigatório.` : '';
 }
 
 /** Erro se o valor (trimado) tiver menos que `min` caracteres. */

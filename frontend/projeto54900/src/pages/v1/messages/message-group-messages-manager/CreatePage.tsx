@@ -44,7 +44,7 @@ export default function CreatePage() {
       // Acesso individual ao formulario (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('form', { slug: SLUG }))) {
         setForm(null);
-        setError('Voce nao tem acesso a este formulario.');
+        setError('Você não tem acesso a este formulário.');
         return;
       }
       const raw = await formManagerView.getGrouped({ fm_slug: [SLUG] }, { limit: 1000, sort: 'fc_sort_order', order: 'ASC' });
@@ -57,7 +57,7 @@ export default function CreatePage() {
       setForm(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }

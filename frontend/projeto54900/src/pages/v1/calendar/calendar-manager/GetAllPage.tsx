@@ -447,7 +447,7 @@ export default function CalendarManagerGetAllPage() {
               title="Nenhum calendario encontrado"
               description={
                 groups && groups.length > 0
-                  ? 'Nenhum calendario bate com a busca atual.'
+                  ? 'Nenhum calendário bate com a busca atual.'
                   : "Crie o primeiro em 'Novo Calendário'."
               }
             />

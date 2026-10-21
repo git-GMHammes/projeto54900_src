@@ -13,7 +13,7 @@ export default function RouteErrorPage() {
     ? error.statusText || 'Erro de rota'
     : error instanceof Error
       ? error.message
-      : 'Erro inesperado na aplicacao.';
+      : 'Erro inesperado na aplicação.';
 
   return (
     <BlankLayout>

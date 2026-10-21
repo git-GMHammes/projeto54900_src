@@ -530,7 +530,7 @@ export function buildRenderSchema(rows: readonly ApiRow[]): RenderForm | null {
   const meta: RenderFormMeta = {
     slug: str(head?.fm_slug) ?? '',
     tableName: str(head?.fm_table_name),
-    title: str(head?.fm_title) ?? str(head?.fm_slug) ?? 'Formulario',
+    title: str(head?.fm_title) ?? str(head?.fm_slug) ?? 'Formulário',
     description: str(head?.fm_description),
     submitEndpoint: str(head?.fm_submit_endpoint),
     httpMethod: (str(head?.fm_http_method) ?? 'POST').toUpperCase(),

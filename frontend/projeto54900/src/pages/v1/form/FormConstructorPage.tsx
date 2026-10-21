@@ -265,7 +265,7 @@ export default function FormConstructorPage() {
       // View vazia não é "lista vazia": é definição ausente -> dá o comando do seed.
       if (built.length === 0) {
         setError(
-          'A view nao retornou linhas para "form-constructor". Rode o seed: ' +
+          'A view não retornou linhas para "form-constructor". Rode o seed: ' +
           'podman compose exec php php spark db:seed FormConstructorSeeder',
         );
       }

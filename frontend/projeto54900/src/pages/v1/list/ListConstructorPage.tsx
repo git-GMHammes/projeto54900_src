@@ -287,7 +287,7 @@ export default function ListConstructorPage() {
     if (!manager?.apiGetEndpoint) {
       setDataRows([]);
       setDataTotal(0);
-      setDataError(manager ? 'Esta listagem nao tem api_get_endpoint definido.' : null);
+      setDataError(manager ? 'Esta listagem não tem api_get_endpoint definido.' : null);
       return;
     }
     // Guarda contra resposta atrasada (troca de listagem/página fora de ordem).
@@ -586,7 +586,7 @@ export default function ListConstructorPage() {
 
                     {dataError && !dataLoading && (
                       <div className="p-4">
-                        <EmptyState title="Nao foi possivel carregar os dados" description={dataError} variant="danger" />
+                        <EmptyState title="Não foi possível carregar os dados" description={dataError} variant="danger" />
                       </div>
                     )}
 

@@ -270,7 +270,7 @@ export default function StandardListPage({
       // Acesso individual a esta listagem (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
         setManager(null);
-        setDefsError('Voce nao tem acesso a esta listagem.');
+        setDefsError('Você não tem acesso a esta listagem.');
         return;
       }
       setManager(found);

@@ -118,7 +118,7 @@ export default function GroupMembersEditor({ groupId, onGroupChange, groupsVersi
     } catch (err) {
       setUsers([]);
       setUsersTotal(0);
-      setUsersError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuarios.');
+      setUsersError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuários.');
     } finally {
       setUsersLoading(false);
     }

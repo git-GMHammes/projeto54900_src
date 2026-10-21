@@ -88,7 +88,7 @@ export default function UpdatePage() {
       // Acesso individual ao formulario (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('form', { slug: SLUG }))) {
         setForm(null);
-        setError('Voce nao tem acesso a este formulario.');
+        setError('Você não tem acesso a este formulário.');
         return;
       }
       const [formRaw, userRaw] = await Promise.all([
@@ -114,7 +114,7 @@ export default function UpdatePage() {
       setForm({ meta: built.meta, schema: prefillFromRecord(built.schema, values) });
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }
@@ -145,7 +145,7 @@ export default function UpdatePage() {
       setSubmitting(true);
       try {
         await send(path, payload);
-        toast.success('Usuario atualizado.', { title: form.meta.title });
+        toast.success('Usuário atualizado.', { title: form.meta.title });
         void navigate(paths.v1.user.view(id));
       } catch (err) {
         if (err instanceof ApiError) {
@@ -163,7 +163,7 @@ export default function UpdatePage() {
   return (
     <>
       <PageHeader
-        title={form?.meta.title ?? `Editar usuario #${id ?? ''}`}
+        title={form?.meta.title ?? `Editar usuário #${id ?? ''}`}
         subtitle={form?.meta.description || 'PUT api/v1/user-profiles/update'}
       />
 
@@ -175,7 +175,7 @@ export default function UpdatePage() {
         <EmptyState
           variant="warning"
           title="Este usuario ainda nao tem dados de perfil"
-          description="Nao ha registro em user_profiles para atualizar. Complete os dados pela etapa 2 do cadastro."
+          description="Não há registro em user_profiles para atualizar. Complete os dados pela etapa 2 do cadastro."
         >
           <Link className="btn btn-primary" to={`${paths.v1.user.profilesCreate}?user_manager_id=${id}`}>
             Completar dados

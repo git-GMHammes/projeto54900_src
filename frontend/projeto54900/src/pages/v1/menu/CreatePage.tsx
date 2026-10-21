@@ -95,7 +95,7 @@ export default function CreatePage() {
         fields: [
           {
             col: 4,
-            label: 'Titulo',
+            label: 'Título',
             required: true,
             value: title,
             onChange: (e) => setTitle(e.target.value),
@@ -144,7 +144,7 @@ export default function CreatePage() {
             type: 'checkbox',
             col: 3,
             name: 'is_bookmark',
-            title: 'Marca o item para aparecer na lista de favoritos do usuario.',
+            title: 'Marca o item para aparecer na lista de favoritos do usuário.',
             options: [{ id: 'is_bookmark', value: '1', label: 'Favorito (bookmark)' }],
             value: isBookmark ? ['1'] : [],
             onChange: (values) => setIsBookmark(values.includes('1')),
@@ -158,7 +158,7 @@ export default function CreatePage() {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!navManagerId || !title.trim()) {
-        toast.error('Nav e titulo sao obrigatorios.', { title: 'Campos faltando' });
+        toast.error('Nav e título são obrigatórios.', { title: 'Campos faltando' });
         return;
       }
       const payload: Record<string, unknown> = {

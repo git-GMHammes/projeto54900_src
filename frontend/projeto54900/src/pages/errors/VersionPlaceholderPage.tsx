@@ -10,7 +10,7 @@ export interface VersionPlaceholderPageProps {
 export default function VersionPlaceholderPage({ version = 'v1a' }: VersionPlaceholderPageProps) {
   return (
     <>
-      <PageHeader title={`API ${version}`} subtitle="Versao reservada" />
+      <PageHeader title={`API ${version}`} subtitle="Versão reservada" />
       <EmptyState
         title={`Nenhum modulo em ${version} ainda`}
         description={`Espelha o namespace Api\\${version.toUpperCase()} do backend. Ver routes/${version}/README.md.`}

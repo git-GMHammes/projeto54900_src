@@ -59,7 +59,7 @@ export default function PasswordHashPreviewButton() {
       <p className="small text-body-secondary">
         Gerado no navegador (bcryptjs, cost {BCRYPT_COST}) — mesmo algoritmo e cost do backend
         (<code>password_hash</code>/<code>PASSWORD_BCRYPT</code>). O salt e aleatorio a cada calculo, entao o
-        hash abaixo nunca sera identico ao gravado no banco para a mesma senha, mas valida a senha do mesmo jeito.
+        hash abaixo nunca será idêntico ao gravado no banco para a mesma senha, mas valida a senha do mesmo jeito.
       </p>
 
       <div className="mb-3">

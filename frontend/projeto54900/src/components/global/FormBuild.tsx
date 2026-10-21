@@ -55,7 +55,7 @@ export default function FormBuild({ table, id, onLoaded }: FormBuildProps) {
       // Acesso individual (user_resource_access / roles) ao form, antes de montar.
       if (isDenied(await checkResourceAccess('form', { id }))) {
         setForm(null);
-        setError('Voce nao tem acesso a este formulario.');
+        setError('Você não tem acesso a este formulário.');
         return;
       }
       const raw = await formManagerView.getGrouped(
@@ -83,7 +83,7 @@ export default function FormBuild({ table, id, onLoaded }: FormBuildProps) {
       onLoaded?.(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }

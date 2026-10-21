@@ -48,7 +48,7 @@ export default function CreateCalendarModal({
       })
       .catch((err) => {
         setForm(null);
-        setFormError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+        setFormError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
       });
   }, []);
 

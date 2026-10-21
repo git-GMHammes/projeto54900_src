@@ -26,7 +26,7 @@ function buildSchema(nav: ApiRow): FormGridSchema {
         fields: [
           {
             col: 12,
-            label: 'Titulo',
+            label: 'Título',
             id: 'title',
             name: 'title',
             required: true,
@@ -59,7 +59,7 @@ function buildSchema(nav: ApiRow): FormGridSchema {
         fields: [
           {
             col: 6,
-            label: 'Versao do sistema',
+            label: 'Versão do sistema',
             id: 'system_version',
             name: 'system_version',
             maxLength: 20,
@@ -104,7 +104,7 @@ export default function UpdatePage() {
       const res = await navManagerTable.get(id);
       const row = normalizeItem<ApiRow>(res);
       if (!row) {
-        setError('Nav nao encontrado.');
+        setError('Nav não encontrado.');
         return;
       }
       setNav(row);

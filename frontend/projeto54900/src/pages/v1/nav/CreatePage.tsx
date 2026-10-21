@@ -21,7 +21,7 @@ const SCHEMA: FormGridSchema = {
   rows: [
     {
       fields: [
-        { col: 12, label: 'Titulo', id: 'title', name: 'title', required: true, maxLength: 255 },
+        { col: 12, label: 'Título', id: 'title', name: 'title', required: true, maxLength: 255 },
       ],
     },
     {
@@ -34,7 +34,7 @@ const SCHEMA: FormGridSchema = {
       fields: [
         {
           col: 6,
-          label: 'Versao do sistema',
+          label: 'Versão do sistema',
           id: 'system_version',
           name: 'system_version',
           defaultValue: '1.0.0',

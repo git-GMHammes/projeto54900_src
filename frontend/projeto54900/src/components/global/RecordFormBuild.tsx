@@ -124,7 +124,7 @@ export default function RecordFormBuild({
       const access = await checkResourceAccess('form', { slug });
       if (isDenied(access)) {
         setForm(null);
-        setError('Voce nao tem acesso a este formulario.');
+        setError('Você não tem acesso a este formulário.');
         return;
       }
 
@@ -144,7 +144,7 @@ export default function RecordFormBuild({
         const record = normalizeItem<ApiRow>(recordRaw);
         if (!record) {
           setForm(null);
-          setError('Registro nao encontrado.');
+          setError('Registro não encontrado.');
           return;
         }
         setValues(mapRecord ? mapRecord(record) : {});
@@ -152,7 +152,7 @@ export default function RecordFormBuild({
       setForm(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }

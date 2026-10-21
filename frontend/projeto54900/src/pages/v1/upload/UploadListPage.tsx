@@ -93,7 +93,7 @@ function ActionButton({
       notifyActionDone(toast, action);
       onExecuted();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a acao.', { title: action.label });
+      toast.error(err instanceof ApiError ? err.message : 'Falha ao executar a ação.', { title: action.label });
     }
   };
 
@@ -150,7 +150,7 @@ export default function UploadListPage() {
       // Acesso individual a esta listagem (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('list', { id: found.id }))) {
         setManager(null);
-        setDefsError('Voce nao tem acesso a esta listagem.');
+        setDefsError('Você não tem acesso a esta listagem.');
         return;
       }
       setManager(found);

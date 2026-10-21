@@ -52,7 +52,7 @@ export default function CreatePage() {
       setForm(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function CreatePage() {
           toast.error('Registro criado sem id na resposta.', { title: 'Erro ao enviar' });
           return;
         }
-        toast.success('Usuario criado.', { title: form.meta.title });
+        toast.success('Usuário criado.', { title: form.meta.title });
         void navigate(`${paths.v1.user.profilesCreate}?user_manager_id=${id}`);
       } catch (err) {
         if (err instanceof ApiError) {
@@ -107,7 +107,7 @@ export default function CreatePage() {
     <>
       <PasswordHashPreviewButton />
       <PageHeader
-        title={form?.meta.title ?? 'Novo usuario'}
+        title={form?.meta.title ?? 'Novo usuário'}
         subtitle={form?.meta.description ?? 'POST api/v1/user-manager/create'}
       />
 

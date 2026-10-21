@@ -8,7 +8,7 @@ import App from '@/App';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error('Elemento #root nao encontrado no index.html.');
+  throw new Error('Elemento #root não encontrado no index.html.');
 }
 
 createRoot(rootElement).render(

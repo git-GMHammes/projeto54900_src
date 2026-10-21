@@ -113,7 +113,7 @@ export default function CompanyMembersEditor({ companyId, onCompanyChange, compa
     } catch (err) {
       setUsers([]);
       setUsersTotal(0);
-      setUsersError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuarios.');
+      setUsersError(err instanceof ApiError ? err.message : 'Falha ao carregar os usuários.');
     } finally {
       setUsersLoading(false);
     }

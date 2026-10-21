@@ -55,7 +55,7 @@ export default function FormRendererPage() {
         const access = await checkResourceAccess('form', { slug });
         if (isDenied(access)) {
           setForm(null);
-          setError('Voce nao tem acesso a este formulario.');
+          setError('Você não tem acesso a este formulário.');
           return;
         }
       }
@@ -73,7 +73,7 @@ export default function FormRendererPage() {
       setForm(built);
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }

@@ -66,7 +66,7 @@ export default function UpdatePage() {
       // Acesso individual ao formulario (user_resource_access / roles).
       if (isDenied(await checkResourceAccess('form', { slug: SLUG }))) {
         setForm(null);
-        setError('Voce nao tem acesso a este formulario.');
+        setError('Você não tem acesso a este formulário.');
         return;
       }
       const [formRaw, roomRaw] = await Promise.all([
@@ -83,7 +83,7 @@ export default function UpdatePage() {
       const room = normalizeItem<ApiRow>(roomRaw);
       if (!room) {
         setForm(null);
-        setError('Sala de chat nao encontrada.');
+        setError('Sala de chat não encontrada.');
         return;
       }
       const values: Record<string, string> = {
@@ -95,7 +95,7 @@ export default function UpdatePage() {
       setForm({ meta: built.meta, schema: prefillFromRecord(built.schema, values) });
     } catch (err) {
       setForm(null);
-      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulario.');
+      setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
     } finally {
       setLoading(false);
     }

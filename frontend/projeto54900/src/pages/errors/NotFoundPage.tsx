@@ -9,7 +9,7 @@ export default function NotFoundPage() {
       <PageHeader title="404" subtitle="Pagina nao encontrada" />
       <EmptyState title="Este endereco nao existe" description="Verifique o link ou volte ao inicio.">
         <Link className="btn btn-primary" to={paths.home}>
-          Voltar ao inicio
+          Voltar ao início
         </Link>
       </EmptyState>
     </>

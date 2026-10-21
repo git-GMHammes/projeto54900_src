@@ -140,10 +140,10 @@ export default function Navbar() {
                     data-bs-toggle="offcanvas"
                     data-bs-target={`#${OFFCANVAS_ID}`}
                     aria-controls={OFFCANVAS_ID}
-                    title="Mais opcoes"
+                    title="Mais opções"
                   >
                     <i className="bi bi-grid-3x3-gap-fill" aria-hidden="true" />
-                    <span className="visually-hidden">Mais opcoes</span>
+                    <span className="visually-hidden">Mais opções</span>
                   </button>
                 </li>
               )}
