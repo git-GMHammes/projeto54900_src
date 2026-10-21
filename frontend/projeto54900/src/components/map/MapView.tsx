@@ -58,19 +58,33 @@ export interface MapViewProps {
   maxZoom?: number | undefined;
   /** Clique no mapa (para escolher um ponto). */
   onMapClick?: ((position: LatLng) => void) | undefined;
+  /** Zoom mudou (inclusive por botoes/roda do mouse). */
+  onZoomChange?: ((zoom: number) => void) | undefined;
   className?: string | undefined;
 }
 
-function buildIcon(icon: string | undefined, color: string | undefined): L.DivIcon {
-  const cls = safeIcon(icon);
-  const col = safeColor(color);
+function dimension(value: number | undefined, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : fallback;
+}
+
+function buildIcon(m: MapMarker): L.DivIcon {
+  const cls = safeIcon(m.icon);
+  const col = safeColor(m.color);
+  const w = dimension(m.width, 32);
+  const h = dimension(m.height, 32);
+  const ax = dimension(m.anchorX, Math.round(w / 2));
+  const ay = dimension(m.anchorY, h);
+  // imageUrl e sempre um blob: URL gerado pelo app (nunca texto do banco).
+  const html = m.imageUrl?.startsWith('blob:')
+    ? `<img src="${m.imageUrl}" alt="" style="width:${w}px;height:${h}px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">`
+    : `<i class="bi ${cls}" style="color:${col};font-size:${h}px;line-height:${h}px;text-shadow:0 1px 2px rgba(0,0,0,.45)"></i>`;
 
   return L.divIcon({
     className: 'map-marker',
-    html: `<i class="bi ${cls}" style="color:${col};font-size:32px;line-height:32px;text-shadow:0 1px 2px rgba(0,0,0,.45)"></i>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -30],
+    html,
+    iconSize: [w, h],
+    iconAnchor: [ax, ay],
+    popupAnchor: [0, -ay + 2],
   });
 }
 
@@ -116,6 +130,14 @@ function SizeWatcher() {
   return null;
 }
 
+function ZoomCatcher({ onZoom }: { onZoom: (zoom: number) => void }) {
+  const map = useMapEvents({
+    zoomend: () => onZoom(map.getZoom()),
+  });
+
+  return null;
+}
+
 function ClickCatcher({ onClick }: { onClick: (position: LatLng) => void }) {
   useMapEvents({
     click: (e) => onClick({ lat: e.latlng.lat, lng: e.latlng.lng }),
@@ -137,11 +159,12 @@ export default function MapView({
   minZoom,
   maxZoom,
   onMapClick,
+  onZoomChange,
   className,
 }: MapViewProps) {
   const start = center ?? DEFAULT_CENTER;
   const icons = useMemo(
-    () => new Map(markers.map((m) => [m.id, buildIcon(m.icon, m.color)] as const)),
+    () => new Map(markers.map((m) => [m.id, buildIcon(m)] as const)),
     [markers],
   );
 
@@ -159,6 +182,7 @@ export default function MapView({
         <SizeWatcher />
         <FitToContent markers={markers} routes={routes} enabled={fitToContent} />
         {onMapClick && <ClickCatcher onClick={onMapClick} />}
+        {onZoomChange && <ZoomCatcher onZoom={onZoomChange} />}
 
         {circles.map((c) => (
           <Circle

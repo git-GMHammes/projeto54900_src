@@ -167,6 +167,13 @@ export interface MapLinkViewRow extends ApiRow {
   ad_state: string | null;
   ad_display_name: string | null;
   pt_name: string | null;
+  pt_icon_class: string | null;
+  pt_color: string | null;
+  pt_size_w: number | string | null;
+  pt_size_h: number | string | null;
+  pt_anchor_x: number | string | null;
+  pt_anchor_y: number | string | null;
+  pt_upload_id: number | string | null;
   rt_name: string | null;
   rt_profile: RouteProfile | null;
   rt_distance_m: number | string | null;
@@ -185,6 +192,13 @@ export interface MapMarker {
   /** Classe do Bootstrap Icons, ex.: 'bi-geo-alt-fill'. */
   icon?: string;
   color?: string;
+  /** Imagem/SVG do icone (blob: URL de um upload); tem prioridade sobre `icon`. */
+  imageUrl?: string;
+  /** Tamanho e ancora do icone em px (map_icons). Padrao: 32x32, ancora 16,32. */
+  width?: number | undefined;
+  height?: number | undefined;
+  anchorX?: number;
+  anchorY?: number;
 }
 
 /** Circulo desenhado pelo MapView (ex.: raio de precisao de uma localizacao, em metros). */

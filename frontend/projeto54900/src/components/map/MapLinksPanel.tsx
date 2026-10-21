@@ -41,6 +41,11 @@ export interface MapLinksPanelProps {
   readOnly?: boolean | undefined;
   height?: number | undefined;
   title?: string | undefined;
+  /**
+   * Ponto proprio do registro (ex.: latitude/longitude do local). Aparece como marcador e, sem
+   * vinculos, e o centro padrao do mapa, com o zoom informado (padrao 18, o mais proximo).
+   */
+  basePoint?: { lat: number; lng: number; title?: string | undefined; zoom?: number | undefined } | undefined;
 }
 
 export default function MapLinksPanel({
@@ -50,6 +55,7 @@ export default function MapLinksPanel({
   readOnly = false,
   height = 420,
   title = 'Mapa deste registro',
+  basePoint,
 }: MapLinksPanelProps) {
   const toast = useToast();
   const { links, loading, error, reload, remove } = useMapLinks({ module, referenceId, collection });
@@ -58,7 +64,17 @@ export default function MapLinksPanel({
   const [toRemove, setToRemove] = useState<MapLinkViewRow | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  const markers = useMemo(() => links.flatMap((l) => linkToMarker(l) ?? []), [links]);
+  const markers = useMemo(() => {
+    const fromLinks = links.flatMap((l) => linkToMarker(l) ?? []);
+    if (!basePoint) return fromLinks;
+    const own = {
+      id: 'base-point',
+      position: { lat: basePoint.lat, lng: basePoint.lng },
+      icon: 'bi-geo-alt-fill',
+      ...(basePoint.title ? { title: basePoint.title } : {}),
+    };
+    return [own, ...fromLinks];
+  }, [links, basePoint]);
   const routes = useMemo(() => links.flatMap((l) => linkToPolyline(l) ?? []), [links]);
 
   async function confirmRemove() {
@@ -107,7 +123,17 @@ export default function MapLinksPanel({
       ) : (
         <div className="row g-3">
           <div className="col-lg-7">
-            <MapView height={height} markers={markers} routes={routes} />
+            {basePoint && links.length === 0 ? (
+              <MapView
+                height={height}
+                center={{ lat: basePoint.lat, lng: basePoint.lng }}
+                zoom={basePoint.zoom ?? 18}
+                markers={markers}
+                fitToContent={false}
+              />
+            ) : (
+              <MapView height={height} markers={markers} routes={routes} />
+            )}
           </div>
           <div className="col-lg-5">
             {links.length === 0 ? (

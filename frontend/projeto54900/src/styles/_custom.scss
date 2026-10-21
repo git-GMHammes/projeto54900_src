@@ -182,3 +182,18 @@ dl .text-break {
 #svgMapWrapper svg path:hover {
   fill: #243263;
 }
+
+// Faixa de mídia fallback da timeline: desliza da direita p/ esquerda 2x; depois o React fixa no centro.
+.fallback-banner-text {
+  display: inline-block;
+  animation: fallback-banner-slide 18s linear 2;
+}
+
+@keyframes fallback-banner-slide {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-100vw);
+  }
+}

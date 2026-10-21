@@ -29,7 +29,6 @@
  */
 
 import {
-  randomHexColor,
   randomInt,
   randomItem,
   randomSentence,
@@ -53,7 +52,6 @@ const CIDADES: readonly Cidade[] = [
 
 const RUAS = ['Avenida Rio Branco', 'Rua do Ouvidor', 'Avenida Atlântica', 'Rua Visconde de Pirajá', 'Praça Mauá', 'Avenida Presidente Vargas', 'Rua da Carioca'] as const;
 const BAIRROS = ['Centro', 'Copacabana', 'Ipanema', 'Botafogo', 'Tijuca', 'Lapa', 'Engenho Novo'] as const;
-const ICONES = ['bi-geo-alt-fill', 'bi-shop', 'bi-building', 'bi-hospital', 'bi-bus-front', 'bi-tree-fill', 'bi-cup-hot'] as const;
 const PALAVRAS = ['ponto', 'de', 'apoio', 'regional', 'atendimento', 'entrega', 'centro', 'logístico', 'equipe', 'rota'] as const;
 
 function setText(id: string, value: string): void {
@@ -81,17 +79,19 @@ export function fillMapaForm(): void {
   setText('center_lng', cidade.lng.toFixed(6));
 }
 
-export function fillIconeMapaForm(): void {
+export async function fillIconeMapaForm(): Promise<void> {
   setText('name', `Ícone ${randomToken(5)}`);
-  setText('icon_class', randomItem(ICONES));
-  setText('color', randomHexColor());
+  // Classe do icone e select de opcoes inline (Bootstrap Icons).
+  await selectFirstComboboxOption('icon_class');
+  // Cor e select da tabela aux_cor (valor = hexadecimal).
+  await selectFirstComboboxOption('color');
 }
 
 export async function fillCategoriaMapaForm(): Promise<void> {
   await selectFirstComboboxOption('map_manager_id');
   setText('name', `Categoria ${randomToken(5)}`);
   // slug: o formulario o preenche sozinho a partir do nome (RecordFormBuild autoSlug).
-  setText('color', randomHexColor());
+  await selectFirstComboboxOption('color');
   setText('sort_order', String(randomInt(0, 20)));
 }
 

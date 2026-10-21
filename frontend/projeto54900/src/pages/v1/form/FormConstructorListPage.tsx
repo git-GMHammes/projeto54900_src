@@ -88,17 +88,25 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
+import {
+  listManagerTable,
+  listColumnsTable,
+  listActionsTable,
+  formManagerTable,
+  checkResourceAccess,
+  isDenied,
+} from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
 import { useToast } from '@/hooks/useToast';
+import { useDebounce } from '@/hooks/useDebounce';
 import { paginationWindow } from '@/utils/pagination';
 import { paths } from '@/routes/paths';
 import type { QueryParams } from '@/types/api';
@@ -290,6 +298,28 @@ export default function FormConstructorListPage() {
   // Paginação da URL (fonte da verdade) — ver GRUPO 3 acima.
   const { params, setPage, setLimit, toggleSort } = usePagination();
 
+  // Busca por título/slug: o termo vive na URL (`q`), como o resto da paginação.
+  // `term` é só o texto digitado; o valor com debounce é que vai para a URL.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const q = searchParams.get('q') ?? '';
+  const [term, setTerm] = useState(q);
+  const debouncedTerm = useDebounce(term.trim(), 400);
+  useEffect(() => {
+    if (debouncedTerm === q) return;
+    setSearchParams(
+      (prev) => {
+        const usp = new URLSearchParams(prev);
+        if (debouncedTerm) usp.set('q', debouncedTerm);
+        else usp.delete('q');
+        usp.delete('page'); // novo termo volta para a página 1
+        return usp;
+      },
+      { replace: true },
+    );
+    // `q` fora das dependências de propósito: só reage ao que o usuário digitou.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTerm]);
+
   // GRUPO 1 — definição (o que a lista é).
   const [manager, setManager] = useState<ListManagerRow | null>(null);
   const [columns, setColumns] = useState<ListColumnRow[]>([]);
@@ -428,8 +458,11 @@ export default function FormConstructorListPage() {
     setDataLoading(true);
     setDataError(null);
     try {
-      const path = resolveEndpoint(manager.apiGetEndpoint);
-      const raw = await http.get(path, { params: params as unknown as QueryParams });
+      // Com termo: GET /search?q= (campos em `searchFields` do model: slug, title, ...).
+      // Sem termo: o endpoint da definição, como antes.
+      const raw = q
+        ? await formManagerTable.search(q, params as unknown as QueryParams)
+        : await http.get(resolveEndpoint(manager.apiGetEndpoint), { params: params as unknown as QueryParams });
       const { rows: list, total: t } = normalizeList<Record<string, unknown>>(raw);
       setRows(list);
       setTotal(t);
@@ -440,7 +473,7 @@ export default function FormConstructorListPage() {
     } finally {
       setDataLoading(false);
     }
-  }, [manager, params]);
+  }, [manager, params, q]);
 
   // Efeito 2 — roda quando a definição chega e a cada mudança de URL.
   useEffect(() => {
@@ -505,6 +538,14 @@ export default function FormConstructorListPage() {
     <>
       {/* Cabeçalho: título/subtítulo vêm da definição; as duas ações são fixas. */}
       <PageHeader title={manager?.title || 'Formularios'} subtitle={manager?.apiGetEndpoint || 'api/v1/form-manager'}>
+        <input
+          type="search"
+          className="form-control d-inline-block w-auto me-2 align-middle"
+          placeholder="Buscar por título ou slug"
+          aria-label="Buscar por título ou slug"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+        />
         <button className="btn btn-outline-secondary me-2" onClick={() => void loadData()} disabled={dataLoading}>
           Recarregar
         </button>
@@ -524,8 +565,8 @@ export default function FormConstructorListPage() {
         <EmptyState
           variant="warning"
           eyebrow="Lista vazia"
-          title="Nenhum formulario"
-          description="Crie o primeiro em 'Novo formulário'."
+          title="Nenhum formulário"
+          description={q ? `Nada encontrado para "${q}".` : "Crie o primeiro em 'Novo formulário'."}
         />
       )}
 

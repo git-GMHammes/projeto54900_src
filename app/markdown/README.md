@@ -51,15 +51,20 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | 17  | [`timeline`](#timeline)                             | Módulo de publicações e timeline  |
 | 18  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
 | 19  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
+| 20  | [`location`](#location)                             | Locais em árvore recursiva livre  |
 
 **5. Operação e manutenção**
 
 | #   | Palavra-chave                 | Assunto (5 palavras)                  |
 | --- | ----------------------------- | ------------------------------------- |
-| 20  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
-| 21  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
-| 22  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
-| 23  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
+| 21  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
+| 22  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
+| 23  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
+| 24  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
+| 25  | [`independencia`](#independencia) | Módulos independentes, ligação sob pedido |
+| 26  | [`product`](#product) | Produto de qualquer escala, atributos |
+| 27  | [`movement`](#movement) | Entrada, saída, separação, desperdício, encomenda |
+| 28  | [`service`](#service) | Serviço qualquer: pedido, prazo, prestador |
 
 ---
 
@@ -349,6 +354,19 @@ no banco DEV (sem migration — ver regra em `README_migrate.md`).
 
 [`geral/README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo de convite de evento por e-mail/token da API V1.
 
+### `location`
+
+Locais de qualquer escala (galáxia, país, rua, galpão, caixa, pasta) numa só
+tabela recursiva: `location_manager.parent_id` aponta para a própria tabela e é
+nulo no topo, então a árvore se monta de baixo para cima (a caixa adota o
+corredor, que adota o galpão...) ou de cima para baixo. `location_types` guarda
+só rótulos (o tipo não define nível). `view_location_manager` traz `depth`,
+`path_ids` e `path_names` por CTE recursiva. 45 rotas (2 tabelas, 1 view), ciclo
+bloqueado no `Processor` e em trigger, isolamento por empresa. Módulo
+independente; a integração com Map, Produto, Estoque etc. fica para depois.
+
+[`geral/README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: tabelas, rotas, regras e pendências.
+
 ### `kinghost`
 
 Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
@@ -409,6 +427,46 @@ bloqueia o bind da faixa oculta `52810–56905`. Solução validada: `wsl --shut
 
 [`geral/README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — diagnóstico e solução da porta 54910 bloqueada.
 
+### `independencia`
+
+Todos os módulos podem se ligar a todos, mas cada um é independente. A ligação é
+uma chave opcional (`NULL` por padrão); desligar é a ausência da chave. Ligações
+só são criadas mediante pedido. SaaS: toda tabela tem `company_id` e um registro
+nunca interfere no de outra empresa, inclusive pela chave de ligação.
+
+[`geral/README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral de independência, ligação opcional e isolamento por empresa.
+
+### `product`
+
+Produto de qualquer escala (comprimido a aeronave) com 2 tabelas: `product_manager`
+(núcleo, `parent_id`, `location_id` opcional, `stock_min`/`stock_max`) e
+`product_attributes` (grupo -> campo -> valor/unidade, catálogo em
+`doc/json/produto.json`). 54 rotas, `roles` e `company_id` por registro, sem
+triggers; regras no `Processor`. Independente do Location (chave nula = sem local).
+
+[`geral/README_modulo_product.md`](geral/README_modulo_product.md) — módulo Product: tabelas, rotas, regras e pendências.
+
+### `movement`
+
+Movimento de produto em `movement_manager`: entrada, saída, separação,
+desperdício e encomenda, com usuário, datas e origem. `view_movement_stock` traz
+saldo, reservado, encomendado, disponível e alerta de abaixo do mínimo.
+Semi-dependente do Produto (`product_id`). Confirmar separação gera saída;
+receber encomenda gera entrada. 36 rotas, sem triggers.
+
+[`geral/README_modulo_movement.md`](geral/README_modulo_movement.md) — módulo Movement: tipos, saldo, rotas e regras.
+
+### `service`
+
+Serviço de qualquer tipo (de troca de chuveiro a construção civil) com 3 tabelas:
+`service_manager` (catálogo, `parent_id`, prestador `biscate`/`mei`/`company`,
+unidade de cobrança, duração e prazo com unidade de tempo), `service_attributes`
+(grupo -> campo, catálogo em `doc/json/servico.json`) e `service_order` (pedido,
+orçamento, agenda, execução e nota). 4 views, 90 rotas, `roles` e `company_id`
+por registro, sem triggers. Independente de Produto, Location e Movement.
+
+[`geral/README_modulo_service.md`](geral/README_modulo_service.md) — módulo Service: tabelas, fluxo do pedido, rotas e regras.
+
 ---
 
 ## Conteúdo
@@ -424,6 +482,11 @@ bloqueia o bind da faixa oculta `52810–56905`. Solução validada: `wsl --shut
 - [`README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: empresas, `company_ids` do usuário e permissão individual a form/list.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
 - [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
+- [`README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: 2 tabelas, 1 view, 45 rotas, árvore recursiva por `parent_id` montável de baixo para cima.
+- [`README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral: módulos independentes, ligação opcional (chave nula) só sob pedido, isolamento por empresa.
+- [`README_modulo_product.md`](geral/README_modulo_product.md) — módulo Product: 2 tabelas (produto e atributos), 2 views, 54 rotas, `location_id` opcional.
+- [`README_modulo_movement.md`](geral/README_modulo_movement.md) — módulo Movement: `movement_manager`, view de saldo, 36 rotas, separação e encomenda geram saída/entrada.
+- [`README_modulo_service.md`](geral/README_modulo_service.md) — módulo Service: 3 tabelas, 4 views, 90 rotas, fluxo requested -> done, prestador biscate/mei/company.
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.

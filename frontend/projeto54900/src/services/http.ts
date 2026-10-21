@@ -89,6 +89,18 @@ export function setAccessTokenGetter(getter: (() => string | null) | null): void
 let tokenRefresher: (() => Promise<boolean>) | null = null;
 let refreshInFlight: Promise<boolean> | null = null;
 
+/**
+ * PORTAO DE SESSAO: o `AuthContext` registra aqui uma promessa que so resolve quando o refresh silencioso inicial
+ * termina. Chamada a API (fora de login/refresh) espera o portao antes de ler o access_token — sem isso, o que roda
+ * durante o carregamento da pagina (menu, contadores) sai sem token e volta 401 de uma sessao que ainda estava sendo
+ * restaurada. Sem portao registrado, nada espera.
+ */
+let authGate: (() => Promise<void>) | null = null;
+
+export function setAuthGate(gate: (() => Promise<void>) | null): void {
+  authGate = gate;
+}
+
 export function setTokenRefresher(refresher: (() => Promise<boolean>) | null): void {
   tokenRefresher = refresher;
 }
@@ -242,6 +254,7 @@ export async function request<T = unknown>(
 ): Promise<T> {
   const url = buildUrl(path, params);
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
+  if (authGate && !retried && !/\/auth\/(login|refresh)$/.test(path)) await authGate();
   const token = getAccessToken?.() ?? null;
 
   const init: RequestInit = {

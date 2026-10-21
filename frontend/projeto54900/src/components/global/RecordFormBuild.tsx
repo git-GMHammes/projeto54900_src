@@ -16,7 +16,7 @@
 // carregamento quando o pai recria o objeto a cada render.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import FormGrid from '@/components/ui/FormGrid/Input';
@@ -57,7 +57,16 @@ export interface RecordFormBuildProps {
    * formato `slug-do-texto_AAAAMMDDHHMMSS`. Para de acompanhar se o usuario editar o slug a mao
    * (voltar a apagar o slug religa o automatico). So no cadastro; na edicao nada muda.
    */
-  autoSlug?: { from: string; to: string };
+  autoSlug?: { from: string; to: string; /** Troca o formato `slug_carimbo` (ex.: codigo com sufixo aleatorio). */ format?: (text: string) => string };
+  /** Conteudo extra dentro do <form>, logo abaixo dos campos (ex.: seletor de ponto no mapa). */
+  afterFields?: ReactNode;
+  /**
+   * Insere `node` entre as linhas do schema, logo abaixo da linha que contem o campo `name`
+   * (ex.: card de mapa abaixo de Tipo/Local pai). O form segue unico: sao 2 FormGrid no mesmo <form>.
+   */
+  insertAfterField?: { name: string; node: ReactNode };
+  /** Ajusta o corpo JSON antes do envio (ex.: zerar campos ocultos). */
+  transformPayload?: (payload: Record<string, unknown>) => Record<string, unknown>;
   successMessage: string;
   fallbackTitle: string;
 }
@@ -71,6 +80,9 @@ export default function RecordFormBuild({
   defaults,
   patches,
   autoSlug,
+  afterFields,
+  insertAfterField,
+  transformPayload,
   successMessage,
   fallbackTitle,
 }: RecordFormBuildProps) {
@@ -110,7 +122,7 @@ export default function RecordFormBuild({
 
       // Escreve pelo setter nativo e avisa o React/FormGrid, como se tivesse sido digitado.
       settingSlug.current = true;
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(target, stampedSlug(input.value));
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(target, (autoSlug.format ?? stampedSlug)(input.value));
       target.dispatchEvent(new Event('input', { bubbles: true }));
       settingSlug.current = false;
     },
@@ -166,10 +178,18 @@ export default function RecordFormBuild({
     if (!form) return null;
     const initial = editing ? values : (live.current.defaults ?? {});
     const filled = fillValues(form.schema, initial);
-    const extra = live.current.patches;
 
-    return extra ? patchFields(filled, extra) : filled;
-  }, [form, editing, values]);
+    return patches ? patchFields(filled, patches) : filled;
+  }, [form, editing, values, patches]);
+
+  // Divide o schema logo abaixo da linha do campo `insertAfterField.name` (se houver).
+  const splitName = insertAfterField?.name;
+  const parts = useMemo(() => {
+    if (!schema) return null;
+    const at = splitName ? schema.rows.findIndex((r) => r.fields.some((f) => f.name === splitName)) : -1;
+    if (at < 0) return { head: schema, tail: null };
+    return { head: { ...schema, rows: schema.rows.slice(0, at + 1) }, tail: { ...schema, rows: schema.rows.slice(at + 1) } };
+  }, [schema, splitName]);
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -184,7 +204,8 @@ export default function RecordFormBuild({
         return;
       }
 
-      const payload = formDataToPayload(el);
+      const rawPayload = formDataToPayload(el);
+      const payload = transformPayload ? transformPayload(rawPayload) : rawPayload;
       const send = senderFor(form.meta.httpMethod);
       const base = resolveEndpoint(form.meta.submitEndpoint);
       const path = editing ? `${base}/${recordId}` : base;
@@ -204,7 +225,7 @@ export default function RecordFormBuild({
         setSubmitting(false);
       }
     },
-    [form, editing, recordId, successMessage, backPath, navigate, toast],
+    [form, editing, recordId, successMessage, backPath, navigate, toast, transformPayload],
   );
 
   return (
@@ -217,7 +238,10 @@ export default function RecordFormBuild({
 
       {!loading && !error && schema && (
         <form onSubmit={(e) => void handleSubmit(e)} onInput={handleInput} noValidate>
-          <FormGrid schema={schema} />
+          <FormGrid schema={parts?.head ?? schema} />
+          {insertAfterField?.node}
+          {parts?.tail ? <FormGrid schema={parts.tail} /> : null}
+          {afterFields}
           {/* Dev-only (isDevHost) e so no cadastro: so aparece se houver script registrado para o slug. */}
           {!editing && <FakeFillButton slug={slug} />}
           <div className="d-flex gap-2 mt-4 pt-3 border-top">

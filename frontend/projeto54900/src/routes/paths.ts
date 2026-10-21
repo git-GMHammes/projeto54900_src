@@ -214,6 +214,63 @@ export const paths = {
       create: '/v1/messages-manager/create',
       update: (id: RouteId) => `/v1/messages-manager/update/${id}`,
     },
+    // LocationManager / LocationTypes — locais em arvore recursiva e seus tipos (tipos: so admin)
+    locationManager: {
+      list: '/v1/location-manager',
+      create: '/v1/location-manager/create',
+      view: (id: RouteId) => `/v1/location-manager/${id}`,
+      update: (id: RouteId) => `/v1/location-manager/update/${id}`,
+    },
+    locationTypes: {
+      list: '/v1/location-types',
+      create: '/v1/location-types/create',
+      update: (id: RouteId) => `/v1/location-types/update/${id}`,
+    },
+    // ProductManager / ProductAttributes — produto (arvore opcional) e caracteristicas
+    productManager: {
+      list: '/v1/product-manager',
+      create: '/v1/product-manager/create',
+      update: (id: RouteId) => `/v1/product-manager/update/${id}`,
+      view: (id: RouteId) => `/v1/product-manager/${id}`,
+    },
+    productAttributes: {
+      list: '/v1/product-attributes',
+      create: '/v1/product-attributes/create',
+      update: (id: RouteId) => `/v1/product-attributes/update/${id}`,
+    },
+    // MovementManager / MovementStock — movimento de produto e saldo (saldo: so leitura)
+    movementManager: {
+      list: '/v1/movement-manager',
+      create: '/v1/movement-manager/create',
+      update: (id: RouteId) => `/v1/movement-manager/update/${id}`,
+      view: (id: RouteId) => `/v1/movement-manager/${id}`,
+    },
+    movementStock: {
+      list: '/v1/movement-stock',
+      view: (id: RouteId) => `/v1/movement-stock/${id}`,
+    },
+    // ServiceManager / ServiceAttributes / ServiceOrder / ServiceSummary — servico, caracteristicas, pedido e resumo
+    serviceManager: {
+      list: '/v1/service-manager',
+      create: '/v1/service-manager/create',
+      update: (id: RouteId) => `/v1/service-manager/update/${id}`,
+      view: (id: RouteId) => `/v1/service-manager/${id}`,
+    },
+    serviceAttributes: {
+      list: '/v1/service-attributes',
+      create: '/v1/service-attributes/create',
+      update: (id: RouteId) => `/v1/service-attributes/update/${id}`,
+    },
+    serviceOrder: {
+      list: '/v1/service-order',
+      create: '/v1/service-order/create',
+      update: (id: RouteId) => `/v1/service-order/update/${id}`,
+      view: (id: RouteId) => `/v1/service-order/${id}`,
+    },
+    serviceSummary: {
+      list: '/v1/service-summary',
+      view: (id: RouteId) => `/v1/service-summary/${id}`,
+    },
     // CompanyManager — cadastro de empresas (modulo Company; so admin)
     companyManager: {
       list: '/v1/company-manager',

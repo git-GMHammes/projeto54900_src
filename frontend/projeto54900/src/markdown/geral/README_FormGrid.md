@@ -336,3 +336,10 @@ em estado e loader por card). Não há lista estática de tabelas na página.
 | **Local**           | Rio de Janeiro                                                                                                               |
 | **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
+
+## Campo texto com botão/ícone (`addon`)
+
+`TextFieldSchema.addon` desenha o `input-group` do Bootstrap com um botão de ícone colado ao input:
+`addon: { icon: 'bi-search', submit: true, label: 'Buscar', loading, disabled, position: 'start' | 'end', variant, onClick }`.
+`submit: true` envia o `<form>` pai (Enter no campo também). Uso de referência: `AddressSearch` com `compact`
+(campos Ida/Volta do trajeto).

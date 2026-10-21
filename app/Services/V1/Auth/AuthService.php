@@ -16,6 +16,13 @@ use Config\Database;
  */
 class AuthService
 {
+    /**
+     * Janela (em segundos) em que o refresh token ANTERIOR ainda e aceito apos uma troca. Cobre a resposta perdida
+     * (F5, aba fechada ou navegacao no meio do refresh): sem isso o navegador volta com o token ja trocado, o
+     * servidor recusa e a sessao cai. Ver Database/Migrations/202610190200_user_refresh_grace.sql.
+     */
+    private const REFRESH_GRACE_SECONDS = 30;
+
     private JwtService $jwt;
 
     public function __construct()
@@ -72,8 +79,10 @@ class AuthService
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
             ->update([
-                'token'         => $tokens['sid'],
-                'last_login_at' => date('Y-m-d H:i:s'),
+                'token'            => $tokens['sid'],
+                'token_prev'       => null,
+                'token_prev_until' => null,
+                'last_login_at'    => date('Y-m-d H:i:s'),
             ]);
 
         log_message('info', "[auth] login ok para username='{$username}' empresa='" . ($companySlug ?? 'default') . "' ip={$ip}");
@@ -133,7 +142,14 @@ class AuthService
             return ['success' => false, 'message' => 'Usuário não encontrado ou inativo', 'code' => 401];
         }
 
-        if (empty($user['token']) || !hash_equals((string) $user['token'], $this->jwt->hashToken($refreshToken))) {
+        $hash       = $this->jwt->hashToken($refreshToken);
+        $isCurrent  = !empty($user['token']) && hash_equals((string) $user['token'], $hash);
+        $isPrevious = !empty($user['token_prev'])
+            && !empty($user['token_prev_until'])
+            && strtotime((string) $user['token_prev_until']) >= time()
+            && hash_equals((string) $user['token_prev'], $hash);
+
+        if (!$isCurrent && !$isPrevious) {
             return ['success' => false, 'message' => 'Refresh token não confere (já usado ou revogado)', 'code' => 401];
         }
 
@@ -146,9 +162,14 @@ class AuthService
 
         $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip, $companyId);
 
+        // O token usado vira o "anterior" por REFRESH_GRACE_SECONDS: se esta resposta se perder, o cliente ainda troca de novo.
         $this->db()->table('user_manager')
             ->where('id', $user['id'])
-            ->update(['token' => $tokens['sid']]);
+            ->update([
+                'token'            => $tokens['sid'],
+                'token_prev'       => $hash,
+                'token_prev_until' => date('Y-m-d H:i:s', time() + self::REFRESH_GRACE_SECONDS),
+            ]);
 
         return ['success' => true, 'data' => $this->buildAuthPayload((int) $user['id'], $tokens, $companyId)];
     }
@@ -159,7 +180,7 @@ class AuthService
      */
     public function logout(int $userId): void
     {
-        $this->db()->table('user_manager')->where('id', $userId)->update(['token' => null]);
+        $this->db()->table('user_manager')->where('id', $userId)->update(['token' => null, 'token_prev' => null, 'token_prev_until' => null]);
     }
 
     /**
@@ -300,8 +321,10 @@ class AuthService
         $this->db()->table('user_manager')
             ->where('id', $userId)
             ->update([
-                'password_hash' => password_hash($newPassword, PASSWORD_BCRYPT),
-                'token'         => null,
+                'password_hash'    => password_hash($newPassword, PASSWORD_BCRYPT),
+                'token'            => null,
+                'token_prev'       => null,
+                'token_prev_until' => null,
             ]);
 
         log_message('info', "[auth] senha alterada para user_id={$userId}");

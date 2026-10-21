@@ -82,6 +82,10 @@ import { timelineRoutes } from './timeline.routes';
 import { chatRoomsRoutes } from './chat-rooms.routes';
 import { messagesRoutes } from './messages.routes';
 import { companyRoutes } from './company.routes';
+import { locationRoutes } from './location.routes';
+import { movementRoutes } from './movement.routes';
+import { productRoutes } from './product.routes';
+import { serviceRoutes } from './service.routes';
 
 /**
  * =========================================================================
@@ -138,6 +142,10 @@ export const v1Routes: RouteObject = {
         ...chatRoomsRoutes,
         ...messagesRoutes,
         ...companyRoutes,
+        ...locationRoutes,
+        ...productRoutes,
+        ...movementRoutes,
+        ...serviceRoutes,
       ],
     },
   ],

@@ -33,19 +33,38 @@ class NominatimClient
     /**
      * @return array{0: list<array<string, mixed>>, 1: bool} [itens, veioDoCache]
      */
-    public function search(string $q, int $limit = 5, ?string $country = null): array
+    public function search(string $q, int $limit = 5, ?string $country = null, ?string $viewbox = null): array
     {
         $country = $country ?? $this->cfg->defaultCountry;
-        $key     = 'search|' . $limit . '|' . $country . '|' . $q;
+        $key     = 'search2|' . $limit . '|' . $country . '|' . $viewbox . '|' . $q;
 
-        return GeoCache::remember('nominatim', $key, $this->ttl(), function () use ($q, $limit, $country): array {
+        return GeoCache::remember('nominatim', $key, $this->ttl(), function () use ($q, $limit, $country, $viewbox): array {
             $query = ['format' => 'jsonv2', 'addressdetails' => 1, 'limit' => $limit, 'q' => $q];
 
             if ($country !== '' && $country !== 'xx') {
                 $query['countrycodes'] = $country;
             }
 
-            $json = $this->call('/search', $query);
+            $hasBox = $viewbox !== null && $viewbox !== '';
+
+            // Com caixa: 1) busca restrita a ela (bounded=1); 2) completa com resultados de fora
+            // (viewbox so como vies), sem repetir. Assim a regiao do usuario sempre vem primeiro.
+            $inside = [];
+            if ($hasBox) {
+                $inside = $this->call('/search', $query + ['viewbox' => $viewbox, 'bounded' => 1]);
+            }
+
+            $json = $inside;
+            if (count($json) < $limit) {
+                $outside = $this->call('/search', $hasBox ? $query + ['viewbox' => $viewbox, 'bounded' => 0] : $query);
+                $seen    = array_column($inside, 'place_id');
+                foreach ($outside as $item) {
+                    if (! in_array($item['place_id'] ?? null, $seen, true)) {
+                        $json[] = $item;
+                    }
+                }
+                $json = array_slice($json, 0, $limit);
+            }
 
             return array_values(array_map(fn(array $item): array => $this->normalize($item), $json));
         });

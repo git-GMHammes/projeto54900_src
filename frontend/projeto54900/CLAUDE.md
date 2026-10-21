@@ -9,15 +9,15 @@ A base de conhecimento **deste** frontend fica em
 
 ## Stack
 
-| Item       | Versão                        | Observação                                        |
-| ---------- | ----------------------------- | ------------------------------------------------- |
-| React      | 19                            | `createRoot`, `StrictMode`                        |
-| Vite       | 6                             | dev no host (`npm run dev`); build local em `dist/` |
-| TypeScript | ~5.7 (strict máximo)          | `tsc -b` (solution: `tsconfig.app`/`tsconfig.node`) |
-| Router     | `react-router-dom` 7          | data router (`createBrowserRouter`)               |
-| UI         | **Bootstrap 5.3**             | 99,9% da interface                                |
-| SCSS       | `sass` (dart)                 | só overrides de variável + `_custom.scss`         |
-| Lint       | ESLint 9 + `typescript-eslint` | `npm run lint` (`recommendedTypeChecked`)        |
+| Item       | Versão                         | Observação                                          |
+| ---------- | ------------------------------ | --------------------------------------------------- |
+| React      | 19                             | `createRoot`, `StrictMode`                          |
+| Vite       | 6                              | dev no host (`npm run dev`); build local em `dist/` |
+| TypeScript | ~5.7 (strict máximo)           | `tsc -b` (solution: `tsconfig.app`/`tsconfig.node`) |
+| Router     | `react-router-dom` 7           | data router (`createBrowserRouter`)                 |
+| UI         | **Bootstrap 5.3**              | 99,9% da interface                                  |
+| SCSS       | `sass` (dart)                  | só overrides de variável + `_custom.scss`           |
+| Lint       | ESLint 9 + `typescript-eslint` | `npm run lint` (`recommendedTypeChecked`)           |
 
 **TypeScript com strict máximo.** `tsconfig.app.json` liga `strict`,
 `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`,
@@ -157,14 +157,14 @@ NUNCA usa .env") e **não tem container de frontend**. As chaves expostas ao
 browser começam com `VITE_` (tipadas em `src/vite-env.d.ts`), mas nada as
 define: o app roda com os **defaults** de `src/config/env.ts`.
 
-| Chave              | Default efetivo          | Uso                                   |
-| ------------------ | ------------------------ | ------------------------------------- |
-| `VITE_BASE_PATH`   | `/`                      | `base` do Vite + `basename` do router |
-| `VITE_API_BASE_URL`| `/api`                   | prefixo de toda chamada em `http.ts`  |
-| `VITE_API_VERSION` | `v1`                     | versão default dos services           |
-| `VITE_WS_URL`      | `/ws`                    | WebSocket (Node)                      |
-| `VITE_DEV_PORT`    | `54910`                  | porta do dev-server (`vite.config.ts`) |
-| `VITE_DEV_BACKEND` | `http://localhost:54900` | alvo do proxy `/api` e `/ws` no dev   |
+| Chave               | Default efetivo          | Uso                                    |
+| ------------------- | ------------------------ | -------------------------------------- |
+| `VITE_BASE_PATH`    | `/`                      | `base` do Vite + `basename` do router  |
+| `VITE_API_BASE_URL` | `/api`                   | prefixo de toda chamada em `http.ts`   |
+| `VITE_API_VERSION`  | `v1`                     | versão default dos services            |
+| `VITE_WS_URL`       | `/ws`                    | WebSocket (Node)                       |
+| `VITE_DEV_PORT`     | `54910`                  | porta do dev-server (`vite.config.ts`) |
+| `VITE_DEV_BACKEND`  | `http://localhost:54900` | alvo do proxy `/api` e `/ws` no dev    |
 
 Para um deploy que precise de outros valores (API em outro host, app numa
 subpasta), exportar as chaves `VITE_*` no shell **antes do build** — o Vite lê

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+import FormCenterPicker from '@/components/map/FormCenterPicker';
 import RecordFormBuild from '@/components/global/RecordFormBuild';
 import { mapManagerTable } from '@/services/v1';
 import { paths } from '@/routes/paths';
@@ -66,6 +67,7 @@ export default function UpdatePage() {
       recordId={id ?? ''}
       loadRecord={(rid) => mapManagerTable.get(rid)}
       toValues={toValues}
+      afterFields={<FormCenterPicker latName="center_lat" lngName="center_lng" zoomName="zoom" />}
       patches={{ 'roles[]': { values: roles, defaultValues: roles } }}
       successMessage="Registro atualizado."
       fallbackTitle={`Editar mapa #${id ?? ''}`}
