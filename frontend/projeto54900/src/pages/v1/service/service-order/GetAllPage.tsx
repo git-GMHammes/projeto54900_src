@@ -7,6 +7,7 @@ export default function GetAllPage() {
   return (
     <ListBuild
       slug="service-order"
+      backFallback={paths.v1.serviceManager.list}
       createPath={paths.v1.serviceOrder.create}
       createLabel="Novo pedido"
       searchPlaceholder="Buscar por código, cliente, serviço ou executor"

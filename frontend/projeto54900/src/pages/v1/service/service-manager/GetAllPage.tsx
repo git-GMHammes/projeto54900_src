@@ -17,6 +17,7 @@ export default function GetAllPage() {
       title="Serviços"
       subtitle="Catálogo de serviços, do pacote à etapa. Um serviço pode ser filho de outro (obra, pacote)."
       slug="service-manager"
+      backFallback={paths.home}
       createPath={paths.v1.serviceManager.create}
       createLabel="Novo serviço"
       searchPlaceholder="Buscar por nome, código ou tipo"

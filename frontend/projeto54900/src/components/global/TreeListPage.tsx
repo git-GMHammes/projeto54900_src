@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 
 import ListBuild from '@/components/global/ListBuild';
 import PageHeader from '@/components/global/PageHeader';
+import { useGoBack } from '@/hooks/useGoBack';
 
 type View = 'tree' | 'table';
 
@@ -22,6 +23,8 @@ export interface TreeListPageProps {
   emptyDescription: string;
   /** Conteudo da visao Arvore. */
   tree: ReactNode;
+  /** Caminho de reserva do botao Voltar; sem ele, o botao nao aparece. */
+  backFallback?: string;
 }
 
 export default function TreeListPage({
@@ -34,8 +37,10 @@ export default function TreeListPage({
   emptyTitle,
   emptyDescription,
   tree,
+  backFallback,
 }: TreeListPageProps) {
   const [view, setView] = useState<View>('tree');
+  const goBack = useGoBack(backFallback ?? '/');
 
   const toggle = (
     <div className="btn-group btn-group-sm mb-3" role="group" aria-label="Visão">
@@ -56,6 +61,7 @@ export default function TreeListPage({
         <div className="container pt-3">{toggle}</div>
         <ListBuild
           slug={slug}
+          {...(backFallback !== undefined ? { backFallback } : {})}
           createPath={createPath}
           createLabel={createLabel}
           searchPlaceholder={searchPlaceholder}
@@ -69,6 +75,12 @@ export default function TreeListPage({
   return (
     <div className="container py-3">
       <PageHeader title={title} subtitle={subtitle}>
+        {backFallback !== undefined && (
+          <button type="button" className="btn btn-outline-secondary me-2" onClick={goBack}>
+            <i className="bi bi-arrow-left me-1" aria-hidden="true" />
+            Voltar
+          </button>
+        )}
         <Link className="btn btn-primary" to={createPath}>
           {createLabel}
         </Link>
