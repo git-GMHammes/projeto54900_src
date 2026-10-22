@@ -100,7 +100,8 @@ git push origin main
 
 ### Deploy no servidor (KingHost, via PuTTY)
 ```bash
-cd ~/www/projeto54900 && git pull
+cd ~/www/projeto54900 && git pull origin main
+ 
 ```
 
 ## 8. Credenciais de produção — tentativa `.env` abandonada, solução final: `.htaccess` + `SetEnv`
