@@ -88,7 +88,7 @@ export default function Navbar() {
   if (isAuthenticated) nav = hasMenu ? withoutRootLogin(menu.navbar) : FALLBACK_NAV;
   else if (bootstrapping) nav = FALLBACK_NAV;
   const offcanvas: SiteMenuItem[] = isAuthenticated && hasMenu ? withoutRootLogin(menu.offcanvas) : [];
-  const isAdmin = user?.role?.slug === 'admin';
+  const isAdmin = user?.role?.slug === 'admin' || user?.role?.slug === 'superuser';
   // Contador de nao lidas do modo chat (so com sessao e fora do papel guest). O badge aparece no item
   // "Conversas" (/v1/message-chat) e no pai dele ("Mensagem").
   const unread = useUnreadMessages(isAuthenticated && user?.role?.slug !== 'guest');

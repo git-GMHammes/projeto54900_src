@@ -5,6 +5,7 @@ namespace App\Filters;
 use App\Libraries\Auth\CurrentUser;
 use App\Libraries\Auth\JwtService;
 use App\Libraries\MessageDispatcher;
+use App\Services\V1\Audit\AuditLogService;
 use App\Services\V1\Auth\AuthService;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
@@ -57,6 +58,17 @@ class JwtAuthFilter implements FilterInterface
 
     private function unauthorized(RequestInterface $request, string $message): ResponseInterface
     {
+        // Log de auditoria: token presente e recusado = sessao expirada/encerrada; sem token = acesso negado.
+        $audit = new AuditLogService();
+        if (preg_match('/^Bearer\s+(.+)$/i', trim($request->getHeaderLine('Authorization')), $m)) {
+            $audit->recordEvent('session_expired', $audit->hintFromToken($m[1]) + [
+                'status_code' => 401,
+                'details'     => $message . ' (usuario inferido do token, nao verificado)',
+            ]);
+        } else {
+            $audit->recordEvent('access_denied', ['status_code' => 401, 'details' => $message]);
+        }
+
         /** @var ResponseInterface $response */
         $response = Services::response();
 

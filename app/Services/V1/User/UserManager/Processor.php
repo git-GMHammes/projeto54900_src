@@ -361,6 +361,7 @@ class Processor extends BaseTableService
         return Database::connect(DB_GROUP_001)
             ->table('user_roles')
             ->where('id', $id)
+            ->where('slug !=', 'superuser')
             ->where('deleted_at', null)
             ->countAllResults() > 0;
     }

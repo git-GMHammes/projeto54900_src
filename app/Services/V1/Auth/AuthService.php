@@ -71,7 +71,8 @@ class AuthService
         if ($reason !== null) {
             log_message('warning', "[auth] login falhou ({$reason}) username='{$username}' empresa='" . ($companySlug ?? 'default') . "' ip={$ip}");
 
-            return ['success' => false, 'message' => self::LOGIN_FAIL_MESSAGE, 'code' => 401];
+            // reason/user_id so para o log de auditoria (AuthController); nunca vao para a resposta HTTP.
+            return ['success' => false, 'message' => self::LOGIN_FAIL_MESSAGE, 'code' => 401, 'reason' => $reason, 'user_id' => $user !== null ? (int) $user['id'] : null];
         }
 
         $tokens = $this->issueTokenPair((int) $user['id'], $user['username'], (int) ($user['user_role_id'] ?? 0) ?: null, $ip, $companyId);

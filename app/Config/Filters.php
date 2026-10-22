@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\JwtAuthFilter;
 use App\Filters\AdminOnlyFilter;
+use App\Filters\SuperuserOnlyFilter;
 
 class Filters extends BaseFilters
 {
@@ -39,7 +40,9 @@ class Filters extends BaseFilters
         'jwtauth'       => JwtAuthFilter::class,
         'jwtoptional'   => \App\Filters\JwtOptionalFilter::class,
         'adminonly'     => AdminOnlyFilter::class,
+        'superuseronly' => SuperuserOnlyFilter::class,
         'endpointaccess' => \App\Filters\EndpointAccessFilter::class,
+        'auditlog'      => \App\Filters\AuditFilter::class,
     ];
 
     /**
@@ -147,6 +150,7 @@ class Filters extends BaseFilters
     public array $filters = [
         'jwtauth' => [
             'before' => [
+                'api/v1/audit-logs/*',
                 'api/v1/user-manager-view/*',
                 'api/v1/user-directory-view/*',
                 'api/v1/user-roles/*',
@@ -270,9 +274,27 @@ class Filters extends BaseFilters
                 'api/v1/route-manager/*',
             ],
         ],
+        // Modulo Empresa: exclusivo do perfil superuser (nem admin acessa). Sempre depois de jwtauth.
+        'superuseronly' => [
+            'before' => [
+                'api/v1/company-manager/*',
+                'api/v1/company-manager-view/*',
+                'api/v1/company-members/*',
+                'api/v1/company-members-view/*',
+                'api/v1/company-memberships-view/*',
+                'api/v1/company-users-companies-view/*',
+            ],
+        ],
         'adminonly' => [
             'before' => [
                 'api/v1/user-manager-view/*',
+                'api/v1/audit-logs/*',
+            ],
+        ],
+        // Log de auditoria: grava uma linha por chamada de api/v1/* depois da resposta (Config/AuditLog.php).
+        'auditlog' => [
+            'after' => [
+                'api/v1/*',
             ],
         ],
         // SEMPRE depois de jwtauth. Regras em Config/EndpointAccess.php; sem regra = livre.

@@ -7,6 +7,7 @@ use App\Libraries\Auth\CurrentUser;
 use App\Requests\V1\Auth\ChangePasswordRequest;
 use App\Requests\V1\Auth\LoginRequest;
 use App\Requests\V1\Auth\RefreshRequest;
+use App\Services\V1\Audit\AuditLogService;
 use App\Services\V1\Auth\AuthService;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -28,6 +29,7 @@ use Psr\Log\LoggerInterface;
 class AuthController extends BaseResourceViewController
 {
     private AuthService $service;
+    private AuditLogService $audit;
 
     public function initController(
         RequestInterface $request,
@@ -36,6 +38,7 @@ class AuthController extends BaseResourceViewController
     ): void {
         parent::initController($request, $response, $logger);
         $this->service = new AuthService();
+        $this->audit   = new AuditLogService();
     }
 
     /**
@@ -47,12 +50,18 @@ class AuthController extends BaseResourceViewController
         $ip = $this->request->getIPAddress();
 
         // md5: IPv6 tem ':' (caractere reservado na chave do cache) e gerava 500
+        $username = (string) ($this->getRequestBody()['username'] ?? '');
+
         if (!service('throttler')->check('auth_login_' . md5($ip), 5, 60)) {
+            $this->audit->recordEvent('login_fail', ['login' => $username, 'status_code' => 429, 'details' => 'limite de tentativas por IP (429)']);
+
             return $this->respondError('Muitas tentativas de login. Aguarde um minuto e tente novamente.', 429);
         }
 
         $rules = new LoginRequest();
         if (!$this->validate($rules->rules(), $rules->messages())) {
+            $this->audit->recordEvent('login_fail', ['login' => $username, 'status_code' => 422, 'details' => 'dados de login invalidos (validacao)']);
+
             return $this->respondValidationError($this->validator->getErrors());
         }
 
@@ -65,8 +74,23 @@ class AuthController extends BaseResourceViewController
         );
 
         if (!$result['success']) {
+            $this->audit->recordEvent('login_fail', [
+                'user_id'     => $result['user_id'] ?? null,
+                'login'       => $username,
+                'company_slug' => $body['company_slug'] ?? null,
+                'status_code' => $result['code'] ?? 401,
+                'details'     => $result['reason'] ?? $result['message'],
+            ]);
+
             return $this->respondError($result['message'], $result['code'] ?? 401);
         }
+
+        $this->audit->recordEvent('login_ok', [
+            'user_id'      => $result['data']['user']['id'] ?? null,
+            'login'        => $username,
+            'company_slug' => $result['data']['company_slug'] ?? null,
+            'status_code'  => 200,
+        ]);
 
         return $this->respondSuccess($result['data'], 'Login realizado com sucesso');
     }
@@ -85,8 +109,21 @@ class AuthController extends BaseResourceViewController
         $result = $this->service->refresh((string) $body['refresh_token'], $this->request->getIPAddress());
 
         if (!$result['success']) {
+            // Refresh recusado = sessao que nao se renova (vencida, revogada ou ja trocada).
+            $hint = $this->audit->hintFromToken((string) $body['refresh_token']);
+            $this->audit->recordEvent('session_expired', $hint + [
+                'status_code' => $result['code'] ?? 401,
+                'details'     => $result['message'] . ' (usuario inferido do token, nao verificado)',
+            ]);
+
             return $this->respondError($result['message'], $result['code'] ?? 401);
         }
+
+        $this->audit->recordEvent('token_refresh', [
+            'user_id'      => $result['data']['user']['id'] ?? null,
+            'company_slug' => $result['data']['user']['company_slug'] ?? null,
+            'status_code'  => 200,
+        ]);
 
         return $this->respondSuccess($result['data'], 'Token renovado com sucesso');
     }
@@ -115,6 +152,12 @@ class AuthController extends BaseResourceViewController
         } else {
             log_message('info', "[auth] logout sem sessao ativa identificada ip={$ip}");
         }
+
+        $this->audit->recordEvent('logout', [
+            'user_id'     => $userId,
+            'status_code' => 200,
+            'details'     => $userId === null ? 'sem sessao ativa identificada' : null,
+        ]);
 
         return $this->respondSuccess(null, 'Logout realizado com sucesso');
     }
@@ -187,6 +230,11 @@ class AuthController extends BaseResourceViewController
         if (!$result['success']) {
             return $this->respondError($result['message'], $result['code'] ?? 404);
         }
+
+        $this->audit->recordEvent('block', [
+            'status_code' => 200,
+            'details'     => 'auto-bloqueio (tentativas repetidas de acesso negado)',
+        ]);
 
         return $this->respondSuccess(null, 'Conta bloqueada');
     }

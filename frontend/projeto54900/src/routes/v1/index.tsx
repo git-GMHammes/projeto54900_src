@@ -86,6 +86,7 @@ import { locationRoutes } from './location.routes';
 import { movementRoutes } from './movement.routes';
 import { productRoutes } from './product.routes';
 import { serviceRoutes } from './service.routes';
+import { auditRoutes } from './audit.routes';
 
 /**
  * =========================================================================
@@ -146,6 +147,7 @@ export const v1Routes: RouteObject = {
         ...productRoutes,
         ...movementRoutes,
         ...serviceRoutes,
+        ...auditRoutes,
       ],
     },
   ],

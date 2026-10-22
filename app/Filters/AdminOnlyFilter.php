@@ -3,6 +3,7 @@
 namespace App\Filters;
 
 use App\Libraries\Auth\CurrentUser;
+use App\Services\V1\Audit\AuditLogService;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -20,6 +21,8 @@ class AdminOnlyFilter implements FilterInterface
     public function before(RequestInterface $request, $arguments = null)
     {
         if (!CurrentUser::isAdmin()) {
+            (new AuditLogService())->recordEvent('access_denied', ['status_code' => 403, 'details' => 'Acesso restrito ao perfil administrador.']);
+
             /** @var ResponseInterface $response */
             $response = Services::response();
 

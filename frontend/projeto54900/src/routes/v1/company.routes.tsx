@@ -1,6 +1,6 @@
 // Rotas do modulo Company (cadastro de empresas). Montadas em routes/v1/index.tsx
 // (filhas do layout protegido, sem barra inicial). Espelha api/v1/company-manager (+ -view).
-// Telas administrativas: so papel `admin` (RequireRole); o backend tambem restringe a escrita.
+// Telas administrativas: so papel `superuser` (RequireRole; nem admin acessa); o backend tambem restringe a escrita.
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
@@ -16,7 +16,7 @@ const UsersGetAllPage = lazy(() => import('@/pages/v1/company/company-users/GetA
 
 export const companyRoutes: RouteObject[] = [
   {
-    element: <RequireRole role="admin" />,
+    element: <RequireRole role="superuser" />,
     children: [
       { path: 'company-manager', element: <CompanyManagerGetAllPage /> },
       { path: 'company-manager/create', element: <CompanyManagerCreatePage /> },

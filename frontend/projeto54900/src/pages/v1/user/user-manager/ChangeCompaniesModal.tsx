@@ -23,7 +23,7 @@ import { parseStringList } from '@/utils/jsonList';
 import { toText } from '@/utils/format';
 import { env } from '@/config/env';
 
-const COMPANIES_SRC = `${env.apiBaseUrl}/v1/company-manager/get-no-pagination`;
+const COMPANIES_SRC = `${env.apiBaseUrl}/v1/company-manager-public/get-no-pagination`;
 
 /** company_ids chega do banco como JSON de numeros ("[1, 2]"); a UI trabalha com strings. */
 function parseCompanyIds(raw: unknown): string[] {

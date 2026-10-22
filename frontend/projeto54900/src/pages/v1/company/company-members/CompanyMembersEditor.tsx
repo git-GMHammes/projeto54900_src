@@ -84,7 +84,7 @@ export interface CompanyMembersEditorProps {
 export default function CompanyMembersEditor({ companyId, onCompanyChange, companiesVersion = 0, onSaved }: CompanyMembersEditorProps) {
   const toast = useToast();
   const { user: me } = useAuth();
-  const canEdit = me?.role?.slug === 'admin';
+  const canEdit = me?.role?.slug === 'superuser';
 
   // --- Card 1: usuarios ---
   const [users, setUsers] = useState<UserRow[]>([]);

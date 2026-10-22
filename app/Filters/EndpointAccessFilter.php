@@ -3,6 +3,7 @@
 namespace App\Filters;
 
 use App\Libraries\Auth\CurrentUser;
+use App\Services\V1\Audit\AuditLogService;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -32,7 +33,7 @@ class EndpointAccessFilter implements FilterInterface
                 return $this->deny($request, 401, 'Sessao nao identificada.');
             }
 
-            if ($role === 'admin' || in_array($role, $roles, true)) {
+            if ($role === 'admin' || $role === 'superuser' || in_array($role, $roles, true)) {
                 return $request;
             }
 
@@ -49,6 +50,8 @@ class EndpointAccessFilter implements FilterInterface
 
     private function deny(RequestInterface $request, int $status, string $message): ResponseInterface
     {
+        (new AuditLogService())->recordEvent('access_denied', ['status_code' => $status, 'details' => $message]);
+
         /** @var ResponseInterface $response */
         $response = Services::response();
 

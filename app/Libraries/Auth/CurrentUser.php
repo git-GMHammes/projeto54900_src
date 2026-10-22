@@ -48,8 +48,19 @@ class CurrentUser
         return $cid !== null ? (int) $cid : null;
     }
 
+    /**
+     * Perfil acima de admin: nao aparece em controle de perfil e e o unico com acesso ao modulo Empresa.
+     */
+    public static function isSuperuser(): bool
+    {
+        return self::roleSlug() === 'superuser';
+    }
+
+    /**
+     * superuser esta acima de admin, entao passa em toda checagem de admin.
+     */
     public static function isAdmin(): bool
     {
-        return self::roleSlug() === 'admin';
+        return self::roleSlug() === 'admin' || self::isSuperuser();
     }
 }

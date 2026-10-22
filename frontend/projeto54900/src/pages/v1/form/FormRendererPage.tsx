@@ -115,7 +115,7 @@ export default function FormRendererPage() {
     [form, toast],
   );
 
-  if (ADMIN_ONLY_SLUGS.includes(slug) && user?.role?.slug !== 'admin') {
+  if (ADMIN_ONLY_SLUGS.includes(slug) && user?.role?.slug !== 'admin' && user?.role?.slug !== 'superuser') {
     return <Navigate to={paths.forbidden} replace />;
   }
 

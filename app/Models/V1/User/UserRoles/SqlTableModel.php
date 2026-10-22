@@ -59,6 +59,15 @@ class SqlTableModel extends BaseTableModel
         'description',
     ];
 
+    /** Slug do perfil acima de admin: nunca aparece em controle de perfil. */
+    public const SUPERUSER_SLUG = 'superuser';
+
+    /** Toda leitura por esta Model oculta o perfil superuser. */
+    protected function scopedTable(): object
+    {
+        return parent::scopedTable()->where('slug !=', self::SUPERUSER_SLUG);
+    }
+
     /**
      * Alias semantico sobre existsByField para a coluna slug.
      *

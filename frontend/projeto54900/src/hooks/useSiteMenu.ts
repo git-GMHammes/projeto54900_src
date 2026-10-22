@@ -68,6 +68,7 @@ function toLink(item: MenuManagerItem): SiteMenuLink | null {
 /** roles null = liberado para qualquer autenticado; senao, precisa do slug do usuario na lista. */
 export function isRoleAllowed(roles: string[] | null, roleSlug: string | null): boolean {
   if (roles === null) return true;
+  if (roleSlug === 'superuser') return true; // acima de admin: ve tudo que algum perfil ve
   return roleSlug !== null && roles.includes(roleSlug);
 }
 

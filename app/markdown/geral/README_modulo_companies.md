@@ -170,3 +170,11 @@ Lacunas do esquema (o sistema já tem, o desenho não mostrava) — **corrigidas
 | **Local**           | Rio de Janeiro                                                                                                               |
 | **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
+
+## Acesso exclusivo do perfil superuser (2026-10-22)
+
+- O modulo Empresa (`company-manager`, `company-members`, `company-memberships-view`, `company-users-companies-view`) e exclusivo do perfil `superuser`. Nem `admin` acessa.
+- Backend: filtro `superuseronly` (`App\Filters\SuperuserOnlyFilter`) por wildcard em `Config/Filters.php`, depois de `jwtauth`. `company-manager-public` (select do cadastro de usuario) continua sem esse filtro.
+- `superuser` esta acima de admin: `CurrentUser::isAdmin()` tambem retorna true para ele; `EndpointAccessFilter` e `UserResourceAccess` o liberam sempre.
+- Invisivel em controle de perfil: `user_roles` (`SqlTableModel::scopedTable`) oculta o slug em toda leitura; criar/editar perfil com esse slug retorna 422; `user_role_id` do usuario nao aceita o perfil. A atribuicao a um usuario e feita direto no banco.
+- Menu e telas: `menu_manager`, `list_manager` e `resource_access` do modulo carregam `["superuser"]`; rotas React usam `RequireRole role="superuser"`.

@@ -54,7 +54,7 @@ class Processor extends BaseTableService
 
         $id = (int) $resource['id'];
 
-        if ($roleSlug === 'admin') {
+        if ($roleSlug === 'admin' || $roleSlug === 'superuser') {
             return ['allowed' => true, 'source' => 'admin', 'resource_id' => $id];
         }
 

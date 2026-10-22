@@ -13,7 +13,8 @@ import { paths } from '@/routes/paths';
 export default function RequireRole({ role }: { role: string }) {
   const { user } = useAuth();
 
-  if (user?.role?.slug !== role) return <Navigate to={paths.forbidden} replace />;
+  // superuser esta acima de admin: passa em qualquer guard (Empresa exige superuser, ele proprio).
+  if (user?.role?.slug !== role && user?.role?.slug !== 'superuser') return <Navigate to={paths.forbidden} replace />;
 
   return <Outlet />;
 }

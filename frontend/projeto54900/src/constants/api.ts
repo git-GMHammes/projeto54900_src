@@ -145,6 +145,8 @@ export const API_GROUPS = {
   mapLinksView: 'map-links-view',
   mapGeo: 'map-geo',
   dbSchema: 'db-schema',
+  // Audit — log de auditoria e acesso (api/v1/audit-logs; so admin)
+  auditLogs: 'audit-logs',
 } as const;
 export type ApiGroup = (typeof API_GROUPS)[keyof typeof API_GROUPS];
 

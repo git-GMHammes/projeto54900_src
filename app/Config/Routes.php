@@ -20,6 +20,15 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Audit — Consulta do log de auditoria e acesso (somente admin, via wildcard
+    //          jwtauth + adminonly em Config/Filters.php)
+    // =========================================================================
+
+    $routes->group('audit-logs', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Audit/EndpointAuditLogs.php';
+    });
+
+    // =========================================================================
     // /User — Módulo de usuários
     // =========================================================================
 

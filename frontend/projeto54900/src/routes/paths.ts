@@ -280,6 +280,8 @@ export const paths = {
     // CompanyMembers / CompanyUsers — listas de membros por empresa e de empresas por usuario (so leitura; so admin)
     companyMembers: { list: '/v1/company-members', update: (id: RouteId) => `/v1/company-members/update/${id}` },
     companyUsers: { list: '/v1/company-users' },
+    // Audit — log de auditoria e acesso (so leitura; so admin)
+    auditLogs: { list: '/v1/audit-logs' },
     // UserResourceAccess — permissao individual de usuario a form/list (so admin). `create` aceita ?user_manager_id=
     userResourceAccess: {
       list: '/v1/user-resource-access',

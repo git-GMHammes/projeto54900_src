@@ -36,6 +36,10 @@ class Processor extends BaseTableService
 
     protected function validateOnCreate(array $data): ?array
     {
+        if (strtolower(trim((string) ($data['slug'] ?? ''))) === SqlTableModel::SUPERUSER_SLUG) {
+            return ['success' => false, 'message' => 'slug reservado', 'code' => 422];
+        }
+
         if (!empty($data['slug']) && $this->tableModel->existsBySlug((string) $data['slug'])) {
             return ['success' => false, 'message' => 'slug ja utilizado por outro perfil', 'code' => 409];
         }
@@ -45,6 +49,10 @@ class Processor extends BaseTableService
 
     protected function validateOnUpdate(int $id, array $data): ?array
     {
+        if (strtolower(trim((string) ($data['slug'] ?? ''))) === SqlTableModel::SUPERUSER_SLUG) {
+            return ['success' => false, 'message' => 'slug reservado', 'code' => 422];
+        }
+
         if (!empty($data['slug']) && $this->tableModel->existsBySlug((string) $data['slug'], $id)) {
             return ['success' => false, 'message' => 'slug ja utilizado por outro perfil', 'code' => 409];
         }
