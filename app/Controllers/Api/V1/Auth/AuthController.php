@@ -46,7 +46,8 @@ class AuthController extends BaseResourceViewController
     {
         $ip = $this->request->getIPAddress();
 
-        if (!service('throttler')->check('auth_login_' . $ip, 5, 60)) {
+        // md5: IPv6 tem ':' (caractere reservado na chave do cache) e gerava 500
+        if (!service('throttler')->check('auth_login_' . md5($ip), 5, 60)) {
             return $this->respondError('Muitas tentativas de login. Aguarde um minuto e tente novamente.', 429);
         }
 
