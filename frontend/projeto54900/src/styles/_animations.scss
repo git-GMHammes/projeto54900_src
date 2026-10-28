@@ -1,0 +1,213 @@
+// Animacoes do Template001 (pages/Template001/Template001Page.tsx).
+// O Bootstrap nao traz animacoes de entrada, cascata, revelacao ao rolar nem
+// sublinhado que cresce; por isso este arquivo existe. Tudo escopado em
+// .template001, .template002 e .template003, com prefixo tpl-, e desligado em prefers-reduced-motion.
+// Importado por styles/index.scss, depois do custom.
+
+@keyframes tpl-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tpl-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tpl-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:is(.template001, .template002, .template003) {
+  // Entrada do cabecalho (desliza de cima) e fade da imagem de fundo.
+  .tpl-enter-down {
+    animation: tpl-slide-down 0.6s ease-out both;
+  }
+
+  .tpl-fade-in {
+    animation: tpl-fade-in 0.9s ease-out both;
+  }
+
+  // Regiao com borda: transicao das cores (troca de paleta), do padding (nav
+  // que encolhe ao rolar) e sombra que aprofunda no hover (efeito 3D).
+  .tpl-region {
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease,
+      border-color 0.4s ease,
+      padding 0.25s ease,
+      filter 0.25s ease;
+
+    &:hover {
+      filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.2));
+    }
+
+    &.tpl-scrolled {
+      filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.3));
+    }
+  }
+
+  // Links do nav: sublinhado cresce do centro.
+  .tpl-nav-link {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0.25rem;
+      width: calc(100% - 1rem);
+      height: 2px;
+      background: currentcolor;
+      transform: translateX(-50%) scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    &:hover::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  // Links do nav: surgem em cascata depois da entrada do cabecalho (0,3 s de
+  // inicio, 0,04 s entre um e outro, ate 30 itens). So a partir de lg: abaixo
+  // disso os links ficam dentro da sanfona.
+  @media (min-width: 992px) {
+    .tpl-nav-item {
+      animation: tpl-fade-up 0.4s ease-out both;
+    }
+
+    @for $i from 1 through 30 {
+      .tpl-nav-item:nth-child(#{$i}) {
+        animation-delay: #{0.3 + $i * 0.04}s;
+      }
+    }
+  }
+
+  // Itens do menu lateral: surgem em cascata (ate 30 itens) e, no hover, o fundo
+  // preenche da esquerda.
+  .tpl-menu-item {
+    animation: tpl-fade-up 0.4s ease-out both;
+  }
+
+  @for $i from 1 through 30 {
+    .tpl-menu-item:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.04}s;
+    }
+  }
+
+  .tpl-menu-link {
+    background-image: linear-gradient(
+      color-mix(in srgb, currentcolor 18%, transparent),
+      color-mix(in srgb, currentcolor 18%, transparent)
+    );
+    background-repeat: no-repeat;
+    background-size: 0 100%;
+    transition: background-size 0.3s ease;
+
+    &:hover {
+      background-size: 100% 100%;
+    }
+  }
+
+  // Revelacao ao rolar: o hook useReveal adiciona .tpl-in quando o bloco entra na
+  // tela. .tpl-reveal anima o proprio elemento; .tpl-reveal-group anima os filhos
+  // em sequencia (rodape).
+  .tpl-reveal,
+  .tpl-reveal-group > * {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .tpl-reveal.tpl-in,
+  .tpl-reveal-group.tpl-in > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  @for $i from 1 through 8 {
+    .tpl-reveal-group > *:nth-child(#{$i}) {
+      transition-delay: #{($i - 1) * 0.12}s;
+    }
+  }
+
+  // Fechar regiao pelo X: a altura encolhe (grid 1fr -> 0fr) e some; as regioes
+  // abaixo sobem junto. overflow so durante o fechamento, para nao cortar a
+  // sombra 3D no estado normal.
+  .tpl-collapsible {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition:
+      grid-template-rows 0.35s ease,
+      opacity 0.35s ease;
+
+    > .tpl-collapsible-inner {
+      min-height: 0;
+    }
+
+    &.tpl-closing {
+      grid-template-rows: 0fr;
+      opacity: 0;
+
+      > .tpl-collapsible-inner {
+        overflow: hidden;
+      }
+    }
+  }
+
+  // Menu lateral fechado: so desvanece (largura de coluna nao anima).
+  .tpl-fade-out {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+}
+
+// Template002 e Template003 (sem bordas): fundo em degradê vertical que se mistura com as regioes
+// vizinhas (variaveis --tpl-blend-* de config/theme.ts) e hover que so clareia,
+// pois nao ha borda 3D para aprofundar.
+.template002,
+.template003 {
+  .tpl-blend {
+    background-image: linear-gradient(180deg, var(--tpl-blend-from), var(--tpl-blend-to));
+  }
+
+  .tpl-region:hover:not(.tpl-scrolled) {
+    filter: brightness(1.04);
+  }
+}
+
+// Menos movimento: sem animacao nem transicao; os blocos de revelacao ficam visiveis.
+@media (prefers-reduced-motion: reduce) {
+  :is(.template001, .template002, .template003),
+  :is(.template001, .template002, .template003) *,
+  :is(.template001, .template002, .template003) *::before,
+  :is(.template001, .template002, .template003) *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  :is(.template001, .template002, .template003) .tpl-reveal,
+  :is(.template001, .template002, .template003) .tpl-reveal-group > * {
+    opacity: 1;
+    transform: none;
+  }
+}

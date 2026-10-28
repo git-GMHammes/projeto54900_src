@@ -51,9 +51,16 @@ const ChatRoomFullPage = lazy(() => import('@/pages/v1/chat-rooms/chat-rooms-man
 
 import { v1Routes } from '@/routes/v1';
 import { v1aRoutes } from '@/routes/v1a';
+import { template001Routes } from '@/routes/template001.routes';
+import { template002Routes } from '@/routes/template002.routes';
+import { template003Routes } from '@/routes/template003.routes';
 
 export const router = createBrowserRouter(
   [
+    // Template001, Template002 e Template003: layout próprio (sem navbar/rodapé do RootLayout), públicos.
+    ...template001Routes,
+    ...template002Routes,
+    ...template003Routes,
     {
       path: '/v1/chat-rooms-manager/chat/:id',
       element: <RequireAuth />,

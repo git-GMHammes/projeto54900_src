@@ -197,3 +197,44 @@ dl .text-break {
     transform: translateX(-100vw);
   }
 }
+
+// Template001 (pages/Template001/Template001Page.tsx): o Bootstrap não escala a
+// fonte base por breakpoint. Em TV/monitor grande o rem cresce para toda a
+// interface (baseada em rem) acompanhar; escopo restrito às páginas com .template001, .template002 ou .template003.
+@media (min-width: 1920px) {
+  html:has(:is(.template001, .template002, .template003)) {
+    font-size: 125%;
+  }
+}
+
+@media (min-width: 2560px) {
+  html:has(:is(.template001, .template002, .template003)) {
+    font-size: 175%;
+  }
+}
+
+@media (min-width: 3840px) {
+  html:has(:is(.template001, .template002, .template003)) {
+    font-size: 250%;
+  }
+}
+
+// Template001: barra fixa (nav + botão Menu) só abaixo de lg. O Bootstrap tem
+// sticky-top e sticky-{bp}-top (de bp para cima), mas não "sticky só no celular".
+@media (min-width: 992px) {
+  .template001 .template001-sticky,
+  .template002 .template002-sticky,
+  .template003 .template003-sticky {
+    position: static;
+    background-color: transparent !important;
+  }
+}
+
+// Template001: degradê de fundo da página, com as cores da paleta ativa
+// (variáveis --tpl-* vindas de config/theme.ts). O Bootstrap só tem
+// .bg-gradient (sobreposição sutil), não um degradê com cores próprias.
+:is(.template001, .template002, .template003) {
+  background-image: linear-gradient(var(--tpl-bg-angle), var(--tpl-bg-from), var(--tpl-bg-to));
+  background-attachment: fixed;
+  color: var(--bs-body-color);
+}

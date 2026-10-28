@@ -70,6 +70,13 @@ cada resumo termina com o link para o conteúdo completo.
 | 24  | [`sessao`](#sessao)           | Sessão única entre abas, janelas     |
 | 25  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice |
 
+**7. Template e temas**
+
+| #   | Palavra-chave             | Assunto (5 palavras)                |
+| --- | ------------------------- | ----------------------------------- |
+| 26  | [`template`](#template)   | Modelo Template001 para empresas futuras |
+| 27  | [`temas`](#temas)         | Paletas JSON de cores selecionáveis |
+
 ---
 
 ## Resumos
@@ -446,6 +453,26 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 
 [`geral/README_atualiza_readme.md`](geral/README_atualiza_readme.md) — atualização desta base de conhecimento.
 
+### `template`
+
+Template001: página estática que serve de modelo para o template de cada empresa.
+Conteúdo em JSON de arrays, cinco regiões (cabeçalho, nav, menu lateral, conteúdo,
+rodapé) em Bootstrap, responsivo do celular à TV, ocupando a tela toda, com X para
+ocultar regiões e botões de nav e menu no celular. Traz o mapa de arquivos, o
+histórico dos pedidos e o passo a passo para criar o template de uma empresa.
+Inclui o Template002, variante sem bordas com degradê entre os componentes.
+
+[`geral/README_template001_modelo.md`](geral/README_template001_modelo.md) — modelo Template001 para templates por empresa.
+
+### `temas`
+
+Paletas de cores em JSON (`src/config/themes/`), escolhidas por `env.theme`
+(`VITE_THEME`). Todos os JSONs têm as mesmas 24 chaves: degradê da página, 3D das
+bordas e fundo, borda e letra de cada região. `_white` é suave, `_dark` é intenso;
+um JSON novo na pasta funciona sem alterar código. Inclui o critério de contraste.
+
+[`geral/README_temas_paleta.md`](geral/README_temas_paleta.md) — contrato e lista das paletas de cores.
+
 ---
 
 ## Conteúdo
@@ -473,6 +500,8 @@ próprio resumo. Todo markdown da base começa e termina com um link para este
 - [`README_rotas_frontend.md`](geral/README_rotas_frontend.md) — mapa de todas as rotas React do frontend, espelhando o `README_rotas_swagger.md` do backend.
 - [`README_rota_empresa_slug.md`](geral/README_rota_empresa_slug.md) — rota multiempresa com slug da empresa na URL.
 - [`README_sessao_entre_abas.md`](geral/README_sessao_entre_abas.md) — sessão compartilhada entre abas e janelas: adoção da sessão, aviso de renovação, logout propagado e portão de sessão.
+- [`README_temas_paleta.md`](geral/README_temas_paleta.md) — paletas de cores em JSON: contrato das 24 chaves, lista das paletas, critério de contraste e como adicionar uma.
+- [`README_template001_modelo.md`](geral/README_template001_modelo.md) — Template001 como modelo para o template de cada empresa: JSON de conteúdo, regiões, responsividade, temas, X de fechar, histórico dos pedidos e passo a passo.
 
 ### `geral/modulos/`
 

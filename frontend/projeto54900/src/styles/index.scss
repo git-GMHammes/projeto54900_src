@@ -1,6 +1,7 @@
 // Ponto de entrada do SCSS da aplicacao.
-// Ordem obrigatoria: overrides -> Bootstrap completo -> custom.
+// Ordem obrigatoria: overrides -> Bootstrap completo -> custom -> animations.
 
 @import "variables";
 @import "bootstrap/scss/bootstrap";
 @import "custom";
+@import "animations";

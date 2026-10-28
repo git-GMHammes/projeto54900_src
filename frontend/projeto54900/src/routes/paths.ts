@@ -9,6 +9,12 @@ export const paths = {
   // Pagina dedicada de Acesso Negado (RequireRole redireciona pra ca) — sem
   // nenhum controle funcional, so aviso + link pra Home.
   forbidden: '/acesso-negado',
+  // Template001 — layout estático (cabeçalho, nav, menu, conteúdo, rodapé) lido de JSON; sem API
+  template001: '/template001',
+  // Template002 — variante sem bordas do Template001 (degradê entre componentes); sem API
+  template002: '/template002',
+  // Template003 — variante do 002 sem menu lateral fixo (menu em Offcanvas); sem API
+  template003: '/template003',
 
   v1: {
     auth: {

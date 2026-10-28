@@ -1,0 +1,377 @@
+{
+  "template": {
+    "id": "template_003",
+    "source": "doc/drawio_svg/template_001.drawio"
+  },
+  "header": {
+    "background_image": [
+      {
+        "id": 1,
+        "url": "img/template003/header_background.svg",
+        "alt": "Imagem de fundo do cabeçalho"
+      }
+    ],
+    "logo": [
+      {
+        "id": 1,
+        "position": "center",
+        "text": "LOGOMARCA",
+        "image_url": "",
+        "alt": "Logomarca da empresa"
+      }
+    ],
+    "company_name": [
+      {
+        "id": 1,
+        "text": "NOME SOCIAL DA EMPRESA"
+      }
+    ]
+  },
+  "nav": [
+    {
+      "id": 1,
+      "order": 1,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 2,
+      "order": 2,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 3,
+      "order": 3,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 4,
+      "order": 4,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 5,
+      "order": 5,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 6,
+      "order": 6,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 7,
+      "order": 7,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 8,
+      "order": 8,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 9,
+      "order": 9,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 10,
+      "order": 10,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 11,
+      "order": 11,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 12,
+      "order": 12,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 13,
+      "order": 13,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 14,
+      "order": 14,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 15,
+      "order": 15,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 16,
+      "order": 16,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 17,
+      "order": 17,
+      "label": "NAV",
+      "url": "#",
+      "type": "link"
+    },
+    {
+      "id": 20,
+      "order": 20,
+      "label": "USUARIO",
+      "url": "#",
+      "type": "user"
+    },
+    {
+      "id": 21,
+      "order": 21,
+      "label": "SAIR",
+      "url": "#",
+      "type": "logout"
+    }
+  ],
+  "menu": [
+    {
+      "id": 1,
+      "order": 1,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 2,
+      "order": 2,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 3,
+      "order": 3,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 4,
+      "order": 4,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 5,
+      "order": 5,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 6,
+      "order": 6,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 7,
+      "order": 7,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 8,
+      "order": 8,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 9,
+      "order": 9,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 10,
+      "order": 10,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 11,
+      "order": 11,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 12,
+      "order": 12,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 13,
+      "order": 13,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 14,
+      "order": 14,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 15,
+      "order": 15,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 16,
+      "order": 16,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 17,
+      "order": 17,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 18,
+      "order": 18,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 19,
+      "order": 19,
+      "label": "MENU",
+      "url": "#"
+    },
+    {
+      "id": 20,
+      "order": 20,
+      "label": "MENU",
+      "url": "#"
+    }
+  ],
+  "content_headings": [
+    {
+      "id": 1,
+      "order": 1,
+      "row": 1,
+      "column": 1,
+      "columns_in_row": 1,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 2,
+      "order": 2,
+      "row": 2,
+      "column": 1,
+      "columns_in_row": 1,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 3,
+      "order": 3,
+      "row": 3,
+      "column": 1,
+      "columns_in_row": 1,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 4,
+      "order": 4,
+      "row": 4,
+      "column": 1,
+      "columns_in_row": 2,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 5,
+      "order": 5,
+      "row": 4,
+      "column": 2,
+      "columns_in_row": 2,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 6,
+      "order": 6,
+      "row": 5,
+      "column": 1,
+      "columns_in_row": 1,
+      "title": "Heading",
+      "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    }
+  ],
+  "footer": {
+    "footer_headings": [
+      {
+        "id": 1,
+        "order": 1,
+        "column": 1,
+        "title": "Heading",
+        "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      },
+      {
+        "id": 2,
+        "order": 3,
+        "column": 3,
+        "title": "Heading",
+        "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      },
+      {
+        "id": 3,
+        "order": 4,
+        "column": 4,
+        "title": "Heading",
+        "text": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      }
+    ],
+    "footer_images": [
+      {
+        "id": 1,
+        "order": 2,
+        "column": 2,
+        "url": "img/template003/footer_detail.png",
+        "alt": "Imagem do rodapé"
+      }
+    ]
+  }
+}

@@ -140,6 +140,8 @@ export interface AppEnv {
   readonly apiVersion: string;
   /** Endpoint do WebSocket (Node). */
   readonly wsUrl: string;
+  /** Paleta de cores ativa: nome do JSON em config/themes (sem ".json"), ex.: "Blue_white". */
+  readonly theme: string;
   readonly isDev: boolean;
   readonly isProd: boolean;
 }
@@ -161,7 +163,9 @@ export interface AppEnv {
  * qualquer host/pasta, desde que o app esteja numa pasta "app" ao lado de "api")
  * apiVersion    VITE_API_VERSION      v1
  * wsUrl         VITE_WS_URL           /ws
- * isDev         nativo do Vite        import.meta.env.DEV
+ * theme         VITE_THEME            Blue_white (nome de um JSON de config/themes;
+ *                                     nome inexistente cai no default — ver config/theme.ts)
+ * isDev        nativo do Vite        import.meta.env.DEV
  * isProd        nativo do Vite        import.meta.env.PROD
  *
  * POR QUE Object.freeze: ambiente nao muda em tempo de execucao. Congelar
@@ -181,6 +185,18 @@ export const env: AppEnv = Object.freeze({
   ),
   apiVersion: import.meta.env.VITE_API_VERSION || 'v1',
   wsUrl: import.meta.env.VITE_WS_URL || '/ws',
+  // theme: import.meta.env.VITE_THEME || 'CopaDoMundo',
+  // theme: import.meta.env.VITE_THEME || 'Blue_dark',
+  // theme: import.meta.env.VITE_THEME || 'Blue_white',
+  // theme: import.meta.env.VITE_THEME || 'CopaDoMundo',
+  // theme: import.meta.env.VITE_THEME || 'Dark',
+  // theme: import.meta.env.VITE_THEME || 'Green_dark',
+  // theme: import.meta.env.VITE_THEME || 'Green_white',
+  // theme: import.meta.env.VITE_THEME || 'Natal',
+  // theme: import.meta.env.VITE_THEME || 'Pink_dark',
+  // theme: import.meta.env.VITE_THEME || 'Pink_white',
+  theme: import.meta.env.VITE_THEME || 'Purple_dark',
+  // theme: import.meta.env.VITE_THEME || 'Purple_white',
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
 });
