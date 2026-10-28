@@ -39,7 +39,7 @@ Casos existentes:
 | Tabela        | Coluna  | Tipo SQL         | Módulo/UI                                                |
 | ------------- | ------- | ---------------- | --------------------------------------------------------- |
 | `form_manager`| `roles` | `VARCHAR(255)`   | [`FormBuilderPage`](README_form_builder.md) (`/v1/form-constructor`) |
-| `menu_manager`| `roles` | `JSON`           | Backend e frontend prontos (`api/v1/menu-manager`) — ver [`README_menu.md`](README_menu.md) |
+| `temp_menu`| `roles` | `JSON`           | Backend e frontend prontos (`api/v1/temp-menu`) — ver [`README_menu.md`](README_menu.md) |
 
 Novo módulo que precisar disso: reaproveitar o nome `roles` e o mecanismo
 abaixo, não inventar um nome novo.

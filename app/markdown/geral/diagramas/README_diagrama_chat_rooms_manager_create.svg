@@ -48,7 +48,7 @@
 <text x="292" y="645" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</text>
 <rect x="282" y="665" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="685" font-size="10.5" fill="#475569" font-weight="700">item de menu da tela (vem do banco)</text>
-<text x="292" y="705" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/hooks/useSiteMenu.ts  ·  menu_manager  -&gt;  item &quot;ChatRoomsManager&quot; = /v1/chat-rooms-manager</text>
+<text x="292" y="705" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/hooks/useSiteMenu.ts  ·  temp_menu  -&gt;  item &quot;ChatRoomsManager&quot; = /v1/chat-rooms-manager</text>
 <line x1="955" y1="733" x2="955" y2="765" stroke="#94a3b8" stroke-width="2" marker-end="url(#arwd)"/>
 <text x="969" y="755" font-size="11.5" fill="#475569">importa a pagina por lazy import</text>
 <rect x="40" y="769" width="210" height="247" rx="8" fill="#4338ca"/>
@@ -137,7 +137,7 @@
 <rect x="282" y="2055" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="2075" font-size="10.5" fill="#475569" font-weight="700">grupos do modulo (app/Config/Routes.php)</text>
 <text x="292" y="2095" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">api/v1/chat-rooms-manager  ·  api/v1/chat-rooms-manager-view  ·  api/v1/form-manager-view  ·  api/v1/form-manager</text>
-<text x="292" y="2112" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">api/v1/nav-manager  ·  api/v1/menu-manager  ·  api/v1/route-manager  ·  api/v1/user-roles</text>
+<text x="292" y="2112" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">api/v1/temp-nav  ·  api/v1/temp-menu  ·  api/v1/route-manager  ·  api/v1/user-roles</text>
 <rect x="282" y="2132" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="2152" font-size="10.5" fill="#475569" font-weight="700">app/Config/Routes/Api/v1/...</text>
 <text x="292" y="2172" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">ChatRooms/ChatRoomsManager/EndpointTable.php (18 rotas)  ·  Form/FormManager/EndPointView.php (9 rotas)</text>
@@ -210,7 +210,7 @@
 <rect x="282" y="3148" width="1346" height="69" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3168" font-size="10.5" fill="#475569" font-weight="700">tabelas de apoio</text>
 <text x="292" y="3188" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">form_manager  ·  form_groups  ·  form_rows  ·  form_fields  ·  user_manager  ·  user_roles  ·  user_profiles</text>
-<text x="292" y="3205" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">nav_manager  ·  menu_manager  ·  route_manager</text>
+<text x="292" y="3205" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">temp_nav  ·  temp_menu  ·  route_manager</text>
 <rect x="282" y="3225" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3245" font-size="10.5" fill="#475569" font-weight="700">arquivos em disco</text>
 <text x="292" y="3265" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">src/frontend/projeto54900/public/legal/termo-moderador.txt</text>
@@ -350,7 +350,7 @@
 <line x1="1425" y1="3470" x2="1425" y2="3489" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
 <rect x="1250" y="3493" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
 <rect x="1250" y="3493" width="4" height="30" rx="2" fill="#6d28d9"/>
-<text x="1260" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">menu_manager: /v1/chat-rooms-manager</text>
+<text x="1260" y="3513" font-size="11.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace">temp_menu: /v1/chat-rooms-manager</text>
 <line x1="1425" y1="3526" x2="1425" y2="3545" stroke="#64748b" stroke-width="1.6" marker-end="url(#arwd)"/>
 <rect x="1250" y="3549" width="350" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
 <rect x="1250" y="3549" width="4" height="30" rx="2" fill="#6d28d9"/>

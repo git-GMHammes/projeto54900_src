@@ -13,7 +13,7 @@
  * pelos botões Curtir/Avaliar do feed, sem lista/form admin).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-rating'`),
- *   item de navbar "Avaliações" (`menu_manager.react_route`).
+ *   item de navbar "Avaliações" (`temp_menu.react_route`).
  * =============================================================================
  */
 

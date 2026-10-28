@@ -58,7 +58,7 @@ class ReplaceView20261018 extends Migration
         $this->db->query('DROP VIEW IF EXISTS `view_map_postal_codes`');
         $this->db->query('DROP VIEW IF EXISTS `view_map_route_stops`');
         $this->db->query('DROP VIEW IF EXISTS `view_map_routes`');
-        $this->db->query('DROP VIEW IF EXISTS `view_menu_manager`');
+        $this->db->query('DROP VIEW IF EXISTS `view_temp_menu`');
         $this->db->query('DROP VIEW IF EXISTS `view_message_attachments`');
         $this->db->query('DROP VIEW IF EXISTS `view_message_contacts`');
         $this->db->query('DROP VIEW IF EXISTS `view_message_group_chat_summary`');
@@ -75,7 +75,7 @@ class ReplaceView20261018 extends Migration
         $this->db->query('DROP VIEW IF EXISTS `view_messages_users`');
         $this->db->query('DROP VIEW IF EXISTS `view_movement_manager`');
         $this->db->query('DROP VIEW IF EXISTS `view_movement_stock`');
-        $this->db->query('DROP VIEW IF EXISTS `view_nav_manager`');
+        $this->db->query('DROP VIEW IF EXISTS `view_temp_nav`');
         $this->db->query('DROP VIEW IF EXISTS `view_product_attributes`');
         $this->db->query('DROP VIEW IF EXISTS `view_product_manager`');
         $this->db->query('DROP VIEW IF EXISTS `view_route_manager`');

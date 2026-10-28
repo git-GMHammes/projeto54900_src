@@ -9,8 +9,8 @@
  *
  * DEPENDENCIAS: nenhuma (arquivo autocontido).
  * CONSUMIDORES: paginas de detalhe/listagem que exibem valores vindos da
- * API (ex.: pages/v1/user/user-manager/GetPage.tsx, pages/v1/menu/GetAllPage.tsx,
- * pages/v1/menu/GetPage.tsx, pages/v1/nav/GetPage.tsx,
+ * API (ex.: pages/v1/user/user-manager/GetPage.tsx, pages/v1/template/temp-menu/GetAllPage.tsx,
+ * pages/v1/template/temp-menu/GetPage.tsx, pages/v1/template/temp-nav/GetPage.tsx,
  * pages/v1/upload/UploadViewPage.tsx) e utils/validation.ts (usa toText
  * para normalizar o valor antes de validar).
  *

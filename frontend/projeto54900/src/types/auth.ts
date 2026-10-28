@@ -86,6 +86,8 @@ export interface AuthUser {
   companies: AuthCompany[];
   /** Empresa a que a SESSAO esta amarrada (a do login); so ela e aceita no slug da URL. */
   company_slug: string | null;
+  /** Template escolhido pelo usuario (null = automatico: menor id ativo da empresa). */
+  temp_manager_id?: number | null;
 }
 
 /**

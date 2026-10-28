@@ -29,8 +29,8 @@ grep -rni "fabrica" src/pages
 
 **Atenção:** o segundo comando (mais amplo) pode trazer falsos positivos —
 comentários antigos que mencionam "fabrica de listas" mas a página JÁ busca
-dados de verdade (foi o caso de `pages/v1/nav/GetAllPage.tsx` e
-`pages/v1/menu/GetAllPage.tsx`: comentário desatualizado, código já
+dados de verdade (foi o caso de `pages/v1/template/temp-nav/GetAllPage.tsx` e
+`pages/v1/template/temp-menu/GetAllPage.tsx`: comentário desatualizado, código já
 funcional). **Sempre abrir o arquivo e confirmar se o corpo tem
 `<EmptyState title="Formulario em branco">` fixo** antes de assumir que
 precisa religar.
@@ -43,10 +43,10 @@ precisa religar.
 | 2   | `src/pages/v1/user/user-profiles/CreatePage.tsx` (**novo arquivo**) | Formulário | build `dados-do-usuario` (form_manager) — etapa 2, lê `?user_manager_id=`                        |
 | 3   | `src/pages/v1/user/user-manager/GetAllPage.tsx`                     | Listagem   | motor "Construtor de Listas", slug `user-manager` (`list_manager`/`list_columns`/`list_actions`) |
 | 4   | `src/pages/v1/user/user-manager/UpdatePage.tsx`                     | Formulário | build `atualizar-usuario` (form_manager id 19, cópia do `dados-do-usuario`, tabela `user_profiles`) + preload `uc_*` via `userManagerView.get(id)`; salva `PUT user-profiles/update/{uc_id}`; sem profile → "Completar dados" (etapa 2) |
-| 5   | `src/pages/v1/nav/CreatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + `navManagerTable.create`                                       |
-| 6   | `src/pages/v1/nav/UpdatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + preload via `navManagerTable.get(id)`                          |
-| 7   | `src/pages/v1/menu/CreatePage.tsx`                                  | Formulário | schema `FormGrid` escrito à mão + `menuManagerTable.create`                                      |
-| 8   | `src/pages/v1/menu/UpdatePage.tsx`                                  | Formulário | schema `FormGrid` escrito à mão + preload via `menuManagerTable.get(id)`                         |
+| 5   | `src/pages/v1/template/temp-nav/CreatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + `tempNavTable.create`                                       |
+| 6   | `src/pages/v1/template/temp-nav/UpdatePage.tsx`                                   | Formulário | schema `FormGrid` escrito à mão + preload via `tempNavTable.get(id)`                          |
+| 7   | `src/pages/v1/template/temp-menu/CreatePage.tsx`                                  | Formulário | schema `FormGrid` escrito à mão + `tempMenuTable.create`                                      |
+| 8   | `src/pages/v1/template/temp-menu/UpdatePage.tsx`                                  | Formulário | schema `FormGrid` escrito à mão + preload via `tempMenuTable.get(id)`                         |
 
 **Arquivos de apoio alterados/removidos no processo** (não eram
 placeholders, mas fizeram parte da correção):
@@ -89,7 +89,7 @@ arquivo versionado — ver a regra crítica de segredos do `CLAUDE.md`.)
 
 - **Existe um `slug` com `table_name`/`react_route` batendo com a página?**
   → Caso A (pipeline dinâmico).
-- **Não existe nada** (caso de `nav_manager`/`menu_manager`, que não têm
+- **Não existe nada** (caso de `temp_nav`/`temp_menu`, que não têm
   builds) → Caso B (schema `FormGrid` escrito à mão).
 
 ### Caso A — build existe no `form_manager` (pipeline dinâmico)
@@ -126,13 +126,13 @@ Pré-carregar os valores atuais com a `-view` do recurso (ex.:
 seta `defaultValue`/`values` dos campos cujo `name` bate com uma chave do
 registro.
 
-### Caso B — não existe build (CRUD direto, `nav_manager`/`menu_manager`)
+### Caso B — não existe build (CRUD direto, `temp_nav`/`temp_menu`)
 
 Escrever o `FormGridSchema` à mão (mesmo espírito de `FormBuilderPage.tsx`)
 e chamar o service da tabela direto:
 
 ```tsx
-import { navManagerTable } from "@/services/v1"; // ou menuManagerTable
+import { tempNavTable } from "@/services/v1"; // ou tempMenuTable
 
 const SCHEMA: FormGridSchema = {
   rows: [
@@ -141,10 +141,10 @@ const SCHEMA: FormGridSchema = {
 };
 
 // create:
-await navManagerTable.create(payload);
+await tempNavTable.create(payload);
 // update (precisa preload):
-const row = normalizeItem<ApiRow>(await navManagerTable.get(id));
-await navManagerTable.update(id, payload);
+const row = normalizeItem<ApiRow>(await tempNavTable.get(id));
+await tempNavTable.update(id, payload);
 ```
 
 Os NOMES DOS CAMPOS e quais são obrigatórios/opcionais estão nos
@@ -202,7 +202,7 @@ useEffect(() => {
 <select-field options={opts} />;
 
 // CERTO (src recarrega sozinho quando a URL muda):
-const src = `${env.apiBaseUrl}/v1/menu-manager/get-no-pagination?nav_manager_id=${navId}`;
+const src = `${env.apiBaseUrl}/v1/temp-menu/get-no-pagination?temp_nav_id=${navId}`;
 <select-field src={src} />;
 ```
 

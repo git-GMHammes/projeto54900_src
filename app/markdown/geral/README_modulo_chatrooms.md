@@ -1048,7 +1048,7 @@ favoritos de menu (ícone de chat, link para a tela da sala).
 `GET chat-room-favorites/mine` devolve só os favoritos do usuário da sessão e o limite.
 
 **Tela de chat** (`pages/v1/chat-rooms/chat-rooms-manager/ChatPage.tsx`, rota
-`/v1/chat-rooms-manager/chat/:id`, em **tela cheia**, fora do `RootLayout`: sem
+`/v1/chat-rooms-manager/chat/:id`, em **tela cheia**, fora do `TemplateLayout`: sem
 menu, sem atalhos de favoritos e sem rodapé do site, mas com login exigido via `RequireAuth`):
 cabeçalho com o nome da sala e botão redondo de fechar no canto superior
 direito (volta à lista); lista de mensagens com atualização a cada 5 segundos;
@@ -1056,7 +1056,7 @@ rodapé fixo com textarea de 3 linhas e, ao lado, os dois ícones empilhados:
 enviar (`bi-send`) em cima e upload (`bi-paperclip`) embaixo, com a altura do
 campo de texto e rótulo acessível. As mensagens são **balões**: as minhas à
 direita (azul), as dos outros à esquerda, cada membro com uma cor de balão
-(na ordem em que aparece na conversa; a paleta repete após 6 membros). A tela é de tela cheia, fora do `RootLayout`
+(na ordem em que aparece na conversa; a paleta repete após 6 membros). A tela é de tela cheia, fora do `TemplateLayout`
 (sem menu, atalhos de favoritos nem rodapé do site), com login via `RequireAuth`. O envio reusa `chatMessagesTable.create`; o upload reusa
 `chatRoomAttachmentsUpload.upload` (sem texto, a mensagem leva o nome do arquivo).
 

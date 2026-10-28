@@ -8,6 +8,7 @@ namespace App\Requests\V1\Company\CompanyManager;
  *   name     VARCHAR(255) NOT NULL
  *   slug     VARCHAR(100) NOT NULL UNIQUE (derivado do name quando nao vem)
  *   document VARCHAR(20)  NULL (CNPJ)
+ *   color_theme VARCHAR(30) NULL (nome de uma paleta de config/themes do frontend, sem .json; vazio = padrao do sistema)
  *   status   ENUM('active','inactive') DEFAULT 'active'
  */
 class CreateRequest
@@ -18,6 +19,7 @@ class CreateRequest
             'name'     => 'required|string|max_length[255]',
             'slug'     => 'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[100]',
             'document' => 'permit_empty|string|max_length[20]',
+            'color_theme' => 'permit_empty|regex_match[/^[A-Za-z0-9_]+$/]|max_length[30]',
             'status'   => 'permit_empty|in_list[active,inactive]',
         ];
     }

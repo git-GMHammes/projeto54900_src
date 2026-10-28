@@ -35,7 +35,7 @@ Convenção: a tabela física usa `column`; a view da tabela usa `via_table` (`v
 | `Upload` | UploadManager | arquivo isolado; `reference_id` não é validado (ver pendências) |
 | `User` | `user_manager`, `user_profiles`, `user_resource_access` | `membership`: só membros da empresa da sessão |
 | `Company` | CompanyMembers (`column`) | `Companies` e `CompanyMemberships` em `self`; `CompanyUsersCompanies` em `column` |
-| Globais (`none`) | `form_*`, `list_*`, `menu_manager`, `nav_manager`, `route_manager`, `user_roles`, `bootstrap_icons`, `aux_cor`, `map_icons`, `map_geocode_cache`, `map_postal_codes` | definição de telas é compartilhada entre empresas |
+| Globais (`none`) | `form_*`, `list_*`, `temp_menu`, `temp_nav`, `route_manager`, `user_roles`, `bootstrap_icons`, `aux_cor`, `map_icons`, `map_geocode_cache`, `map_postal_codes` | definição de telas é compartilhada entre empresas |
 
 Fonte da verdade do mapa: `grep -rn "companyScope = " app/Models/V1`.
 

@@ -11,7 +11,7 @@ próprio template: o que foi decidido aqui (dados em JSON, tema por paleta,
 Bootstrap primeiro, responsivo até TV, regiões fecháveis) é o padrão a repetir.
 
 Rota de demonstração: `/<slug-da-empresa>/template001` (ex.: `/default/template001`).
-Pública, sem API, sem `RequireAuth`, e **fora do `RootLayout`** (o template traz o
+Pública, sem API, sem `RequireAuth`, e **fora do layout global** (`TemplateLayout`; o modelo estático traz o
 próprio cabeçalho, nav, menu e rodapé, então a navbar do app não se repete).
 
 ---
@@ -102,6 +102,50 @@ Detalhes da barra no celular:
 - **Menu lateral** usa `offcanvas-lg offcanvas-start`: painel abaixo de `lg` e
   coluna normal a partir de `lg`, sem código extra.
 - O `navbar-expand-lg` esconde sozinho os dois botões a partir de `lg`.
+
+### Regra — Offcanvas é o menu lateral quando o template exigir
+
+A marcação **Offcanvas** (`placement = 'offcanvas'`, painel `offcanvas-start` do
+Bootstrap) deve ser tratada como o **menu lateral** sempre que o template exigir
+esse tipo de menu. Nos templates (`/template001`, `/template002`, `/template003`):
+
+- Itens `offcanvas` formam o **menu lateral**; itens `navbar` formam a **barra de navegação** (nav).
+- Template001 e Template002: menu lateral em coluna fixa a partir de `lg` e painel Offcanvas abaixo de `lg`.
+- Template003: não há coluna fixa; o menu lateral é sempre o painel Offcanvas, aberto pelo ícone da grade, em qualquer tamanho de tela.
+
+### Regra — o meio do template recebe qualquer módulo
+
+A região de **conteúdo** (o meio do template, entre o nav/menu lateral e o
+rodapé) é o lugar onde entra **qualquer módulo já existente no sistema**, e
+também os que ainda não foram previstos. Os blocos "Heading + Lorem ipsum" do
+`template00X.json` são só o conteúdo de demonstração.
+
+- Exemplos de módulos que entram no meio: gerência de usuário, chat, mensagens,
+  usuários, produtos, serviços, mapas, e todos os demais já definidos.
+- O template não conhece o módulo: ele só entrega a região de conteúdo (largura
+  total, ou ao lado do menu lateral quando o template tem coluna fixa), e a
+  página do módulo é renderizada ali dentro.
+- Cabeçalho, nav, menu lateral e rodapé são a moldura (vêm das tabelas `temp_`);
+  o meio é do módulo. Módulo novo não exige mudança no template.
+
+### Cópia global dos efeitos (migração para o sistema real)
+
+Os efeitos de entrada e saída dos templates estáticos foram **copiados** (os modelos `.template001`,
+`.template002` e `.template003` e os arquivos originais ficaram **intactos**) para uso global:
+
+| Original (continua servindo os modelos)                      | Cópia global                                      | Escopo / observação                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------- | --------------------------------------------------------------------- |
+| `styles/_animations.scss`                                    | `styles/_template-global.scss`                    | `.template00X` -> `.tpl-app`; sem bordas (002/003) -> `.tpl-app.tpl-flat`; `@keyframes tpl-*` -> `tplg-*` |
+| blocos de template de `styles/_custom.scss` (fonte base em telas grandes, barra fixa, degradê da página) | `styles/_template-global.scss` | `html:has(.tpl-app)`; `template00X-sticky` -> `.tpl-app .tpl-sticky` |
+| `hooks/useReveal.ts`                                         | `hooks/template/useReveal.ts`                     | revelação ao rolar (`tpl-reveal`, `tpl-reveal-group`, `tpl-in`)        |
+| `hooks/useScrolled.ts`                                       | `hooks/template/useScrolled.ts`                   | nav que encolhe e ganha sombra ao rolar (`tpl-scrolled`)              |
+| lógica de fechar região dentro de cada `Template00XPage.tsx` | `hooks/template/useClosableRegions.ts`            | saída em 2 etapas (`tpl-closing`, 350 ms), sem desfazer               |
+| `CloseButton` dentro de cada `Template00XPage.tsx`           | `components/template/CloseButton.tsx`             | X discreto no canto da região                                         |
+
+As classes de componente são as mesmas dos modelos (`tpl-region`, `tpl-enter-down`, `tpl-fade-in`, `tpl-nav-link`,
+`tpl-nav-item`, `tpl-menu-item`, `tpl-menu-link`, `tpl-blend`, `tpl-collapsible`, `tpl-fade-out`), valendo dentro de
+`.tpl-app`. A paleta (`--tpl-*`) segue vindo de `config/theme.ts`, que já é global e não foi duplicado. A única
+alteração em arquivo existente foi uma linha em `styles/index.scss` (`@import "template-global"`), depois de `animations`.
 
 ---
 
@@ -272,7 +316,7 @@ Ajustes e erros no caminho (para não repetir):
 2. Ajustar o JSON de conteúdo mantendo as **mesmas chaves** do contrato (seção 2).
    Imagens em `public/img/<empresa>/`.
 3. Registrar a rota: arquivo `routes/<empresa>.routes.tsx`, constante em
-   `paths.ts` e entrada em `routes/index.tsx` (fora do `RootLayout`, se o
+   `paths.ts` e entrada em `routes/index.tsx` (fora do `TemplateLayout`, se o
    template trouxer o próprio cabeçalho).
 4. Escolher a paleta (`VITE_THEME`) ou criar uma nova copiando um JSON de
    `config/themes/` e conferindo o contraste de 4,5 em cada região.

@@ -137,10 +137,10 @@ Listas".
   sem o filtro de status extra e sem coluna de ações. Rota
   `/v1/calendar-list` (`routes/v1/calendar.routes.tsx`, dentro do
   `<RequireAuth/>`, igual a `/v1/calendar-manager`).
-- **Menu**: item "Lista de Calendários" (`menu_manager.id=27`), sob o mesmo
+- **Menu**: item "Lista de Calendários" (`temp_menu.id=27`), sob o mesmo
   pai "Calendário" (`parent_id=7`) do item "Admin Calendário" (`id=8`),
   `sort_order=2`.
-- **Desvio de processo**: `list_manager`/`list_columns`/`menu_manager` foram
+- **Desvio de processo**: `list_manager`/`list_columns`/`temp_menu` foram
   inseridos **direto no banco** (não pela API, que exige `jwtauth` e esta
   sessão não tinha login) — autorizado explicitamente pelo usuário (mesmo
   precedente do campo "Ordem" do form `editar-calendario`, ver seção acima).

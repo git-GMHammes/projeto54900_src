@@ -45,7 +45,7 @@ serviços HTTP em `services/v1/` (14 recursos, tabela e view separadas).
 de ids próprias e as linhas de `route_manager` dos objetos novos antes de inserir):
 
 - 12 forms (`form_manager` 71–82, `form_groups`, `form_rows`, 136 `form_fields`), 8 listas (`list_manager` 58–65, 73 colunas, 19 ações),
-  11 itens de menu (`menu_manager` 75–85) e `route_manager` (180 de backend, copiadas de `company-manager`, e 26 de frontend).
+  11 itens de menu (`temp_menu` 75–85) e `route_manager` (180 de backend, copiadas de `company-manager`, e 26 de frontend).
 - Campo `roles[]` (select múltiplo de `user_roles`, `valueKey: slug`): o payload sai como lista e a API grava como JSON.
   Sem nenhum perfil escolhido, o cadastro usa o padrão da coluna (todos) e a edição grava `[]` (= todos).
 - `company_id` nunca vai no form (a sessão carimba). Usuário, `status` e data do movimento não aparecem (a API define).

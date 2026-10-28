@@ -61,10 +61,10 @@ export const paths = {
     },
     // Nav — config/branding do app/navbar (nome, imagem, icone, versao)
     nav: {
-      list: '/v1/nav-manager',
-      create: '/v1/nav-manager/create',
-      view: (id: RouteId) => `/v1/nav-manager/${id}`,
-      update: (id: RouteId) => `/v1/nav-manager/update/${id}`,
+      list: '/v1/temp-nav',
+      create: '/v1/temp-nav/create',
+      view: (id: RouteId) => `/v1/temp-nav/${id}`,
+      update: (id: RouteId) => `/v1/temp-nav/update/${id}`,
     },
     // Calendar — listagem de calendarios (view_calendar_manager: calendario -> eventos)
     calendar: {
@@ -172,15 +172,15 @@ export const paths = {
       profile: '/v1/account/profile',
       security: '/v1/account/security',
     },
-    // Menu — arvore de itens navegaveis (era menu-items), ligada a um nav-manager
+    // Menu — arvore de itens navegaveis (era menu-items), ligada a um temp-nav
     menu: {
-      list: '/v1/menu-manager',
-      // Itens de UM nav especifico (usado pelo botao "Itens" do nav-manager)
-      listByNav: (navId: RouteId) => `/v1/menu-manager?nav_manager_id=${navId}`,
-      create: '/v1/menu-manager/create',
-      createForNav: (navId: RouteId) => `/v1/menu-manager/create?nav_manager_id=${navId}`,
-      view: (id: RouteId) => `/v1/menu-manager/${id}`,
-      update: (id: RouteId) => `/v1/menu-manager/update/${id}`,
+      list: '/v1/temp-menu',
+      // Itens de UM nav especifico (usado pelo botao "Itens" do temp-nav)
+      listByNav: (navId: RouteId) => `/v1/temp-menu?temp_nav_id=${navId}`,
+      create: '/v1/temp-menu/create',
+      createForNav: (navId: RouteId) => `/v1/temp-menu/create?temp_nav_id=${navId}`,
+      view: (id: RouteId) => `/v1/temp-menu/${id}`,
+      update: (id: RouteId) => `/v1/temp-menu/update/${id}`,
     },
     // ChatRooms — salas de chat (modulo ChatRooms/ChatRoomsManager)
     chatRooms: {
@@ -231,6 +231,23 @@ export const paths = {
       list: '/v1/location-types',
       create: '/v1/location-types/create',
       update: (id: RouteId) => `/v1/location-types/update/${id}`,
+    },
+    // TempHeader / TempFooter — cabecalho e rodape do template (so admin)
+    tempHeader: {
+      list: '/v1/temp-header',
+      create: '/v1/temp-header/create',
+      update: (id: RouteId) => `/v1/temp-header/update/${id}`,
+    },
+    tempFooter: {
+      list: '/v1/temp-footer',
+      create: '/v1/temp-footer/create',
+      update: (id: RouteId) => `/v1/temp-footer/update/${id}`,
+    },
+    // TempManager — catalogo de templates (template001/002/003) e as empresas de cada um (so superuser)
+    tempManager: {
+      list: '/v1/temp-manager',
+      create: '/v1/temp-manager/create',
+      update: (id: RouteId) => `/v1/temp-manager/update/${id}`,
     },
     // ProductManager / ProductAttributes — produto (arvore opcional) e caracteristicas
     productManager: {

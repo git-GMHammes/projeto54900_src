@@ -36,7 +36,7 @@ nos métodos nativos (`find`, `update`, `delete`, via `builder()`).
 
 | `$companyScope` | Onde                                                                                      |
 | --------------- | ----------------------------------------------------------------------------------------- |
-| `none` (padrão) | tabelas globais: `form_*`, `list_*`, `menu_manager`, `nav_manager`, `route_manager`, `user_roles`, `bootstrap_icons`, `aux_cor`, `map_icons`, `map_geocode_cache`, `map_postal_codes` |
+| `none` (padrão) | tabelas globais: `form_*`, `list_*`, `temp_menu`, `temp_nav`, `route_manager`, `user_roles`, `bootstrap_icons`, `aux_cor`, `map_icons`, `map_geocode_cache`, `map_postal_codes` |
 | `column`        | 39 tabelas de conteúdo com `company_id` (calendar, chat, message, timeline, map, uploads) + `company_members` |
 | `via_table`     | views dessas tabelas: `view.id IN (SELECT id FROM <tabela> WHERE company_id = <empresa>)` |
 | `membership`    | `user_manager`, `user_profiles`, `user_resource_access` e views de usuário: só membros ativos da empresa |

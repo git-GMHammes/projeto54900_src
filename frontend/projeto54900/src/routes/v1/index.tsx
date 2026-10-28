@@ -18,8 +18,7 @@
  *   upload.routes.tsx -> uploadRoutes  upload-manager (somente leitura)
  *   form.routes.tsx   -> formRoutes    construtor de formulários + renderer (/form/:slug)
  *   list.routes.tsx   -> listRoutes    construtor de listagens
- *   nav.routes.tsx    -> navRoutes     nav-manager (a "casca" do app)
- *   menu.routes.tsx   -> menuRoutes    menu-manager (itens de menu)
+ *   template.routes.tsx -> templateRoutes  temp-nav (a "casca" do app) e temp-menu (itens de menu)
  *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
  *   svgMap.routes.tsx -> svgMapRoutes  svg-map (mapa SVG dos municipios do RJ, rota estatica)
  *   map.routes.tsx    -> mapRoutes     map (explorador Leaflet) + map/links/:module/:id (mapa de um registro)
@@ -72,8 +71,7 @@ import { accountRoutes } from './account.routes';
 import { uploadRoutes } from './upload.routes';
 import { formRoutes } from './form.routes';
 import { listRoutes } from './list.routes';
-import { navRoutes } from './nav.routes';
-import { menuRoutes } from './menu.routes';
+import { templateRoutes } from './template.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
 import { knowledgeRoutes } from './knowledge.routes';
@@ -102,7 +100,7 @@ import { auditRoutes } from './audit.routes';
  *   1. `index: true` com `loader: () => redirect(...)` -> "/v1" não tem tela:
  *      manda para a primeira listagem útil do sistema;
  *   2. `...authRoutes`, `...userRoutes`, `...uploadRoutes`, `...formRoutes`,
- *      `...listRoutes`, `...navRoutes`, `...menuRoutes` — os sete módulos, na
+ *      `...listRoutes`, `...templateRoutes` — os módulos, na
  *      mesma ordem listada no mapa do header.
  *
  * POR QUE `...` (spread) E NÃO ANINHAR: cada módulo já é um array de rotas
@@ -133,8 +131,7 @@ export const v1Routes: RouteObject = {
         ...uploadRoutes,
         ...formRoutes,
         ...listRoutes,
-        ...navRoutes,
-        ...menuRoutes,
+        ...templateRoutes,
         ...calendarRoutes,
         ...svgMapRoutes,
         ...knowledgeRoutes,

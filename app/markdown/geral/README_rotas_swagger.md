@@ -1082,69 +1082,69 @@ em volta do Menu, não o menu em si.
 
 **Filtros:** `jwtauth` (por wildcard de URI).
 
-### nav-manager
+### temp-nav
 
-Fonte: `Config/Routes/Api/v1/Nav/NavManager/EndpointTable.php` — contrato canônico (18 rotas).
+Fonte: `Config/Routes/Api/v1/Template/TempNav/EndpointTable.php` — contrato canônico (18 rotas).
 
 | Método | Rota                                     | Controller::method                                                     |
 | ------ | ---------------------------------------- | ---------------------------------------------------------------------- |
-| POST   | `/nav-manager/find`                      | `Api\V1\Nav\NavManager\ResourceTableController::find`                  |
-| POST   | `/nav-manager/get-grouped`               | `Api\V1\Nav\NavManager\ResourceTableController::getGrouped`            |
-| GET    | `/nav-manager/search`                    | `Api\V1\Nav\NavManager\ResourceTableController::search`                |
-| GET    | `/nav-manager/get/{id}`                  | `Api\V1\Nav\NavManager\ResourceTableController::get/$1`                |
-| GET    | `/nav-manager/get-all`                   | `Api\V1\Nav\NavManager\ResourceTableController::getAll`                |
-| GET    | `/nav-manager/get-no-pagination`         | `Api\V1\Nav\NavManager\ResourceTableController::getNoPagination`       |
-| GET    | `/nav-manager/get-deleted/{id}`          | `Api\V1\Nav\NavManager\ResourceTableController::getDeleted/$1`         |
-| GET    | `/nav-manager/get-with-deleted/{id}`     | `Api\V1\Nav\NavManager\ResourceTableController::getWithDeleted/$1`     |
-| GET    | `/nav-manager/get-deleted-all`           | `Api\V1\Nav\NavManager\ResourceTableController::getDeletedAll`         |
-| GET    | `/nav-manager/get-all-with-deleted/{id}` | `Api\V1\Nav\NavManager\ResourceTableController::getAllWithDeleted/$1`  |
-| GET    | `/nav-manager/get-all-with-deleted`      | `Api\V1\Nav\NavManager\ResourceTableController::getAllWithDeleted`     |
-| POST   | `/nav-manager/create`                    | `Api\V1\Nav\NavManager\ResourceTableController::create`                |
-| PUT    | `/nav-manager/update/{id}`               | `Api\V1\Nav\NavManager\ResourceTableController::update/$1`             |
-| DELETE | `/nav-manager/delete-soft/{id}`          | `Api\V1\Nav\NavManager\ResourceTableController::deleteSoft/$1`         |
-| PATCH  | `/nav-manager/delete-restore/{id}`       | `Api\V1\Nav\NavManager\ResourceTableController::deleteRestore/$1`      |
-| DELETE | `/nav-manager/delete-hard/{id}`          | `Api\V1\Nav\NavManager\ResourceTableController::deleteHard/$1`         |
-| DELETE | `/nav-manager/clear-deleted`             | `Api\V1\Nav\NavManager\ResourceTableController::clearDeleted`          |
-| DELETE | `/nav-manager/clear-deleted/{id}`        | `Api\V1\Nav\NavManager\ResourceTableController::clearDeleted/$1`       |
+| POST   | `/temp-nav/find`                      | `Api\V1\Template\TempNav\ResourceTableController::find`                  |
+| POST   | `/temp-nav/get-grouped`               | `Api\V1\Template\TempNav\ResourceTableController::getGrouped`            |
+| GET    | `/temp-nav/search`                    | `Api\V1\Template\TempNav\ResourceTableController::search`                |
+| GET    | `/temp-nav/get/{id}`                  | `Api\V1\Template\TempNav\ResourceTableController::get/$1`                |
+| GET    | `/temp-nav/get-all`                   | `Api\V1\Template\TempNav\ResourceTableController::getAll`                |
+| GET    | `/temp-nav/get-no-pagination`         | `Api\V1\Template\TempNav\ResourceTableController::getNoPagination`       |
+| GET    | `/temp-nav/get-deleted/{id}`          | `Api\V1\Template\TempNav\ResourceTableController::getDeleted/$1`         |
+| GET    | `/temp-nav/get-with-deleted/{id}`     | `Api\V1\Template\TempNav\ResourceTableController::getWithDeleted/$1`     |
+| GET    | `/temp-nav/get-deleted-all`           | `Api\V1\Template\TempNav\ResourceTableController::getDeletedAll`         |
+| GET    | `/temp-nav/get-all-with-deleted/{id}` | `Api\V1\Template\TempNav\ResourceTableController::getAllWithDeleted/$1`  |
+| GET    | `/temp-nav/get-all-with-deleted`      | `Api\V1\Template\TempNav\ResourceTableController::getAllWithDeleted`     |
+| POST   | `/temp-nav/create`                    | `Api\V1\Template\TempNav\ResourceTableController::create`                |
+| PUT    | `/temp-nav/update/{id}`               | `Api\V1\Template\TempNav\ResourceTableController::update/$1`             |
+| DELETE | `/temp-nav/delete-soft/{id}`          | `Api\V1\Template\TempNav\ResourceTableController::deleteSoft/$1`         |
+| PATCH  | `/temp-nav/delete-restore/{id}`       | `Api\V1\Template\TempNav\ResourceTableController::deleteRestore/$1`      |
+| DELETE | `/temp-nav/delete-hard/{id}`          | `Api\V1\Template\TempNav\ResourceTableController::deleteHard/$1`         |
+| DELETE | `/temp-nav/clear-deleted`             | `Api\V1\Template\TempNav\ResourceTableController::clearDeleted`          |
+| DELETE | `/temp-nav/clear-deleted/{id}`        | `Api\V1\Template\TempNav\ResourceTableController::clearDeleted/$1`       |
 
 ---
 
 ## Menu — Árvore de itens navegáveis
 
-Cada item pertence a um `nav_manager` (FK `nav_manager_id`) e pode ter um
+Cada item pertence a um `temp_nav` (FK `temp_nav_id`) e pode ter um
 `parent_id` (submenu do mesmo nav).
 
 **Filtros:** `jwtauth` (por wildcard de URI).
 
-> **Observação:** `nav-manager` e `menu-manager` estão registrados **duas
+> **Observação:** `temp-nav` e `temp-menu` estão registrados **duas
 > vezes** em `Config/Routes.php` (o bloco de cada um aparece duplicado, com o
 > mesmo `require`). O CodeIgniter rejeita a rota duplicada, então o efeito
 > prático é nulo — mas é ruído a remover do arquivo.
 
-### menu-manager
+### temp-menu
 
-Fonte: `Config/Routes/Api/v1/Menu/MenuManager/EndpointTable.php` — contrato canônico (18 rotas).
+Fonte: `Config/Routes/Api/v1/Template/TempMenu/EndpointTable.php` — contrato canônico (18 rotas).
 
 | Método | Rota                                      | Controller::method                                                      |
 | ------ | ----------------------------------------- | ----------------------------------------------------------------------- |
-| POST   | `/menu-manager/find`                      | `Api\V1\Menu\MenuManager\ResourceTableController::find`                 |
-| POST   | `/menu-manager/get-grouped`               | `Api\V1\Menu\MenuManager\ResourceTableController::getGrouped`           |
-| GET    | `/menu-manager/search`                    | `Api\V1\Menu\MenuManager\ResourceTableController::search`               |
-| GET    | `/menu-manager/get/{id}`                  | `Api\V1\Menu\MenuManager\ResourceTableController::get/$1`               |
-| GET    | `/menu-manager/get-all`                   | `Api\V1\Menu\MenuManager\ResourceTableController::getAll`               |
-| GET    | `/menu-manager/get-no-pagination`         | `Api\V1\Menu\MenuManager\ResourceTableController::getNoPagination`      |
-| GET    | `/menu-manager/get-deleted/{id}`          | `Api\V1\Menu\MenuManager\ResourceTableController::getDeleted/$1`        |
-| GET    | `/menu-manager/get-with-deleted/{id}`     | `Api\V1\Menu\MenuManager\ResourceTableController::getWithDeleted/$1`    |
-| GET    | `/menu-manager/get-deleted-all`           | `Api\V1\Menu\MenuManager\ResourceTableController::getDeletedAll`        |
-| GET    | `/menu-manager/get-all-with-deleted/{id}` | `Api\V1\Menu\MenuManager\ResourceTableController::getAllWithDeleted/$1` |
-| GET    | `/menu-manager/get-all-with-deleted`      | `Api\V1\Menu\MenuManager\ResourceTableController::getAllWithDeleted`    |
-| POST   | `/menu-manager/create`                    | `Api\V1\Menu\MenuManager\ResourceTableController::create`               |
-| PUT    | `/menu-manager/update/{id}`               | `Api\V1\Menu\MenuManager\ResourceTableController::update/$1`            |
-| DELETE | `/menu-manager/delete-soft/{id}`          | `Api\V1\Menu\MenuManager\ResourceTableController::deleteSoft/$1`        |
-| PATCH  | `/menu-manager/delete-restore/{id}`       | `Api\V1\Menu\MenuManager\ResourceTableController::deleteRestore/$1`     |
-| DELETE | `/menu-manager/delete-hard/{id}`          | `Api\V1\Menu\MenuManager\ResourceTableController::deleteHard/$1`        |
-| DELETE | `/menu-manager/clear-deleted`             | `Api\V1\Menu\MenuManager\ResourceTableController::clearDeleted`         |
-| DELETE | `/menu-manager/clear-deleted/{id}`        | `Api\V1\Menu\MenuManager\ResourceTableController::clearDeleted/$1`      |
+| POST   | `/temp-menu/find`                      | `Api\V1\Template\TempMenu\ResourceTableController::find`                 |
+| POST   | `/temp-menu/get-grouped`               | `Api\V1\Template\TempMenu\ResourceTableController::getGrouped`           |
+| GET    | `/temp-menu/search`                    | `Api\V1\Template\TempMenu\ResourceTableController::search`               |
+| GET    | `/temp-menu/get/{id}`                  | `Api\V1\Template\TempMenu\ResourceTableController::get/$1`               |
+| GET    | `/temp-menu/get-all`                   | `Api\V1\Template\TempMenu\ResourceTableController::getAll`               |
+| GET    | `/temp-menu/get-no-pagination`         | `Api\V1\Template\TempMenu\ResourceTableController::getNoPagination`      |
+| GET    | `/temp-menu/get-deleted/{id}`          | `Api\V1\Template\TempMenu\ResourceTableController::getDeleted/$1`        |
+| GET    | `/temp-menu/get-with-deleted/{id}`     | `Api\V1\Template\TempMenu\ResourceTableController::getWithDeleted/$1`    |
+| GET    | `/temp-menu/get-deleted-all`           | `Api\V1\Template\TempMenu\ResourceTableController::getDeletedAll`        |
+| GET    | `/temp-menu/get-all-with-deleted/{id}` | `Api\V1\Template\TempMenu\ResourceTableController::getAllWithDeleted/$1` |
+| GET    | `/temp-menu/get-all-with-deleted`      | `Api\V1\Template\TempMenu\ResourceTableController::getAllWithDeleted`    |
+| POST   | `/temp-menu/create`                    | `Api\V1\Template\TempMenu\ResourceTableController::create`               |
+| PUT    | `/temp-menu/update/{id}`               | `Api\V1\Template\TempMenu\ResourceTableController::update/$1`            |
+| DELETE | `/temp-menu/delete-soft/{id}`          | `Api\V1\Template\TempMenu\ResourceTableController::deleteSoft/$1`        |
+| PATCH  | `/temp-menu/delete-restore/{id}`       | `Api\V1\Template\TempMenu\ResourceTableController::deleteRestore/$1`     |
+| DELETE | `/temp-menu/delete-hard/{id}`          | `Api\V1\Template\TempMenu\ResourceTableController::deleteHard/$1`        |
+| DELETE | `/temp-menu/clear-deleted`             | `Api\V1\Template\TempMenu\ResourceTableController::clearDeleted`         |
+| DELETE | `/temp-menu/clear-deleted/{id}`        | `Api\V1\Template\TempMenu\ResourceTableController::clearDeleted/$1`      |
 
 ---
 
@@ -1157,6 +1157,37 @@ empresa **DEFAULT** (id 1, não pode ser excluída). Detalhes em
 
 **Filtros:** `jwtauth` (por wildcard de URI) em todas; `adminonly` rota a rota nas
 escritas (`create`, `update`, `delete-*`, `clear-deleted`) — leitura aberta a qualquer autenticado.
+
+### temp-header e temp-footer
+
+Fontes: `Config/Routes/Api/v1/Template/TempHeader/EndpointTable.php` e `.../TempFooter/EndpointTable.php` —
+mesmo contrato de 18 rotas do `temp-nav` (leitura com `jwtauth`; `create`, `update/{id}`, `delete-soft/{id}`,
+`delete-restore/{id}`, `delete-hard/{id}`, `clear-deleted` e `clear-deleted/{id}` também com `adminonly`).
+Controllers: `Api\V1\Template\TempHeader\ResourceTableController` e `Api\V1\Template\TempFooter\ResourceTableController`.
+Escrita de `temp-nav` e `temp-menu` também passou a exigir `adminonly` nessas 7 rotas.
+
+### temp-manager
+
+Fonte: `Config/Routes/Api/v1/Template/TempManager/EndpointTable.php` — mesmo contrato de 18 rotas do `temp-nav`; o grupo inteiro é `superuseronly` (wildcard em `Config/Filters.php`). Controller: `Api\V1\Template\TempManager\ResourceTableController`. `code` único (409) e imutável (422); uma empresa pode estar em vários templates (o padrão é o de menor id ativo).
+
+### template-public
+
+Fonte: `Config/Routes/Api/v1/Template/TemplateRender/EndpointPublic.php` (1 rota, **pública**, sem `jwtauth`).
+
+| Método | Rota                          | Controller::method                                                          |
+| ------ | ----------------------------- | --------------------------------------------------------------------------- |
+| GET    | `/template-public/get/{slug}` | `Api\V1\Template\TemplateRender\RenderController::publicTemplate`           |
+
+Devolve `{ template, headers, footers }`: o template padrão da empresa do slug e seus cabeçalhos e rodapés ativos, para o visitante (sem nav, menu nem casca do app).
+
+### template-render
+
+Fonte: `Config/Routes/Api/v1/Template/TemplateRender/EndpointRender.php` (2 rotas, `jwtauth`).
+
+| Método | Rota                                  | Controller::method                                                   |
+| ------ | ------------------------------------- | -------------------------------------------------------------------- |
+| GET    | `/template-render/get[?temp_nav_id=]` | `Api\V1\Template\TemplateRender\RenderController::render`            |
+| PUT    | `/template-render/preference`         | `Api\V1\Template\TemplateRender\RenderController::preference` (body `{"temp_manager_id": id}` ou `null` para voltar ao automático) |
 
 ### company-manager
 

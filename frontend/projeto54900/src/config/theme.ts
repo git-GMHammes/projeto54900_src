@@ -4,7 +4,7 @@
  * =========================================================================
  *
  * O QUE FAZ: carrega as paletas de cores (JSONs de `config/themes/`), escolhe
- * a ativa por `env.theme` e converte as chaves da paleta em variáveis CSS do
+ * a ativa (`env.theme`, ou o `color_theme` da empresa quando o env nao fixa uma) e converte as chaves da paleta em variáveis CSS do
  * Bootstrap. Há dois níveis:
  *   - global (`paletteToCssVars`): degradê de fundo da página, cor `primary` e
  *     a sombra 3D das bordas (`--bs-box-shadow`, aplicada pela classe `shadow`);
@@ -76,9 +76,12 @@ for (const [path, palette] of Object.entries(modules)) {
   }
 }
 
-/** Devolve a paleta pedida; nome inexistente cai no tema padrão. */
-export function getPalette(name: string = env.theme): ThemePalette {
-  const palette = palettes[name] ?? palettes[DEFAULT_THEME];
+/**
+ * Devolve a paleta pedida; sem nome, a do env (`env.theme`); nome inexistente ou nenhum nome cai no tema padrão.
+ * O layout global pede `getPalette(env.theme ?? <color_theme da empresa>)`: o env, quando definido, manda.
+ */
+export function getPalette(name?: string | null): ThemePalette {
+  const palette = palettes[name ?? env.theme ?? DEFAULT_THEME] ?? palettes[DEFAULT_THEME];
   if (!palette) throw new Error(`[theme] paleta padrão "${DEFAULT_THEME}" não encontrada em config/themes`);
   return palette;
 }

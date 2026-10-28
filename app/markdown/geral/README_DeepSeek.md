@@ -28,7 +28,7 @@ Fontes lidas para montar esta análise:
 | `README_migrate.md`                                                                                      | modelo REMAKE, comandos `spark` e as proibições                                               |
 | `README_form_builder.md`                                                                                 | construtor de formulários e o padrão árvore + modal                                           |
 | `README_atualiza_readme.md`                                                                              | procedimento obrigatório de manutenção do índice da base                                      |
-| banco DEV (`SHOW CREATE TABLE`/`SELECT` nas tabelas de definição)                                        | estado real das tabelas de definição (`form_*`, `list_*`, `menu_manager`, `route_manager`)    |
+| banco DEV (`SHOW CREATE TABLE`/`SELECT` nas tabelas de definição)                                        | estado real das tabelas de definição (`form_*`, `list_*`, `temp_menu`, `route_manager`)    |
 | `src/app/Database/Migrations/`                                                                           | conjunto REMAKE vigente                                                                       |
 | `FormBuild.tsx`, `FormConstructorBuildPage.tsx`, `FormConstructorListPage.tsx`, `routes/v1/*.routes.tsx` | cadeia do BUILD no código                                                                     |
 
@@ -97,7 +97,7 @@ o ponto fica registrado em aberto.
   `<select>` carregado de `route_manager` (`method - object - action`), nunca texto
   livre. **Campo cujo valor é JSON** é montado pela UI (`parse`/`montar` tolerantes),
   nunca digitado cru.
-- **Navbar dinâmica** de `menu_manager` (`useSiteMenu`: `parent_id` nulo +
+- **Navbar dinâmica** de `temp_menu` (hoje `template-render/get`, antes `useSiteMenu`: `parent_id` nulo +
   `react_route` preenchida + `sort_order < 100`, com fallback estático). Faixas de
   `sort_order`: `<100` navbar real, `>=1000` catálogo "Extra", `>=2000` árvore
   administrativa exibida só na tela de gestão.
@@ -179,9 +179,9 @@ o ponto fica registrado em aberto.
 | -------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Form** | `form_manager` + `form_groups` + `form_rows` + `form_fields` (e a view `view_form_manager`, 1 linha por campo) | `<FormBuild>` → `<FormGrid>`                                        | ação de lista `Build` (`list_actions`) → rota `/v1/form-constructor/:table/:id` ou `/v1/form/:slug`                                                  |
 | **List** | `list_manager` + `list_columns` + `list_actions`                                                               | motor `utils/listConstructor.tsx` (`renderCell`/`cellValue`, ações) | `api_get_endpoint` da própria definição; a página só informa o `MANAGER_SLUG`                                                                        |
-| **Menu** | `nav_manager` (casca: nome, imagem, ícone, versão) + `menu_manager` (árvore, `parent_id` para submenu)         | `useSiteMenu` (navbar) e a árvore da tela de gestão                 | `react_route` do item de menu aponta para a tela — inclusive para uma tela de Build (ex. no dump: item 25 "Novo Calendário" → `/v1/form/calendario`) |
+| **Menu** | `temp_nav` (casca: nome, imagem, ícone, versão) + `temp_menu` (árvore, `parent_id` para submenu)         | `useSiteMenu` (navbar) e a árvore da tela de gestão                 | `react_route` do item de menu aponta para a tela — inclusive para uma tela de Build (ex. no dump: item 25 "Novo Calendário" → `/v1/form/calendario`) |
 
-Observações: `nav_manager` e `menu_manager` são tabelas distintas ligadas por FK —
+Observações: `temp_nav` e `temp_menu` são tabelas distintas ligadas por FK —
 nenhuma delas é "o menu" sozinha. Não existe rota "Build" para listas: a grade é
 renderizada in-line pela página consumidora. E `list_manager`/`list_columns`/
 `list_actions`/`list-actions` também são listados por si mesmos no dump (o motor se
@@ -194,7 +194,7 @@ descreve), mas só a lista `form-manager` tem a ação `Build`.
    `src/app/markdown/geral/README_modulo_<x>.md` + entrada no índice.
 2. **Definição de tela**: formulários e listagens gravados no banco — via
    `FormBuilderPage`/`ListBuilderPage` ou por INSERT direto no banco DEV, seguindo o padrão das linhas já existentes.
-3. **Acesso**: item em `menu_manager` apontando para a rota (com a faixa de
+3. **Acesso**: item em `temp_menu` apontando para a rota (com a faixa de
    `sort_order` correta), rota lazy em `routes/v1/<modulo>.routes.tsx` +
    `routes/paths.ts`, e registro em `route_manager` (o sync é idempotente por
    `layer + object + endpoint`).
@@ -204,11 +204,11 @@ descreve), mas só a lista `form-manager` tem a ação `Build`.
 
 Minha leitura de "todos os Forms, List e Menus são com BUILD em Menu" é:
 **toda tela desses três tipos é definição no banco renderizada por Build, e o
-acesso é um item em `menu_manager` com `react_route` para a rota de Build/render** —
+acesso é um item em `temp_menu` com `react_route` para a rota de Build/render** —
 em vez de página CRUD escrita à mão.
 
 Se a intenção for algo mais específico, preciso saber antes de executar, por
-exemplo: um **Build também para `menu_manager`/`nav_manager`** (hoje essas listas
+exemplo: um **Build também para `temp_menu`/`temp_nav`** (hoje essas listas
 não têm a ação `Build` em `list_actions` — só `form-manager` tem), ou um Build
 próprio para listas (`list_manager`), que hoje não existe.
 
@@ -285,7 +285,7 @@ Regras que eu entendo e vou seguir:
 4. Não reformatar blocos inteiros; não tocar arquivo não relacionado.
 5. Corrigir causa raiz, não sintoma.
 6. Usar o módulo/arquivo vizinho já padronizado como espelho.
-7. Campo via `<FormGrid>`; listagem via motor de listas; acesso por `menu_manager`.
+7. Campo via `<FormGrid>`; listagem via motor de listas; acesso por `temp_menu`.
 8. Validar sintaxe/tipos do que foi alterado e testar na tela quando for UI
    (tsc limpo não prova que a tela funciona).
 9. Responder com: arquivos alterados, padrão adotado, lacunas encontradas e
@@ -309,7 +309,7 @@ networking}` que não aparecem no índice nem na seção Conteúdo do `README.md
    `/api/v1/form-campos`, módulo PHP `FormCampos` e prefixo `fc_` da view.
 6. `paths.v1.upload.new` sem rota registrada (já documentado no
    `README_rotas_frontend.md`).
-7. `nav-manager`/`menu-manager` aparecem duplicados em `Config/Routes.php` (já
+7. `temp-nav`/`temp-menu` aparecem duplicados em `Config/Routes.php` (já
    documentado no `README_rotas_swagger.md`).
 8. `components/global/FormField.tsx` continua no repositório sem uso (substituído
    pelo `FormGrid`); o `README_FormGrid.md` registra "falta religar nas páginas".

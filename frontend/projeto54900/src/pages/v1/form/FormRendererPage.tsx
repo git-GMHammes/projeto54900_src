@@ -29,7 +29,7 @@ import { normalizeList } from '@/utils/apiResult';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 
-// Slug com guard proprio: SOMENTE ADMIN (menu_manager.roles=["admin"] para
+// Slug com guard proprio: SOMENTE ADMIN (temp_menu.roles=["admin"] para
 // /v1/form/calendario) — os demais slugs deste renderizador generico
 // continuam abertos a qualquer autenticado (ex.: 'cadastro-usuario').
 const ADMIN_ONLY_SLUGS = ['calendario'];

@@ -37,7 +37,7 @@ export function senderFor(method: string): (path: string, body: unknown) => Prom
 // clicado) são indistinguíveis em HTML puro — os dois viram value=''. Sem
 // essa distinção, formDataToPayload omitia a chave nos dois casos, e o
 // backend (BaseViewService::sanitizeData) também descarta null/'' — logo um
-// FK opcional (ex.: menu_manager.parent_id) nunca podia ser zerado via PUT
+// FK opcional (ex.: temp_menu.parent_id) nunca podia ser zerado via PUT
 // update. O componente SelectField (FormGrid/select/index.tsx) escreve esse
 // valor no hidden input só quando o usuário clica no ✕; aqui viramos null
 // de verdade no payload, em vez de omitir. Ver BaseViewService::sanitizeData

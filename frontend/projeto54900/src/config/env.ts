@@ -28,7 +28,7 @@
  *     download e de serve;
  *   - routes/index.tsx — routerBasename no createBrowserRouter;
  *   - paginas que montam constantes de select remoto a partir de base da
- *     API: pages/v1/menu/CreatePage.tsx, pages/v1/menu/UpdatePage.tsx,
+ *     API: pages/v1/template/temp-menu/CreatePage.tsx, pages/v1/template/temp-menu/UpdatePage.tsx,
  *     pages/v1/form/FormBuilderPage.tsx, pages/v1/list/ListBuilderPage.tsx e
  *     pages/v1/calendar/calendar-manager/constants.ts;
  *   - pages/v1/svg-map/SvgMapPage.tsx — env.basePath como base dos assets.
@@ -140,8 +140,13 @@ export interface AppEnv {
   readonly apiVersion: string;
   /** Endpoint do WebSocket (Node). */
   readonly wsUrl: string;
-  /** Paleta de cores ativa: nome do JSON em config/themes (sem ".json"), ex.: "Blue_white". */
-  readonly theme: string;
+  /**
+   * Paleta de cores FIXA do app: nome do JSON em config/themes (sem ".json"), ex.: "Blue_white". Ausente (todas as
+   * linhas `theme:` comentadas em `env`) = vale a cor da empresa do slug da URL (company_manager.color_theme).
+   */
+  readonly theme?: string;
+  /** Template (variante visual) do visitante, antes do login: template001, template002 ou template003. */
+  readonly guestTemplate: string;
   readonly isDev: boolean;
   readonly isProd: boolean;
 }
@@ -164,7 +169,11 @@ export interface AppEnv {
  * apiVersion    VITE_API_VERSION      v1
  * wsUrl         VITE_WS_URL           /ws
  * theme         VITE_THEME            Blue_white (nome de um JSON de config/themes;
- *                                     nome inexistente cai no default — ver config/theme.ts)
+ *                                     nome inexistente cai no default — ver config/theme.ts).
+ *                                     OPCIONAL: com todas as linhas `theme:` comentadas, vale o color_theme da
+ *                                     empresa do slug (e, sem ele ou sem slug, o tema padrao)
+ * guestTemplate VITE_GUEST_TEMPLATE  template001 (variante visual antes do login; depois dele vale o
+ *                                     template do usuario ou da empresa, vindo de template-render/get)
  * isDev        nativo do Vite        import.meta.env.DEV
  * isProd        nativo do Vite        import.meta.env.PROD
  *
@@ -185,18 +194,19 @@ export const env: AppEnv = Object.freeze({
   ),
   apiVersion: import.meta.env.VITE_API_VERSION || 'v1',
   wsUrl: import.meta.env.VITE_WS_URL || '/ws',
-  // theme: import.meta.env.VITE_THEME || 'CopaDoMundo',
   // theme: import.meta.env.VITE_THEME || 'Blue_dark',
   // theme: import.meta.env.VITE_THEME || 'Blue_white',
   // theme: import.meta.env.VITE_THEME || 'CopaDoMundo',
   // theme: import.meta.env.VITE_THEME || 'Dark',
+  // theme: import.meta.env.VITE_THEME || 'White',
   // theme: import.meta.env.VITE_THEME || 'Green_dark',
   // theme: import.meta.env.VITE_THEME || 'Green_white',
   // theme: import.meta.env.VITE_THEME || 'Natal',
   // theme: import.meta.env.VITE_THEME || 'Pink_dark',
   // theme: import.meta.env.VITE_THEME || 'Pink_white',
-  theme: import.meta.env.VITE_THEME || 'Purple_dark',
+  // theme: import.meta.env.VITE_THEME || 'Purple_dark',
   // theme: import.meta.env.VITE_THEME || 'Purple_white',
+  guestTemplate: import.meta.env.VITE_GUEST_TEMPLATE || 'template001',
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
 });

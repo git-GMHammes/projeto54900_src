@@ -24,7 +24,7 @@
  * pages/v1/list/ListConstructorPage.tsx (consumidor original, renderiza a
  * grid de verdade), pages/v1/form/FormBuilderPage.tsx e
  * pages/v1/form/formBuilder.model.ts (reaproveitam tipos/helpers) e
- * pages/v1/menu/GetPage.tsx.
+ * pages/v1/template/temp-menu/GetPage.tsx.
  *
  * COMO REAPROVEITAR EM OUTRA TELA DE LISTAGEM: buscar o list_manager pelo
  * slug, normalizar as linhas com toManager/toColumn/toAction, montar cada

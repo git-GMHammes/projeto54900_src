@@ -1560,12 +1560,12 @@ FROM `map_routes` `mr`
 JOIN `map_manager` `mm` ON (`mm`.`id` = `mr`.`map_manager_id`);
 
 -- -----------------------------------------------------------------------------
--- view_menu_manager
+-- view_temp_menu
 -- -----------------------------------------------------------------------------
-DROP VIEW IF EXISTS `view_menu_manager`;
-CREATE VIEW `view_menu_manager` AS
+DROP VIEW IF EXISTS `view_temp_menu`;
+CREATE VIEW `view_temp_menu` AS
 SELECT `mm`.`id` AS `id`,
-       `mm`.`nav_manager_id` AS `mm_nav_manager_id`,
+       `mm`.`temp_nav_id` AS `mm_temp_nav_id`,
        `mm`.`parent_id` AS `mm_parent_id`,
        `mm`.`title` AS `mm_title`,
        `mm`.`react_route` AS `mm_react_route`,
@@ -1585,7 +1585,7 @@ SELECT `mm`.`id` AS `id`,
        `nm`.`updated_at` AS `nm_updated_at`,
        `nm`.`deleted_at` AS `nm_deleted_at`,
        `pm`.`id` AS `pm_id`,
-       `pm`.`nav_manager_id` AS `pm_nav_manager_id`,
+       `pm`.`temp_nav_id` AS `pm_temp_nav_id`,
        `pm`.`parent_id` AS `pm_parent_id`,
        `pm`.`title` AS `pm_title`,
        `pm`.`react_route` AS `pm_react_route`,
@@ -1601,9 +1601,9 @@ SELECT `mm`.`id` AS `id`,
        `mm`.`created_at` AS `created_at`,
        `mm`.`updated_at` AS `updated_at`,
        `mm`.`deleted_at` AS `deleted_at`
-FROM `menu_manager` `mm`
-LEFT JOIN `nav_manager` `nm` ON ((`nm`.`id` = `mm`.`nav_manager_id`) and (`nm`.`deleted_at` is null))
-LEFT JOIN `menu_manager` `pm` ON ((`pm`.`id` = `mm`.`parent_id`) and (`pm`.`deleted_at` is null));
+FROM `temp_menu` `mm`
+LEFT JOIN `temp_nav` `nm` ON ((`nm`.`id` = `mm`.`temp_nav_id`) and (`nm`.`deleted_at` is null))
+LEFT JOIN `temp_menu` `pm` ON ((`pm`.`id` = `mm`.`parent_id`) and (`pm`.`deleted_at` is null));
 
 -- -----------------------------------------------------------------------------
 -- view_message_attachments
@@ -2101,10 +2101,10 @@ LEFT JOIN `user_manager` `pm` ON ((`pm`.`id` = `agg`.`peer_id`) and (`pm`.`delet
 LEFT JOIN `user_profiles` `pc` ON ((`pc`.`user_manager_id` = `pm`.`id`) and (`pc`.`deleted_at` is null));
 
 -- -----------------------------------------------------------------------------
--- view_nav_manager
+-- view_temp_nav
 -- -----------------------------------------------------------------------------
-DROP VIEW IF EXISTS `view_nav_manager`;
-CREATE VIEW `view_nav_manager` AS
+DROP VIEW IF EXISTS `view_temp_nav`;
+CREATE VIEW `view_temp_nav` AS
 SELECT `nm`.`id` AS `id`,
        `nm`.`title` AS `nm_title`,
        `nm`.`image` AS `nm_image`,
@@ -2114,7 +2114,7 @@ SELECT `nm`.`id` AS `id`,
        `nm`.`created_at` AS `created_at`,
        `nm`.`updated_at` AS `updated_at`,
        `nm`.`deleted_at` AS `deleted_at`
-FROM `nav_manager` `nm`;
+FROM `temp_nav` `nm`;
 
 -- -----------------------------------------------------------------------------
 -- view_route_manager

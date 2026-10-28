@@ -200,7 +200,7 @@ fallback de SPA para essa subpasta (`RewriteBase /app/` /
 | `constants/` | `api.ts` — versões da API, nomes de grupo (`form-manager`, `db-schema`, …), endpoint-set REST padrão, defaults de paginação |
 | `context/` | `AppConfigContext` (config global do app) e `ToastContext` (fila de toasts) |
 | `hooks/` | `useApi` (chamada genérica com estado loading/erro), `usePagination` (sincroniza com a querystring), `useToast`, `useDebounce` |
-| `layouts/` | `RootLayout` (navbar + footer) e `BlankLayout` (tela cheia, sem cromo) |
+| `layouts/` | `TemplateLayout` (template global: cabeçalho, nav, menu lateral e rodapé; substituiu o `RootLayout`) e `BlankLayout` (tela cheia, sem cromo) |
 | `pages/` | telas roteadas: `Home/`, `errors/` (`NotFoundPage`, `RouteErrorPage`, `VersionPlaceholderPage`), `v1/user/*`, `v1/upload/*`, `v1/form/FormConstructorPage` |
 | `routes/` | `index.tsx` (`createBrowserRouter`, `basename` = `env.basePath`), `paths.ts` (constantes de rota — **usar sempre daqui**), `v1/` (subrotas que espelham `api/v1`), `v1a/` (stub para o próximo namespace) |
 | `services/` | camada HTTP, **espelho 1:1 dos endpoints** do backend — ver 3.3 |

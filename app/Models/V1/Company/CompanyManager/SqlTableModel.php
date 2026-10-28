@@ -29,6 +29,7 @@ class SqlTableModel extends BaseTableModel
         'name',
         'slug',
         'document',
+        'color_theme',
         'status',
     ];
 

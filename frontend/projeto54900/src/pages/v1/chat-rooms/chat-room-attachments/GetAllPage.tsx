@@ -5,7 +5,7 @@
 // BANCO — nao existe <thead> fixo no codigo. Regra e receita completas em
 // src/markdown/geral/README_render_via_list_constructor.md.
 //
-// Padrao visual espelhado de pages/v1/nav/GetAllPage.tsx (por sua vez
+// Padrao visual espelhado de pages/v1/template/temp-nav/GetAllPage.tsx (por sua vez
 // espelho de pages/v1/user/user-manager/GetAllPage.tsx):
 //   busca  -> input-group com bi-search (q no api_search_endpoint, view
 //             view_chat_room_attachments: cra_original_name/cr_name/um_username/

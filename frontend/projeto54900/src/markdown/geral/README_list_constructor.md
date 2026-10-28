@@ -526,7 +526,7 @@ por aqui.
 
 Descoberto ao revisar o `href_template` de `user-manager` (`/v1/user-manager/{id}/update`):
 **3 módulos** usavam a ordem errada (`:id/update`) — `user-manager`,
-`nav-manager`, `menu-manager` (todos com `UpdatePage` "stub em branco" hoje,
+`temp-nav`, `temp-menu` (todos com `UpdatePage` "stub em branco" hoje,
 risco baixo de mudar). `form-constructor`/`list-constructor` já usavam a
 ordem certa (`update/:id`). Corrigido nos 3: `routes/v1/{user,nav,menu}.routes.tsx`,
 `routes/paths.ts`, [`README_rotas_frontend.md`](README_rotas_frontend.md),

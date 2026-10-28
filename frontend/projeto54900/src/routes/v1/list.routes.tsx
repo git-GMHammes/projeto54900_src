@@ -72,7 +72,7 @@ const ListBuilderPage = lazy(() => import('@/pages/v1/list/ListBuilderPage'));
  * baixado só quando visitada.
  * -------------------------------------------------------------------------
  */
-// SOMENTE ADMIN (menu_manager.roles=["admin"] para /v1/list-constructor) —
+// SOMENTE ADMIN (temp_menu.roles=["admin"] para /v1/list-constructor) —
 // nao confundir com a LEITURA de list-manager/list-columns/list-actions que
 // toda tela de listagem do app faz (inclusive as de usuario comum) pra saber
 // suas proprias colunas/acoes: essa leitura nao passa por esta rota.

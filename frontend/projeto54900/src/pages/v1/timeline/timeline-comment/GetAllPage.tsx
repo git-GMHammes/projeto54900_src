@@ -11,7 +11,7 @@
  * genérico `/v1/form/timeline-comment`.
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-comment'`),
- *   item de navbar "Comentar" (`menu_manager.react_route`).
+ *   item de navbar "Comentar" (`temp_menu.react_route`).
  * =============================================================================
  */
 

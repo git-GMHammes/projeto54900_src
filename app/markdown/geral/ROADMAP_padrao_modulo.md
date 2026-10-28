@@ -368,11 +368,11 @@ o registro):
 | Letra | O que é na tela | Onde fica no banco |
 |---|---|---|
 | **C** — Criar | Botão "Nova ..." na lista + form de cadastro (`criar-...`, POST `.../create`) + `CreatePage` com botão **Voltar** | `form_manager`, `form_groups`, `form_rows`, `form_fields` |
-| **R** — Ler/listar | Lista (`list_manager` sobre a view + `list_columns`) + menu | `list_manager`, `list_columns`, `menu_manager` |
+| **R** — Ler/listar | Lista (`list_manager` sobre a view + `list_columns`) + menu | `list_manager`, `list_columns`, `temp_menu` |
 | **U** — Atualizar | Ação **Editar** na lista (link para `.../update/{id}`) + form de atualização (`editar-...`, PUT `.../update`) + `UpdatePage` com botão **Voltar** | `list_actions` (Editar), `form_manager` |
 | **D** — Excluir | Ação **Excluir** na lista (DELETE `.../delete-soft/{id}`, com confirmação) | `list_actions` (Excluir) |
 | **Mídia** — Visualizar | Ação **Visualizador de Mídias** quando o registro tem anexo (modal `media-viewer`, `MediaViewerModal`) | `list_actions` |
-| **Menu** | Item em `menu_manager` apontando para a lista | `menu_manager` |
+| **Menu** | Item em `temp_menu` apontando para a lista | `temp_menu` |
 
 Regras:
 

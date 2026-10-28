@@ -21,14 +21,14 @@
 ## Raiz
 
 Fonte: `routes/index.tsx` — `createBrowserRouter`, `basename = routerBasename`.
-`RootLayout` (navbar + footer) envolve toda a árvore; `errorElement` cai em
+`TemplateLayout` (template global: cabeçalho, nav, menu lateral e rodapé; antes `RootLayout`) envolve toda a árvore; `errorElement` cai em
 `RouteErrorPage` para qualquer exceção de loader/render de uma rota filha.
 
 | Path   | Elemento                    | Observação                                        |
 | ------ | --------------------------- | ------------------------------------------------- |
-| `/`    | `pages/Home/HomePage`       | Índice (`index: true`) dentro do `RootLayout`     |
+| `/`    | `pages/Home/HomePage`       | Índice (`index: true`) dentro do `TemplateLayout` |
 | `/acesso-negado` | `pages/errors/ForbiddenPage` | Aviso de acesso negado — destino do `RequireRole` |
-| `/v1`  | _(grupo)_ — ver seção "v1"  | `v1Routes`, registrado como filho do `RootLayout` |
+| `/v1`  | _(grupo)_ — ver seção "v1"  | `v1Routes`, registrado como filho do `TemplateLayout` |
 | `/v1a` | _(grupo)_ — ver seção "v1a" | `v1aRoutes`, idem                                 |
 | `*`    | `pages/errors/NotFoundPage` | Qualquer path não casado por nenhuma rota acima   |
 
@@ -55,7 +55,7 @@ grupo `api/v1` do backend (`app/Config/Routes.php`).
 | --------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `login`, `user-manager/create`, `user-profiles/create`, `convite/aceitar`                 | nenhuma                         | **Públicas** — login, as duas etapas do Cadastro de Usuário, e o destino do link de e-mail do convite de evento |
 | todo o resto do bloco v1                                                                 | `RequireAuth`                   | Sem sessão redireciona para `/v1/login`; durante o refresh silencioso inicial mostra `LoadingOverlay`       |
-| `user-manager*`, `user-profiles`, `form-constructor*`, `form-constructor-claude`, `list-constructor*`, `nav-manager*`, `menu-manager*`, `knowledge-base` | `RequireRole role="admin"`      | Sem o papel `admin` redireciona para `/acesso-negado`                                                       |
+| `user-manager*`, `user-profiles`, `form-constructor*`, `form-constructor-claude`, `list-constructor*`, `temp-nav*`, `temp-menu*`, `temp-header*`, `temp-footer*`, `knowledge-base` | `RequireRole role="admin"`      | Sem o papel `admin` redireciona para `/acesso-negado`                                                       |
 | `form/:slug`                                                                             | nenhuma (além do `RequireAuth`) | Renderizador genérico de formulário — usado por usuário comum; o caso do slug `calendario` é tratado dentro de `FormRendererPage` |
 
 As guardas vivem em `routes/RequireAuth.tsx` e `routes/RequireRole.tsx` e são
@@ -176,11 +176,11 @@ não passa por estas rotas e continua acessível a qualquer usuário autenticado
 > [`README_list_constructor.md`](README_list_constructor.md).
 >
 > Não há link dedicado na navbar para estas rotas — o acesso é por URL direta
-> (ou por item cadastrado em `menu_manager`).
+> (ou por item cadastrado em `temp_menu`).
 
 ### nav — Config/branding do app/navbar
 
-Fonte: `routes/v1/nav.routes.tsx` — espelha `api/v1/nav-manager` (sem `-view`;
+Fonte: `routes/v1/template.routes.tsx` — espelha `api/v1/temp-nav` (sem `-view`;
 não tem view própria). Guarda nome do app, imagem, ícone de mensagens e versão
 do sistema — a "casca" em volta do Menu, não o menu em si.
 
@@ -188,30 +188,77 @@ Guarda: **SOMENTE ADMIN** (`RequireRole role="admin"`).
 
 | Path                          | Elemento (lazy)              | Observação                                                                                |
 | ----------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
-| `/v1/nav-manager`             | `pages/v1/nav/GetAllPage`     | Listagem **real** (tabela própria do módulo, não usa `DataTable`/`Pagination` — stubados)  |
-| `/v1/nav-manager/create`      | `pages/v1/nav/CreatePage`     | **Stub em branco** — aguardando a fábrica de formulários                                  |
-| `/v1/nav-manager/:id`         | `pages/v1/nav/GetPage`        | Detalhe real; botão "Ver itens" leva para `/v1/menu-manager?nav_manager_id=:id`             |
-| `/v1/nav-manager/update/:id`  | `pages/v1/nav/UpdatePage`     | **Stub em branco**, mesmo motivo acima                                                    |
+| `/v1/temp-nav`             | `pages/v1/template/temp-nav/GetAllPage`     | Listagem **real** (tabela própria do módulo, não usa `DataTable`/`Pagination` — stubados)  |
+| `/v1/temp-nav/create`      | `pages/v1/template/temp-nav/CreatePage`     | **Stub em branco** — aguardando a fábrica de formulários                                  |
+| `/v1/temp-nav/:id`         | `pages/v1/template/temp-nav/GetPage`        | Detalhe real; botão "Ver itens" leva para `/v1/temp-menu?temp_nav_id=:id`             |
+| `/v1/temp-nav/update/:id`  | `pages/v1/template/temp-nav/UpdatePage`     | **Stub em branco**, mesmo motivo acima                                                    |
 
 ### menu — Árvore de itens navegáveis
 
-Fonte: `routes/v1/menu.routes.tsx` — espelha `api/v1/menu-manager` (sem
-`-view`). Cada item pertence a um `nav-manager` (FK `nav_manager_id`) e pode
+Fonte: `routes/v1/template.routes.tsx` — espelha `api/v1/temp-menu` (sem
+`-view`). Cada item pertence a um `temp-nav` (FK `temp_nav_id`) e pode
 ter um `parent_id` (submenu). Antes de 2026-09-13 esta tabela se chamava
-`menu_items` e a config de branding se chamava `menu_manager` — os nomes
+`menu_items` e a config de branding usava o nome antigo desta tabela — os nomes
 foram trocados para refletir que esta é a árvore de menu de verdade.
 
 Guarda: **SOMENTE ADMIN** (`RequireRole role="admin"`). Não confundir com a
-**leitura** que `hooks/useSiteMenu.ts` faz direto do service (fora do router)
+**leitura** que o layout global faz por `template-render/get` (fora do router)
 para montar a navbar de qualquer usuário autenticado — essa leitura não passa
 por estas rotas.
 
 | Path                          | Elemento (lazy)              | Observação                                                                          |
 | ------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------ |
-| `/v1/menu-manager`             | `pages/v1/menu/GetAllPage`   | Listagem **real**; aceita `?nav_manager_id=` para restringir aos itens de 1 nav      |
-| `/v1/menu-manager/create`      | `pages/v1/menu/CreatePage`   | **Stub em branco**; lê `?nav_manager_id=` para pré-preencher o título quando existir |
-| `/v1/menu-manager/:id`         | `pages/v1/menu/GetPage`      | Detalhe real; "Voltar" religa em `?nav_manager_id=` do próprio item                  |
-| `/v1/menu-manager/update/:id`  | `pages/v1/menu/UpdatePage`   | **Stub em branco**                                                                   |
+| `/v1/temp-menu`             | `pages/v1/template/temp-menu/GetAllPage`   | Listagem **real**; aceita `?temp_nav_id=` para restringir aos itens de 1 nav      |
+| `/v1/temp-menu/create`      | `pages/v1/template/temp-menu/CreatePage`   | **Stub em branco**; lê `?temp_nav_id=` para pré-preencher o título quando existir |
+| `/v1/temp-menu/:id`         | `pages/v1/template/temp-menu/GetPage`      | Detalhe real; "Voltar" religa em `?temp_nav_id=` do próprio item                  |
+| `/v1/temp-menu/update/:id`  | `pages/v1/template/temp-menu/UpdatePage`   | **Stub em branco**                                                                   |
+
+### Layout global do sistema — `TemplateLayout`
+
+O `TemplateLayout` (`layouts/TemplateLayout.tsx`) envolve as rotas normais no lugar do antigo `RootLayout` (que ficou no código, sem uso).
+Ele renderiza a casca do template (`components/template/TemplateShell.tsx`), um código só para as três variantes
+(`template001` bordas 3D, `template002` sem bordas, `template003` sem bordas com menu lateral em Offcanvas):
+
+- **Visitante (sem login):** variante do template padrão da empresa do slug da URL (`/<slug>/v1/login`), pela rota pública
+  `template-public/get/{slug}` (`hooks/useGuestTemplate.ts`); sem slug ou sem template, a do `env` (`VITE_GUEST_TEMPLATE`, padrão
+  `template001`). Mostra o **cabeçalho(s) e o rodapé(s) da empresa** do slug (sem eles, o rodapé simples de sempre), nav só com
+  **Home** e **Entrar** e o conteúdo (Home de cards, login, cadastro). Sem menu lateral.
+- **Com sessão:** o template do usuário (`user_manager.temp_manager_id`) ou o de menor `id` ativo da empresa, vindo de
+  `GET template-render/get` (`hooks/useTemplate.ts`): nav, menu lateral (itens `offcanvas`), cabeçalho(s) e rodapé(s) empilhados
+  por `sort_order`. O nav mantém a marca do app, o badge de mensagens, o menu do usuário (Editar Perfil, Segurança, Sair) e a barra de favoritos.
+- **Cores:** toda a paleta vem do `env` (`VITE_THEME`), antes e depois do login (`styles/_template-global.scss` leva a cor
+  `primary` aos botões e componentes do Bootstrap dentro de `.tpl-app`).
+- Componentes: `TemplateHeaderRegion`, `TemplateNavRegion`, `TemplateSideMenu`, `TemplateFooterRegion` e `TemplateShell`, em `components/template/`.
+  A tela de chat em tela cheia e as páginas estáticas `/template001`, `/template002` e `/template003` ficam fora do layout.
+
+### template — Cabeçalho e rodapé do template (`temp-header`, `temp-footer`)
+
+Fonte: `routes/v1/template.routes.tsx` — espelha `api/v1/temp-header` e `api/v1/temp-footer`
+(sem `-view`). Lista, busca, cadastro, edição e exclusão vêm dos builds do banco: `ListBuild`
+(slugs `header` e `footer`) e `RecordFormBuild` (`criar-cabecalho`, `editar-cabecalho`,
+`criar-rodape`, `editar-rodape`). Só admin (`RequireRole role="admin"`). A exclusão é a ação
+"Excluir" da própria lista (`delete-soft`).
+
+| Rota                          | Página                                          | Observação                                                         |
+| ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
+| `/v1/temp-header`             | `pages/v1/template/temp-header/GetAllPage`      | Lista e busca (`ListBuild`, slug `header`)                         |
+| `/v1/temp-header/create`      | `pages/v1/template/temp-header/CreatePage`      | `RecordFormBuild`, slug `criar-cabecalho`; nasce `draft`           |
+| `/v1/temp-header/update/:id`  | `pages/v1/template/temp-header/UpdatePage`      | Slug `editar-cabecalho`; empresas (`company_manager`) via `patches` |
+| `/v1/temp-footer`             | `pages/v1/template/temp-footer/GetAllPage`      | Lista e busca (slug `footer`)                                      |
+| `/v1/temp-footer/create`      | `pages/v1/template/temp-footer/CreatePage`      | Slug `criar-rodape`                                                |
+| `/v1/temp-footer/update/:id`  | `pages/v1/template/temp-footer/UpdatePage`      | Slug `editar-rodape`                                               |
+
+`temp-manager` (catálogo de templates: `template001/002/003` e as empresas de cada um) segue o mesmo modelo
+(`ListBuild` slug `template`; `criar-template` e `editar-template`), mas é **só superuser**
+(`RequireRole role="superuser"`): `/v1/temp-manager`, `/v1/temp-manager/create`, `/v1/temp-manager/update/:id`.
+
+Template do usuário: em `/v1/account/profile` ('Editar perfil') o componente `TemplatePreference` escolhe o template
+(`PUT template-render/preference`): 'Automático (menor ID da empresa)' ou um dos templates da empresa da sessão; vale em todo login.
+
+Empresas: o campo `company_manager[]` (lista de slugs) usa `toStringArray` (`utils/jsonList.ts`);
+sem empresas no cadastro, o backend assume a empresa da sessão. As telas de nav e menu
+(`temp-nav`, `temp-menu`) também ganharam esse campo. O menu lateral tem o grupo "Template"
+(Cabeçalhos e Rodapés).
 
 ### calendar — Listagem de calendários (view_calendar_manager)
 
@@ -235,7 +282,7 @@ Fonte: `routes/v1/svgMap.routes.tsx` — **não espelha API**: a página só
 consome arquivos estáticos de `public/svg-map/` (`rj_municipios.svg`,
 `rj_municipios_nomes.json`, `rj_municipios_cores.json`). Portado em 2026-09-23
 do CakePHP `diarias` (`Web/V1A/Mapa/Page/index.php` + `mapa_rj_tooltip.js` +
-`mapa_rj_checklist.js`). Item "SVG" no navbar via `menu_manager`
+`mapa_rj_checklist.js`). Item "SVG" no navbar via `temp_menu`
 (`sort_order` 85). Não portados: `modal_mapa_rj.php` e `mapa_rj_highlight.js`
 Guarda: apenas `RequireAuth` (sem `RequireRole`).
 
@@ -256,7 +303,7 @@ Bootstrap (estado React) com os markdowns do tópico renderizados por
 `components/global/MarkdownView.tsx` (`react-markdown` + `remark-gfm`). No
 dev-server, `vite.config.ts` libera a pasta do backend em `server.fs.allow`.
 Guarda: `RequireAuth` + `RequireRole role="admin"` (a base descreve regras
-internas). Item de navbar em `menu_manager`: **pendente**.
+internas). Item de navbar em `temp_menu`: **pendente**.
 
 | Path                 | Elemento (lazy)                              | Observação                                                                                                       |
 | -------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -313,7 +360,7 @@ misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela (Fase 3).
 | ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `/v1/timeline` | `pages/v1/timeline/home-feed/GetAllPage` | **Home Feed** (Fase 3b) — feed misto (`GET .../timeline-posts-view/home-feed`, algoritmo no backend, `README_modulo_timeline.md` §5.1), scroll infinito 10 em 10 (`useInfiniteScroll`), card único por post (`PostCard.tsx`: mídia via `MediaPreview` global, curtir/avaliar/comentar/denunciar, 3 comentários + "ver mais" com scroll infinito próprio), botão flutuante de novo post (`NewPostModal.tsx`, reaproveita a técnica do `FormRendererPage`) |
 | `/v1/timeline-posts` | `pages/v1/timeline/timeline-posts/GetAllPage` | Listagem **clássica** (Fase 2) — feed completo (`view_timeline_posts`), mais recentes primeiro — motor `list_manager`/`list_columns`/`list_actions` (slug `timeline-feed`), busca + paginação de servidor, mesmo padrão de `calendar-list/GetAllPage`. Ações Curtir/Avaliar/Republicar chamam a API de verdade (corpo montado por `list_actions.data_action`, ver header do arquivo) |
-| `/v1/timeline-post` | `pages/v1/timeline/timeline-post/GetAllPage` | **Lista padrão** das publicações (`timeline_posts`) — slug `timeline-post`, wrapper de `StandardListPage`. Item de menu "Nova Publicação" (`menu_manager.id=31`) |
+| `/v1/timeline-post` | `pages/v1/timeline/timeline-post/GetAllPage` | **Lista padrão** das publicações (`timeline_posts`) — slug `timeline-post`, wrapper de `StandardListPage`. Item de menu "Nova Publicação" (`temp_menu.id=31`) |
 | `/v1/timeline-manager` | `pages/v1/timeline/timeline-manager/GetAllPage` | **Lista padrão** das timelines (`timeline_manager`) — slug `timeline-manager`. Item de menu "Minha Timeline" (`id=32`). Era o form `timeline-settings` |
 | `/v1/timeline-comment` | `pages/v1/timeline/timeline-comment/GetAllPage` | **Lista padrão** dos comentários (`timeline_post_comments`) — slug `timeline-comment`. Item de menu "Comentar" (`id=33`) |
 | `/v1/timeline-report` | `pages/v1/timeline/timeline-report/GetAllPage` | **Lista padrão** das denúncias (`timeline_post_reports`) — slug `timeline-report`. Item de menu "Denunciar" (`id=34`) |
@@ -325,7 +372,7 @@ misto/scroll infinito pedida pelo usuário (Home Feed) é outra tela (Fase 3).
 > `Listagem '<slug>' não encontrada em list_manager`.
 > Os títulos dos itens de menu continuam os antigos ("Nova Publicação",
 > "Comentar", …), embora as telas agora sejam de listagem — ajustar em
-> `/v1/menu-manager` se for o caso.
+> `/v1/temp-menu` se for o caso.
 > As listas padrão usam **GET** (`api_get_endpoint`/`api_search_endpoint`); uma
 > listagem que exija POST (`get-grouped`, como `timeline-feed`) precisa de página
 > própria, não deste wrapper.
@@ -410,29 +457,26 @@ instrução).
 
 ## Navegação (navbar)
 
-Fonte: `components/layout/Navbar.tsx` — todos os links usam `paths.ts`, nunca
-string solta.
+Fonte: `components/template/TemplateNavRegion.tsx` (layout global, desde 2026-10-28; antes `components/layout/Navbar.tsx`) —
+todos os links usam `paths.ts`, nunca string solta.
 
-**A barra NÃO é uma lista fixa de links.** Ela é montada a partir de
-`menu_manager` (via `hooks/useSiteMenu.ts`, que lê o service direto, fora do
-router) e filtrada por papel. Só estes itens são hardcoded no componente:
+**A barra NÃO é uma lista fixa de links.** Com sessão ela é montada a partir de `temp_menu`, entregue por
+`GET template-render/get` (o backend filtra por papel). Só estes itens são fixos no código:
 
-| Situação                                  | Itens hardcoded                                                        |
-| ----------------------------------------- | ---------------------------------------------------------------------- |
-| Visitante sem sessão                      | `GUEST_NAV`: Home (`paths.home`) + Entrar (`paths.v1.auth.login`)       |
-| Autenticado, mas API do menu falhou/vazia | `FALLBACK_NAV`: apenas Home                                             |
+| Situação                                  | Itens fixos                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| Visitante sem sessão                      | `GUEST_ENTRIES`: Home (`paths.home`) + Entrar (`paths.v1.auth.login`)   |
+| Autenticado, mas a API do template falhou | `HOME_ONLY_ENTRIES`: apenas Home                                        |
 | Durante o bootstrap do `AuthContext`      | apenas Home (para "Entrar" não piscar antes de restaurar a sessão)      |
 
-Com sessão, os itens de topo vêm de `menu_manager` (faixa de `sort_order`
-`<100`), com os filhos de `parent_id` virando dropdown; itens com placement
-`offcanvas` (e seus filhos) vão para o painel lateral. Um item de **topo** cuja
-rota seja a de login é removido (`withoutRootLogin`) — dentro de um submenu ele
-permanece.
+Com sessão, os itens de topo `navbar` vêm de `temp_menu` (raízes com `sort_order < 100`), com os filhos virando dropdown de um
+nível; itens `offcanvas` (e seus filhos) formam o menu lateral. Um item de **topo** cuja rota seja a de login é removido
+(`toNavEntries`); dentro de um submenu ele permanece.
 
 > Ou seja: o path de cada item de navbar (Usuarios, Uploads, Formularios, Nav,
 > Menus, Google Calendars, SVG…) é **dado de banco**, não deste documento. O
 > mapa dos destinos continua nas seções acima; a manutenção é na tela
-> `/v1/menu-manager`.
+> `/v1/temp-menu`.
 
 Dropdown do usuário (fim da barra, só autenticado) — este sim é fixo no código:
 

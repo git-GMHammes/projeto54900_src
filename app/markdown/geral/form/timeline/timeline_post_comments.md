@@ -4,13 +4,13 @@
 
 # Comentário — `timeline-comment`
 
-Mesmo modelo de [`form/menu/menu_manager.md`](../menu/menu_manager.md): árvore
+Mesmo modelo de [`form/template/temp_menu.md`](../template/temp_menu.md): árvore
 revisada aqui antes do `INSERT` (não migration, não seed — ver aviso em
 [`README_modulo_form.md`](../../README_modulo_form.md)).
 
 **O que é:** formulário de `timeline_post_comments` — o comentário de uma
 publicação, com resposta opcional via `parent_id` (auto-relacionamento, mesmo
-padrão de `menu_manager.parent_id`). Só comenta quem está logado; o autor
+padrão de `temp_menu.parent_id`). Só comenta quem está logado; o autor
 (`user_manager_id`) vem da sessão, não é campo. Modelo de dados completo em
 [`README_modulo_timeline.md`](../../README_modulo_timeline.md).
 
@@ -74,7 +74,7 @@ Observações de negócio (Processor, Etapa D):
 
 Revisar e então gerar o `INSERT` (`form_manager` → `form_groups` → `form_rows` →
 `form_fields`) a partir exatamente desta tabela — mesmo fluxo de
-`nav_manager.md`/`menu_manager.md`. Antes do `INSERT`: conferir os endpoints de
+`temp_nav.md`/`temp_menu.md`. Antes do `INSERT`: conferir os endpoints de
 `src` e o `submit_endpoint` contra `route_manager` (checklist do
 [`README_campo_select_rota.md`](../../../frontend/projeto54900/src/markdown/geral/README_campo_select_rota.md)).
 

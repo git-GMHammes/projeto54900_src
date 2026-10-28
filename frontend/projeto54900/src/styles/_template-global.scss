@@ -1,0 +1,342 @@
+// =============================================================================
+// Template GLOBAL — COPIA dos efeitos dos templates estaticos (styles/_animations.scss e os blocos
+// de template de styles/_custom.scss), para o sistema real usar sem depender dos modelos.
+// Os arquivos originais NAO foram alterados: os templates estaticos (.template001, .template002 e
+// .template003) continuam intactos e independentes desta copia.
+//
+// Como usar: o layout real recebe a classe `.tpl-app` na raiz (e `.tpl-flat` junto, nos modelos
+// sem bordas: Template 002 e 003). Dentro dele valem as MESMAS classes dos modelos: tpl-region,
+// tpl-enter-down, tpl-fade-in, tpl-nav-link, tpl-nav-item, tpl-menu-item, tpl-menu-link,
+// tpl-reveal, tpl-reveal-group, tpl-collapsible (+ tpl-closing), tpl-fade-out e tpl-blend.
+// Barra fixa so no celular: `tpl-sticky` (no lugar de template00X-sticky).
+//
+// Mapa de escopo:  .template001 / .template002 / .template003  ->  .tpl-app
+//                  .template002, .template003 (sem bordas)     ->  .tpl-app.tpl-flat
+//                  @keyframes tpl-*                            ->  @keyframes tplg-*
+// Paleta e variaveis (--tpl-*) continuam vindo de config/theme.ts. JS correspondente em
+// hooks/template/ e components/template/.
+// Importado por styles/index.scss, depois de animations.
+// =============================================================================
+
+@keyframes tplg-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tplg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tplg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tpl-app {
+  // Entrada do cabecalho (desliza de cima) e fade da imagem de fundo.
+  .tpl-enter-down {
+    animation: tplg-slide-down 0.6s ease-out both;
+  }
+
+  .tpl-fade-in {
+    animation: tplg-fade-in 0.9s ease-out both;
+  }
+
+  // Regiao com borda: transicao das cores (troca de paleta), do padding (nav
+  // que encolhe ao rolar) e sombra que aprofunda no hover (efeito 3D).
+  .tpl-region {
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease,
+      border-color 0.4s ease,
+      padding 0.25s ease,
+      filter 0.25s ease;
+
+    &:hover {
+      filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.2));
+    }
+
+    &.tpl-scrolled {
+      filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.3));
+    }
+  }
+
+  // Links do nav: sublinhado cresce do centro.
+  .tpl-nav-link {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0.25rem;
+      width: calc(100% - 1rem);
+      height: 2px;
+      background: currentcolor;
+      transform: translateX(-50%) scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    &:hover::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  // Links do nav: surgem em cascata depois da entrada do cabecalho (0,3 s de
+  // inicio, 0,04 s entre um e outro, ate 30 itens). So a partir de lg: abaixo
+  // disso os links ficam dentro da sanfona.
+  @media (min-width: 992px) {
+    .tpl-nav-item {
+      animation: tplg-fade-up 0.4s ease-out both;
+    }
+
+    @for $i from 1 through 30 {
+      .tpl-nav-item:nth-child(#{$i}) {
+        animation-delay: #{0.3 + $i * 0.04}s;
+      }
+    }
+  }
+
+  // Itens do menu lateral: surgem em cascata (ate 30 itens) e, no hover, o fundo
+  // preenche da esquerda.
+  .tpl-menu-item {
+    animation: tplg-fade-up 0.4s ease-out both;
+  }
+
+  @for $i from 1 through 30 {
+    .tpl-menu-item:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.04}s;
+    }
+  }
+
+  .tpl-menu-link {
+    background-image: linear-gradient(
+      color-mix(in srgb, currentcolor 18%, transparent),
+      color-mix(in srgb, currentcolor 18%, transparent)
+    );
+    background-repeat: no-repeat;
+    background-size: 0 100%;
+    transition: background-size 0.3s ease;
+
+    &:hover {
+      background-size: 100% 100%;
+    }
+  }
+
+  // Revelacao ao rolar: o hook useReveal adiciona .tpl-in quando o bloco entra na
+  // tela. .tpl-reveal anima o proprio elemento; .tpl-reveal-group anima os filhos
+  // em sequencia (rodape).
+  .tpl-reveal,
+  .tpl-reveal-group > * {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .tpl-reveal.tpl-in,
+  .tpl-reveal-group.tpl-in > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  @for $i from 1 through 8 {
+    .tpl-reveal-group > *:nth-child(#{$i}) {
+      transition-delay: #{($i - 1) * 0.12}s;
+    }
+  }
+
+  // Fechar regiao pelo X: a altura encolhe (grid 1fr -> 0fr) e some; as regioes
+  // abaixo sobem junto. overflow so durante o fechamento, para nao cortar a
+  // sombra 3D no estado normal.
+  .tpl-collapsible {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition:
+      grid-template-rows 0.35s ease,
+      opacity 0.35s ease;
+
+    > .tpl-collapsible-inner {
+      min-height: 0;
+    }
+
+    &.tpl-closing {
+      grid-template-rows: 0fr;
+      opacity: 0;
+
+      > .tpl-collapsible-inner {
+        overflow: hidden;
+      }
+    }
+  }
+
+  // Menu lateral fechado: so desvanece (largura de coluna nao anima).
+  .tpl-fade-out {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+}
+
+// Template002 e Template003 (sem bordas): fundo em degradê vertical que se mistura com as regioes
+// vizinhas (variaveis --tpl-blend-* de config/theme.ts) e hover que so clareia,
+// pois nao ha borda 3D para aprofundar.
+.tpl-app.tpl-flat {
+  .tpl-blend {
+    background-image: linear-gradient(180deg, var(--tpl-blend-from), var(--tpl-blend-to));
+  }
+
+  .tpl-region:hover:not(.tpl-scrolled) {
+    filter: brightness(1.04);
+  }
+}
+
+// Menos movimento: sem animacao nem transicao; os blocos de revelacao ficam visiveis.
+@media (prefers-reduced-motion: reduce) {
+  .tpl-app,
+  .tpl-app *,
+  .tpl-app *::before,
+  .tpl-app *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .tpl-app .tpl-reveal,
+  .tpl-app .tpl-reveal-group > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---- ex-_custom.scss: fonte base em telas grandes, barra fixa e fundo em degradê da pagina ----
+// Template global: o Bootstrap não escala a
+// fonte base por breakpoint. Em TV/monitor grande o rem cresce para toda a
+// interface (baseada em rem) acompanhar; escopo restrito às páginas com .tpl-app.
+@media (min-width: 1920px) {
+  html:has(.tpl-app) {
+    font-size: 125%;
+  }
+}
+
+@media (min-width: 2560px) {
+  html:has(.tpl-app) {
+    font-size: 175%;
+  }
+}
+
+@media (min-width: 3840px) {
+  html:has(.tpl-app) {
+    font-size: 250%;
+  }
+}
+
+// Template global: barra fixa (nav + botão Menu) só abaixo de lg. O Bootstrap tem
+// sticky-top e sticky-{bp}-top (de bp para cima), mas não "sticky só no celular".
+@media (min-width: 992px) {
+  .tpl-app .tpl-sticky {
+    position: static;
+    background-color: transparent !important;
+  }
+}
+
+// Template global: degradê de fundo da página, com as cores da paleta ativa
+// (variáveis --tpl-* vindas de config/theme.ts). O Bootstrap só tem
+// .bg-gradient (sobreposição sutil), não um degradê com cores próprias.
+.tpl-app {
+  background-image: linear-gradient(var(--tpl-bg-angle), var(--tpl-bg-from), var(--tpl-bg-to));
+  background-attachment: fixed;
+  color: var(--bs-body-color);
+}
+
+// ---- Cor `primary` da paleta nos componentes do Bootstrap ------------------------------------------
+// O Bootstrap compila `.btn-primary`, `.btn-outline-primary`, `.page-item.active`, etc. com valores
+// FIXOS (Sass), que nao seguem a variavel --bs-primary. Dentro do `.tpl-app`, a paleta do env
+// (--bs-primary / --bs-primary-rgb, definidas por config/theme.ts) passa a mandar nesses componentes,
+// para o sistema todo mudar de cor com o env e nao so as regioes do template.
+.tpl-app {
+  .btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 85%, black);
+    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 85%, black);
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 78%, black);
+    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 78%, black);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: var(--bs-primary);
+    --bs-btn-disabled-border-color: var(--bs-primary);
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--bs-primary);
+    --bs-btn-hover-border-color: var(--bs-primary);
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--bs-primary);
+    --bs-btn-active-border-color: var(--bs-primary);
+    --bs-btn-disabled-color: var(--bs-primary);
+    --bs-btn-disabled-border-color: var(--bs-primary);
+  }
+
+  .bg-primary {
+    background-color: var(--bs-primary) !important;
+  }
+
+  .text-bg-primary {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+  }
+
+  .border-primary {
+    border-color: var(--bs-primary) !important;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: color-mix(in srgb, var(--bs-primary) 60%, transparent);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--bs-primary) 25%, transparent);
+  }
+
+  .form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+
+  .page-link {
+    --bs-pagination-color: var(--bs-primary);
+    --bs-pagination-hover-color: var(--bs-primary);
+    --bs-pagination-active-bg: var(--bs-primary);
+    --bs-pagination-active-border-color: var(--bs-primary);
+  }
+
+  .nav-pills {
+    --bs-nav-pills-link-active-bg: var(--bs-primary);
+  }
+
+  .progress {
+    --bs-progress-bar-bg: var(--bs-primary);
+  }
+}

@@ -170,7 +170,7 @@ export type CallOptions = Omit<RequestOptions, 'body'>;
  *   (`utils/apiResult.ts`): `rows`, `total`, `page` e `limit` no MESMO formato,
  *   independentemente do envelope que a API devolveu. É o tipo que as listagens
  *   consomem para paginar (`total`) e renderizar (`rows`), com o `<T>` escolhido
- *   por quem chama (ex.: `NormalizedList<MenuManagerItem>` em `useSiteMenu`).
+ *   por quem chama (ex.: `NormalizedList<TempMenuItem>` em `useSiteMenu`).
  * -------------------------------------------------------------------------
  */
 export interface ApiErrorInit {

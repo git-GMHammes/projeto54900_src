@@ -1,5 +1,5 @@
-// Busca o nav_manager ativo e seus itens do navbar principal para popular o
-// Navbar dinamicamente. menu_manager guarda TODAS as rotas do site (inclusive
+// Busca o temp_nav ativo e seus itens do navbar principal para popular o
+// Navbar dinamicamente. temp_menu guarda TODAS as rotas do site (inclusive
 // sub-rotas de CRUD como /v1/user-manager/create) na mesma tabela, sem campo
 // dedicado para "aparece no navbar" — a convencao adotada e sort_order: itens
 // do navbar principal ficam abaixo de NAVBAR_SORT_ORDER_LIMIT, o restante do
@@ -10,7 +10,7 @@
 // propria (organizacional, so agrupa filhos) tambem vira dropdown, so que sem
 // link no proprio toggle.
 //
-// Roles: menu_manager.roles (string[] | null) filtra os itens pelo role do
+// Roles: temp_menu.roles (string[] | null) filtra os itens pelo role do
 // usuario logado (user.role.slug) antes de montar a arvore — roles null
 // libera para qualquer autenticado; um pai fora do role esconde os filhos
 // junto (nao ha checagem independente por filho).
@@ -24,7 +24,7 @@
 // dois casos o Navbar usa o fallback estatico (FALLBACK_NAV).
 //
 // Sessao: o menu so e buscado com usuario autenticado. Sem sessao nenhuma
-// chamada a nav-manager/menu-manager sai daqui e `menu` fica null; ao deslogar,
+// chamada a temp-nav/temp-menu sai daqui e `menu` fica null; ao deslogar,
 // o menu carregado e descartado (reset). O Navbar anonimo usa GUEST_NAV.
 
 const NAVBAR_SORT_ORDER_LIMIT = 100;
@@ -33,10 +33,10 @@ import { useEffect } from 'react';
 import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/context/AuthContext';
 import type { UseApiResult } from '@/hooks/useApi';
-import { navManagerTable } from '@/services/v1/navManager.table';
-import { menuManagerTable } from '@/services/v1/menuManager.table';
+import { tempNavTable } from '@/services/v1/tempNav.table';
+import { tempMenuTable } from '@/services/v1/tempMenu.table';
 import { normalizeList } from '@/utils/apiResult';
-import type { MenuManagerItem, NavManagerItem } from '@/types/menu';
+import type { TempMenuItem, TempNavItem } from '@/types/menu';
 
 export interface SiteMenuLink {
   to: string;
@@ -57,7 +57,7 @@ export interface SiteMenu {
   offcanvas: SiteMenuItem[];
 }
 
-function toLink(item: MenuManagerItem): SiteMenuLink | null {
+function toLink(item: TempMenuItem): SiteMenuLink | null {
   if (!item.react_route) return null;
   // end: true sempre — cada item aponta pra uma pagina distinta (nao um layout
   // pai), entao so deve marcar .active na rota exata. Sem isso, "/v1/user-manager"
@@ -73,20 +73,20 @@ export function isRoleAllowed(roles: string[] | null, roleSlug: string | null): 
 }
 
 async function fetchSiteMenu(signal: AbortSignal, roleSlug: string | null): Promise<SiteMenu> {
-  const navPayload = await navManagerTable.find({ status: 'active' }, { limit: 1 }, { signal });
-  const { rows: navRows } = normalizeList<NavManagerItem>(navPayload);
+  const navPayload = await tempNavTable.find({ status: 'active' }, { limit: 1 }, { signal });
+  const { rows: navRows } = normalizeList<TempNavItem>(navPayload);
   const nav = navRows[0];
   if (!nav) return { navbar: [], offcanvas: [] };
 
-  const menuPayload = await menuManagerTable.find(
-    { nav_manager_id: nav.id, status: 'active' },
+  const menuPayload = await tempMenuTable.find(
+    { temp_nav_id: nav.id, status: 'active' },
     { limit: 100 },
     { signal },
   );
-  const { rows: allMenuRows } = normalizeList<MenuManagerItem>(menuPayload);
+  const { rows: allMenuRows } = normalizeList<TempMenuItem>(menuPayload);
   const menuRows = allMenuRows.filter((item) => isRoleAllowed(item.roles, roleSlug));
 
-  const byParent = new Map<string, MenuManagerItem[]>();
+  const byParent = new Map<string, TempMenuItem[]>();
   for (const item of menuRows) {
     if (item.parent_id === null) continue;
     const key = String(item.parent_id);
@@ -97,7 +97,7 @@ async function fetchSiteMenu(signal: AbortSignal, roleSlug: string | null): Prom
     .filter((item) => item.parent_id === null && Number(item.sort_order) < NAVBAR_SORT_ORDER_LIMIT)
     .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
 
-  const build = (items: MenuManagerItem[]): SiteMenuItem[] =>
+  const build = (items: TempMenuItem[]): SiteMenuItem[] =>
     items
       .map((item) => {
         const children = (byParent.get(String(item.id)) ?? [])

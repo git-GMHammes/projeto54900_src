@@ -11,6 +11,8 @@ use App\Services\V1\BaseTableService;
  *
  * Regras:
  *  - slug derivado do name quando nao vem; unico entre empresas ativas (409).
+ *  - slug imutavel depois de criado (422): as listas company_manager (JSON de slugs)
+ *    das tabelas temp_* o referenciam e nao tem FK para acompanhar uma troca.
  *  - status nasce 'active' quando nao informado.
  *  - A empresa DEFAULT (id=1) nao pode ser excluida (403).
  *  - Escrita restrita a admin pelo filtro 'adminonly' nas rotas.
@@ -36,6 +38,11 @@ class Processor extends BaseTableService
 
     protected function validateOnUpdate(int $id, array $data): ?array
     {
+        $atual = $this->tableModel->find($id);
+        if ($atual && trim((string) ($data['slug'] ?? '')) !== '' && trim((string) $data['slug']) !== (string) $atual['slug']) {
+            return ['success' => false, 'message' => 'O slug da empresa nao pode ser alterado', 'code' => 422];
+        }
+
         return $this->checkSlug((string) ($data['slug'] ?? ''), $id, '');
     }
 

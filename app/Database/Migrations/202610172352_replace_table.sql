@@ -996,10 +996,10 @@ CREATE TABLE IF NOT EXISTS `map_route_stops` (
   CONSTRAINT `map_route_stops_map_route_id_foreign` FOREIGN KEY (`map_route_id`) REFERENCES `map_routes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `menu_manager`;
-CREATE TABLE IF NOT EXISTS `menu_manager` (
+DROP TABLE IF EXISTS `temp_menu`;
+CREATE TABLE IF NOT EXISTS `temp_menu` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `nav_manager_id` bigint NOT NULL,
+  `temp_nav_id` bigint NOT NULL,
   `parent_id` bigint DEFAULT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `react_route` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1013,13 +1013,13 @@ CREATE TABLE IF NOT EXISTS `menu_manager` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `menu_items_parent_id_foreign` (`parent_id`),
+  KEY `temp_menu_parent_id_foreign` (`parent_id`),
   KEY `sort_order` (`sort_order`),
   KEY `status` (`status`),
-  KEY `nav_manager_id_parent_id` (`nav_manager_id`,`parent_id`),
+  KEY `temp_nav_id_parent_id` (`temp_nav_id`,`parent_id`),
   KEY `placement` (`placement`),
-  CONSTRAINT `menu_items_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `menu_manager` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `menu_manager_nav_manager_id_foreign` FOREIGN KEY (`nav_manager_id`) REFERENCES `nav_manager` (`id`) ON DELETE CASCADE
+  CONSTRAINT `temp_menu_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `temp_menu` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `temp_menu_temp_nav_id_foreign` FOREIGN KEY (`temp_nav_id`) REFERENCES `temp_nav` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DROP TABLE IF EXISTS `messages_manager`;
@@ -1206,8 +1206,8 @@ CREATE TABLE IF NOT EXISTS `migrations` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `nav_manager`;
-CREATE TABLE IF NOT EXISTS `nav_manager` (
+DROP TABLE IF EXISTS `temp_nav`;
+CREATE TABLE IF NOT EXISTS `temp_nav` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `image` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,

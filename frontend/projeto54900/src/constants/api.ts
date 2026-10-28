@@ -48,8 +48,8 @@ export const API_GROUPS = {
   listManager: 'list-manager',
   listColumns: 'list-columns',
   listActions: 'list-actions',
-  navManager: 'nav-manager',
-  menuManager: 'menu-manager',
+  tempNav: 'temp-nav',
+  tempMenu: 'temp-menu',
   calendarManager: 'calendar-manager',
   calendarManagerView: 'calendar-manager-view',
   calendarEventAttendees: 'calendar-event-attendees',
@@ -96,6 +96,12 @@ export const API_GROUPS = {
   locationManager: 'location-manager',
   locationManagerView: 'location-manager-view',
   locationTypes: 'location-types',
+  // Template — cabecalho e rodape do template (api/v1/temp-header, temp-footer)
+  tempHeader: 'temp-header',
+  tempFooter: 'temp-footer',
+  tempManager: 'temp-manager',
+  templateRender: 'template-render',
+  templatePublic: 'template-public',
   // Product — produto e caracteristicas (api/v1/product-*)
   productManager: 'product-manager',
   productManagerView: 'product-manager-view',

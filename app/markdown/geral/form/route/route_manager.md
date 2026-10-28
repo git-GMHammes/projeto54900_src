@@ -20,9 +20,9 @@ rota externa, de outro serviço). Desenho novo, direto do schema real
 ## Nota sobre `controller_method` — coluna reaproveitada pelas duas camadas
 
 Confirmado nos dados existentes: em linhas `layer=backend`, guarda o método
-PHP (`Api\V1\Nav\NavManager\ResourceTableController::find`); em linhas
+PHP (`Api\V1\Template\TempNav\ResourceTableController::find`); em linhas
 `layer=frontend`, guarda o caminho da página React
-(`pages/v1/nav/GetAllPage`). Mesmo campo, uso diferente por camada — o
+(`pages/v1/template/temp-nav/GetAllPage`). Mesmo campo, uso diferente por camada — o
 `help_text` abaixo avisa isso.
 
 ## O registro `form_manager` (o formulário em si)
@@ -63,11 +63,11 @@ _slug `rota` · icon `signpost-split`_
 | Linha | Rótulo              | `field_name`        | Tipo   | col | Obrig. | Observação                                                                                                                                                            |
 | ----- | ------------------- | ------------------- | ------ | --- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | Camada              | `layer`             | select | 4   | sim    | opções (coluna `enum`): Backend (`backend`), Frontend (`frontend`)                                                                                                    |
-| 1     | Objeto              | `object`            | text   | 4   | sim    | placeholder "Ex: nav-manager"; help: "Nome do recurso/grupo de rota."                                                                                                 |
+| 1     | Objeto              | `object`            | text   | 4   | sim    | placeholder "Ex: temp-nav"; help: "Nome do recurso/grupo de rota."                                                                                                 |
 | 1     | Ação                | `action`            | text   | 4   | sim    | placeholder "Ex: get-all, create, list"                                                                                                                               |
 | 2     | Método              | `method`            | select | 4   | sim    | opções (coluna `enum`): GET, POST, PUT, PATCH, DELETE                                                                                                                 |
 | 2     | Endpoint            | `endpoint`          | text   | 8   | sim    | placeholder `/api/v1/.../get-all` (backend) ou `/v1/.../` (frontend)                                                                                                  |
-| 3     | Controller / Página | `controller_method` | text   | 12  | não    | help: "Backend: classe::método PHP (ex.: Api\\V1\\Nav\\NavManager\\ResourceTableController::find). Frontend: caminho da página React (ex.: pages/v1/nav/GetAllPage)." |
+| 3     | Controller / Página | `controller_method` | text   | 12  | não    | help: "Backend: classe::método PHP (ex.: Api\\V1\\Template\\TempNav\\ResourceTableController::find). Frontend: caminho da página React (ex.: pages/v1/template/temp-nav/GetAllPage)." |
 
 ## Próximo passo
 

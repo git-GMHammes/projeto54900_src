@@ -6,12 +6,12 @@
 
 Dois recursos REST padrão da API V1, ligados por FK:
 
-- **`nav_manager`** (`api/v1/nav-manager`) — a "casca" do app: nome, imagem,
+- **`temp_nav`** (`api/v1/temp-nav`) — a "casca" do app: nome, imagem,
   ícone de mensagens, versão do sistema. Não é o menu em si.
-- **`menu_manager`** (`api/v1/menu-manager`) — árvore de itens navegáveis de
-  UM `nav_manager` (FK `nav_manager_id`), com auto-relacionamento `parent_id`
+- **`temp_menu`** (`api/v1/temp-menu`) — árvore de itens navegáveis de
+  UM `temp_nav` (FK `temp_nav_id`), com auto-relacionamento `parent_id`
   para submenu. Antes de 2026-09-13 os nomes eram trocados: esta tabela se
-  chamava `menu_items` e a config de branding se chamava `menu_manager`.
+  chamava `menu_items` e a config de branding usava o nome que esta tabela tem hoje, `temp_menu`, antes da troca.
 
 Ambos seguem o padrão obrigatório de módulo (Routes + Controller + Request +
 Processor + Model + Migration, 18 rotas de tabela cada — ver
@@ -19,7 +19,7 @@ Processor + Model + Migration, 18 rotas de tabela cada — ver
 
 ## Schema
 
-`nav_manager`:
+`temp_nav`:
 
 | Coluna            | Tipo                                  | Observação                      |
 | ------------------ | -------------------------------------- | -------------------------------- |
@@ -29,12 +29,12 @@ Processor + Model + Migration, 18 rotas de tabela cada — ver
 | `system_version`   | VARCHAR(20) DEFAULT '1.0.0'             | badge ao lado do nome (ex. "v1") |
 | `status`           | ENUM('active','draft','inactive')      | nasce `draft`                    |
 
-`menu_manager`:
+`temp_menu`:
 
 | Coluna             | Tipo                               | Observação                                          |
 | ------------------- | ------------------------------------ | ---------------------------------------------------- |
-| `nav_manager_id`   | BIGINT NOT NULL FK → `nav_manager.id` (CASCADE) | dono do item                              |
-| `parent_id`        | BIGINT NULL FK → `menu_manager.id` (self, CASCADE) | submenu; `NULL` = raiz            |
+| `temp_nav_id`   | BIGINT NOT NULL FK → `temp_nav.id` (CASCADE) | dono do item                              |
+| `parent_id`        | BIGINT NULL FK → `temp_menu.id` (self, CASCADE) | submenu; `NULL` = raiz            |
 | `title`            | VARCHAR(255) NOT NULL                | rótulo exibido                                       |
 | `react_route`      | VARCHAR(255) NULL                    | destino no frontend; `NULL` = item só organizacional (agrupador sem link) |
 | `placement`        | ENUM('navbar','offcanvas') DEFAULT 'navbar' | onde o item de topo (e todo o seu grupo de filhos) aparece: barra superior ou painel Offcanvas. Só vale no item de topo — filhos seguem o pai. Migrations `AlterTable20260924MenuPlacement` / `SeedTable20260924MenuPlacement` (2026-09-24) |
@@ -42,15 +42,25 @@ Processor + Model + Migration, 18 rotas de tabela cada — ver
 | `sort_order`       | INT DEFAULT 0                        | ver convenção de faixas abaixo                       |
 | `status`           | ENUM('active','draft','inactive')    | nasce `draft` (default da coluna; `create()` ignora status enviado no body) |
 
+### Regra — Offcanvas é o menu lateral quando o template exigir
+
+A marcação **Offcanvas** (`placement = 'offcanvas'`, painel `offcanvas-start` do
+Bootstrap) deve ser tratada como o **menu lateral** sempre que o template exigir
+esse tipo de menu. Nos templates (`/template001`, `/template002`, `/template003`):
+
+- Itens `offcanvas` formam o **menu lateral**; itens `navbar` formam a **barra de navegação** (nav).
+- Template001 e Template002: menu lateral em coluna fixa a partir de `lg` e painel Offcanvas abaixo de `lg`.
+- Template003: não há coluna fixa; o menu lateral é sempre o painel Offcanvas, aberto pelo ícone da grade, em qualquer tamanho de tela.
+
 ## Convenção de faixas de `sort_order` (decisão desta sessão, 2026-09-13)
 
-`menu_manager` guarda **todas** as rotas conhecidas do site na mesma tabela —
+`temp_menu` guarda **todas** as rotas conhecidas do site na mesma tabela —
 não só os links do topo. Como não existe (ainda) um campo dedicado tipo
 `show_in_navbar`, a distinção é feita por `sort_order`:
 
 | Faixa           | Significado                                                                 |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `< 100`          | **Navbar real do site.** `parent_id` sempre nulo. É o que `hooks/useSiteMenu.ts` lê para montar `components/layout/Navbar.tsx` (fallback estático se a API falhar/vier vazia). Hoje: Início(10), Usuários(20), Uploads(30), Formulários(40), Nav(50), Menus(60), Calendario(70). |
+| `< 100`          | **Navbar real do site.** `parent_id` sempre nulo. É o que `GET template-render/get` (`Builder`) entrega ao nav do layout global (`components/template/TemplateNavRegion.tsx`); se a API falhar o nav mostra só Home. Hoje: Início(10), Usuários(20), Uploads(30), Formulários(40), Nav(50), Menus(60), Calendario(70). |
 | `>= 1000`        | Catálogo "Extra": rotas reais do site que não aparecem no navbar nem na árvore administrativa (sub-rotas de CRUD, placeholders, 404). Hoje vivem todas reparentadas sob o nó "Extra" da árvore abaixo. |
 | `>= 2000`        | Árvore administrativa "Menu" (ver abaixo) — visível só na tela de gestão, nunca no navbar real. |
 
@@ -58,7 +68,7 @@ não só os links do topo. Como não existe (ainda) um campo dedicado tipo
 precisam continuar com `parent_id` nulo e `sort_order` nessa faixa, senão somem
 do site.
 
-## Árvore atual (nav_manager_id=1, "Menu Teste")
+## Árvore atual (temp_nav_id=1, "Menu Teste")
 
 Construída manualmente nesta sessão (não é regra fixa, é o estado de exemplo/dev):
 
@@ -74,9 +84,9 @@ Menu (2000)
 │  ├─ Listar        -> /v1/form-constructor
 │  └─ Registrar     -> /v1/form-constructor/create
 ├─ Nav
-│  ├─ Listar        -> /v1/nav-manager
+│  ├─ Listar        -> /v1/temp-nav
 │  └─ Menu
-│     └─ Listar     -> /v1/menu-manager
+│     └─ Listar     -> /v1/temp-menu
 ├─ Calendario       -> /v1/form/calendario
 └─ Extra
    ├─ V1 (Redirecionamento)      -> /v1
@@ -91,22 +101,19 @@ Menu (2000)
    └─ Página Não Encontrada (404) -> *
 ```
 
-Reproduzível do zero via `MenuManagerSeeder` (ver seção Seeders) — o seed usa
+Reproduzível do zero via `TempMenuSeeder` (ver seção Seeders) — o seed usa
 títulos ASCII (Inicio/Usuario/Formularios...) por causa do bug de charset
 abaixo; os títulos acentuados acima refletem o estado atual editado manualmente
 via API antes da descoberta do bug.
 
 ## Consumo no frontend
 
-- **Navbar real** (`components/layout/Navbar.tsx` + `hooks/useSiteMenu.ts`):
-  busca `nav_manager` com `status=active`, depois `menu_manager` com
-  `nav_manager_id` + `status=active`, filtra `parent_id` nulo e
-  `sort_order < 100`, ordena e separa pelo `placement` do item de topo em
-  `{ navbar, offcanvas }`. Itens `offcanvas` vão para o painel lateral aberto
-  pelo botão com ícone antes de Home (botão só aparece se houver item
-  offcanvas). Fallback para um array estático (`FALLBACK_NAV`) se a API
-  falhar ou vier vazia.
-- **Tela de gestão** (`pages/v1/menu/GetAllPage.tsx`): com `?nav_manager_id=`
+- **Navbar real** (`layouts/TemplateLayout.tsx` + `components/template/*`, desde 2026-10-28; antes `Navbar.tsx` + `useSiteMenu.ts`):
+  com sessão, o frontend chama `GET api/v1/template-render/get`. O backend (`Services/V1/Template/TemplateRender/Builder`) usa o
+  primeiro `temp_nav` ativo da empresa, pega os `temp_menu` ativos dele, filtra por `roles` (superuser vê tudo; item sem `roles`
+  é livre), descarta raízes com `sort_order >= 100`, monta a árvore e separa pelo `placement` do item de topo em `nav`
+  (navbar) e `menu` (offcanvas = menu lateral). Visitante: nav só com Home e Entrar, sem consultar `temp_menu`.
+- **Tela de gestão** (`pages/v1/template/temp-menu/GetAllPage.tsx`): com `?temp_nav_id=`
   na URL, busca **todos** os itens desse nav (sem paginação) e renderiza como
   árvore indentada (componente local `MenuTreeRow`, expand/collapse em estado
   React), agrupando por `parent_id`. Sem esse parâmetro, lista todos os navs
@@ -120,7 +127,7 @@ via API antes da descoberta do bug.
 `Config/Database.php:99` define a conexão `default` com
 `'charset' => 'utf8'` (MySQL "utf8" legado, 3 bytes), enquanto os grupos
 nomeados (`mapa`, `agenda` — linhas 169 e 206) já usam `'utf8mb4'`. Qualquer
-`create`/`update` de `menu_manager` (e provavelmente de qualquer tabela na
+`create`/`update` de `temp_menu` (e provavelmente de qualquer tabela na
 conexão `default`) com caractere acentuado no body falha com HTTP 500 — as
 regras de validação (`CreateRequest`/`UpdateRequest`) não restringem charset,
 então o erro deve estar na conversão de charset entre o driver MySQLi e o
@@ -135,11 +142,11 @@ não mexer sem autorização explícita.
 
 ## Seeders
 
-`app/Database/Seeds/NavManagerSeeder.php` e `MenuManagerSeeder.php`. Resumo:
+`app/Database/Seeds/TempNavSeeder.php` e `TempMenuSeeder.php`. Resumo:
 
-- `NavManagerSeeder`: idempotente por `title` ("Menu Teste") — se existe, faz
+- `TempNavSeeder`: idempotente por `title` ("Menu Teste") — se existe, faz
   `deleteHard` (CASCADE apaga os itens de menu) e recria via `Processor`.
-- `MenuManagerSeeder`: chama `NavManagerSeeder` primeiro, depois recria a
+- `TempMenuSeeder`: chama `TempNavSeeder` primeiro, depois recria a
   árvore inteira (os 7 do navbar + a árvore "Menu" completa) — títulos ASCII
   por causa do bug de charset acima.
 - Nenhum dos dois foi executado nesta sessão (rodar apagaria/recriaria os ids
@@ -152,12 +159,11 @@ não mexer sem autorização explícita.
       conexão `default`, não só nav/menu.
 - [ ] **Rodar os seeders** num ambiente novo/limpo para validar de ponta a
       ponta (nunca foram executados de fato).
-- [ ] **Navbar com dropdown real**: hoje só a tela de gestão mostra a árvore;
-      o site continua com 7 links fixos sem submenu. Decidir se/quando
-      implementar (Fase 2, adiada por decisão do usuário).
-- [x] **Enforcement de `roles`**: implementado em
-      `src/frontend/projeto54900/src/hooks/useSiteMenu.ts` — cada item é
-      filtrado contra `user.role.slug` (de `useAuth()`) antes de montar a
+- [x] **Navbar com dropdown real**: o nav do layout global (`TemplateNavRegion`) desenha dropdown de um nível, e o menu lateral
+      desenha grupos recolhíveis (2026-10-28).
+- [x] **Enforcement de `roles`**: implementado no backend, em
+      `Services/V1/Template/TemplateRender/Builder.php` (antes em `hooks/useSiteMenu.ts`) — cada item é
+      filtrado contra o `role_slug` da sessão antes de montar a
       árvore; `roles: null` libera para qualquer autenticado, um pai fora do
       role esconde os filhos junto.
 - [ ] **Nomes provisórios**: "Buld Form" (grafia informal de "Build Form",

@@ -388,6 +388,8 @@ class AuthService
             'full_name'     => $this->findProfileName((int) $user['id']),
             'status'        => $user['status'],
             'last_login_at' => $user['last_login_at'],
+            // Template escolhido pelo usuario (null = automatico: menor id ativo da empresa).
+            'temp_manager_id' => isset($user['temp_manager_id']) ? (int) $user['temp_manager_id'] : null,
             'role'          => $role !== null ? [
                 'id'   => (int) $role['id'],
                 'name' => $role['name'],

@@ -50,7 +50,7 @@
  *
  * CONSUMIDORES (quem usa este arquivo):
  *   - `routes/v1/timeline.routes.tsx` (`path: 'timeline'`, carregado por lazy).
- *   - Item de navbar "Timeline -> Início" (`menu_manager`).
+ *   - Item de navbar "Timeline -> Início" (`temp_menu`).
  *
  * COMO REPLICAR ESTE PADRÃO EM OUTRA PÁGINA (passo a passo):
  *   1. Criar `pages/v1/<modulo>/<recurso>/GetAllPage.tsx` com export default.

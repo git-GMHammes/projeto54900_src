@@ -14,6 +14,7 @@ class UpdateRequest
             'name'     => 'permit_empty|string|max_length[255]',
             'slug'     => 'permit_empty|regex_match[/^[a-z0-9-]+$/]|max_length[100]',
             'document' => 'permit_empty|string|max_length[20]',
+            'color_theme' => 'permit_empty|regex_match[/^[A-Za-z0-9_]+$/]|max_length[30]',
             'status'   => 'permit_empty|in_list[active,inactive]',
         ];
     }

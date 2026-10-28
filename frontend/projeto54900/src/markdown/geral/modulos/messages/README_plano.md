@@ -32,16 +32,16 @@ pelo usuário; as telas administrativas só aparecem para admin.
 
 | Item                                | Registro                              | Rota                         |
 | ----------------------------------- | ------------------------------------- | ---------------------------- |
-| **Mensagem** (pai, ícone `chat-dots`, redondo) | `menu_manager` 47          | —                            |
-| **Lista**                           | `menu_manager` 48                     | `/v1/messages-manager`       |
-| **Grupos**                          | `menu_manager` 49                     | `/v1/message-groups-manager` |
-| **Membros**                         | `menu_manager` 50 (ícone `person-plus`) | `/v1/message-group-members-manager` |
-| **Mensagens de grupo**              | `menu_manager` 51 (ícone `send`)      | `/v1/message-group-messages-manager` |
-| **Anexos**                          | `menu_manager` 52 (ícone `paperclip`) | `/v1/message-attachments-manager` |
-| **Conversas** (modo chat)           | `menu_manager` 53 (ícone `chat-left-dots`) | `/v1/message-chat` |
-| **Advertências** (só admin)         | `menu_manager` 54 (ícone `exclamation-triangle`) | `/v1/message-warnings-manager` |
+| **Mensagem** (pai, ícone `chat-dots`, redondo) | `temp_menu` 47          | —                            |
+| **Lista**                           | `temp_menu` 48                     | `/v1/messages-manager`       |
+| **Grupos**                          | `temp_menu` 49                     | `/v1/message-groups-manager` |
+| **Membros**                         | `temp_menu` 50 (ícone `person-plus`) | `/v1/message-group-members-manager` |
+| **Mensagens de grupo**              | `temp_menu` 51 (ícone `send`)      | `/v1/message-group-messages-manager` |
+| **Anexos**                          | `temp_menu` 52 (ícone `paperclip`) | `/v1/message-attachments-manager` |
+| **Conversas** (modo chat)           | `temp_menu` 53 (ícone `chat-left-dots`) | `/v1/message-chat` |
+| **Advertências** (só admin)         | `temp_menu` 54 (ícone `exclamation-triangle`) | `/v1/message-warnings-manager` |
 
-**Telas administrativas (Lista, Grupos, Membros, Mensagens de grupo, Anexos, Advertências): só `admin`** (menu, lista, formulário e rota sob `RequireRole`); **"Conversas": `user` e `admin`**, sem relação com as listas administrativas (regra em `README_modulo_messages.md` §0.1). Menu e lista vêm do banco (`menu_manager`, `list_manager`); nenhum item
+**Telas administrativas (Lista, Grupos, Membros, Mensagens de grupo, Anexos, Advertências): só `admin`** (menu, lista, formulário e rota sob `RequireRole`); **"Conversas": `user` e `admin`**, sem relação com as listas administrativas (regra em `README_modulo_messages.md` §0.1). Menu e lista vêm do banco (`temp_menu`, `list_manager`); nenhum item
 foi escrito direto em `Navbar.tsx`.
 
 ### Telas (3 por recurso)

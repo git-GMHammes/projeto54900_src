@@ -17,7 +17,7 @@ visível para qualquer usuário autenticado.
 > testadas uma a uma em `src/writable/claude/timeline_api_testes_resultado.json`,
 > todas passando) — **Etapa D backend concluída**. Os 5 `form_manager` e o
 > `list_manager` do feed (`timeline-feed`) também foram inseridos em
-> 2026-09-27 (INSERT em `form_*`, `list_*` e `menu_manager`)
+> 2026-09-27 (INSERT em `form_*`, `list_*` e `temp_menu`)
 > — **Etapa C concluída**. **Fase 2 (frontend) concluída em 2026-09-27:**
 > listagem clássica do feed em `/v1/timeline-posts`. **Fase 3a (backend)
 > concluída em 2026-09-27:** rota extra `home-feed` com o algoritmo do feed
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `timeline_post_attachments` (
 ### 2.4 `timeline_post_comments` — comentário e resposta
 
 `parent_id` nulo = comentário de topo; preenchido = resposta (mesmo padrão de
-`menu_manager.parent_id`). Não há comentário de comentário em outro post: a FK
+`temp_menu.parent_id`). Não há comentário de comentário em outro post: a FK
 aponta para a própria tabela e o Processor deve garantir que o pai pertence ao
 mesmo `timeline_post_id`.
 
@@ -643,7 +643,7 @@ Mesmo padrão da lista `form-manager` do construtor: a página do feed só infor
   `Config/Routes.php` e no `route_manager`; classes PHP implementadas e
   testadas em 27/09 (ver nota do topo).
 - **Navbar — CONCLUÍDO em 2026-09-27, `active`:** item pai "Timeline"
-  (`menu_manager.id=28`) com dois filhos: "Início" (`id=30`,
+  (`temp_menu.id=28`) com dois filhos: "Início" (`id=30`,
   `react_route=/v1/timeline`, Home Feed, Fase 3b) e "Feed" (`id=29`,
   `react_route=/v1/timeline-posts`, listagem clássica, Fase 2) — mesmo padrão
   de agrupamento navbar de "Calendário" (pai sem rota própria, filhos com
@@ -667,7 +667,7 @@ Mesmo padrão da lista `form-manager` do construtor: a página do feed só infor
   [`README_rotas_frontend.md`](../../../frontend/projeto54900/src/markdown/geral/README_rotas_frontend.md)
   do frontend.
 - **Rotas frontend dos 5 recursos — ALTERADAS em 2026-09-28:** os itens de menu
-  do módulo (`menu_manager` 31-35) deixaram de apontar para o renderizador de
+  do módulo (`temp_menu` 31-35) deixaram de apontar para o renderizador de
   formulário e passaram a apontar para rotas do próprio módulo que exibem
   **listas padrão** (motor `list_manager`/`list_columns`, sem formulário):
   `/v1/timeline-post`, `/v1/timeline-manager`, `/v1/timeline-comment`,
@@ -714,7 +714,7 @@ histórico de edição, `visibility` privada.
    foram criadas direto no banco (§3.1).
 3. **Etapa C — CONCLUÍDA em 2026-09-27**: rotas (189, §5), 5 `form_manager`
    (+ groups/rows/fields), 1 `list_manager` do feed (+ columns/actions) e os
-   itens de `menu_manager` (§7).
+   itens de `temp_menu` (§7).
 4. **Etapa D backend — CONCLUÍDA em 2026-09-27**: Controller/Request/Processor/
    Model dos 7 recursos, testados rota a rota (§5). Timeline criada
    automaticamente na primeira publicação (`TimelinePosts::Processor`).
@@ -742,7 +742,7 @@ histórico de edição, `visibility` privada.
      denunciar; 3 comentários + "ver mais" com scroll infinito próprio);
      botão flutuante de novo post (modal reaproveitando a técnica do
      `FormRendererPage`, sem campo de anexo). Menu "Timeline → Início"
-     ativo (`menu_manager.id=30`), irmão de "Feed" (Fase 2).
+     ativo (`temp_menu.id=30`), irmão de "Feed" (Fase 2).
      **Lacuna conhecida:** upload de anexo ainda não tem rota ligada no
      back-end (`timeline_post_attachments`), então `MediaPreview` só mostra
      anexo se ele existir por outro meio; "Denunciar" abre o formulário

@@ -6,7 +6,7 @@
 // src/markdown/geral/README_render_via_list_constructor.md.
 //
 // Padrao visual espelhado de pages/v1/chat-rooms/chat-rooms-manager/GetAllPage.tsx
-// (por sua vez espelho de pages/v1/nav/GetAllPage.tsx), com UMA diferenca: a
+// (por sua vez espelho de pages/v1/template/temp-nav/GetAllPage.tsx), com UMA diferenca: a
 // acao 'Remover' e um api_call PUT com CORPO FIXO (list_actions.extra_data_json
 // = {"status":"removed"}). Usuario comum so remove; o conteudo so o admin edita
 // (acao 'Editar', roles admin, link para a UpdatePage). Por isso o execute() manda action.extraData

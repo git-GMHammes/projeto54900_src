@@ -44,7 +44,7 @@
 <text x="292" y="622" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/RequireAuth.tsx  ·  src/layouts/RootLayout.tsx  ·  src/components/layout/Navbar.tsx</tspan><tspan x="292" dy="17">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</tspan></text>
 <rect x="282" y="659" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="679" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">item de menu da tela (vem do banco)</text>
-<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/menuManager.table.ts  ·  menu_manager  -&gt;  item de menu = /v1/calendar-manager</tspan></text>
+<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/tempMenu.table.ts  ·  temp_menu  -&gt;  item de menu = /v1/calendar-manager</tspan></text>
 <line x1="955" y1="729" x2="955" y2="759" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
 <text x="969" y="749" font-size="11.5" fill="#475569">lazy import da pagina</text>
 <rect x="40" y="763" width="210" height="213" rx="8" fill="#4338ca"/>
@@ -190,7 +190,7 @@
 <text x="292" y="3018" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">calendar_manager  ·  calendar_events  ·  calendar_event_attendees  ·  calendar_event_reminders</tspan><tspan x="292" dy="17">calendar_event_attachments  ·  calendar_event_extended_properties  ·  calendar_event_invites</tspan></text>
 <rect x="282" y="3055" width="1346" height="86" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3075" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas de apoio (definicao que vem do banco)</text>
-<text x="292" y="3095" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">form_manager + view_form_manager (slugs calendario, editar-calendario, cadastro-evento, cadastro-convidado,</tspan><tspan x="292" dy="17">cadastro-lembrete, cadastro-anexo-evento)  ·  list_manager + list_columns + list_actions (calendar-manager,</tspan><tspan x="292" dy="17">calendar-events-view)  ·  menu_manager  ·  user_manager  ·  uploads (module calendar_events)  ·  route_manager</tspan></text>
+<text x="292" y="3095" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">form_manager + view_form_manager (slugs calendario, editar-calendario, cadastro-evento, cadastro-convidado,</tspan><tspan x="292" dy="17">cadastro-lembrete, cadastro-anexo-evento)  ·  list_manager + list_columns + list_actions (calendar-manager,</tspan><tspan x="292" dy="17">calendar-events-view)  ·  temp_menu  ·  user_manager  ·  uploads (module calendar_events)  ·  route_manager</tspan></text>
 <rect x="282" y="3149" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3169" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">arquivos em disco</text>
 <text x="292" y="3189" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/writable/uploads/calendar_events/&lt;evento&gt;/&lt;arquivo&gt;&lt;AAAAMMDDHHMMSS&gt;</tspan></text>

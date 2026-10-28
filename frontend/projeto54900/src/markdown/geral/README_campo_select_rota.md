@@ -95,7 +95,7 @@ SELECT DISTINCT object FROM route_manager WHERE layer = 'backend'; -- ou 'fronte
 ```
 
 - Se o `object` esperado (ex.: `list-manager`, `form-manager`,
-  `menu-manager`) **não aparecer**, a tabela está incompleta para aquele
+  `temp-menu`) **não aparecer**, a tabela está incompleta para aquele
   módulo — ver seção 3 antes de prosseguir.
 - **Em dúvida sobre qual `object`/`method`/módulo o campo deveria usar**
   (o nome do recurso não é óbvio pelo contexto da tela), **perguntar ao

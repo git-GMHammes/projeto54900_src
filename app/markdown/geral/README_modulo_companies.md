@@ -113,7 +113,7 @@ gravada quando alguém altera `company_ids` pelo `user-manager` (create/update d
 
 **Tela de seleção** (frontend, 2026-10-11): `/v1/company-members/update/:id` marca usuários por empresa e grava por `sync` — ver `geral/modulos/company-manager/README_plano.md` do frontend.
 
-**Menu "Empresa"** (`menu_manager`, offcanvas, admin): pai sem rota com os filhos Empresas, Membros (`/v1/company-members`, lista 44),
+**Menu "Empresa"** (`temp_menu`, offcanvas, admin): pai sem rota com os filhos Empresas, Membros (`/v1/company-members`, lista 44),
 Usuários por empresa (`/v1/company-users`, lista 45) e Acesso individual (movido de "Usuários").
 
 ## Organograma de acesso (SAS)
@@ -140,6 +140,33 @@ Lacunas do esquema (o sistema já tem, o desenho não mostrava) — **corrigidas
 4. **Sem bloqueio no backend:** a verificação de acesso é só do frontend (ver Pendências).
 5. Os números do desenho (13 usuários, papéis 2/9/2, 38 listas e 45 forms ativos, 0 registros em `user_resource_access`) são um
    retrato de 2026-10-11, não conferido no banco.
+
+## Cor da empresa (`company_manager.color_theme`)
+
+Coluna `VARCHAR(30)` opcional com o nome de uma paleta de `config/themes` do frontend (sem `.json`, ex.: `Purple_dark`); vazio = tema padrão.
+Só vale quando o `config/env.ts` não fixa uma paleta (todas as linhas `theme:` comentadas): então a empresa do slug da URL define a cor, antes do
+login por `GET template-public/get/{slug}` e depois por `GET template-render/get` (campo `color_theme`). O backend só valida o formato do nome
+(letras, números e `_`); nome desconhecido cai no padrão no frontend. Seletor nos formulários `criar-empresa` e `editar-empresa`; a view
+`view_company_manager` expõe `co_color_theme`. Ver `README_temas_paleta.md` (frontend).
+
+## Empresas nas tabelas `temp_*` (template): `company_manager` = lista de slugs
+
+As tabelas de template (`temp_nav`, `temp_menu`, `temp_header`, `temp_footer` e `temp_manager`)
+têm a coluna `company_manager` (JSON, NOT NULL): lista de **slugs** das empresas
+que enxergam o registro, por exemplo `["default","tryikads"]`. O slug é o mesmo
+das rotas (`/default/template001`) e, nos perfis, de `roles`.
+
+- **Um registro serve várias empresas.** Não se copia linha por empresa: para uma
+  empresa nova usar o menu da DEFAULT, acrescenta-se o slug dela na lista dos
+  itens (por exemplo `["default","tryikads"]`).
+- **Slug imutável.** A lista não tem FK, então o `slug` de `company_manager` não
+  pode ser alterado depois de criado (422 em `PUT /company-manager/update/{id}`).
+- **Validação** (`Services/V1/Template/CompanyManagerColumn.php`, usado por
+  `TempNav` e `TempMenu`): todo slug precisa existir em `company_manager`; quem
+  não é superuser só pode listar a própria empresa; no create, sem a chave, vale
+  a empresa da sessão; no update, lista vazia é recusada.
+- **Fora das `temp_*`** a ligação continua por id: `company_id`, `company_members`
+  e `user_manager.company_ids`.
 
 ## Pendências
 
@@ -177,4 +204,4 @@ Lacunas do esquema (o sistema já tem, o desenho não mostrava) — **corrigidas
 - Backend: filtro `superuseronly` (`App\Filters\SuperuserOnlyFilter`) por wildcard em `Config/Filters.php`, depois de `jwtauth`. `company-manager-public` (select do cadastro de usuario) continua sem esse filtro.
 - `superuser` esta acima de admin: `CurrentUser::isAdmin()` tambem retorna true para ele; `EndpointAccessFilter` e `UserResourceAccess` o liberam sempre.
 - Invisivel em controle de perfil: `user_roles` (`SqlTableModel::scopedTable`) oculta o slug em toda leitura; criar/editar perfil com esse slug retorna 422; `user_role_id` do usuario nao aceita o perfil. A atribuicao a um usuario e feita direto no banco.
-- Menu e telas: `menu_manager`, `list_manager` e `resource_access` do modulo carregam `["superuser"]`; rotas React usam `RequireRole role="superuser"`.
+- Menu e telas: `temp_menu`, `list_manager` e `resource_access` do modulo carregam `["superuser"]`; rotas React usam `RequireRole role="superuser"`.

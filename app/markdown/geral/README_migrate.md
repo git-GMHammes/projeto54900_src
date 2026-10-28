@@ -428,7 +428,7 @@ SQL** e escolher **UTF-8** no seletor de codificação — não arrastar o arqui
 | --- | --- |
 | `1054 Unknown column 'um.company_ids'` ao criar view | `user_manager` do servidor é versão antiga; o `replace_table` não rodou até o fim |
 | `1146 Table ... doesn't exist` ao criar view | o `CREATE TABLE` dela falhou (ver tabela de compatibilidade) |
-| Login "não dá erro" e volta para a Home; 401 em `nav-manager/find`, `auth/refresh` | `UPDATE user_manager` do login falha (`Unknown column 'token_prev'`): tabela desatualizada. Sem gravar a sessão, todo token novo é recusado |
+| Login "não dá erro" e volta para a Home; 401 em `temp-nav/find`, `auth/refresh` | `UPDATE user_manager` do login falha (`Unknown column 'token_prev'`): tabela desatualizada. Sem gravar a sessão, todo token novo é recusado |
 | Acentos quebrados | importação sem UTF-8 (item 2) |
 
 Se faltar só coluna e não puder perder dados, usar `ALTER TABLE ... ADD COLUMN` (sem DROP):

@@ -15,7 +15,7 @@
 // botao e painel do Offcanvas nem entram no DOM e useSiteMenu nao consulta a
 // API. Durante o refresh silencioso inicial (bootstrapping) mostra so Home,
 // para "Entrar" nao piscar antes da sessao ser restaurada. Com sessao, o menu
-// dinamico aparece tal como cadastrado em menu_manager (so filtrado por role,
+// dinamico aparece tal como cadastrado em temp_menu (so filtrado por role,
 // em useSiteMenu.ts), com uma excecao: um item de TOPO (raiz, sem pai) cuja
 // rota seja a de login some — nao faz sentido oferecer "entrar" pra quem ja
 // esta logado. Dentro de um submenu (filho de outro item) a rota de login
@@ -36,7 +36,7 @@ import { useSiteMenu } from '@/hooks/useSiteMenu';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import type { SiteMenuItem } from '@/hooks/useSiteMenu';
 
-// Fallback usado enquanto o menu carrega e sempre que nav-manager/menu-manager
+// Fallback usado enquanto o menu carrega e sempre que temp-nav/temp-menu
 // falhar ou vier vazio — garante que a navegacao nunca fica sem itens.
 const FALLBACK_NAV: SiteMenuItem[] = [
   { label: 'Home', link: { to: paths.home, label: 'Home', end: true }, children: [] },

@@ -259,8 +259,12 @@ class Filters extends BaseFilters
                 'api/v1/message-users-groups-view/*',
                 'api/v1/message-group-members-view/*',
                 'api/v1/message-group-members/*',
-                'api/v1/nav-manager/*',
-                'api/v1/menu-manager/*',
+                'api/v1/temp-nav/*',
+                'api/v1/temp-menu/*',
+                'api/v1/temp-header/*',
+                'api/v1/temp-footer/*',
+                'api/v1/temp-manager/*',
+                'api/v1/template-render/*',
                 'api/v1/company-manager/*',
                 'api/v1/company-manager-view/*',
                 'api/v1/company-members/*',
@@ -277,6 +281,7 @@ class Filters extends BaseFilters
         // Modulo Empresa: exclusivo do perfil superuser (nem admin acessa). Sempre depois de jwtauth.
         'superuseronly' => [
             'before' => [
+                'api/v1/temp-manager/*',
                 'api/v1/company-manager/*',
                 'api/v1/company-manager-view/*',
                 'api/v1/company-members/*',

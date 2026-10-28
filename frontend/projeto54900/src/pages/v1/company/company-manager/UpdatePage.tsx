@@ -12,6 +12,7 @@ const toValues = (record: ApiRow): Record<string, string> => ({
   name: toText(record.name, ''),
   slug: toText(record.slug, ''),
   document: toText(record.document, ''),
+  color_theme: toText(record.color_theme, ''),
   status: toText(record.status, 'active'),
 });
 

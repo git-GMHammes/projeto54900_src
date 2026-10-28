@@ -11,7 +11,7 @@
  * genérico `/v1/form/timeline-post`.
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-post'`),
- *   item de navbar "Nova Publicação" (`menu_manager.react_route`).
+ *   item de navbar "Nova Publicação" (`temp_menu.react_route`).
  * =============================================================================
  */
 

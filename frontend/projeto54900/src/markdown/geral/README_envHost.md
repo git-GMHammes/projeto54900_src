@@ -74,8 +74,8 @@ desta escrita. Cadeia completa, na ordem em que os dados passam:
    - a lista de respostas capturadas (método, status com badge verde/vermelho,
      path, hora, payload bruto em JSON), mais recente primeiro;
    - botão "Limpar" que chama `clear()` do store.
-5. **`layouts/RootLayout.tsx`** — monta `<ApiDebugPanel/>` **uma única vez**,
-   sempre por último dentro de `<main>`, depois do `<Outlet/>` da rota. Padrão
+5. **`components/template/TemplateShell.tsx`** (layout global; antes `layouts/RootLayout.tsx`) — monta `<ApiDebugPanel/>` **uma única vez**,
+   sempre por último dentro da região de conteúdo, depois do `<Outlet/>` da rota. Padrão
    absoluto do layout: qualquer que seja o conteúdo da página, o DEBUG vem
    depois de tudo. Por isso nenhuma página precisa importar ou montar nada —
    o painel aparece automaticamente em qualquer rota, desde que o host seja de

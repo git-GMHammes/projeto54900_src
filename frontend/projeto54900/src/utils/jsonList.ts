@@ -27,3 +27,12 @@ export function parseStringList(raw: string): string[] {
     return [];
   }
 }
+
+/**
+ * Valor vindo da API (string JSON ou lista) -> array de strings, tolerante.
+ * Para colunas JSON de lista, como `company_manager` (slugs de empresa).
+ */
+export function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+  return typeof value === 'string' ? parseStringList(value) : [];
+}

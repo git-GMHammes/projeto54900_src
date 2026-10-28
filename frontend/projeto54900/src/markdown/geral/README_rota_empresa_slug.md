@@ -26,7 +26,7 @@ Regras da API em `README_multiempresa_isolamento.md` e `README_multiempresa_guia
 | `pages/v1/auth/LoginPage.tsx` | após o login, `window.location.assign(companyBasePath(slug) + '/')` (navegação completa para fixar o basename) |
 | `services/v1/auth.service.ts` | `POST auth/login` envia `company_slug` quando a URL tem slug |
 | `context/AuthContext.tsx` | `login()` devolve o `company_slug`; a sessão é restaurada pelo refresh token |
-| `components/layout/Navbar.tsx` | sair com slug volta para a raiz sem slug (`env.basePath/`) por navegação completa |
+| `components/template/TemplateNavRegion.tsx` (antes `components/layout/Navbar.tsx`) | sair com slug volta para a raiz sem slug (`env.basePath/`) por navegação completa |
 | `types/auth.ts` | `AuthCompany {id, name, slug}`, `AuthUser.companies`, `AuthUser.company_slug`, `LoginPayload.company_slug` |
 
 ## 3. Regra de leitura do slug (`readCompanySlug`)

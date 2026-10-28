@@ -102,7 +102,7 @@ export const userPublicRoutes: RouteObject[] = [
  * ficam sob o guard <RequireAuth/> montado em routes/v1/index.tsx. As quatro
  * rotas abaixo (dados de login/senha E dados pessoais de OUTROS usuarios)
  * exigem ADEMAIS o papel admin via <RequireRole role="admin"/> — confirmado
- * por menu_manager.roles (roles=["admin"] para /v1/user-manager e
+ * por temp_menu.roles (roles=["admin"] para /v1/user-manager e
  * /v1/user-profiles). O self-service (editar o PROPRIO perfil) vive em rota
  * separada (`/v1/account/profile`, ver account.routes.tsx), fora deste guard.
  */

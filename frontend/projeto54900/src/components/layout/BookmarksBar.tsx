@@ -1,11 +1,11 @@
 // Linha de icones-favoritos, renderizada pelo RootLayout entre a Navbar e o
-// titulo de cada pagina (PageHeader). So mostra itens de menu_manager com
+// titulo de cada pagina (PageHeader). So mostra itens de temp_menu com
 // is_bookmark = 1 (useBookmarkedMenu.ts). Sem nenhum favorito marcado, ou sem
 // sessao, o componente devolve null — nao sobra espaco vazio no layout.
 //
 // Tooltip sem JS: reaproveita as classes globais .icon-action-tooltip /
 // .icon-action-tooltip-bubble (styles/_custom.scss), mesmo padrao ja usado em
-// varias GetAllPage.tsx do projeto (ex.: pages/v1/menu/GetAllPage.tsx).
+// varias GetAllPage.tsx do projeto (ex.: pages/v1/template/temp-menu/GetAllPage.tsx).
 
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';

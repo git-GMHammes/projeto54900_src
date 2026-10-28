@@ -43,14 +43,18 @@ criado para o picker "Usuário" do convite de calendário.
 2026-09-20 — completado ao padrão canônico (18 rotas) nesta sessão. Ver
 aviso no topo do doc.
 
-## `form/nav/` e `form/menu/` — navegação
+## `form/template/` — navegação (temp_nav e temp_menu)
 
 | Arquivo                                             | slug            | `table_name`   |
 | --------------------------------------------------- | --------------- | -------------- |
-| [`nav/nav_manager.md`](form/nav/nav_manager.md)     | `cadastro-nav`  | `nav_manager`  |
-| [`menu/menu_manager.md`](form/menu/menu_manager.md) | `cadastro-menu` | `menu_manager` |
+| [`template/temp_nav.md`](form/template/temp_nav.md)     | `cadastro-nav`  | `temp_nav`  |
+| [`template/temp_menu.md`](form/template/temp_menu.md) | `cadastro-menu` | `temp_menu` |
 
-`menu_manager` tem FK pra `nav_manager` (`nav_manager_id`) e auto-relação
+Formulários e listas do módulo Template sem markdown próprio (definidos no banco): `criar-cabecalho` e `editar-cabecalho`
+(`temp_header`), `criar-rodape` e `editar-rodape` (`temp_footer`), `criar-template` e `editar-template` (`temp_manager`), e as listas
+`header`, `footer` e `template`. Ver `README_modulo_template.md`.
+
+`temp_menu` tem FK pra `temp_nav` (`temp_nav_id`) e auto-relação
 (`parent_id`, submenu) — ver [`README_menu.md`](../../../frontend/projeto54900/src/markdown/geral/README_menu.md)
 pra convenção de faixas de `sort_order`.
 

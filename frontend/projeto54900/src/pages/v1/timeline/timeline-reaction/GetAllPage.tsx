@@ -13,7 +13,7 @@
  * botões Curtir/Avaliar do feed, sem lista/form admin).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-reaction'`),
- *   item de navbar "Curtidas/Descurtidas" (`menu_manager.react_route`).
+ *   item de navbar "Curtidas/Descurtidas" (`temp_menu.react_route`).
  * =============================================================================
  */
 

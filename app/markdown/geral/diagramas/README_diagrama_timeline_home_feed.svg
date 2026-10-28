@@ -44,7 +44,7 @@
 <text x="292" y="622" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/routes/RequireAuth.tsx  ·  src/layouts/RootLayout.tsx  ·  src/components/layout/Navbar.tsx</tspan><tspan x="292" dy="17">src/components/layout/BookmarksBar.tsx  ·  src/components/layout/Footer.tsx</tspan></text>
 <rect x="282" y="659" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="679" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">item de menu da tela (vem do banco)</text>
-<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/menuManager.table.ts  ·  menu_manager  -&gt;  item "Inicio" = /v1/timeline</tspan></text>
+<text x="292" y="699" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/hooks/useSiteMenu.ts  ·  src/services/v1/tempMenu.table.ts  ·  temp_menu  -&gt;  item "Inicio" = /v1/timeline</tspan></text>
 <line x1="955" y1="729" x2="955" y2="759" stroke="#94a3b8" stroke-width="2" marker-end="url(#arw)"/>
 <text x="969" y="749" font-size="11.5" fill="#475569">lazy import da pagina</text>
 <rect x="40" y="763" width="210" height="153" rx="8" fill="#4338ca"/>
@@ -192,7 +192,7 @@
 <text x="292" y="3129" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">timeline_posts  ·  timeline_manager  ·  timeline_post_attachments  ·  timeline_post_comments</tspan><tspan x="292" dy="17">timeline_post_reactions  ·  timeline_post_ratings  ·  timeline_post_reports</tspan></text>
 <rect x="282" y="3166" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3186" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">tabelas de apoio</text>
-<text x="292" y="3206" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">user_manager  ·  form_manager + view_form_manager  ·  list_manager (slug timeline-feed)  ·  menu_manager  ·  route_manager</tspan></text>
+<text x="292" y="3206" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">user_manager  ·  form_manager + view_form_manager  ·  list_manager (slug timeline-feed)  ·  temp_menu  ·  route_manager</tspan></text>
 <rect x="282" y="3226" width="1346" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
 <text x="292" y="3246" font-size="10.5" fill="#475569" font-weight="700" letter-spacing="0.4">arquivos em disco</text>
 <text x="292" y="3266" font-size="12.5" fill="#0f172a" font-family="Consolas, 'Courier New', monospace"><tspan x="292" dy="0">src/writable/uploads/timeline_posts/&lt;id&gt;/</tspan></text>

@@ -4,6 +4,14 @@
 
 # Temas de paleta de cores (Template001)
 
+> **Atualização 2026-10-28:** a paleta (`env.theme`) vale também para o sistema real: o `TemplateLayout` aplica as cores em todas as
+> telas, antes e depois do login (`config/theme.ts`). Cada app pode ter a sua pelo `VITE_THEME` do build.
+>
+> **Cor por empresa (2026-10-28):** `env.theme` é opcional. Com todas as linhas `theme:` comentadas em `config/env.ts`, vale o
+> `company_manager.color_theme` da empresa do slug da URL (`/<slug>/v1/login`), vindo de `template-public/get/{slug}` antes do
+> login e de `template-render/get` depois. Prioridade: `env.theme` > `color_theme` da empresa > tema padrão (`Blue_white`).
+> A coluna guarda o nome do JSON (sem `.json`); nome desconhecido cai no padrão. O seletor está nos formulários da empresa.
+
 Cada paleta é um JSON em `src/config/themes/`. A ativa é escolhida por
 `env.theme` (variável `VITE_THEME`, padrão `Blue_white`) e aplicada pelo
 `Template001Page` como variáveis CSS: as globais no elemento raiz e as de cada
@@ -19,6 +27,7 @@ região (header, nav, menu, content, footer) no próprio elemento dela.
 | `Blue_white.json`   | light | suave e harmoniosa (padrão)                                    |
 | `Blue_dark.json`    | dark  | intensa e escura                                               |
 | `Purple_white.json` | light | suave e harmoniosa                                             |
+| `White.json`        | light | branco puro e bege suave; primary azul `#3b6fd4` (contraste do texto >= 12,9) |
 | `Purple_dark.json`  | dark  | intensa e escura                                               |
 | `Pink_white.json`   | light | suave e harmoniosa                                             |
 | `Pink_dark.json`    | dark  | intensa e escura                                               |

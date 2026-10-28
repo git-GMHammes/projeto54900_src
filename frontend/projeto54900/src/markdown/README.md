@@ -114,7 +114,7 @@ usuário **continuam em português**.
 ### `alerta`
 
 Alerta registrado em 2026-09-14 depois de um erro real: um elemento de navbar
-foi adicionado direto em `Navbar.tsx`, fora de `nav-manager`/`menu-manager`.
+foi adicionado direto em `Navbar.tsx`, fora de `temp-nav`/`temp-menu`.
 Checklist obrigatório antes de escrever qualquer UI nova (item de navbar,
 campo de formulário, página, rota, campo JSON, modal): se nenhum item do
 checklist cobrir o caso, é sinal de decisão em aberto — **parar e perguntar**,
@@ -160,10 +160,10 @@ o eixo **Path → Página**. Cobre a raiz (`/`, `/acesso-negado`, `*`,
 — `create`/`update/:id`/`:id`/lista —, `user-profiles` e as duas rotas públicas
 do Cadastro de Usuário, `account`, `upload-manager`, `form` — incluindo
 `/v1/form/:slug` e `/v1/form-constructor/:table/:id` —, `list-constructor`,
-`nav-manager`, `menu-manager`, `calendar-manager` e `svg-map`), as **guardas**
+`temp-nav`, `temp-menu`, `calendar-manager` e `svg-map`), as **guardas**
 (`RequireAuth` no bloco v1 e `RequireRole role="admin"` nos módulos
 administrativos), o stub `v1a` e o dropdown do usuário na navbar — que é
-dinâmica, alimentada por `menu_manager`. Registra também lacunas encontradas
+dinâmica, alimentada por `temp_menu`. Registra também lacunas encontradas
 (ex.: `paths.v1.upload.new` sem rota registrada). Ver [`paginas`](#paginas) para
 a convenção de pastas por trás dessas rotas.
 
@@ -173,7 +173,7 @@ a convenção de pastas por trás dessas rotas.
 
 ### `menu`
 
-`nav_manager` (a casca do app: nome, imagem, ícone, versão) e `menu_manager`
+`temp_nav` (a casca do app: nome, imagem, ícone, versão) e `temp_menu`
 (a árvore de itens, com `parent_id` para submenu) são duas tabelas distintas
 ligadas por FK — nenhuma delas é "o menu" sozinha. `useSiteMenu.ts` só lê
 itens com `parent_id = NULL`, `react_route` preenchida e `sort_order < 100`;
@@ -490,7 +490,7 @@ um JSON novo na pasta funciona sem alterar código. Inclui o critério de contra
 - [`README_FormGrid.md`](geral/README_FormGrid.md) — componente `FormGrid`: fábrica de campos por schema JSON.
 - [`README_envHost.md`](geral/README_envHost.md) — o que `isDevHost()` libera hoje (`ApiDebugPanel`, `FakeFillButton`).
 - [`README_list_constructor.md`](geral/README_list_constructor.md) — modelo de dados do construtor de listas (`list_manager`/`list_columns`/`list_actions`) e estado do frontend.
-- [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`nav_manager`/`menu_manager`) são montadas.
+- [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`temp_nav`/`temp_menu`) são montadas.
 - [`README_mapa.md`](geral/README_mapa.md) — componentes react-leaflet (MapView, MapLinksPanel...), rotas `/v1/map`, serviços `map*` e como qualquer módulo usa o mapa.
 - [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.

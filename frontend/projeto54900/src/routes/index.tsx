@@ -39,14 +39,14 @@ import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { routerBasename } from '@/config/env';
 
-import RootLayout from '@/layouts/RootLayout';
+import TemplateLayout from '@/layouts/TemplateLayout';
 import HomePage from '@/pages/Home/HomePage';
 import RouteErrorPage from '@/pages/errors/RouteErrorPage';
 import NotFoundPage from '@/pages/errors/NotFoundPage';
 import ForbiddenPage from '@/pages/errors/ForbiddenPage';
 import RequireAuth from '@/routes/RequireAuth';
 
-// Tela de chat em tela cheia: sem navbar, atalhos nem rodapé (fora do RootLayout).
+// Tela de chat em tela cheia: sem navbar, atalhos nem rodapé (fora do TemplateLayout).
 const ChatRoomFullPage = lazy(() => import('@/pages/v1/chat-rooms/chat-rooms-manager/ChatPage'));
 
 import { v1Routes } from '@/routes/v1';
@@ -68,7 +68,7 @@ export const router = createBrowserRouter(
     },
     {
       path: '/',
-      element: <RootLayout />,
+      element: <TemplateLayout />,
       errorElement: <RouteErrorPage />,
       children: [
         { index: true, element: <HomePage /> },

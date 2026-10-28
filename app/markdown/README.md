@@ -41,30 +41,31 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | 12  | [`multiempresa`](#multiempresa) | Login por slug e isolamento por empresa  |
 | 13  | [`empresas`](#empresas)         | Empresas e acesso individual             |
 | 14  | [`upload`](#upload)             | Módulo de anexos para outros módulos     |
+| 15  | [`template`](#template)         | Template por empresa em tabelas          |
 
 **4. Módulos de negócio**
 
 | #   | Palavra-chave                                       | Assunto (5 palavras)              |
 | --- | --------------------------------------------------- | --------------------------------- |
-| 15  | [`messages`](#messages)                             | Mensagens diretas, nunca um chat  |
-| 16  | [`chatrooms`](#chatrooms)                           | Módulo de salas de chat moderadas |
-| 17  | [`timeline`](#timeline)                             | Módulo de publicações e timeline  |
-| 18  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
-| 19  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
-| 20  | [`location`](#location)                             | Locais em árvore recursiva livre  |
+| 16  | [`messages`](#messages)                             | Mensagens diretas, nunca um chat  |
+| 17  | [`chatrooms`](#chatrooms)                           | Módulo de salas de chat moderadas |
+| 18  | [`timeline`](#timeline)                             | Módulo de publicações e timeline  |
+| 19  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
+| 20  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
+| 21  | [`location`](#location)                             | Locais em árvore recursiva livre  |
 
 **5. Operação e manutenção**
 
 | #   | Palavra-chave                 | Assunto (5 palavras)                  |
 | --- | ----------------------------- | ------------------------------------- |
-| 21  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
-| 22  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
-| 23  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
-| 24  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
-| 25  | [`independencia`](#independencia) | Módulos independentes, ligação sob pedido |
-| 26  | [`product`](#product) | Produto de qualquer escala, atributos |
-| 27  | [`movement`](#movement) | Entrada, saída, separação, desperdício, encomenda |
-| 28  | [`service`](#service) | Serviço qualquer: pedido, prazo, prestador |
+| 22  | [`kinghost`](#kinghost)       | Deploy via git na hospedagem KingHost |
+| 23  | [`avaliacao`](#avaliacao)     | Valor comercial do sistema, teto      |
+| 24  | [`atualizacao`](#atualizacao) | Registrar novo markdown neste índice  |
+| 25  | [`podman`](#podman)           | Vite e Podman: porta bloqueada        |
+| 26  | [`independencia`](#independencia) | Módulos independentes, ligação sob pedido |
+| 27  | [`product`](#product) | Produto de qualquer escala, atributos |
+| 28  | [`movement`](#movement) | Entrada, saída, separação, desperdício, encomenda |
+| 29  | [`service`](#service) | Serviço qualquer: pedido, prazo, prestador |
 
 ---
 
@@ -177,7 +178,7 @@ desvios sancionados de contagem: `auth` com 6, `db-schema` com 3, `upload`
 multipart/streaming com 3, `user-profiles/me`, `calendar-event-attendees/respond`
 e `calendar-event-invites/accept-token`).
 Traz também a **legenda de filtros** (`jwtauth`/`adminonly` — por wildcard de URI
-ou rota a rota) e a observação de que `nav-manager`/`menu-manager` aparecem
+ou rota a rota) e a observação de que `temp-nav`/`temp-menu` aparecem
 duplicados em `Config/Routes.php`. Espelha, do lado do backend, o
 `README_rotas_frontend.md` do frontend (lá o eixo é Path React → Página; aqui é
 Método HTTP → Controller).
@@ -201,17 +202,17 @@ bind; schema exposto sem JWT — ok em homolog/dev.
 
 ### `navmenu`
 
-Dois recursos ligados por FK: `nav_manager` (config/branding do app — nome,
-imagem, versão) e `menu_manager` (árvore de itens navegáveis de um nav, FK
-`nav_manager_id` + auto-relacionamento `parent_id`). `menu_manager` guarda
+Dois recursos ligados por FK: `temp_nav` (config/branding do app — nome,
+imagem, versão) e `temp_menu` (árvore de itens navegáveis de um nav, FK
+`temp_nav_id` + auto-relacionamento `parent_id`). `temp_menu` guarda
 **todas** as rotas do site na mesma tabela; a distinção "aparece no navbar" é
 feita por faixa de `sort_order` (`<100` = navbar real, `>=1000` = catálogo
 extra, `>=2000` = árvore administrativa exibida só na tela de gestão). O
-Navbar real (`Navbar.tsx` + `useSiteMenu.ts`) lê só a faixa `<100` com
+Navbar real (`template-render/get`, antes `Navbar.tsx` + `useSiteMenu.ts`) lê só a faixa `<100` com
 `parent_id` nulo, com fallback estático se a API falhar. Documenta também um
 bug conhecido (charset `utf8` em vez de `utf8mb4` na conexão `default` —
-título acentuado causa HTTP 500) e os seeders `NavManagerSeeder`/
-`MenuManagerSeeder`.
+título acentuado causa HTTP 500) e os seeders `TempNavSeeder`/
+`TempMenuSeeder`.
 
 [`geral/README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu, convenção de sort_order, bug de charset e seeders.
 
@@ -276,6 +277,18 @@ tabela sem foreign key e 3 rotas extras (`upload` multipart, `serve`,
 como outro módulo anexa/lista/exibe arquivos.
 
 [`geral/README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo de upload/anexos da API V1.
+
+### `template`
+
+Substitui os JSONs `template001/002/003.json` por tabelas `temp_*`: `temp_nav` (casca), `temp_menu` (árvore; `navbar` = nav,
+`offcanvas` = menu lateral), `temp_header` e `temp_footer` (várias linhas ativas empilhadas por `sort_order`) e `temp_manager`
+(catálogo dos templates e as empresas de cada um). Cada tabela tem `company_manager`, lista JSON de **slugs** de empresa
+(`["default","tryikads"]`); leitura filtrada pelo slug da sessão (escopo `json_slug`) e escrita só admin (`temp_manager`: só
+superuser). Uma empresa pode ter vários templates: vale o escolhido pelo usuário (`user_manager.temp_manager_id`) ou o de menor id.
+`GET template-render/get` entrega o template da sessão; `GET template-public/get/{slug}` (sem login) entrega template, cabeçalhos e
+rodapés da empresa para o visitante. Frontend: layout global `TemplateLayout`, cores sempre do `env`.
+
+[`geral/README_modulo_template.md`](geral/README_modulo_template.md) — tabelas, rotas, escopo por empresa, template do usuário, rota pública e layout global.
 
 ### `messages`
 
@@ -480,6 +493,7 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — multiempresa: login por slug, sessão amarrada à empresa, isolamento de dados na API, cadastro e pendências.
 - [`README_multiempresa_guia_modulos.md`](geral/README_multiempresa_guia_modulos.md) — multiempresa: fluxo completo, escopo por módulo e como incluir módulo novo.
 - [`README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: empresas, `company_ids` do usuário e permissão individual a form/list.
+- [`README_modulo_template.md`](geral/README_modulo_template.md) — módulo Template: `temp_nav`, `temp_menu`, `temp_header`, `temp_footer`, `company_manager` por slug e `template-render`.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
 - [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
 - [`README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: 2 tabelas, 1 view, 45 rotas, árvore recursiva por `parent_id` montável de baixo para cima.

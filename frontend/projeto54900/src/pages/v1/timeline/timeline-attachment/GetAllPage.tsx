@@ -36,7 +36,7 @@
  *   (`PageHeader`, `EmptyState`, `LoadingOverlay`, `MediaPreview`).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-attachment'`),
- *   item de menu "Anexos/Uploads" (`menu_manager.id=35`).
+ *   item de menu "Anexos/Uploads" (`temp_menu.id=35`).
  * -----------------------------------------------------------------------------
  */
 

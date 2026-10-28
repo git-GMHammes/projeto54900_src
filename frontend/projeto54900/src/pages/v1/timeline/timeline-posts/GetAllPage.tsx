@@ -61,7 +61,7 @@
  *   `EmptyState`, `LoadingOverlay`).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-posts'`,
- *   lazy). Item de navbar "Feed" (`menu_manager.id=29`) aponta para cá.
+ *   lazy). Item de navbar "Feed" (`temp_menu.id=29`) aponta para cá.
  * =============================================================================
  */
 

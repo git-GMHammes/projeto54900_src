@@ -539,35 +539,43 @@ $routes->group('api/v1', static function ($routes) {
     //        versao do sistema.
     // =========================================================================
 
-    $routes->group('nav-manager', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Nav/NavManager/EndpointTable.php';
+    $routes->group('temp-nav', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TempNav/EndpointTable.php';
     });
 
     // =========================================================================
     // /Menu — arvore de itens navegaveis (submenus via parent_id), ligada a
-    //         um nav_manager.
+    //         um temp_nav.
     // =========================================================================
 
-    $routes->group('menu-manager', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Menu/MenuManager/EndpointTable.php';
+    $routes->group('temp-menu', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TempMenu/EndpointTable.php';
     });
 
     // =========================================================================
-    // /Nav — config/branding do app/navbar: nome, imagem, icone de mensagens,
-    //        versao do sistema.
+    // /Template — cabecalho e rodape do template (temp_header, temp_footer) e o
+    //             template inteiro da empresa da sessao (template-render). Escrita:
+    //             'adminonly' rota a rota nos EndpointTable.
     // =========================================================================
 
-    $routes->group('nav-manager', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Nav/NavManager/EndpointTable.php';
+    $routes->group('temp-header', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TempHeader/EndpointTable.php';
     });
 
-    // =========================================================================
-    // /Menu — arvore de itens navegaveis (submenus via parent_id), ligada a
-    //         um nav_manager.
-    // =========================================================================
+    $routes->group('temp-footer', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TempFooter/EndpointTable.php';
+    });
 
-    $routes->group('menu-manager', static function ($routes) {
-        require __DIR__ . '/Routes/Api/v1/Menu/MenuManager/EndpointTable.php';
+    $routes->group('temp-manager', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TempManager/EndpointTable.php';
+    });
+
+    $routes->group('template-public', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TemplateRender/EndpointPublic.php';
+    });
+
+    $routes->group('template-render', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Template/TemplateRender/EndpointRender.php';
     });
 
     // =========================================================================

@@ -23,7 +23,7 @@
 // react-router os prioriza sobre o dinamico ':slug' automaticamente — mas
 // mantenha 'create'/'update/:id' declarados ANTES de ':slug' aqui por clareza.
 
-// SOMENTE ADMIN (menu_manager.roles=["admin"]): form-constructor* inteiro e
+// SOMENTE ADMIN (temp_menu.roles=["admin"]): form-constructor* inteiro e
 // form-constructor-claude (o AUTOR dos formularios). form/:slug continua
 // generico e SEM guard de rota — e o renderizador usado por usuario comum
 // (ex.: autocadastro preenche a build 'cadastro-usuario' por aqui); dar

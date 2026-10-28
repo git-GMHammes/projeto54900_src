@@ -11,7 +11,7 @@
  * genérico `/v1/form/timeline-settings`.
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-manager'`),
- *   item de navbar "Minha Timeline" (`menu_manager.react_route`).
+ *   item de navbar "Minha Timeline" (`temp_menu.react_route`).
  * =============================================================================
  */
 

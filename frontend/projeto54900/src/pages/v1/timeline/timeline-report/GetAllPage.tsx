@@ -11,7 +11,7 @@
  * genérico `/v1/form/timeline-report` (que continua existindo, genérico).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-report'`),
- *   item de navbar "Denunciar" (`menu_manager.react_route`).
+ *   item de navbar "Denunciar" (`temp_menu.react_route`).
  * =============================================================================
  */
 

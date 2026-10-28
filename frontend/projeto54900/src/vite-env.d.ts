@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_API_VERSION?: string;
   readonly VITE_WS_URL?: string;
   readonly VITE_THEME?: string;
+  readonly VITE_GUEST_TEMPLATE?: string;
   readonly VITE_DEV_PORT?: string;
   readonly VITE_DEV_BACKEND?: string;
 }

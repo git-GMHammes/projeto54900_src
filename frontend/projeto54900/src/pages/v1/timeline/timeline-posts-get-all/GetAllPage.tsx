@@ -49,7 +49,7 @@
  *   `EmptyState`, `LoadingOverlay`).
  *
  * CONSUMIDORES: `routes/v1/timeline.routes.tsx` (`path: 'timeline-posts-get-all'`,
- *   lazy). Item de menu "Publicações (Admin)" (`menu_manager`, `roles: ["admin"]`).
+ *   lazy). Item de menu "Publicações (Admin)" (`temp_menu`, `roles: ["admin"]`).
  * =============================================================================
  */
 

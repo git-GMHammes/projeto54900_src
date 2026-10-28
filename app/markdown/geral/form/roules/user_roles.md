@@ -14,9 +14,9 @@ Até 2026-09-20, `user_roles` só tinha rotas de leitura — `create`/`update`/
 `delete` eram bloqueados de propósito no backend (comentário no próprio
 `EndpointTable.php`: _"Módulo read-only: sem create/update/delete"_). A
 pedido explícito do usuário, o módulo foi completado ao padrão canônico do
-projeto (18 rotas), espelhando exatamente `NavManager` (estrutura) e
-`MenuManager` (coluna `permissions`, JSON de verdade — mesmo tratamento de
-`MenuManager.roles`). Testado ponta a ponta antes deste doc: `create` (201),
+projeto (18 rotas), espelhando exatamente `TempNav` (estrutura) e
+`TempMenu` (coluna `permissions`, JSON de verdade — mesmo tratamento de
+`TempMenu.roles`). Testado ponta a ponta antes deste doc: `create` (201),
 unicidade de `slug` (409 em duplicata), `update` (200), `delete-soft` (200).
 
 ## O registro `form_manager` (o formulário em si)

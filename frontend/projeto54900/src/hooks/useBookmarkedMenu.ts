@@ -1,5 +1,5 @@
-// Busca os itens de menu_manager marcados como favorito (is_bookmark = 1) do
-// nav_manager ativo, pra alimentar a barra de icones entre a Navbar e o
+// Busca os itens de temp_menu marcados como favorito (is_bookmark = 1) do
+// temp_nav ativo, pra alimentar a barra de icones entre a Navbar e o
 // titulo da pagina (components/layout/BookmarksBar.tsx).
 //
 // Diferente de useSiteMenu.ts (que so devolve itens de TOPO com sort_order <
@@ -19,10 +19,10 @@ import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/context/AuthContext';
 import type { UseApiResult } from '@/hooks/useApi';
 import { isRoleAllowed } from '@/hooks/useSiteMenu';
-import { navManagerTable } from '@/services/v1/navManager.table';
-import { menuManagerTable } from '@/services/v1/menuManager.table';
+import { tempNavTable } from '@/services/v1/tempNav.table';
+import { tempMenuTable } from '@/services/v1/tempMenu.table';
 import { normalizeList } from '@/utils/apiResult';
-import type { MenuManagerItem, NavManagerItem } from '@/types/menu';
+import type { TempMenuItem, TempNavItem } from '@/types/menu';
 
 export interface BookmarkItem {
   id: number | string;
@@ -32,17 +32,17 @@ export interface BookmarkItem {
 }
 
 async function fetchBookmarkedMenu(signal: AbortSignal, roleSlug: string | null): Promise<BookmarkItem[]> {
-  const navPayload = await navManagerTable.find({ status: 'active' }, { limit: 1 }, { signal });
-  const { rows: navRows } = normalizeList<NavManagerItem>(navPayload);
+  const navPayload = await tempNavTable.find({ status: 'active' }, { limit: 1 }, { signal });
+  const { rows: navRows } = normalizeList<TempNavItem>(navPayload);
   const nav = navRows[0];
   if (!nav) return [];
 
-  const bookmarkPayload = await menuManagerTable.find(
-    { nav_manager_id: nav.id, status: 'active', is_bookmark: 1 },
+  const bookmarkPayload = await tempMenuTable.find(
+    { temp_nav_id: nav.id, status: 'active', is_bookmark: 1 },
     { limit: 50, sort: 'sort_order', order: 'ASC' },
     { signal },
   );
-  const { rows } = normalizeList<MenuManagerItem>(bookmarkPayload);
+  const { rows } = normalizeList<TempMenuItem>(bookmarkPayload);
 
   return rows
     .filter((item) => isRoleAllowed(item.roles, roleSlug) && item.react_route && item.icon)

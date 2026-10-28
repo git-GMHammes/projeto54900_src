@@ -11,6 +11,7 @@ import FormGrid from '@/components/ui/FormGrid/Input';
 import type { FormGridSchema } from '@/components/ui/FormGrid/Input';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
+import TemplatePreference from '@/components/global/TemplatePreference';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
@@ -177,6 +178,8 @@ export default function UpdatePage() {
           </div>
         </form>
       )}
+
+      <TemplatePreference />
     </>
   );
 }

@@ -22,6 +22,10 @@ use App\Libraries\Auth\CurrentUser;
  *   'via_table'  VIEW de uma tabela com company_id: a linha so aparece se o id dela ($companyViaKey)
  *                existir, na tabela $companyViaTable, com company_id = empresa da sessao. Evita
  *                redefinir cada view com a coluna company_id.
+ *   'json_slug'  a tabela tem a coluna JSON $companyJsonColumn (company_manager) com a LISTA de slugs das
+ *                empresas que enxergam a linha (ex.: ["default","tryikads"]; tabelas temp_*). A linha so aparece
+ *                se o slug da empresa da sessao constar na lista. So leitura/escopo: nao carimba na gravacao
+ *                (o Processor preenche a lista, ver Services/V1/Template/CompanyManagerColumn).
  *   'membership' tabela/view de usuarios: a linha so aparece se o usuario ($membershipKey) for
  *                membro ativo da empresa da sessao em company_members.
  *
@@ -37,6 +41,9 @@ trait CompanyScoped
 
     /** Modo 'column': coluna com o id da empresa. */
     protected string $companyColumn = 'company_id';
+
+    /** Modo 'json_slug': coluna JSON com a lista de slugs das empresas. */
+    protected string $companyJsonColumn = 'company_manager';
 
     /** Modo 'membership': coluna da tabela/view que guarda o id do usuario (user_manager.id). */
     protected string $membershipKey = 'id';
@@ -87,6 +94,20 @@ trait CompanyScoped
             return $builder->where($this->table . '.id', $cid);
         }
 
+        if ($this->companyScope === 'json_slug') {
+            $slug = $this->sessionCompanySlug($cid);
+
+            if ($slug === null) {
+                return $builder->where('1 = 0', null, false);
+            }
+
+            return $builder->where(
+                'JSON_CONTAINS(' . $this->table . '.' . $this->companyJsonColumn . ', JSON_QUOTE(' . $this->db->escape($slug) . '))',
+                null,
+                false
+            );
+        }
+
         if ($this->companyScope === 'via_table') {
             return $builder->where(
                 $this->table . '.' . $this->companyViaKey . ' IN (SELECT vt.id FROM ' . $this->companyViaTable
@@ -97,6 +118,19 @@ trait CompanyScoped
         }
 
         return $builder->where($this->table . '.' . $this->companyColumn, $cid);
+    }
+
+    /** Slug da empresa da sessao (cache por requisicao); null se a empresa nao existe ou foi excluida. */
+    private function sessionCompanySlug(int $cid): ?string
+    {
+        static $cache = [];
+
+        if (!array_key_exists($cid, $cache)) {
+            $row = $this->db->table('company_manager')->select('slug')->where('id', $cid)->where('deleted_at', null)->get()->getRowArray();
+            $cache[$cid] = $row['slug'] ?? null;
+        }
+
+        return $cache[$cid];
     }
 
     /**

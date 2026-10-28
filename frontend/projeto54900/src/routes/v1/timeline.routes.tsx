@@ -46,7 +46,7 @@
  *
  * CONSUMIDORES: `routes/v1/index.tsx` espalha `...timelineRoutes`; a navbar usa
  *   `paths.v1.timeline.*` (itens de menu do módulo: "Início" id 30, "Feed" id 29
- *   e os 5 filhos de listagem, `menu_manager.react_route`).
+ *   e os 5 filhos de listagem, `temp_menu.react_route`).
  *
  * REGRAS DE MANUTENÇÃO / ARMADILHAS:
  *   1. `path` é RELATIVO ao pai "/v1" (sem barra inicial) — o prefixo vem do

@@ -114,8 +114,8 @@ textual completo de toda rota já registrada:
 | `Form`     | `form-manager` → `form-groups` → `form-rows` → `form-campos` (+ view)                                        | completo — motor de formulários dinâmicos                           |
 | `List`     | `list-manager`, `list-columns`, `list-actions`                                                               | completo — motor de listagens dinâmicas                             |
 | `Calendar` | `calendar-manager`, `calendar-events` + 4 sub-recursos (attendees/reminders/attachments/extended-properties) | backend completo (108 rotas); **frontend ainda só visualização**    |
-| `Nav`      | `nav-manager` (branding/config do app)                                                                       | completo                                                            |
-| `Menu`     | `menu-manager` (árvore de itens de navegação)                                                                | completo                                                            |
+| `Nav`      | `temp-nav` (branding/config do app)                                                                       | completo                                                            |
+| `Menu`     | `temp-menu` (árvore de itens de navegação)                                                                | completo                                                            |
 | `Meta`     | `db-schema` (introspecção read-only do banco), `route-manager` (catálogo de rotas)                           | completo                                                            |
 
 ---

@@ -136,12 +136,13 @@ src/
   config/env.ts      leitura central de import.meta.env
   constants/api.ts   versões, grupos, endpoint-set, defaults de paginação
   routes/            ver "Convenção de rotas"
-  layouts/           RootLayout (navbar+footer), BlankLayout
+  layouts/           TemplateLayout (template global: cabeçalho, nav, menu lateral, rodapé), BlankLayout (RootLayout: sem uso)
   pages/             Home, v1/user/*, v1/upload/*, errors/*
   components/
     global/          PageHeader, ConfirmModal, ToastStack, LoadingOverlay,
                      EmptyState  |  STUBS: DataTable, Pagination, FormField
-    layout/          Navbar, Footer
+    layout/          Navbar, Footer (sem uso: substituídos por template/)
+    template/        TemplateShell, TemplateHeaderRegion, TemplateNavRegion, TemplateSideMenu, TemplateFooterRegion
   services/          ver "Camada de serviços"
   hooks/             useApi (genérico), usePagination (sync querystring), useToast, useDebounce
   context/           AppConfigContext, ToastContext
@@ -165,6 +166,8 @@ define: o app roda com os **defaults** de `src/config/env.ts`.
 | `VITE_WS_URL`       | `/ws`                    | WebSocket (Node)                       |
 | `VITE_DEV_PORT`     | `54910`                  | porta do dev-server (`vite.config.ts`) |
 | `VITE_DEV_BACKEND`  | `http://localhost:54900` | alvo do proxy `/api` e `/ws` no dev    |
+| `VITE_THEME`        | `Purple_dark`            | paleta de cores FIXA (JSON de `config/themes`); opcional: sem ela (linhas `theme:` comentadas) vale `company_manager.color_theme` |
+| `VITE_GUEST_TEMPLATE` | `template001`          | variante do visitante sem slug na URL (com slug vale o template da empresa) |
 
 Para um deploy que precise de outros valores (API em outro host, app numa
 subpasta), exportar as chaves `VITE_*` no shell **antes do build** — o Vite lê
