@@ -168,7 +168,9 @@ Resumo para não repetir os problemas de 2026-10-21:
    `regexp_replace`, `WITH RECURSIVE`, `DEFAULT (json_array`, `utf8mb4_0900`) e reaplicar as
    trocas — o export sobrescreve as correções.
 2. Importar com UTF-8 explícito (`mysql --default-character-set=utf8mb4 ... < arquivo.sql`
-   ou HeidiSQL com UTF-8 no seletor). Arrastar o arquivo gera `CalendÃ¡rios`.
+   ou HeidiSQL por **Arquivo > Abrir**, escolhendo a codificação **UTF-8**). Arrastar o
+   arquivo gera `CalendÃ¡rios`. Ao fim de cada criação de MIGRATE, a IA deve sugerir
+   essa forma de importação.
 3. Ordem: `replace_table` (apaga dados) -> conferir contagem de tabelas -> `seed_table` ->
    `replace_view`. O HeidiSQL continua após erro: conferir a contagem de `BASE TABLE`/`VIEW`
    e `SHOW COLUMNS FROM user_manager` (`token_prev`, `token_prev_until`, `company_ids`).

@@ -410,8 +410,9 @@ lê o `.sql`). Se ainda assim precisar importar por linha de comando:
 ```bash
 mysql --default-character-set=utf8mb4 -h <host> -u <usuario> -p <banco> < 202610182153_seed_table.sql
 ```
-(a senha é pedida no prompt; nunca em arquivo). No HeidiSQL: **Arquivo > Carregar arquivo
-SQL** e escolher **UTF-8** no seletor de codificação — não arrastar o arquivo. O seed faz
+(a senha é pedida no prompt; nunca em arquivo). No HeidiSQL: **Arquivo > Abrir**, escolhendo
+a codificação **UTF-8** (conversão na abertura) — não arrastar o arquivo. Ao fim de cada
+criação de MIGRATE, a IA deve sugerir essa forma de importação na KingHost. O seed faz
 `DELETE FROM` antes de cada `INSERT`; para corrigir, basta recarregá-lo.
 
 ### 3. Ordem e conferência (o HeidiSQL segue em frente após erro — o script "roda" mesmo falhando)
