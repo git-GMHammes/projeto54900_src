@@ -4,6 +4,8 @@
 
 # Modelo IA — `list-constructor`, o meta-formulário do módulo List
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Análogo direto de [`form/modelo_ia/form.md`](form.md) (`form-constructor`),
 mas para o módulo List em vez do módulo Form. Mesmo padrão de
 [`README_menu.md`](../../../../../frontend/projeto54900/src/markdown/geral/README_menu.md):

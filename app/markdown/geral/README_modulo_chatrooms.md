@@ -4,6 +4,8 @@
 
 # Módulo ChatRooms (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Salas de chat moderadas. Qualquer usuário autenticado (exceto papel `guest`)
 entra em qualquer sala sem pedir permissão só de ver a tabela; quem cria a
 sala vira dono e moderador, responsável por bloquear quem se comportar mal ou

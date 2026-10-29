@@ -26,7 +26,7 @@ Fonte: `routes/index.tsx` — `createBrowserRouter`, `basename = routerBasename`
 
 | Path   | Elemento                    | Observação                                        |
 | ------ | --------------------------- | ------------------------------------------------- |
-| `/`    | `pages/Home/HomePage`       | Índice (`index: true`) dentro do `TemplateLayout` |
+| `/`    | `pages/Home/CompanyHome`    | Índice (`index: true`) dentro do `TemplateLayout`; Home (landing page) estática da empresa do slug, com fallback para a `default` (ver `README_rota_empresa_slug.md`, seção 4.1) |
 | `/acesso-negado` | `pages/errors/ForbiddenPage` | Aviso de acesso negado — destino do `RequireRole` |
 | `/v1`  | _(grupo)_ — ver seção "v1"  | `v1Routes`, registrado como filho do `TemplateLayout` |
 | `/v1a` | _(grupo)_ — ver seção "v1a" | `v1aRoutes`, idem                                 |

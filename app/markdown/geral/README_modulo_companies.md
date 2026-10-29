@@ -4,6 +4,8 @@
 
 # Módulo `company_manager` — empresas e acesso individual (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Dois recursos novos e uma coluna nova:
 
 1. **`company_manager`** — cadastro de empresas (módulo `Company/CompanyManager`).

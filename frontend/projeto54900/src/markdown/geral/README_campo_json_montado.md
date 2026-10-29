@@ -4,6 +4,8 @@
 
 # Campo com valor JSON — a UI monta, o usuário não digita
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Padrão adotado no frontend para qualquer campo cujo **valor persistido é JSON**
 (uma lista, um objeto de configuração), mas cuja **edição não pode exigir que o
 usuário escreva JSON à mão**. A interface oferece um controle nativo (multi

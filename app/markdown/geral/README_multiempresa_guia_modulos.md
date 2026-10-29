@@ -4,6 +4,8 @@
 
 # Multiempresa — guia de módulos e de ponta a ponta (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Complementa [`README_multiempresa_isolamento.md`](README_multiempresa_isolamento.md) (regras) e
 [`README_modulo_companies.md`](README_modulo_companies.md) (cadastro de empresas e membros). Este guia mostra o
 **fluxo completo**, **qual modo de escopo cada módulo usa** e o **passo a passo para um módulo novo entrar no isolamento**.

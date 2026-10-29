@@ -4,6 +4,8 @@
 
 # Índice — árvores de formulário (`form/`)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Todo `form_manager` deste banco nasce assim: markdown revisado aqui primeiro,
 depois vira `INSERT` (nunca migration, nunca seed — motivo e histórico
 completo em [`README_modulo_form.md`](README_modulo_form.md)). Esta página

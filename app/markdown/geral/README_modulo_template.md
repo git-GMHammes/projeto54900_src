@@ -22,6 +22,8 @@ lateral em Offcanvas); o **conteúdo** vem do banco e vale para várias empresas
   (ver `README_modulo_nav_menu.md`).
 - Nas colunas do rodapé e nas logos do cabeçalho, a **imagem preenchida vence** título e texto.
 - `content_headings` (o meio do template) **não tem tabela**: o meio recebe qualquer módulo.
+- `temp_footer` tem também `title`, `layout` (`columns` ou `highlight`) e `col1_icon..col4_icon`, todas NULL e
+  aditivas: sem `layout` o rodapé é o de 4 colunas de sempre. Detalhe em `README_template001_modelo.md` (seção 15).
 - `temp_header` e `temp_footer` podem ter várias linhas ativas por empresa: o frontend as
   empilha por `sort_order`. Não há coluna `template`.
 
@@ -101,7 +103,9 @@ Entrega o template da empresa da sessão no formato dos JSONs (`Services/V1/Temp
   nav:     [ {id,order,label,url,icon,is_bookmark,type,placement,children[]} ],   // itens de topo 'navbar'
   menu:    [ ... ],                                                               // itens de topo 'offcanvas' = menu lateral
   headers: [ {id,name,sort_order,background_image[],logo[],company_name[]} ],     // empilhados por sort_order
-  footers: [ {id,name,sort_order,footer_headings[],footer_images[]} ] }
+  footers: [ {id,name,sort_order,title,layout,footer_headings[],footer_images[]} ] }
+  // layout: 'columns' (padrao) ou 'highlight'; title: titulo do modelo highlight, com [d]palavra[/d];
+  // footer_headings[].icon: classe Bootstrap Icons (bi-xxx) do item no modelo highlight.
 ```
 
 - Só registros `active` e não excluídos. O `temp_nav` usado é o de `temp_nav_id` ou, sem o

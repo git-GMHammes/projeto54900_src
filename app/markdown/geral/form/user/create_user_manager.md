@@ -4,6 +4,8 @@
 
 # Cadastro de Usuário — Etapa 1 (`cadastro-usuario`)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Mesmo modelo de [`form/modelo_ia/form.md`](../modelo_ia/form.md): árvore revisada
 aqui antes do `INSERT` (não migration, não seed — ver aviso em
 [`README_modulo_form.md`](../../README_modulo_form.md)).
@@ -49,6 +51,16 @@ _slug `criacao-de-seguranca` · icon `lock-fill`_
 | ----- | ------- | --------------- | ----- | --- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | Usuário | `username`      | text  | 4   | sim    | —                                                                                                                                                                    |
 | 2     | Senha   | `password_hash` | senha | 4   | sim    | `min_length=8`, `max_length=72` (limite do bcrypt), `strong_password=1`, `double_field=1` — o 2º campo sai como `password_hash_confirm` e é validado também no backend (`CreateRequest`: `required\|matches[password_hash]`) |
+
+## Campo Empresa e termo de uso (tela `/v1/user-manager/create`)
+
+- **Empresa** (`company_ids`, `form_fields` id 505): `select` de escolha única, opções de
+  `/api/v1/company-manager-public/get-no-pagination` (`id`, `name`, `slug`). Com slug na URL
+  (`/tryikads/v1/user-manager/create`) abre pré-selecionado; sem slug, vazio. A página envia
+  `company_ids` como lista de um item (a API descarta valor escalar).
+- **Termo de uso**: `TermsModal.tsx` abre ao carregar a tela; o botão Criar nasce desabilitado e só
+  habilita com o aceite. Fechado sem aceite, o link "Ler e aceitar os termos de uso" reabre o modal.
+  O texto é provisório (constantes no topo do `TermsModal.tsx`). O aceite vale só no navegador.
 
 ## Próximo passo
 

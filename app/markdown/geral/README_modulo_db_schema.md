@@ -4,6 +4,8 @@
 
 # Módulo `db-schema` — introspecção do banco (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Utilitário REST **somente leitura** que lista as tabelas/views do banco da API
 V1 (`codeigniter54900_db`, grupo `DB_GROUP_001`) e as colunas de cada uma. Serve
 para o **construtor de formulários** oferecer, nos `select`, apenas nomes de

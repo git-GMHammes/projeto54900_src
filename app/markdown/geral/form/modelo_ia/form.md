@@ -4,6 +4,8 @@
 
 # Modelo IA — `form-constructor`, o meta-formulário do módulo Form
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Espelha o padrão fixado em
 [`README_menu.md`](../../../../../frontend/projeto54900/src/markdown/geral/README_menu.md):
 antes de qualquer `INSERT`, a árvore é desenhada e revisada aqui, em markdown.

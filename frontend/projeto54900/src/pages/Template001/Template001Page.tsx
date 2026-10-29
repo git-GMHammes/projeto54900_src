@@ -65,6 +65,8 @@ interface NavItem {
   label: string;
   url: string;
   type: string;
+  /** Ícone opcional (Bootstrap Icons, sem o prefixo `bi-`). */
+  icon?: string;
 }
 
 interface MenuItem {
@@ -72,6 +74,8 @@ interface MenuItem {
   order: number;
   label: string;
   url: string;
+  /** Ícone opcional (Bootstrap Icons, sem o prefixo `bi-`). */
+  icon?: string;
 }
 
 interface HeadingItem {
@@ -79,6 +83,8 @@ interface HeadingItem {
   order: number;
   title: string;
   text: string;
+  /** Imagem opcional do bloco (só o conteúdo usa); título e texto vazios mostram só a imagem. */
+  image?: { url: string; alt: string };
 }
 
 interface ContentHeadingItem extends HeadingItem {
@@ -134,6 +140,12 @@ const data: Template001Data = template001Json;
 /** Monta a URL pública de um arquivo de `public/` a partir do caminho do JSON. */
 const assetUrl = (path: string): string => `${env.basePath}/${path}`;
 
+/** Ícone do item de menu (Bootstrap Icons, sem o prefixo `bi-`); nome fora de [a-z0-9-] é ignorado. */
+function ItemIcon({ icon, className = 'me-1' }: { icon: string | undefined; className?: string }) {
+  if (!icon || !/^[a-z0-9-]+$/.test(icon)) return null;
+  return <i className={`bi bi-${icon} ${className}`} aria-hidden="true" />;
+}
+
 /** Alinhamento horizontal da logomarca conforme `position` do JSON. */
 const LOGO_ALIGNMENT: Record<string, string> = {
   left: 'justify-content-start',
@@ -152,12 +164,43 @@ function groupByRow(items: ContentHeadingItem[]): ContentHeadingItem[][] {
   return [...rows.entries()].sort(([a], [b]) => a - b).map(([, columns]) => columns.sort((a, b) => a.column - b.column));
 }
 
-function Heading({ title, text }: HeadingItem) {
+function Heading({ title, text, image }: HeadingItem) {
   return (
     <>
-      <h1 className="h4 fw-bold">{title}</h1>
-      <p className="small mb-0">{text}</p>
+      {image && <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid rounded mb-2" />}
+      {title && <h1 className="h4 fw-bold">{title}</h1>}
+      {text && <p className="small mb-0">{text}</p>}
     </>
+  );
+}
+
+/** Bloco de conteúdo em cartão uniforme: etiqueta do tipo, e imagem ao lado do texto a partir de `md`. */
+function ContentBlock(item: ContentHeadingItem) {
+  const { id, image, ...rest } = item;
+  const hasText = Boolean(item.title || item.text);
+  const kind = image && hasText ? 'imagem + texto' : image ? 'imagem' : 'texto';
+  return (
+    <div className="border rounded p-3 h-100">
+      <span className="badge text-bg-secondary mb-2">
+        Bloco {id} · {kind}
+      </span>
+      {image && hasText ? (
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-md-4">
+            <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid rounded" />
+          </div>
+          <div className="col-12 col-md-8">
+            <Heading id={id} {...rest} />
+          </div>
+        </div>
+      ) : image ? (
+        <div className="text-center">
+          <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid rounded" />
+        </div>
+      ) : (
+        <Heading id={id} {...rest} />
+      )}
+    </div>
   );
 }
 
@@ -315,6 +358,7 @@ export default function Template001Page() {
                         {navItems.map((item, i) => (
                           <li key={item.id} className="tpl-nav-item nav-item d-lg-flex align-items-lg-center">
                             <a href={item.url} className="tpl-nav-link nav-link px-lg-1">
+                              <ItemIcon icon={item.icon} />
                               {item.label}
                             </a>
                             {i < navItems.length - 1 && (
@@ -379,9 +423,10 @@ export default function Template001Page() {
                 <div className="offcanvas-body h-100 p-lg-0">
                   <ul className="tpl-region list-unstyled bg-body text-body border shadow rounded-4 py-3 px-2 mb-0 w-100 h-100">
                     {menuItems.map((item) => (
-                      <li key={item.id} className="tpl-menu-item text-center small border-bottom py-1">
-                        <a href={item.url} className="tpl-menu-link d-block text-decoration-none">
-                          {item.label}
+                      <li key={item.id} className="tpl-menu-item small border-bottom py-1">
+                        <a href={item.url} className="tpl-menu-link d-flex align-items-center gap-2 text-decoration-none px-2">
+                          <ItemIcon icon={item.icon} className="fs-5 lh-1 flex-shrink-0" />
+                              {item.label}
                         </a>
                       </li>
                     ))}
@@ -398,10 +443,10 @@ export default function Template001Page() {
               style={sectionCssVars(palette, 'content')}
             >
               {contentRows.map((columns) => (
-                <div key={columns[0]?.row} className="tpl-reveal row mb-3">
+                <div key={columns[0]?.row} className="tpl-reveal row g-3 mb-3">
                   {columns.map((item) => (
                     <div key={item.id} className={`col-12 col-md-${12 / item.columns_in_row}`}>
-                      <Heading {...item} />
+                      <ContentBlock {...item} />
                     </div>
                   ))}
                 </div>

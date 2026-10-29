@@ -4,6 +4,8 @@
 
 # Módulo Message — backend
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Mensagens diretas entre usuários, 1 para 1 ou 1 para grupo, com agendamento de
 envio e marca de leitura. Reaproveita a aparência e a forma de envio do chat
 (mesma tela, mesmas cores de balão, marcação de usuário), mas **Message NUNCA é

@@ -1,1 +1,0 @@
-import{e as a,P as t,E as s}from"./index-BoOL_Kbz.js";function o({version:e="v1a"}){return a.jsxs(a.Fragment,{children:[a.jsx(t,{title:`API ${e}`,subtitle:"Versão reservada"}),a.jsx(s,{title:`Nenhum modulo em ${e} ainda`,description:`Espelha o namespace Api\\${e.toUpperCase()} do backend. Ver routes/${e}/README.md.`})]})}export{o as default};

@@ -4,6 +4,8 @@
 
 # Módulo Upload / UploadManager (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Recurso REST que **armazena e serve arquivos** (Office, imagem, áudio, vídeo,
 PDF, compactados) como **anexos de qualquer outro módulo** do sistema. É
 polimórfico: o dono de cada arquivo é identificado por `module` +

@@ -4,6 +4,8 @@
 
 # Sessão compartilhada entre abas e janelas
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 O login vale para **todas as abas e janelas do mesmo navegador** (mesma origem): abrir uma janela nova, ou recarregar com F5, não pede login
 de novo. Janela anônima, outro perfil do navegador ou outro endereço (`localhost` x `127.0.0.1`, outra porta) são sessões separadas e pedem login.
 

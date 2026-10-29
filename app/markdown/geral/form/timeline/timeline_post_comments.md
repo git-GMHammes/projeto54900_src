@@ -4,6 +4,8 @@
 
 # Comentário — `timeline-comment`
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Mesmo modelo de [`form/template/temp_menu.md`](../template/temp_menu.md): árvore
 revisada aqui antes do `INSERT` (não migration, não seed — ver aviso em
 [`README_modulo_form.md`](../../README_modulo_form.md)).

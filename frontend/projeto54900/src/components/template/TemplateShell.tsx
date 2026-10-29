@@ -17,7 +17,8 @@ import TemplateFooterRegion from '@/components/template/TemplateFooterRegion';
 import TemplateHeaderRegion from '@/components/template/TemplateHeaderRegion';
 import TemplateNavRegion from '@/components/template/TemplateNavRegion';
 import TemplateSideMenu from '@/components/template/TemplateSideMenu';
-import { GUEST_ENTRIES, HOME_ONLY_ENTRIES, toNavEntries } from '@/components/template/templateNav';
+import { TemplatePaletteProvider } from '@/components/template/ThemePortal';
+import { GUEST_ENTRIES, HOME_ONLY_ENTRIES, TEMPLATE_MENU_ID, toNavEntries } from '@/components/template/templateNav';
 import { regionStyle } from '@/components/template/templateRegionStyle';
 import type { TemplateVariant } from '@/components/template/templateVariants';
 import { env } from '@/config/env';
@@ -38,12 +39,12 @@ export interface TemplateShellProps {
 
 export default function TemplateShell({ variant, data, children }: TemplateShellProps) {
   const { isAuthenticated, bootstrapping } = useAuth();
-  const { appName, apiVersion } = useAppConfig();
+  const { appName } = useAppConfig();
   // Paleta: a do env, quando fixada; senao a color_theme da empresa (slug da URL ou da sessao); senao a padrao.
   const palette = getPalette(env.theme ?? data?.color_theme ?? null);
   const rootRef = useReveal<HTMLDivElement>();
   const scrolled = useScrolled(16);
-  const { close, isOpen, collapsibleClass } = useClosableRegions<string>();
+  const { close, isOpen, isClosing, collapsibleClass } = useClosableRegions<string>();
 
   const { flat, offcanvasOnly } = variant;
 
@@ -56,13 +57,20 @@ export default function TemplateShell({ variant, data, children }: TemplateShell
   const headers = data ? data.headers : [];
   const footers = data ? data.footers : [];
 
+  // Nome do app: so titulo do menu lateral/Offcanvas (o nav nao mostra marca nem versao).
   const brandName = data?.temp_nav?.title || appName;
-  const brandVersion = data?.temp_nav ? data.temp_nav.system_version : apiVersion;
 
-  const menuButton = isAuthenticated ? (offcanvasOnly ? 'always' : 'below-lg') : 'none';
-  const withColumn = isAuthenticated && !offcanvasOnly;
+  // Regioes que o X fecha (so em memoria, sem desfazer): cabecalho(s), nav, menu lateral e rodape(s).
+  // O menu lateral so existe com sessao; no 003 (Offcanvas) nao ha coluna nem X permanente.
+  const navOpen = isOpen('nav');
+  const menuOpen = isAuthenticated && (offcanvasOnly || isOpen('menu'));
+  const menuButton = menuOpen ? (offcanvasOnly ? 'always' : 'below-lg') : 'none';
+  const withColumn = menuOpen && !offcanvasOnly;
+  // Nav fechado e menu aberto: barra minima so com o icone da grade (no 001 e 002 so abaixo de lg).
+  const showMenuBar = !navOpen && menuOpen;
 
   return (
+    <TemplatePaletteProvider palette={palette}>
     <div
       ref={rootRef}
       className={`tpl-app ${flat ? 'tpl-flat' : 'p-1'} min-vh-100 d-flex`}
@@ -84,24 +92,60 @@ export default function TemplateShell({ variant, data, children }: TemplateShell
           ) : null;
         })}
 
-        <div className={`tpl-sticky sticky-top bg-body d-flex flex-column ${flat ? '' : 'gap-2'}`}>
-          <TemplateNavRegion
-            entries={navEntries}
-            menuButton={menuButton}
-            flat={flat}
-            palette={palette}
-            scrolled={scrolled}
-            brandName={brandName}
-            brandVersion={brandVersion}
-          />
-        </div>
+        {(navOpen || showMenuBar) && (
+          <div
+            className={`tpl-sticky sticky-top bg-body d-flex flex-column ${flat ? '' : 'gap-2'} ${navOpen || offcanvasOnly ? '' : 'd-lg-none'}`}
+          >
+            {navOpen ? (
+              <div className={collapsibleClass('nav')}>
+                {/* minWidth 0: o item do grid nao pode ter a largura minima dos itens do nav (senao a pagina estoura). */}
+                <div className="tpl-collapsible-inner" style={{ minWidth: 0 }}>
+                  <TemplateNavRegion
+                    entries={navEntries}
+                    menuButton={menuButton}
+                    flat={flat}
+                    palette={palette}
+                    scrolled={scrolled}
+                    onClose={() => close('nav')}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div
+                className={`d-flex ${offcanvasOnly ? 'justify-content-start' : 'justify-content-end'} text-body px-3 py-1 ${flat ? 'tpl-blend' : 'tpl-region bg-body border shadow rounded-4'}`}
+                style={regionStyle(palette, 'menu', flat)}
+              >
+                <button
+                  type="button"
+                  className="btn btn-sm border-0 text-body fs-5 lh-1"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target={`#${TEMPLATE_MENU_ID}`}
+                  aria-controls={TEMPLATE_MENU_ID}
+                  aria-label="Abrir menu"
+                >
+                  <i className="bi bi-grid-3x3-gap-fill" aria-hidden="true" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-        {isAuthenticated && offcanvasOnly && (
+        {menuOpen && offcanvasOnly && (
           <TemplateSideMenu entries={menuEntries} mode="offcanvas" flat={flat} palette={palette} title={brandName} />
         )}
 
         <div className={`row ${flat ? 'g-0' : 'g-2'} flex-grow-1`}>
-          {withColumn && <TemplateSideMenu entries={menuEntries} mode="column" flat={flat} palette={palette} title={brandName} />}
+          {withColumn && (
+            <TemplateSideMenu
+              entries={menuEntries}
+              mode="column"
+              flat={flat}
+              palette={palette}
+              title={brandName}
+              closing={isClosing('menu')}
+              onClose={() => close('menu')}
+            />
+          )}
           <main className={withColumn ? 'col-12 col-lg-9 col-xxl-10' : 'col-12'}>
             <div
               className={`tpl-region text-body p-3 p-md-4 h-100 ${flat ? 'tpl-blend' : 'bg-body border shadow rounded-5'}`}
@@ -133,5 +177,6 @@ export default function TemplateShell({ variant, data, children }: TemplateShell
         )}
       </div>
     </div>
+    </TemplatePaletteProvider>
   );
 }

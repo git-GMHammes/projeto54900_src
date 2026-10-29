@@ -4,6 +4,8 @@
 
 # Módulo `location` — frontend (locais em árvore recursiva)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Backend e banco em
 [`README_modulo_location.md`](../../../../../../../app/markdown/geral/README_modulo_location.md).
 

@@ -4,6 +4,8 @@
 
 # Módulo Location — locais em árvore recursiva
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Controla locais de qualquer escala (galáxia, país, rua, galpão, caixa, pasta) numa só tabela. Cada
 local aponta para o pai pela mesma tabela (`parent_id`, nulo no topo). Módulo **independente**: sem
 vínculo com Map, Produto, Patrimônio, Estoque, Agenda ou Mensagem. A integração futura será por

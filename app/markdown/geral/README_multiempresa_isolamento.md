@@ -4,6 +4,8 @@
 
 # Multiempresa — login por slug, sessão amarrada e isolamento de dados (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Cada empresa (`company_manager`) é um tenant. O endereço é **auto declarado**: o slug da empresa
 vem na URL e decide em qual empresa a sessão nasce. Os dados são isolados por empresa na API.
 

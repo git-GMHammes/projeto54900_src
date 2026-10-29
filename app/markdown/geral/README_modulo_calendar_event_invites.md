@@ -4,6 +4,8 @@
 
 # Módulo Calendar / CalendarEventInvites (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Convite de evento por e-mail com **token temporário de uso único**. Dois
 modos:
 

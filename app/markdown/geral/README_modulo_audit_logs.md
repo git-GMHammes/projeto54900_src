@@ -4,6 +4,8 @@
 
 # Módulo Audit Logs — log de auditoria e acesso
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Registra, por usuário, o que foi chamado na API e os eventos de sessão. Uma única tabela: `audit_logs`.
 
 > **Estado atual (2026-10-22): somente DEV local.** A tabela foi criada direto no banco

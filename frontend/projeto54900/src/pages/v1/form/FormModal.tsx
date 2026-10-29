@@ -71,7 +71,8 @@
  */
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+
+import ThemePortal from '@/components/template/ThemePortal';
 
 /**
  * =============================================================================
@@ -209,8 +210,8 @@ export default function FormModal({
    *   componente é compartilhado entre `form` e `list`.
    * -------------------------------------------------------------------------
    */
-  return createPortal(
-    <>
+  return (
+    <ThemePortal>
       {/* Fundo escurecido: é um DIV próprio, não o backdrop do JS do Bootstrap. */}
       <div className="modal-backdrop fade show" />
       {/* Palco: cobre a tela e captura o clique FORA do diálogo (onMouseDown). */}
@@ -284,7 +285,6 @@ export default function FormModal({
           </div>
         </div>
       </div>
-    </>,
-    document.body,
+    </ThemePortal>
   );
 }

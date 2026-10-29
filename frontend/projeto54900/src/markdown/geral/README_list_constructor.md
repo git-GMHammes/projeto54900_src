@@ -4,6 +4,8 @@
 
 # Construtor de Listas (`list_manager` / `list_columns` / `list_actions`)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Estrutura de banco para descrever **grids/listagens alimentadas por API**
 (paginação, ordenação, colunas compostas e ações por linha com permissão),
 no mesmo espírito do [construtor de formulários](README_form_builder.md)

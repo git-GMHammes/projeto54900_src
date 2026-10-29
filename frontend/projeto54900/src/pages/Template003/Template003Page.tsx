@@ -47,6 +47,7 @@ import { env } from '@/config/env';
 import { getPalette, paletteToCssVars, sectionBlendCssVars, sectionCssVars } from '@/config/theme';
 import type { ThemePalette, ThemeSection } from '@/config/theme';
 import { useReveal } from '@/hooks/useReveal';
+import { useNavScroll } from '@/hooks/useNavScroll';
 import { useScrolled } from '@/hooks/useScrolled';
 import template003Json from './template003.json';
 
@@ -64,6 +65,8 @@ interface NavItem {
   label: string;
   url: string;
   type: string;
+  /** Ícone opcional (Bootstrap Icons, sem o prefixo `bi-`). */
+  icon?: string;
 }
 
 interface MenuItem {
@@ -71,6 +74,8 @@ interface MenuItem {
   order: number;
   label: string;
   url: string;
+  /** Ícone opcional (Bootstrap Icons, sem o prefixo `bi-`). */
+  icon?: string;
 }
 
 interface HeadingItem {
@@ -78,6 +83,8 @@ interface HeadingItem {
   order: number;
   title: string;
   text: string;
+  /** Imagem opcional do bloco (só o conteúdo usa); título e texto vazios mostram só a imagem. */
+  image?: { url: string; alt: string };
 }
 
 interface ContentHeadingItem extends HeadingItem {
@@ -133,6 +140,12 @@ const data: Template003Data = template003Json;
 /** Monta a URL pública de um arquivo de `public/` a partir do caminho do JSON. */
 const assetUrl = (path: string): string => `${env.basePath}/${path}`;
 
+/** Ícone do item de menu (Bootstrap Icons, sem o prefixo `bi-`); nome fora de [a-z0-9-] é ignorado. */
+function ItemIcon({ icon, className = 'me-1' }: { icon: string | undefined; className?: string }) {
+  if (!icon || !/^[a-z0-9-]+$/.test(icon)) return null;
+  return <i className={`bi bi-${icon} ${className}`} aria-hidden="true" />;
+}
+
 /** Alinhamento horizontal da logomarca conforme `position` do JSON. */
 const LOGO_ALIGNMENT: Record<string, string> = {
   left: 'justify-content-start',
@@ -151,12 +164,43 @@ function groupByRow(items: ContentHeadingItem[]): ContentHeadingItem[][] {
   return [...rows.entries()].sort(([a], [b]) => a - b).map(([, columns]) => columns.sort((a, b) => a.column - b.column));
 }
 
-function Heading({ title, text }: HeadingItem) {
+function Heading({ title, text, image }: HeadingItem) {
   return (
     <>
-      <h1 className="h4 fw-bold">{title}</h1>
-      <p className="small mb-0">{text}</p>
+      {image && <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid mb-2" />}
+      {title && <h1 className="h4 fw-bold">{title}</h1>}
+      {text && <p className="small mb-0">{text}</p>}
     </>
+  );
+}
+
+/** Bloco de conteúdo em cartão uniforme (sem borda, fundo suave): etiqueta do tipo, e imagem ao lado do texto a partir de `md`. */
+function ContentBlock(item: ContentHeadingItem) {
+  const { id, image, ...rest } = item;
+  const hasText = Boolean(item.title || item.text);
+  const kind = image && hasText ? 'imagem + texto' : image ? 'imagem' : 'texto';
+  return (
+    <div className="bg-body-tertiary p-3 h-100">
+      <span className="badge text-bg-secondary mb-2">
+        Bloco {id} · {kind}
+      </span>
+      {image && hasText ? (
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-md-4">
+            <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid" />
+          </div>
+          <div className="col-12 col-md-8">
+            <Heading id={id} {...rest} />
+          </div>
+        </div>
+      ) : image ? (
+        <div className="text-center">
+          <img src={assetUrl(image.url)} alt={image.alt} className="img-fluid" />
+        </div>
+      ) : (
+        <Heading id={id} {...rest} />
+      )}
+    </div>
   );
 }
 
@@ -213,6 +257,7 @@ export default function Template003Page() {
 
   const headerOpen = !closed.has('header');
   const navOpen = !closed.has('nav');
+  const navScroll = useNavScroll(navOpen);
   const footerOpen = !closed.has('footer');
 
   const backgroundImage = header.background_image[0];
@@ -279,7 +324,8 @@ export default function Template003Page() {
         <div className="template003-sticky sticky-top bg-body d-flex flex-column">
           {navOpen ? (
             <div className={collapsibleClass('nav')}>
-              <div className="tpl-collapsible-inner">
+              {/* minWidth 0: o item do grid não pode ter a largura mínima dos itens do nav (senão a página estoura) */}
+              <div className="tpl-collapsible-inner" style={{ minWidth: 0 }}>
                 <nav
                   className={`tpl-region tpl-blend navbar navbar-expand-lg position-relative text-body ps-3 pe-5 pe-lg-4 ${scrolled ? 'tpl-scrolled py-1 py-lg-2' : 'py-2'}`}
                   style={{ ...regionStyle(palette, 'nav'), ...NAV_NO_BORDER_VARS }}
@@ -313,12 +359,31 @@ export default function Template003Page() {
                   >
                     <span className="navbar-toggler-icon" />
                   </button>
-                  <div className="collapse navbar-collapse justify-content-center" id="template003-nav">
-                    <ul className="navbar-nav flex-lg-row flex-wrap justify-content-center align-items-lg-center small">
+                  <div className="collapse navbar-collapse justify-content-center overflow-hidden" id="template003-nav">
+                    {/* A partir de lg a lista fica em uma linha; se passar da largura, as setas deslizam o nav. */}
+                    {navScroll.overflow && (
+                      <button
+                        type="button"
+                        className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
+                        aria-label="Rolar nav para a esquerda"
+                        disabled={navScroll.atStart}
+                        onClick={() => navScroll.scrollNav('prev')}
+                      >
+                        <i className="bi bi-chevron-left" aria-hidden="true" />
+                      </button>
+                    )}
+                    <ul
+                      ref={navScroll.ref}
+                      className="navbar-nav flex-lg-row flex-lg-nowrap overflow-hidden mx-lg-auto align-items-lg-center small"
+                    >
                       {navItems.map((item, i) => (
-                        <li key={item.id} className="tpl-nav-item nav-item d-lg-flex align-items-lg-center">
+                        <li
+                          key={item.id}
+                          className="tpl-nav-item nav-item flex-shrink-0 text-nowrap d-lg-flex align-items-lg-center"
+                        >
                           <a href={item.url} className="tpl-nav-link nav-link px-lg-1">
-                            {item.label}
+                            <ItemIcon icon={item.icon} />
+                              {item.label}
                           </a>
                           {i < navItems.length - 1 && (
                             <span className="d-none d-lg-inline mx-1 text-body-secondary">|</span>
@@ -326,6 +391,17 @@ export default function Template003Page() {
                         </li>
                       ))}
                     </ul>
+                    {navScroll.overflow && (
+                      <button
+                        type="button"
+                        className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
+                        aria-label="Rolar nav para a direita"
+                        disabled={navScroll.atEnd}
+                        onClick={() => navScroll.scrollNav('next')}
+                      >
+                        <i className="bi bi-chevron-right" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
                   <CloseButton label="Fechar navegação" onClose={() => close('nav')} />
                 </nav>
@@ -367,9 +443,10 @@ export default function Template003Page() {
           <div className="offcanvas-body p-0">
             <ul className="list-unstyled py-3 px-2 mb-0">
               {menuItems.map((item) => (
-                <li key={item.id} className="tpl-menu-item text-center small py-2">
-                  <a href={item.url} className="tpl-menu-link d-block text-decoration-none">
-                    {item.label}
+                <li key={item.id} className="tpl-menu-item small py-2">
+                  <a href={item.url} className="tpl-menu-link d-flex align-items-center gap-2 text-decoration-none px-2">
+                    <ItemIcon icon={item.icon} className="fs-5 lh-1 flex-shrink-0" />
+                              {item.label}
                   </a>
                 </li>
               ))}
@@ -381,10 +458,10 @@ export default function Template003Page() {
         <main className="flex-grow-1">
           <div className="tpl-region tpl-blend text-body p-3 p-md-4 h-100" style={regionStyle(palette, 'content')}>
             {contentRows.map((columns) => (
-              <div key={columns[0]?.row} className="tpl-reveal row mb-3">
+              <div key={columns[0]?.row} className="tpl-reveal row g-3 mb-3">
                 {columns.map((item) => (
                   <div key={item.id} className={`col-12 col-md-${12 / item.columns_in_row}`}>
-                    <Heading {...item} />
+                    <ContentBlock {...item} />
                   </div>
                 ))}
               </div>

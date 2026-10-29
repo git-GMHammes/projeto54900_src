@@ -140,6 +140,80 @@
     }
   }
 
+  // Hover dos cards da Home (ex.: Tryikads): sobe, ganha brilho na cor da paleta; o icone cresce e gira
+  // um pouco, o titulo clareia e a descricao (opacity-75 do Bootstrap) vai a 100%.
+  .tpl-card-hover {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+
+    // Borda em degrade (ciano -> violeta -> rosa, a do icone) so no hover. Pseudo-elemento com mascara, para
+    // nao ocupar espaco nem mexer no layout: sem hover o card segue sem borda.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      padding: 2px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #00d4ff, #8b3dff 50%, #ff2bd6);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .tpl-card-icon {
+      transition: transform 0.25s ease;
+    }
+
+    .card-title-hover {
+      transition: color 0.25s ease;
+    }
+
+    .card-text {
+      transition: opacity 0.25s ease;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, var(--bs-primary) 45%, transparent);
+
+      &::before {
+        opacity: 1;
+      }
+
+      .tpl-card-icon {
+        transform: scale(1.08) rotate(4deg);
+      }
+
+      .card-title-hover {
+        color: color-mix(in srgb, var(--bs-primary) 55%, white);
+      }
+
+      .card-text {
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  // Titulo do hero da Home: no hover, o degrade das letras desliza.
+  .tpl-hero-text .tpl-hero-gradient {
+    background-size: 100% 100%;
+    background-position: 0 0;
+    transition:
+      background-size 0.6s ease,
+      background-position 0.6s ease;
+  }
+
+  .tpl-hero-text:hover .tpl-hero-gradient {
+    background-size: 250% 100%;
+    background-position: 100% 0;
+  }
+
   // Revelacao ao rolar: o hook useReveal adiciona .tpl-in quando o bloco entra na
   // tela. .tpl-reveal anima o proprio elemento; .tpl-reveal-group anima os filhos
   // em sequencia (rodape).

@@ -4,6 +4,8 @@
 
 # Módulos `product`, `movement` e `service` — frontend (estado e pendências)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Bancos e APIs dos três módulos estão **completos e testados** (ver os READMEs do backend:
 [`README_modulo_product.md`](../../../../../../../app/markdown/geral/README_modulo_product.md),
 [`README_modulo_movement.md`](../../../../../../../app/markdown/geral/README_modulo_movement.md),

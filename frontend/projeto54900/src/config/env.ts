@@ -147,6 +147,8 @@ export interface AppEnv {
   readonly theme?: string;
   /** Template (variante visual) do visitante, antes do login: template001, template002 ou template003. */
   readonly guestTemplate: string;
+  /** WhatsApp de contato comercial, so digitos com DDI e DDD (ex.: "5551999999999"). Default: 5521980558545. */
+  readonly whatsappNumber: string;
   readonly isDev: boolean;
   readonly isProd: boolean;
 }
@@ -174,6 +176,7 @@ export interface AppEnv {
  *                                     empresa do slug (e, sem ele ou sem slug, o tema padrao)
  * guestTemplate VITE_GUEST_TEMPLATE  template001 (variante visual antes do login; depois dele vale o
  *                                     template do usuario ou da empresa, vindo de template-render/get)
+ * whatsappNumber VITE_WHATSAPP_NUMBER 5521980558545 (so digitos; usado pelo card de contato da Home tryikads)
  * isDev        nativo do Vite        import.meta.env.DEV
  * isProd        nativo do Vite        import.meta.env.PROD
  *
@@ -207,6 +210,7 @@ export const env: AppEnv = Object.freeze({
   // theme: import.meta.env.VITE_THEME || 'Purple_dark',
   // theme: import.meta.env.VITE_THEME || 'Purple_white',
   guestTemplate: import.meta.env.VITE_GUEST_TEMPLATE || 'template001',
+  whatsappNumber: (import.meta.env.VITE_WHATSAPP_NUMBER || '5521980558545').replace(/\D/g, ''),
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
 });
@@ -243,13 +247,14 @@ export const env: AppEnv = Object.freeze({
  * ser alterada. Trocar de empresa = navegacao completa (recarrega o app).
  *
  * Segmentos que NAO sao slug: os grupos de versao (v1, v1a...) e as paginas
- * fixas da raiz. Sem slug na URL (login, cadastro, home), o basename segue
- * igual ao basePath.
+ * fixas da raiz, incluindo as tres paginas-modelo estaticas (template001,
+ * template002 e template003: publicas, so JSON, sem API nem sessao). Sem slug
+ * na URL (login, cadastro, home), o basename segue igual ao basePath.
  *
  * @see routes/RequireAuth.tsx — valida o slug contra user.companies.
  * -------------------------------------------------------------------------
  */
-const RESERVED_ROOT_SEGMENTS = new Set(['acesso-negado']);
+const RESERVED_ROOT_SEGMENTS = new Set(['acesso-negado', 'template001', 'template002', 'template003']);
 const VERSION_SEGMENT = /^v\d+[a-z]*$/;
 const SLUG_SEGMENT = /^[a-z0-9-]+$/;
 

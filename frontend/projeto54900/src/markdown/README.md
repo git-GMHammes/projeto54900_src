@@ -76,6 +76,8 @@ cada resumo termina com o link para o conteúdo completo.
 | --- | ------------------------- | ----------------------------------- |
 | 26  | [`template`](#template)   | Modelo Template001 para empresas futuras |
 | 27  | [`temas`](#temas)         | Paletas JSON de cores selecionáveis |
+| 28  | [`template002`](#template002) | Template002 sem bordas, por empresa |
+| 29  | [`template003`](#template003) | Template003 com menu em Offcanvas   |
 
 ---
 
@@ -473,6 +475,24 @@ um JSON novo na pasta funciona sem alterar código. Inclui o critério de contra
 
 [`geral/README_temas_paleta.md`](geral/README_temas_paleta.md) — contrato e lista das paletas de cores.
 
+### `template002`
+
+Template002: variante sem bordas do Template001, com degradê entre os componentes e as mesmas paletas,
+animações e contrato de JSON. Registra a empresa vinculada no banco (`temp_manager.company_manager`,
+DEV em 2026-10-29: `tryikads`), a rota `/<slug>/template002`, os arquivos e as diferenças em relação
+ao 001.
+
+[`geral/README_template002_modelo.md`](geral/README_template002_modelo.md) — Template002: empresa vinculada, arquivos e diferenças.
+
+### `template003`
+
+Template003: parte do 002 e troca o menu lateral fixo por um painel Offcanvas aberto pelo ícone da
+grade no nav. Registra que nenhuma empresa está vinculada a ele no banco (`temp_manager` id 3 com `[]`),
+a pendência da empresa `drsergiopsicologo` (sem template vinculado), a rota `/<slug>/template003` e os
+arquivos.
+
+[`geral/README_template003_modelo.md`](geral/README_template003_modelo.md) — Template003: Offcanvas, vínculo com empresas e arquivos.
+
 ---
 
 ## Conteúdo
@@ -502,6 +522,8 @@ um JSON novo na pasta funciona sem alterar código. Inclui o critério de contra
 - [`README_sessao_entre_abas.md`](geral/README_sessao_entre_abas.md) — sessão compartilhada entre abas e janelas: adoção da sessão, aviso de renovação, logout propagado e portão de sessão.
 - [`README_temas_paleta.md`](geral/README_temas_paleta.md) — paletas de cores em JSON: contrato das 24 chaves, lista das paletas, critério de contraste e como adicionar uma.
 - [`README_template001_modelo.md`](geral/README_template001_modelo.md) — Template001 como modelo para o template de cada empresa: JSON de conteúdo, regiões, responsividade, temas, X de fechar, histórico dos pedidos e passo a passo.
+- [`README_template002_modelo.md`](geral/README_template002_modelo.md) — Template002 (sem bordas): empresa vinculada no banco, rota, arquivos e diferenças em relação ao 001.
+- [`README_template003_modelo.md`](geral/README_template003_modelo.md) — Template003 (menu Offcanvas): vínculo com empresas no banco, pendência da `drsergiopsicologo`, rota e arquivos.
 
 ### `geral/modulos/`
 

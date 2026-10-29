@@ -4,6 +4,8 @@
 
 # Módulo Messages / Timeline (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Domínio **Timeline** do módulo de mensagens: cada usuário tem **uma** timeline
 própria (a tabela pai, criada automaticamente na primeira publicação) e publica
 posts com texto e anexos. O feed mistura as publicações de todas as timelines e é

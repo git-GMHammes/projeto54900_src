@@ -15,7 +15,8 @@
  *
  * DEPENDENCIAS (arquivos proprios do projeto):
  *   - layouts/RootLayout: casca visual (navbar + footer) das rotas normais.
- *   - pages/Home/HomePage: pagina indice ("/").
+ *   - pages/Home/CompanyHome: pagina indice ("/" e "/<slug>"): Home (landing page) da empresa do slug,
+ *     com fallback para a da `default` (registro em pages/Home/company/companyHomes.ts).
  *   - pages/errors/RouteErrorPage: elemento de erro da arvore.
  *   - pages/errors/NotFoundPage: pagina do path "*".
  *   - routes/v1 (v1Routes) e routes/v1a (v1aRoutes): blocos de rota por
@@ -40,7 +41,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { routerBasename } from '@/config/env';
 
 import TemplateLayout from '@/layouts/TemplateLayout';
-import HomePage from '@/pages/Home/HomePage';
+import CompanyHome from '@/pages/Home/CompanyHome';
 import RouteErrorPage from '@/pages/errors/RouteErrorPage';
 import NotFoundPage from '@/pages/errors/NotFoundPage';
 import ForbiddenPage from '@/pages/errors/ForbiddenPage';
@@ -71,7 +72,7 @@ export const router = createBrowserRouter(
       element: <TemplateLayout />,
       errorElement: <RouteErrorPage />,
       children: [
-        { index: true, element: <HomePage /> },
+        { index: true, element: <CompanyHome /> },
         { path: 'acesso-negado', element: <ForbiddenPage /> },
         v1Routes,
         v1aRoutes,

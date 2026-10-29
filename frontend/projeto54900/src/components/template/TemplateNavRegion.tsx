@@ -3,16 +3,19 @@
 // (Editar Perfil, Seguranca, Sair). Visitante: so os itens que receber (Home e Entrar).
 // Migrado dos templates estaticos (nav) somando o que o Navbar anterior fazia.
 
-import { useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, useNavigate } from 'react-router-dom';
 
+import CloseButton from '@/components/template/CloseButton';
 import { NAV_NO_BORDER_VARS, regionStyle } from '@/components/template/templateRegionStyle';
 import { TEMPLATE_MENU_ID } from '@/components/template/templateNav';
 import type { NavEntry } from '@/components/template/templateNav';
 import { companySlug, env } from '@/config/env';
 import type { ThemePalette } from '@/config/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useNavScroll } from '@/hooks/useNavScroll';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { paths } from '@/routes/paths';
 
@@ -32,10 +35,6 @@ function UnreadBadge({ total, floating = false }: { total: number; floating?: bo
   );
 }
 
-/** A marca do app (`navbar-brand`) nao herda a letra da regiao: segue a cor `nav_text` da paleta. */
-const brandVars = (palette: ThemePalette) =>
-  ({ '--bs-navbar-brand-color': palette.nav_text, '--bs-navbar-brand-hover-color': palette.nav_text }) as CSSProperties;
-
 export interface TemplateNavRegionProps {
   entries: NavEntry[];
   /** Mostra o botao da grade que abre o menu lateral (Offcanvas). */
@@ -44,24 +43,76 @@ export interface TemplateNavRegionProps {
   palette: ThemePalette;
   /** A pagina foi rolada: a barra encolhe e ganha sombra. */
   scrolled: boolean;
-  brandName: string;
-  brandVersion: string | null;
+  /** Fecha o nav (X no canto direito); o estado fica so em memoria, no TemplateShell. */
+  onClose: () => void;
 }
 
-export default function TemplateNavRegion({
-  entries,
-  menuButton,
-  flat,
-  palette,
-  scrolled,
-  brandName,
-  brandVersion,
-}: TemplateNavRegionProps) {
+export default function TemplateNavRegion({ entries, menuButton, flat, palette, scrolled, onClose }: TemplateNavRegionProps) {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
   const unread = useUnreadMessages(isAuthenticated && user?.role?.slug !== 'guest');
   const isAdmin = user?.role?.slug === 'admin' || user?.role?.slug === 'superuser';
+
+  // Variante plana (002 e 003): os itens ficam em uma linha e as setas deslizam a lista (mesmo padrao dos modelos).
+  const navScroll = useNavScroll(flat);
+
+  // Submenus da variante plana sao controlados pelo React, nao pelo dropdown do Bootstrap: a lista tem
+  // overflow-hidden e cortaria o menu. A partir de lg o menu aberto e desenhado (portal) dentro do <nav>,
+  // fora da lista, sob o item; abaixo de lg ele fica em fluxo, dentro do item da sanfona.
+  const [navEl, setNavEl] = useState<HTMLElement | null>(null);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [isLg, setIsLg] = useState(() => window.matchMedia('(min-width: 992px)').matches);
+  const menuLeft = useRef(0);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 992px)');
+    const onChange = () => setIsLg(media.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
+  // Menu aberto fecha ao clicar fora, Escape, rolar a lista ou redimensionar.
+  useEffect(() => {
+    if (openKey === null) return;
+    const close = () => setOpenKey(null);
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target;
+      if (target instanceof Element && (target.closest('[data-tpl-group-toggle]') || target.closest('.tpl-group-menu'))) return;
+      close();
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    const list = navScroll.ref.current;
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    list?.addEventListener('scroll', close, { passive: true });
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      list?.removeEventListener('scroll', close);
+      window.removeEventListener('resize', close);
+    };
+  }, [openKey, navScroll.ref]);
+
+  const closeGroup = () => setOpenKey(null);
+
+  const toggleGroup = (e: MouseEvent<HTMLElement>, key: string) => {
+    if (openKey === key) {
+      setOpenKey(null);
+      return;
+    }
+    if (navEl) menuLeft.current = e.currentTarget.getBoundingClientRect().left - navEl.getBoundingClientRect().left;
+    setOpenKey(key);
+  };
+
+  /** Posiciona o menu em lg: sob o item, sem passar da largura do nav. */
+  const placeMenu = (menu: HTMLUListElement | null) => {
+    if (!menu || !navEl) return;
+    menu.style.left = `${Math.max(0, Math.min(menuLeft.current, navEl.clientWidth - menu.offsetWidth))}px`;
+  };
 
   /** Sair: revoga no backend + limpeza local (AuthContext) e volta para a Home. */
   const handleLogout = async () => {
@@ -78,10 +129,34 @@ export default function TemplateNavRegion({
 
   const hasChatChild = (entry: NavEntry) => entry.children.some((c) => c.to === paths.v1.messageChat.home);
 
+  /** Itens do submenu da variante plana: a rota propria do grupo (se houver) e os filhos. */
+  const groupMenuItems = (entry: NavEntry) => (
+    <>
+      {entry.to && (
+        <li>
+          <NavLink className="dropdown-item" to={entry.to} end onClick={closeGroup}>
+            {entry.label}
+          </NavLink>
+        </li>
+      )}
+      {entry.children.map((child) => (
+        <li key={child.key}>
+          <NavLink className="dropdown-item" to={child.to} end onClick={closeGroup}>
+            {child.label}
+            {child.to === paths.v1.messageChat.home && <UnreadBadge total={unread} />}
+          </NavLink>
+        </li>
+      ))}
+    </>
+  );
+
+  const openEntry = entries.find((entry) => entry.key === openKey) ?? null;
+
   return (
     <nav
-      className={`tpl-region navbar navbar-expand-lg position-relative text-body px-3 ${flat ? 'tpl-blend' : 'bg-body border shadow rounded-4'} ${scrolled ? 'tpl-scrolled py-1 py-lg-2' : 'py-2'}`}
-      style={{ ...regionStyle(palette, 'nav', flat), ...brandVars(palette), ...(flat ? NAV_NO_BORDER_VARS : {}) }}
+      ref={setNavEl}
+      className={`tpl-region navbar navbar-expand-lg position-relative text-body ps-3 pe-5 pe-lg-4 ${flat ? 'tpl-blend' : 'bg-body border shadow rounded-4'} ${scrolled ? 'tpl-scrolled py-1 py-lg-2' : 'py-2'}`}
+      style={{ ...regionStyle(palette, 'nav', flat), ...(flat ? NAV_NO_BORDER_VARS : {}) }}
     >
       {menuButton !== 'none' && (
         <button
@@ -99,11 +174,6 @@ export default function TemplateNavRegion({
         </button>
       )}
 
-      <NavLink className="navbar-brand fw-semibold me-3" to={paths.home}>
-        {brandName}
-        {brandVersion && <span className="badge text-bg-light ms-2 align-middle">{brandVersion}</span>}
-      </NavLink>
-
       <button
         type="button"
         className="navbar-toggler ms-auto"
@@ -116,10 +186,42 @@ export default function TemplateNavRegion({
         <span className="navbar-toggler-icon" />
       </button>
 
-      <div className="collapse navbar-collapse" id={NAV_COLLAPSE_ID}>
-        <ul className="navbar-nav ms-auto flex-lg-row flex-wrap align-items-lg-center small">
+      {/* minWidth 0 (variante plana): o item flex nao pode ter a largura minima dos itens, senao a lista nunca passa da caixa. */}
+      <div className="collapse navbar-collapse" id={NAV_COLLAPSE_ID} style={flat ? { minWidth: 0 } : undefined}>
+        {flat && navScroll.overflow && (
+          <button
+            type="button"
+            className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
+            aria-label="Rolar nav para a esquerda"
+            disabled={navScroll.atStart}
+            onClick={() => navScroll.scrollNav('prev')}
+          >
+            <i className="bi bi-chevron-left" aria-hidden="true" />
+          </button>
+        )}
+        <ul
+          ref={navScroll.ref}
+          className={`navbar-nav flex-lg-row align-items-lg-center small ${flat ? 'flex-lg-nowrap overflow-hidden ms-lg-auto' : 'ms-auto flex-wrap'}`}
+        >
           {entries.map((entry, i) =>
-            entry.children.length > 0 ? (
+            entry.children.length > 0 && flat ? (
+              <li className="tpl-nav-item nav-item flex-shrink-0 text-nowrap d-lg-flex align-items-lg-center" key={entry.key}>
+                <button
+                  type="button"
+                  data-tpl-group-toggle=""
+                  className="tpl-nav-link nav-link px-lg-1"
+                  aria-haspopup="true"
+                  aria-expanded={openKey === entry.key}
+                  onClick={(e) => toggleGroup(e, entry.key)}
+                >
+                  {entry.icon && <i className={`bi bi-${entry.icon} me-1`} aria-hidden="true" />}
+                  {entry.label}
+                  {hasChatChild(entry) && <UnreadBadge total={unread} />}
+                </button>
+                {!isLg && openKey === entry.key && <ul className="tpl-group-menu dropdown-menu show">{groupMenuItems(entry)}</ul>}
+                {i < entries.length - 1 && <span className="d-none d-lg-inline mx-1 text-body-secondary">|</span>}
+              </li>
+            ) : entry.children.length > 0 ? (
               <li className="tpl-nav-item nav-item dropdown position-relative" key={entry.key}>
                 {entry.to ? (
                   <NavLink className="tpl-nav-link nav-link dropdown-toggle" to={entry.to} end role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -154,7 +256,10 @@ export default function TemplateNavRegion({
                 {i < entries.length - 1 && <span className="d-none d-lg-inline mx-1 text-body-secondary">|</span>}
               </li>
             ) : (
-              <li className="tpl-nav-item nav-item d-lg-flex align-items-lg-center" key={entry.key}>
+              <li
+                className={`tpl-nav-item nav-item d-lg-flex align-items-lg-center ${flat ? 'flex-shrink-0 text-nowrap' : ''}`}
+                key={entry.key}
+              >
                 <NavLink className="tpl-nav-link nav-link px-lg-1" to={entry.to ?? '#'} end>
                   {entry.label}
                 </NavLink>
@@ -162,9 +267,36 @@ export default function TemplateNavRegion({
               </li>
             ),
           )}
+        </ul>
 
-          {isAuthenticated && user && (
-            <li className="nav-item dropdown ms-lg-2">
+        {flat && navScroll.overflow && (
+          <button
+            type="button"
+            className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
+            aria-label="Rolar nav para a direita"
+            disabled={navScroll.atEnd}
+            onClick={() => navScroll.scrollNav('next')}
+          >
+            <i className="bi bi-chevron-right" aria-hidden="true" />
+          </button>
+        )}
+
+        {/* Submenu aberto (lg): dentro do nav, fora da lista que rola, para o overflow-hidden nao cortar. */}
+        {flat &&
+          isLg &&
+          openEntry &&
+          navEl &&
+          createPortal(
+            <ul ref={placeMenu} className="tpl-group-menu dropdown-menu show" style={{ top: '100%' }}>
+              {groupMenuItems(openEntry)}
+            </ul>,
+            navEl,
+          )}
+
+        {/* Menu do usuario fora da lista que rola: nao e cortado nem some ao deslizar o nav. */}
+        {isAuthenticated && user && (
+          <ul className="navbar-nav flex-shrink-0 ms-lg-2">
+            <li className="nav-item dropdown">
               <a
                 className="nav-link dropdown-toggle d-flex align-items-center gap-1"
                 href="#"
@@ -204,9 +336,10 @@ export default function TemplateNavRegion({
                 </li>
               </ul>
             </li>
-          )}
-        </ul>
+          </ul>
+        )}
       </div>
+      <CloseButton label="Fechar navegação" onClose={onClose} />
     </nav>
   );
 }

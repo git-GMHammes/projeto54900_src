@@ -48,7 +48,7 @@ export interface ThemePalette extends SectionKeys {
   border_depth: number;
 }
 
-export const DEFAULT_THEME = 'Blue_white';
+export const DEFAULT_THEME = 'White';
 
 const REQUIRED_KEYS: readonly string[] = [
   'name',

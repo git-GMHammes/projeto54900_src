@@ -1,5 +1,7 @@
 # Running Application Tests
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 This is the quick-start to CodeIgniter testing. Its intent is to describe what
 it takes to set up your application and get it ready to run unit tests.
 It is not intended to be a full description of the test features that you can

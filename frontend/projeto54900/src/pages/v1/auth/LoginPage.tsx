@@ -210,11 +210,13 @@ export default function LoginPage() {
   return (
     <>
       {/* 1. Cabeçalho: título/subtítulo fixos (não vêm de definição). */}
-      <PageHeader title="Entrar" subtitle="Acesse com o usuário criado no cadastro" />
+      <div className="tpl-enter-up">
+        <PageHeader title="Entrar" subtitle="Acesse com o usuário criado no cadastro" />
+      </div>
 
-      {/* 2. Card centralizado e responsivo (sem CSS próprio). */}
+      {/* 2. Card centralizado e responsivo. Entra 0,1 s depois do cabeçalho (`tpl-enter-up`, styles/_animations.scss). */}
       <div className="row justify-content-center">
-        <div className="col-12 col-sm-8 col-md-6 col-lg-4">
+        <div className="col-12 col-sm-8 col-md-6 col-lg-4 tpl-enter-up" style={{ animationDelay: '0.1s' }}>
           <div className="card border-0 shadow-sm">
             <div className="card-body p-4">
               {/* 3. Campos controlados — sem FormGrid aqui (ver EXCEÇÃO no header). */}

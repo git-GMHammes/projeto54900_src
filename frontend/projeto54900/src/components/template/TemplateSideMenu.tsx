@@ -9,6 +9,7 @@
 import { useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
+import CloseButton from '@/components/template/CloseButton';
 import { TEMPLATE_MENU_ID } from '@/components/template/templateNav';
 import { OFFCANVAS_NO_BORDER_VARS, regionStyle } from '@/components/template/templateRegionStyle';
 import type { NavEntry } from '@/components/template/templateNav';
@@ -76,9 +77,13 @@ export interface TemplateSideMenuProps {
   flat: boolean;
   palette: ThemePalette;
   title: string;
+  /** Modo coluna: o X esta fechando a coluna (so desvanece; a largura nao anima). */
+  closing?: boolean;
+  /** Modo coluna: fecha a coluna pelo X (a partir de lg). No modo Offcanvas nao ha X permanente. */
+  onClose?: () => void;
 }
 
-export default function TemplateSideMenu({ entries, mode, flat, palette, title }: TemplateSideMenuProps) {
+export default function TemplateSideMenu({ entries, mode, flat, palette, title, closing = false, onClose }: TemplateSideMenuProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const closePanel = () => closeRef.current?.click();
   const labelId = `${TEMPLATE_MENU_ID}-title`;
@@ -107,7 +112,7 @@ export default function TemplateSideMenu({ entries, mode, flat, palette, title }
 
   return (
     <aside
-      className="col-12 col-lg-3 col-xxl-2 position-relative"
+      className={`col-12 col-lg-3 col-xxl-2 position-relative ${closing ? 'tpl-fade-out' : ''}`}
       style={flat ? { ...regionStyle(palette, 'menu', flat), ...OFFCANVAS_NO_BORDER_VARS } : regionStyle(palette, 'menu', flat)}
     >
       <div className="offcanvas-lg offcanvas-start h-100" tabIndex={-1} id={TEMPLATE_MENU_ID} aria-labelledby={labelId}>
@@ -125,6 +130,8 @@ export default function TemplateSideMenu({ entries, mode, flat, palette, title }
           </div>
         </div>
       </div>
+      {/* No celular o painel ja tem o proprio botao fechar; o X permanente e so da coluna (a partir de lg). */}
+      {onClose && <CloseButton label="Fechar menu lateral" onClose={onClose} className="d-none d-lg-block" />}
     </aside>
   );
 }

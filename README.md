@@ -1,5 +1,7 @@
 # projeto54900
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 API REST (CodeIgniter 4 / PHP 8.2) + frontend React, pensado para crescer como
 um **multitool de produtividade estilo Office**: um único usuário, uma única
 API, vários módulos de domínio (formulários, listagens, calendário, upload,

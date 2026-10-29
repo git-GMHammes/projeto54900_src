@@ -2,6 +2,8 @@
 
 # Deploy via Git — KingHost — projeto54900_src
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 ## Contexto
 - Repositório pai (projeto54900) já possuía remote `origin` → `github.com/git-GMHammes/projeto54900.git`
 - Subpasta `src/` é um repositório git próprio, remote `origin` → `github.com/git-GMHammes/projeto54900_src.git`, branch `main`

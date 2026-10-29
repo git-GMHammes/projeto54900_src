@@ -4,6 +4,8 @@
 
 # Construtor novo — `FormBuilderPage` (`/v1/form-constructor`)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Construtor que estamos montando juntos, do zero. **Não** é a página anterior
 (`FormConstructorPage`, dirigida por seed + `view_form_manager`) — esta lê o
 schema real do banco por introspecção e **persiste nó a nó**: cada nível é

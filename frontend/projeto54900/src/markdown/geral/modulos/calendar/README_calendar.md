@@ -4,6 +4,8 @@
 
 # Módulo `calendar` — espelho do Google Calendar
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Primeiro módulo da pasta `markdown/geral/modulos/` — convenção nova: cada
 módulo grande do sistema (calendário, depois `networking`, `map`,
 `document_manager`) ganha sua própria pasta aqui, com um `README_<modulo>.md`

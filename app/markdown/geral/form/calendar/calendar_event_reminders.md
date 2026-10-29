@@ -4,6 +4,8 @@
 
 # Cadastro de Lembrete — `cadastro-lembrete`
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Mesmo modelo de [`form/modelo_ia/form.md`](../modelo_ia/form.md): árvore revisada
 aqui antes do `INSERT` (não migration, não seed).
 

@@ -4,6 +4,8 @@
 
 # ROADMAP — padrão de módulo da API V1
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Padrão **obrigatório** para todo módulo novo da API V1 a partir de hoje. Um
 módulo é um recurso REST sobre uma tabela (e, opcionalmente, uma view). Todos
 os módulos têm a mesma estrutura de arquivos, **as mesmíssimas rotas**, o mesmo

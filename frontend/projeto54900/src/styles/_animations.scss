@@ -1,4 +1,5 @@
-// Animacoes do Template001 (pages/Template001/Template001Page.tsx).
+// Animacoes do Template001 (pages/Template001/Template001Page.tsx) e entrada
+// da tela de login (.tpl-enter-up, pages/v1/auth/LoginPage.tsx).
 // O Bootstrap nao traz animacoes de entrada, cascata, revelacao ao rolar nem
 // sublinhado que cresce; por isso este arquivo existe. Tudo escopado em
 // .template001, .template002 e .template003, com prefixo tpl-, e desligado em prefers-reduced-motion.
@@ -43,6 +44,12 @@
 
   .tpl-fade-in {
     animation: tpl-fade-in 0.9s ease-out both;
+  }
+
+  // Entrada de blocos de conteudo (ex.: tela de login): fade com leve subida.
+  // Para escalonar, usar style={{ animationDelay: '0.1s' }} no elemento.
+  .tpl-enter-up {
+    animation: tpl-fade-up 0.4s ease-out both;
   }
 
   // Regiao com borda: transicao das cores (troca de paleta), do padding (nav

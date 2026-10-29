@@ -4,6 +4,8 @@
 
 # Módulo Form (API V1)
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 > ⚠️ **2026-09-20 — migrations e seed de `form` abolidos.** As tabelas
 > (`form_manager`/`form_groups`/`form_rows`/`form_fields`/`view_form_manager`)
 > deixaram de ser criadas/versionadas por `Database/Migrations/`. Fonte de

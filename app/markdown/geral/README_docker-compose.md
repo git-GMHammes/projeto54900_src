@@ -4,6 +4,8 @@
 
 # Ambiente Docker — projeto54900
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Documentação do ambiente Docker/Podman do projeto: serviços, pastas necessárias e passo a passo para levantar tudo do zero.
 
 ## Antes de começar

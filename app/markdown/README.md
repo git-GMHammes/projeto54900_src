@@ -1,5 +1,7 @@
 # Base de conhecimento — projeto54900
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Índice geral da base de conhecimento (`src/app/markdown/`). Cada tópico tem uma
 palavra-chave e uma frase de 5 palavras. A palavra-chave no índice é âncora para
 o resumo correspondente; cada resumo termina com o link para o conteúdo completo.

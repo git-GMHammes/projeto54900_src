@@ -21,6 +21,8 @@
 
 import type { ReactNode } from 'react';
 
+import ThemePortal from '@/components/template/ThemePortal';
+
 export interface ModalProps {
   open: boolean;
   title?: ReactNode;
@@ -32,8 +34,10 @@ export interface ModalProps {
 export default function Modal({ open, title, onClose, children, size }: ModalProps) {
   if (!open) return null;
 
+  // Portal para o body com a paleta da empresa: o modal e fixo na viewport e nao pode ficar dentro de
+  // modulo (filter/transform de ancestral muda o referencial de position: fixed).
   return (
-    <>
+    <ThemePortal>
       <div className="modal fade show d-block" tabIndex={-1} role="dialog" aria-modal="true">
         <div
           className={`modal-dialog modal-dialog-centered modal-dialog-scrollable ${size ? `modal-${size}` : ''}`}
@@ -48,6 +52,6 @@ export default function Modal({ open, title, onClose, children, size }: ModalPro
         </div>
       </div>
       <div className="modal-backdrop fade show" />
-    </>
+    </ThemePortal>
   );
 }

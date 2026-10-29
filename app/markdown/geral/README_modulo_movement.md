@@ -4,6 +4,8 @@
 
 # Módulo Movement — movimento de produtos
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Entrada, saída, separação, desperdício e encomenda numa única tabela. **Semi-dependente**: exige `product_id`
 (o Produto não conhece o Movimento); `location_id`, `origin_id` e `user_manager_id` são opcionais.
 Regra geral em [`README_modulos_independentes.md`](README_modulos_independentes.md). Produto em [`README_modulo_product.md`](README_modulo_product.md).

@@ -4,6 +4,8 @@
 
 # Conexão de bancos de dados — podman + docker-compose.yml
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Como o `projeto54900` conecta aos bancos MySQL. Regras fixas:
 
 - **Conexão `default`** → banco `codeigniter54900_db`. Credenciais via `env()`,

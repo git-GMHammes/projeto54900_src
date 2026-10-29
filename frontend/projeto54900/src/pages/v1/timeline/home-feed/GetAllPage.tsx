@@ -79,6 +79,7 @@ import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import ScrollTopButton from '@/components/global/ScrollTopButton';
+import ThemePortal from '@/components/template/ThemePortal';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { ApiError } from '@/services/http';
 import { getFeedPost, getHomeFeed } from '@/services/v1';
@@ -483,18 +484,6 @@ export default function HomeFeedGetAllPage() {
         </button>
       </PageHeader>
 
-      {/* Botão flutuante de novo post — canto superior direito, pedido do usuário. */}
-      <button
-        type="button"
-        className="btn btn-primary rounded-circle shadow position-fixed"
-        style={{ top: '5.5rem', right: '1.5rem', width: '3.25rem', height: '3.25rem', zIndex: 1030 }}
-        aria-label="Nova publicação"
-        title="Nova publicação"
-        onClick={() => setModalOpen(true)}
-      >
-        <i className="bi bi-plus-lg fs-5" />
-      </button>
-
       {/* Estados de tela: erro sem itens, feed vazio e carregando. */}
       {error && posts.length === 0 && pinned.length === 0 && !loading && (
         <EmptyState title="Feed indisponível" description={error} variant="danger" />
@@ -534,6 +523,20 @@ export default function HomeFeedGetAllPage() {
 
       {/* Sentinela do scroll infinito: ao entrar na viewport, pede a próxima página. */}
       {hasMore && !loading && posts.length > 0 && <div ref={sentinelRef} style={{ height: 1 }} />}
+
+      {/* Botão de novo post — fixo na viewport (portal no body, como o modal): borda direita, centro vertical. */}
+      <ThemePortal>
+        <button
+          type="button"
+          className="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center p-0 position-fixed top-50 end-0 translate-middle-y me-2"
+          style={{ width: '2.5rem', height: '2.5rem', zIndex: 1040 }}
+          aria-label="Nova publicação"
+          title="Nova publicação"
+          onClick={() => setModalOpen(true)}
+        >
+          <i className="bi bi-plus-lg fs-5" />
+        </button>
+      </ThemePortal>
 
       <NewPostModal open={modalOpen} onClose={() => setModalOpen(false)} onCreated={(postId) => void handleCreated(postId)} />
 

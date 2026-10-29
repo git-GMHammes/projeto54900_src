@@ -2,6 +2,8 @@
 
 # Módulo Map — mapas, pontos, trajetos e CEP
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Estado (2026-10-12): **banco DEV aplicado, backend PHP completo e frontend pronto** (ver [`README_mapa.md`](../../../frontend/projeto54900/src/markdown/geral/README_mapa.md)) — 10 tabelas, 10 views e
 **270 rotas** de tabela/view (18 por tabela, 9 por view), incluindo o vínculo universal `map_links`
 (seção abaixo), mais **5 rotas do proxy** `map-geo` (275 no total). Tabelas e views criadas

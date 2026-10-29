@@ -4,6 +4,8 @@
 
 ## Prompt padrão — pedir um REMAKE novo à IA
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 > Copiar o bloco JSON abaixo, preencher `"timestamp"` com o `AAAAMMDDHHMM` do
 > momento e colar como prompt. A IA deve **apenas gerar os 6 arquivos** (3
 > `.sql` + 3 classes PHP) em `app/Database/Migrations/`, no formato fixo

@@ -4,6 +4,8 @@
 
 # Módulo Service — serviço de qualquer tipo
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 De uma troca de chuveiro e um passeio com cão a enfermagem, alvenaria e construção civil. Catálogo de grupos e
 campos: [`doc/json/servico.json`](../../../../doc/json/servico.json). Módulo **independente**: sem ligação com Produto,
 Location ou Movement (ligações só sob pedido). Ver [`README_modulos_independentes.md`](README_modulos_independentes.md).

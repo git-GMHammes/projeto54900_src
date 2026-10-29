@@ -4,6 +4,8 @@
 
 # Módulo Product — produto de qualquer escala
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Cadastra desde um comprimido até uma aeronave com **2 tabelas** e hierarquia de **2 níveis** (grupo -> campo).
 Catálogo de grupos e campos: [`doc/json/produto.json`](../../../../doc/json/produto.json). Módulo **independente**:
 `location_id` e `parent_id` são opcionais (`NULL` = sem ligação). Ver [`README_modulos_independentes.md`](README_modulos_independentes.md).

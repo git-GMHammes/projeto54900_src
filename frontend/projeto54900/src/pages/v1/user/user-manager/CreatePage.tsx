@@ -14,7 +14,8 @@ import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
 import { useToast } from '@/hooks/useToast';
-import { ApiError } from '@/services/http';
+import { companySlug } from '@/config/env';
+import { ApiError, http } from '@/services/http';
 import { formManagerView } from '@/services/v1';
 import { buildRenderSchema } from '@/services/formSchema';
 import type { RenderForm } from '@/services/formSchema';
@@ -23,8 +24,48 @@ import type { ApiRow } from '@/types/api';
 import { formDataToPayload, errorDetail, resolveEndpoint, senderFor } from '@/utils/formSubmit';
 import { paths } from '@/routes/paths';
 import PasswordHashPreviewButton from './PasswordHashPreviewButton';
+import TermsModal from './TermsModal';
 
 const SLUG = 'cadastro-usuario';
+const COMPANIES_PATH = '/v1/company-manager-public/get-no-pagination';
+
+/** Pre-seleciona no select Empresa (company_ids) a empresa do endereco; sem slug ou sem casamento, nao altera o form. */
+async function withCompanyFromUrl(form: RenderForm): Promise<RenderForm> {
+  if (!companySlug) return form;
+  try {
+    const { rows } = normalizeList(await http.get(COMPANIES_PATH));
+    const match = rows.find((row) => row.slug === companySlug);
+    const id = match?.id;
+    if (typeof id !== 'string' && typeof id !== 'number') return form;
+    const companyId = String(id);
+    return {
+      ...form,
+      schema: {
+        rows: form.schema.rows.map((row) => ({
+          ...row,
+          fields: row.fields.map((field) =>
+            field.type === 'select' && field.name === 'company_ids' ? { ...field, defaultValue: companyId } : field,
+          ),
+        })),
+      },
+    };
+  } catch {
+    return form;
+  }
+}
+
+/** Todos os campos em largura total do contenedor centralizado, para ficarem com a mesma largura (col do banco varia por campo). */
+function withFullWidthFields(form: RenderForm): RenderForm {
+  return {
+    ...form,
+    schema: {
+      rows: form.schema.rows.map((row) => ({
+        ...row,
+        fields: row.fields.map((field) => ({ ...field, col: 12 as const })),
+      })),
+    },
+  };
+}
 
 export default function CreatePage() {
   const navigate = useNavigate();
@@ -33,6 +74,8 @@ export default function CreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(true);
+  const [accepted, setAccepted] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,7 +92,7 @@ export default function CreatePage() {
         setError(`Formulario "${SLUG}" nao esta publicado.`);
         return;
       }
-      setForm(built);
+      setForm(withFullWidthFields(await withCompanyFromUrl(built)));
     } catch (err) {
       setForm(null);
       setError(err instanceof ApiError ? err.message : 'Falha ao carregar o formulário.');
@@ -65,6 +108,10 @@ export default function CreatePage() {
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (!accepted) {
+        setTermsOpen(true);
+        return;
+      }
       const el = event.currentTarget;
       if (!el.checkValidity()) {
         el.reportValidity();
@@ -76,6 +123,8 @@ export default function CreatePage() {
       }
 
       const payload = formDataToPayload(el);
+      // Select de escolha unica entrega o id escalar; a API espera company_ids como lista.
+      if (typeof payload.company_ids === 'string') payload.company_ids = [payload.company_ids];
       const send = senderFor(form.meta.httpMethod);
       const path = resolveEndpoint(form.meta.submitEndpoint);
 
@@ -100,7 +149,7 @@ export default function CreatePage() {
         setSubmitting(false);
       }
     },
-    [form, navigate, toast],
+    [accepted, form, navigate, toast],
   );
 
   return (
@@ -117,17 +166,33 @@ export default function CreatePage() {
 
       {!loading && !error && form && (
         <form onSubmit={(e) => void handleSubmit(e)} noValidate>
-          <FormGrid schema={form.schema} />
+          <div className="row">
+            <div className="col-md-6 col-lg-4 mx-auto">
+              <FormGrid schema={form.schema} />
+            </div>
+          </div>
           <div className="d-flex gap-2 mt-4 pt-3 border-top">
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
+            <button type="submit" className="btn btn-primary" disabled={submitting || !accepted}>
               {submitting ? 'Criando...' : 'Criar'}
             </button>
             <button type="button" className="btn btn-outline-secondary" onClick={() => void navigate(paths.v1.user.list)}>
               Voltar
             </button>
+            {!accepted && !termsOpen && (
+              <button type="button" className="btn btn-link align-self-center" onClick={() => setTermsOpen(true)}>
+                Ler e aceitar os termos de uso
+              </button>
+            )}
           </div>
         </form>
       )}
+
+      <TermsModal
+        open={termsOpen}
+        accepted={accepted}
+        onAcceptedChange={setAccepted}
+        onClose={() => setTermsOpen(false)}
+      />
     </>
   );
 }

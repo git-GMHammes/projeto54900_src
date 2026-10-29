@@ -1,5 +1,7 @@
 # Módulo `user-directory-view` — diretório mínimo de usuários
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 *Criado em 2026-09-25 — origem: campo "Usuário" do convite de evento
 (`calendar_event_attendees`), ver [`calendar_event_attendees.md`](../calendar/calendar_event_attendees.md#alteração-2026-09-25--busca-remota-liberada-no-campo-usuário).*
 

@@ -4,6 +4,8 @@
 
 # Análise de entendimento — antes do novo módulo
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Documento de conferência (2026-09-26). Registra a análise detalhada dos três
 pedidos feitos pelo usuário **antes** da passagem dos passos do novo módulo:
 (1) como o sistema está sendo desenvolvido, (2) o que é o BUILD de Form/List/Menu

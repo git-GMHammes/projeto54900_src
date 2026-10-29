@@ -4,6 +4,8 @@
 
 # Módulo Nav/Menu — config do app + árvore de navegação
 
+> NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
+
 Dois recursos REST padrão da API V1, ligados por FK:
 
 - **`temp_nav`** (`api/v1/temp-nav`) — a "casca" do app: nome, imagem,
