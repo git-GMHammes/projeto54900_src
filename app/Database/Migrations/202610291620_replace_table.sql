@@ -663,7 +663,7 @@ CREATE TABLE IF NOT EXISTS `list_columns` (
   `concat_json` json DEFAULT NULL,
   `format` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'text',
   `cell_class` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fallback` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '—',
+  `fallback` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT _utf8mb4 0xE28094,
   `sortable` tinyint(1) NOT NULL DEFAULT '0',
   `sort_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sort_concat_json` json DEFAULT NULL,

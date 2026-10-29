@@ -400,8 +400,13 @@ Tabelas afetadas por `roles`: `location_manager`, `movement_manager`, `product_m
 
 ### 2. Encoding — texto acentuado virou `CalendÃ¡rios` / `AuditÃ³rio`
 Causa: o HeidiSQL leu o `.sql` (UTF-8 sem BOM) como ANSI e gravou o texto já corrompido.
-O arquivo está correto; o erro é da importação. Não colocar BOM (o `.php` da migration
-lê o `.sql`). Importar sempre assim:
+**REGRA (2026-10-29): todo `.sql` do REMAKE sai em ASCII puro** — sem BOM e sem byte acima
+de 127. Texto com acento/símbolo vira `_utf8mb4 0xHEX` (ex.: `Formulário` =
+`_utf8mb4 0x466F726D756CC3A172696F`; vale em INSERT, `DEFAULT` e `CASE` de view). Assim o
+arrasto no HeidiSQL (KingHost) e o `spark migrate` (DEV/localhost) funcionam sem depender
+do encoding do cliente. Ao gerar o REMAKE, converter os literais não-ASCII antes de entregar
+e conferir que o arquivo não tem nenhum byte >= 128. Não colocar BOM (o `.php` da migration
+lê o `.sql`). Se ainda assim precisar importar por linha de comando:
 ```bash
 mysql --default-character-set=utf8mb4 -h <host> -u <usuario> -p <banco> < 202610182153_seed_table.sql
 ```
