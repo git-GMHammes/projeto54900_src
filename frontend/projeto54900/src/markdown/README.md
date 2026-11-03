@@ -98,6 +98,8 @@ estático com fallback de SPA para `index.html` — app na raiz ou em subpasta
 
 [`geral/README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node, build/deploy e módulos do frontend.
 
+[`geral/README_dependencias_node.md`](geral/README_dependencias_node.md) — dependências Node do `package.json` (finalidade de cada uma) e candidatas de OCR.
+
 ### `paginas`
 
 Convenção `pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`, espelhando como a API
@@ -513,6 +515,7 @@ arquivos.
 - [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`temp_nav`/`temp_menu`) são montadas.
 - [`README_mapa.md`](geral/README_mapa.md) — componentes react-leaflet (MapView, MapLinksPanel...), rotas `/v1/map`, serviços `map*` e como qualquer módulo usa o mapa.
 - [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
+- [`README_dependencias_node.md`](geral/README_dependencias_node.md) — dependências e devDependencies do `package.json`, scripts e candidatas de OCR (SGD).
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
 - [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.
 - [`README_render_via_formgrid.md`](geral/README_render_via_formgrid.md) — campo de formulário renderiza via `<FormGrid>` (schema JSON), não markup manual; débito do `FormBuilderPage`.

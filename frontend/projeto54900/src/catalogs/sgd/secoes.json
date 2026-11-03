@@ -1,0 +1,26 @@
+{
+  "recipient": [
+    "destinatario / remetente",
+    "destinatario/remetente"
+  ],
+  "carrier": [
+    "transportador/volume",
+    "transportador / volume"
+  ],
+  "delivery": [
+    "informacoes do local de entrega / retirada",
+    "informacoes do local de entrega/retirada"
+  ],
+  "main": [
+    "fatura/duplicata",
+    "calculo do imposto",
+    "dados do produto / servicos",
+    "dados do produto/servicos",
+    "calculo do issqn",
+    "dados adicionais"
+  ],
+  "meeting": [
+    "dados da reuniao",
+    "dados do evento"
+  ]
+}

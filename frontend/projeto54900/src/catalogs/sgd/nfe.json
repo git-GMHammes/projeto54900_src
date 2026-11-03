@@ -1,0 +1,109 @@
+{
+  "invoice_number": [
+    "nº",
+    "n°",
+    "n.º",
+    "no",
+    "numero da nota",
+    "numero da nf-e"
+  ],
+  "invoice_series": [
+    "serie"
+  ],
+  "access_key": [
+    "chave de acesso",
+    "chave de acesso da nf-e"
+  ],
+  "operation_nature": [
+    "natureza da operacao",
+    "natureza de operacao"
+  ],
+  "authorization_protocol": [
+    "protocolo de autorizacao de uso",
+    "protocolo de autorizacao"
+  ],
+  "state_registration": [
+    "inscricao estadual",
+    "insc. estadual",
+    "i.e."
+  ],
+  "substitute_state_registration": [
+    "insc. estadual do subst. tributario",
+    "inscricao estadual do substituto tributario"
+  ],
+  "district": [
+    "bairro/distrito",
+    "bairro / distrito"
+  ],
+  "issue_date": [
+    "data da emissao",
+    "data de emissao da nota"
+  ],
+  "exit_date": [
+    "data da entrada / saida",
+    "data da entrada/saida",
+    "data de saida",
+    "data da saida"
+  ],
+  "exit_time": [
+    "hora de saida",
+    "hora da saida"
+  ],
+  "icms_base": [
+    "base de calculo do icms"
+  ],
+  "icms_value": [
+    "valor do icms"
+  ],
+  "icms_st_base": [
+    "base de calculo do icms substituicao"
+  ],
+  "icms_st_value": [
+    "valor do icms substituicao"
+  ],
+  "products_total": [
+    "valor total dos produtos"
+  ],
+  "freight_value": [
+    "valor do frete"
+  ],
+  "insurance_value": [
+    "valor do seguro"
+  ],
+  "discount_value": [
+    "desconto"
+  ],
+  "other_expenses": [
+    "outras despesas acessorias"
+  ],
+  "ipi_value": [
+    "valor do ipi"
+  ],
+  "invoice_total": [
+    "valor total da nota"
+  ],
+  "freight_mode": [
+    "frete por conta"
+  ],
+  "gross_weight": [
+    "peso bruto"
+  ],
+  "net_weight": [
+    "peso liquido"
+  ],
+  "additional_info": [
+    "dados adicionais",
+    "informacoes complementares"
+  ],
+  "name": [
+    "nome/razao social",
+    "nome / razao social"
+  ],
+  "tax_id": [
+    "c.n.p.j / c.p.f.",
+    "c.n.p.j/c.p.f.",
+    "c.n.p.j. / c.p.f.",
+    "cnpj/cpf",
+    "cnpj / cpf"
+  ]
+}

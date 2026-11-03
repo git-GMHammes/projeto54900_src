@@ -1,0 +1,65 @@
+{
+  "patterns": {
+    "document_type": [
+      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o]"
+    ],
+    "email": [
+      "[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+"
+    ],
+    "phone": [
+      "\\(\\d{2}\\)\\s*(?:9\\s*)?\\d{4}[-\\s]?\\d{4}"
+    ],
+    "zip_code": [
+      "CEP[:\\s]*(\\d{5}-?\\d{3})"
+    ],
+    "document_number": [
+      "\\b(?:Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o.]*\\s*([\\d./-]*\\d)",
+      "(?:^|\\s)n[º°o]\\.?\\s*(\\d+/\\d{4})"
+    ],
+    "issue_place": [
+      "(\\p{L}[\\p{L} ]*?/[A-Z]{2}),\\s*\\d{1,2}\\s+de\\s+\\p{L}+\\s+de\\s+\\d{4}"
+    ],
+    "document_date": [
+      "(\\d{1,2}\\s+de\\s+\\p{L}+\\s+de\\s+\\d{4})"
+    ],
+    "emitted_at": [
+      "emitido\\s+em\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "header_address": [
+      "^((?:Rua|Av\\.?|Avenida|Travessa|Alameda|Rodovia|Estrada)\\s[^·]*?)\\s*[–-]\\s*CEP"
+    ]
+  },
+  "blocks": [
+    {
+      "before": "^(rua|av\\.?|avenida|travessa|alameda|rodovia|estrada) .*cep",
+      "keys": [
+        "issuer_name",
+        "issuer_department"
+      ]
+    },
+    {
+      "after": "^(a\\(o\\)|ao|a|as|aos)\\s+(senhor|senhora|senhores|sr|sra|ilustrissim|excelentissim|dignissim)",
+      "keys": [
+        "recipient_name",
+        "recipient_position",
+        "recipient_organization",
+        "recipient_address"
+      ]
+    },
+    {
+      "after": "^(atenciosamente|respeitosamente|cordialmente)",
+      "keys": [
+        "sender_name",
+        "sender_position",
+        "sender_department"
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "key": "body",
+      "after": "^(senhor|senhora|senhor\\(a\\)|prezad|ilustrissim|excelentissim)[^.]*,?$",
+      "until": "^(atenciosamente|respeitosamente|cordialmente|sem mais)"
+    }
+  ]
+}

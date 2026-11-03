@@ -512,6 +512,7 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
 - [`README_modulo_form.md`](geral/README_modulo_form.md) — módulo Form: formulários dinâmicos persistidos no banco.
 - [`README_modulo_nav_menu.md`](geral/README_modulo_nav_menu.md) — módulo Nav/Menu: config do app e árvore de navegação.
+- [`README_modulo_sgd.md`](geral/README_modulo_sgd.md) — módulo SGD (Sistema Gerenciador de Documentos): telas e menu, OCR no navegador (PaddleOCR), dicionário de campos, tipos de valor, histórico e roteiro dos próximos passos.
 - [`README_modulo_timeline.md`](geral/README_modulo_timeline.md) — módulo Messages/Timeline: 7 tabelas, 7 views (feed + apoio), regras de negócio e roadmap.
 - [`README_modulo_upload.md`](geral/README_modulo_upload.md) — módulo Upload/UploadManager: anexos polimórficos da API V1.
 - [`README_regra_composer_proibido.md`](geral/README_regra_composer_proibido.md) — PHP Composer/vendor proibidos sem autorização explícita.

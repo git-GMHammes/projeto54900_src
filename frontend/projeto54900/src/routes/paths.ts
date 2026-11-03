@@ -78,6 +78,13 @@ export const paths = {
     knowledge: {
       view: '/v1/knowledge-base',
     },
+    // sgd — Sistema Gerenciador de Documentos (telas; backend ainda inexistente)
+    sgd: {
+      list: '/v1/sgd',
+      create: '/v1/sgd/create',
+      view: (id: RouteId) => `/v1/sgd/${id}`,
+      update: (id: RouteId) => `/v1/sgd/update/${id}`,
+    },
     // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
     svgMap: {
       view: '/v1/svg-map',

@@ -1,0 +1,68 @@
+{
+  "name": [
+    "nome",
+    "nome completo",
+    "nome do titular",
+    "nome civil",
+    "nome do portador",
+    "nome do beneficiario",
+    "nome do requerente"
+  ],
+  "mother_name": [
+    "nome da mae",
+    "mae",
+    "filiacao mae",
+    "filiacao materna"
+  ],
+  "father_name": [
+    "nome do pai",
+    "pai",
+    "filiacao pai",
+    "filiacao paterna"
+  ],
+  "birth_date": [
+    "data de nascimento",
+    "data nascimento",
+    "data nasc",
+    "nascimento",
+    "nascido em",
+    "dt nascimento"
+  ],
+  "gender": [
+    "sexo",
+    "genero"
+  ],
+  "marital_status": [
+    "estado civil"
+  ],
+  "nationality": [
+    "nacionalidade"
+  ],
+  "birthplace": [
+    "naturalidade",
+    "local de nascimento"
+  ],
+  "occupation": [
+    "profissao",
+    "ocupacao"
+  ],
+  "company": [
+    "empresa",
+    "razao social",
+    "empregador"
+  ],
+  "salary": [
+    "salario",
+    "remuneracao"
+  ],
+  "store": [
+    "loja",
+    "filial",
+    "unidade"
+  ],
+  "admission_date": [
+    "data de admissao",
+    "admissao",
+    "data admissao"
+  ]
+}

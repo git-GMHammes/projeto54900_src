@@ -109,6 +109,8 @@ export { serviceManagerView } from './serviceManager.view';
 export { serviceAttributesView } from './serviceAttributes.view';
 export { serviceOrderView } from './serviceOrder.view';
 export { serviceSummaryView } from './serviceSummary.view';
+export { sgdTable } from './sgd.table';
+export { sgdView } from './sgd.view';
 export { companyManagerTable } from './companyManager.table';
 export { companyManagerView } from './companyManager.view';
 export { companyMembersTable, syncCompanyMembers } from './companyMembers.table';

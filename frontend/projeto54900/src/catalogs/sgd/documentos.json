@@ -1,0 +1,14 @@
+{
+  "cpf": ["cpf", "cpf/mf", "c.p.f.", "numero do cpf"],
+  "cnpj": ["cnpj", "cnpj/mf", "c.n.p.j.", "numero do cnpj"],
+  "rg": ["rg", "r.g.", "registro geral", "identidade", "carteira de identidade", "numero do rg", "doc. identidade", "documento de identidade"],
+  "rg_issuer": ["orgao expedidor", "orgao emissor", "org. emissor", "org emissor", "orgao exp"],
+  "rg_issue_date": ["data de expedicao", "data de emissao", "data expedicao", "data emissao", "expedicao", "emissao"],
+  "cnh": ["cnh", "numero da cnh", "registro cnh", "n. registro", "numero de registro"],
+  "voter_id": ["titulo de eleitor", "titulo eleitoral", "numero do titulo"],
+  "passport": ["passaporte", "numero do passaporte"],
+  "pis": ["pis", "pis/pasep", "pasep", "nit"],
+  "document_number": ["numero do documento", "n. do documento", "documento n.", "n. documento"],
+  "subject": ["assunto", "referencia", "ref."],
+  "validity": ["validade", "data de validade", "valido ate", "val."]
+}

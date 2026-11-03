@@ -28,7 +28,7 @@ use Config\Database;
  *  - headers[]  um objeto por linha ativa de temp_header, em sort_order (empilhados):
  *               { id, name, sort_order, background_image[], logo[], company_name[] }
  *  - footers[]  um objeto por linha ativa de temp_footer, em sort_order:
- *               { id, name, sort_order, title, layout, footer_headings[], footer_images[] }
+ *               { id, name, sort_order, title, layout, image_height, footer_headings[], footer_images[] }
  *               (layout 'columns' ou 'highlight'; footer_headings[].icon = classe Bootstrap Icons)
  *
  * O menu ja sai filtrado por roles: item sem roles e livre; com roles, so para o perfil
@@ -400,6 +400,8 @@ class Builder
 
         // Modelo 'highlight' (titulo + itens com icone); qualquer outro valor mantem as colunas de sempre.
         $layout = (string) ($r['layout'] ?? '');
+        // Altura das imagens em px; vazio/zero = altura natural da imagem.
+        $height = (int) ($r['image_height'] ?? 0);
 
         return [
             'id'              => (int) $r['id'],
@@ -407,6 +409,7 @@ class Builder
             'sort_order'      => (int) $r['sort_order'],
             'title'           => (string) ($r['title'] ?? ''),
             'layout'          => $layout === 'highlight' ? 'highlight' : 'columns',
+            'image_height'    => $height > 0 ? $height : null,
             'footer_headings' => $headings,
             'footer_images'   => $images,
         ];

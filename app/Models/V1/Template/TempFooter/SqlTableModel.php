@@ -10,6 +10,7 @@ use App\Models\V1\BaseTableModel;
  * DDL: id (BIGINT PK auto), company_manager (JSON NOT NULL - lista de slugs de empresa),
  *      name VARCHAR(100) NULL, sort_order INT DEFAULT 0, title VARCHAR(255) NULL (titulo do modelo
  *      destaque, com [d]palavra[/d]), layout VARCHAR(20) NULL (vazio/columns ou highlight),
+ *      image_height SMALLINT NULL (altura em px das imagens do rodape; vazio = altura natural),
  *      col1..col4_{title,text,image,alt,icon} (icon = classe Bootstrap Icons, modelo destaque),
  *      status (ENUM active/draft/inactive, default draft), created_at, updated_at, deleted_at.
  *
@@ -34,6 +35,7 @@ class SqlTableModel extends BaseTableModel
         'sort_order',
         'title',
         'layout',
+        'image_height',
         'col1_title',
         'col1_text',
         'col1_image',

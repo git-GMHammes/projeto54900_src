@@ -1,0 +1,10 @@
+{
+  "address": ["endereco", "logradouro", "rua", "avenida", "av."],
+  "number": ["numero", "n.", "num."],
+  "complement": ["complemento", "compl."],
+  "neighborhood": ["bairro"],
+  "city": ["cidade", "municipio"],
+  "state": ["estado", "uf"],
+  "zip_code": ["cep", "codigo postal"],
+  "country": ["pais"]
+}

@@ -52,6 +52,10 @@ export default function TemplateFooterRegion({ footer, flat, palette, collapsibl
     );
   }
 
+  // Altura configurada (temp_footer.image_height): imagem cortada sem distorcer; sem valor, altura natural.
+  const imageStyle = footer.image_height === null ? undefined : { height: footer.image_height, objectFit: 'cover' as const };
+  const imageClass = `img-fluid ${footer.image_height === null ? '' : 'w-100'} ${flat ? '' : 'rounded'}`;
+
   // Textos e imagens ocupam colunas numeradas na mesma sequencia.
   const columns = [
     ...footer.footer_headings.map((item) => ({ order: item.order, heading: item, image: undefined })),
@@ -86,7 +90,7 @@ export default function TemplateFooterRegion({ footer, flat, palette, collapsibl
                     )}
                     {heading && heading.title !== '' && <h3 className="h6 fw-bold">{heading.title}</h3>}
                     {heading && <p className="small mb-0">{heading.text}</p>}
-                    {image && <img src={assetUrl(image.url)} alt={image.alt} className={`img-fluid ${flat ? '' : 'rounded'}`} />}
+                    {image && <img src={assetUrl(image.url)} alt={image.alt} className={imageClass} style={imageStyle} />}
                   </div>
                 ))}
               </div>
@@ -111,7 +115,7 @@ export default function TemplateFooterRegion({ footer, flat, palette, collapsibl
                     <p className="small mb-0">{heading.text}</p>
                   </>
                 )}
-                {image && <img src={assetUrl(image.url)} alt={image.alt} className={`img-fluid ${flat ? '' : 'rounded'}`} />}
+                {image && <img src={assetUrl(image.url)} alt={image.alt} className={imageClass} style={imageStyle} />}
               </div>
             ))}
           </div>

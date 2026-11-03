@@ -18,6 +18,7 @@ class UpdateRequest
             'sort_order' => 'permit_empty|is_natural',
             'title' => 'permit_empty|string|max_length[255]',
             'layout' => 'permit_empty|in_list[columns,highlight]',
+            'image_height' => 'permit_empty|is_natural|greater_than_equal_to[40]|less_than_equal_to[600]',
             'col1_title' => 'permit_empty|string|max_length[255]',
             'col1_text' => 'permit_empty|string',
             'col1_image' => 'permit_empty|string|max_length[500]',

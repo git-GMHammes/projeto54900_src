@@ -17,6 +17,7 @@ const toValues = (record: ApiRow): Record<string, string> => ({
   name: toText(record.name, ''),
   sort_order: toText(record.sort_order, ''),
   status: toText(record.status, 'draft'),
+  image_height: toText(record.image_height, ''),
   col1_title: toText(record.col1_title, ''),
   col1_text: toText(record.col1_text, ''),
   col1_image: toText(record.col1_image, ''),

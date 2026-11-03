@@ -1,0 +1,6 @@
+{
+  "email": ["e-mail", "email", "correio eletronico"],
+  "phone": ["telefone", "tel", "fone", "telefone fixo", "contato"],
+  "mobile": ["celular", "telefone celular", "whatsapp"],
+  "website": ["site", "website", "pagina na internet"]
+}

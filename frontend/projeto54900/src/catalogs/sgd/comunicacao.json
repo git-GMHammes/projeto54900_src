@@ -1,0 +1,8 @@
+{
+  "sender_name": ["de", "remetente", "emitente", "autor"],
+  "recipient_name": ["para", "destinatario", "a/c", "aos cuidados de"],
+  "document_date": ["data", "data do documento"],
+  "time": ["horario", "hora"],
+  "place": ["local"],
+  "agenda": ["pauta"]
+}

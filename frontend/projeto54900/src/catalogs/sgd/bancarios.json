@@ -1,0 +1,7 @@
+{
+  "bank": ["banco", "nome do banco", "instituicao financeira", "instituicao", "codigo do banco"],
+  "bank_agency": ["agencia", "ag.", "ag", "numero da agencia", "agencia bancaria"],
+  "bank_account": ["conta", "conta corrente", "conta poupanca", "numero da conta", "n. da conta", "c/c", "conta/digito"],
+  "bank_account_type": ["tipo de conta", "tipo da conta", "especie de conta", "modalidade da conta"],
+  "pix_key": ["chave pix", "pix", "chave"]
+}

@@ -75,6 +75,7 @@ import { templateRoutes } from './template.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
 import { knowledgeRoutes } from './knowledge.routes';
+import { sgdRoutes } from './sgd.routes';
 import { mapRoutes } from './map.routes';
 import { timelineRoutes } from './timeline.routes';
 import { chatRoomsRoutes } from './chat-rooms.routes';
@@ -135,6 +136,7 @@ export const v1Routes: RouteObject = {
         ...calendarRoutes,
         ...svgMapRoutes,
         ...knowledgeRoutes,
+        ...sgdRoutes,
         ...mapRoutes,
         ...timelineRoutes,
         ...chatRoomsRoutes,

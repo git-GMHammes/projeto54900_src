@@ -119,6 +119,8 @@ export const API_GROUPS = {
   serviceOrder: 'service-order',
   serviceOrderView: 'service-order-view',
   serviceSummaryView: 'service-summary-view',
+  sgd: 'sgd',
+  sgdView: 'sgd-view',
   companyManager: 'company-manager',
   companyManagerView: 'company-manager-view',
   companyMembers: 'company-members',

@@ -51,6 +51,8 @@ export interface TemplateFooterData {
   title: string;
   /** 'highlight' = titulo + itens com icone; qualquer outro valor = as colunas de sempre. */
   layout: 'columns' | 'highlight';
+  /** Altura em px das imagens do rodape (cortadas com object-fit: cover); null = altura natural. */
+  image_height: number | null;
   /** `icon`: classe do Bootstrap Icons (ex.: bi-car-front), usada so no modelo 'highlight'. */
   footer_headings: { id: number; order: number; column: number; title: string; text: string; icon: string }[];
   footer_images: { id: number; order: number; column: number; url: string; alt: string }[];
@@ -134,6 +136,7 @@ export function parseTemplateRender(raw: unknown): TemplateRenderData {
       sort_order: num(f.sort_order),
       title: str(f.title),
       layout: f.layout === 'highlight' ? 'highlight' : 'columns',
+      image_height: num(f.image_height) > 0 ? num(f.image_height) : null,
       footer_headings: asList(f.footer_headings).map((x) => ({
         id: num(x.id),
         order: num(x.order),
