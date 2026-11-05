@@ -26,11 +26,26 @@ export interface TextLine {
   box?: Box;
 }
 
-/** Caixa que envolve o poligono (lista de pontos [x, y]) devolvido pelo OCR. */
+/**
+ * Caixa que envolve o poligono (lista de pontos [x, y]) devolvido pelo OCR. Em texto inclinado (carimbo torto) o
+ * retangulo que envolve o poligono e mais alto que a linha e se sobrepoe as linhas vizinhas; nesse caso a altura
+ * volta a ser a da linha (lado curto do poligono), centrada no mesmo ponto.
+ */
 export function boxFromPoly(poly: readonly (readonly number[])[]): Box {
   const xs = poly.map((p) => p[0] ?? 0);
   const ys = poly.map((p) => p[1] ?? 0);
-  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+  const box = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+
+  const [a, b, c] = poly;
+  if (poly.length !== 4 || !a || !b || !c) return box;
+  const [dx1, dy1] = [(b[0] ?? 0) - (a[0] ?? 0), (b[1] ?? 0) - (a[1] ?? 0)];
+  const [dx2, dy2] = [(c[0] ?? 0) - (b[0] ?? 0), (c[1] ?? 0) - (b[1] ?? 0)];
+  const [long, short] = Math.hypot(dx1, dy1) >= Math.hypot(dx2, dy2) ? [[dx1, dy1], [dx2, dy2]] : [[dx2, dy2], [dx1, dy1]];
+  const height = Math.hypot(short[0] ?? 0, short[1] ?? 0);
+  // So texto mais horizontal que vertical (linha de texto), e so quando a inclinacao inflou a caixa.
+  if (Math.abs(long[0] ?? 0) < Math.abs(long[1] ?? 0) || height >= box.y1 - box.y0) return box;
+  const middle = (box.y0 + box.y1) / 2;
+  return { ...box, y0: middle - height / 2, y1: middle + height / 2 };
 }
 
 // Medidas em multiplos da altura do rotulo (a unidade acompanha o tamanho da letra e a resolucao).

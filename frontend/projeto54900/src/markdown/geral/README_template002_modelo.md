@@ -86,8 +86,8 @@ Home com dados do banco. Nenhuma empresa pode ter esse slug. Detalhe na abertura
   chaves de estado e a barra mínima do nav fechado na seção 6 do
   [001](README_template001_modelo.md). No nav dinâmico o `tpl-collapsible-inner` leva `minWidth: 0`.
 - **Nav do template dinâmico (produção) segue o modelo:** `components/template/TemplateNavRegion.tsx`
-  (usado pelas três variantes) aplica o mesmo padrão **só na variante plana** (`flat`, 002 e 003); o 001
-  dinâmico mantém a lista que quebra em linhas. Na variante plana:
+  (usado pelas três variantes) aplica o mesmo padrão em **todas as variantes** (desde 2026-11-03 o 001
+  dinâmico também usa linha única, setas e submenus por portal; `flat` só define o estilo, com ou sem caixa). Comportamento:
   - **sem marca nem versão no nav** (vale para as três variantes): o antigo `navbar-brand` ("Menu" e "v1",
     de `temp_nav.title` e `temp_nav.system_version`) foi removido do `TemplateNavRegion`, junto das props
     `brandName` / `brandVersion`. O que sobra à esquerda é só o botão da grade que abre o Offcanvas (no 003
@@ -111,7 +111,7 @@ Home com dados do banco. Nenhuma empresa pode ter esse slug. Detalhe na abertura
     (`position: absolute; top: 100%`, `left` calculado contra o nav e limitado à largura dele, na ref
     `placeMenu`), fora da lista que rola, então nada o corta. Abaixo de `lg` o menu fica em fluxo dentro do
     item. Fecha ao clicar fora, Escape, rolar a lista, redimensionar ou escolher um item. A rota própria do
-    grupo (`entry.to`), se existir, vira o primeiro item do submenu. O 001 e o menu do usuário continuam no
+    grupo (`entry.to`), se existir, vira o primeiro item do submenu. O menu do usuário continua no
     dropdown do Bootstrap.
 - **Animações:** as mesmas 14 do 001. A 11 (sombra 3D no hover) vira um clareamento leve
   (`brightness(1.04)`).
@@ -314,8 +314,8 @@ Marcação:
 ```
 
 `groupMenuItems(entry)` devolve `<li><NavLink className="dropdown-item" to=... end onClick={closeGroup}>` para
-a rota própria do grupo (se houver) e para cada filho. Regras: ícones sempre de `entry.icon`; só a variante
-`flat` usa este caminho; o 001 dinâmico segue o dropdown do Bootstrap com a lista quebrando em linhas.
+a rota própria do grupo (se houver) e para cada filho. Regras: ícones sempre de `entry.icon`; todas as
+variantes usam este caminho.
 
 ### 4.5 Checklist ao levar para outro template
 

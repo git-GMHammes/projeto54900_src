@@ -21,10 +21,11 @@ const email: ValueNormalizer = (value) => {
 };
 
 // Remove a mascara e fica so com os digitos, se a quantidade bater (CPF 11, CNPJ 14, CEP 8).
+// O OCR le o zero como a letra "o" ("11.222.333/o001-81"): a letra vale zero nesses formatos so de digitos.
 const digits =
   (length: number): ValueNormalizer =>
   (value) => {
-    const only = value.replace(/\D/g, '');
+    const only = value.replace(/[oO]/g, '0').replace(/\D/g, '');
     return only.length === length ? only : value;
   };
 
@@ -56,8 +57,9 @@ const pad = (n: string): string => n.padStart(2, '0');
 const MONTHS = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
 // "2 de novembro de 2026" -> "2/11/2026" (segue para o tratamento numerico); mes desconhecido: null.
+// Varios dias antes do mes ("10 e 11 de novembro de 2026", "10 a 12 de ...") valem pelo primeiro.
 const spelledDate = (value: string): string | null => {
-  const m = /^(\d{1,2})\s+de\s+(\p{L}+)\s+de\s+(\d{4})(?:,\s*[\p{L}-]+)?$/iu.exec(value.trim());
+  const m = /^(\d{1,2})(?:\s*(?:e|a|à|,|-|–)\s*\d{1,2})*\s+de\s+(\p{L}+)\s+de\s+(\d{4})(?:,\s*[\p{L}-]+)?$/iu.exec(value.trim());
   const month = m?.[2] ? MONTHS.indexOf(m[2].normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()) : -1;
   return m && month >= 0 ? `${m[1] ?? ''}/${String(month + 1)}/${m[3] ?? ''}` : null;
 };
@@ -105,6 +107,21 @@ const time: ValueNormalizer = (value) => {
   return end ? { value: start, extra: { end } } : start;
 };
 
+// "Eng. Sandro Moreira – CREA 123456-D" -> "Eng. Sandro Moreira" (so a parte antes do travessao, ou antes de
+// "CPF"/"CNPJ"/"CREA" quando o OCR perde o travessao).
+const beforeDash: ValueNormalizer = (value) => value.split(/\s+[–—-]\s+|\s+(?=(?:CPF|CNPJ|CREA)\b)/)[0]?.trim() || value;
+
+// "SEl nº 0012298" ou "(SEI nº 0012298)" -> "(SEI nº 0012298)": sempre entre parenteses, e o "SEI" que o OCR le
+// como "SEl"/"SE1" volta a "SEI".
+const parenthesized: ValueNormalizer = (value) => {
+  const inner = value
+    .replace(/^\(\s*|\s*\)$/g, '')
+    .replace(/\bSE[l1]\b/g, 'SEI')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return inner ? `(${inner})` : value;
+};
+
 /** Chave do campo extra: `<chave>_<sufixo>`; em chave `x_name` o sufixo vai na base (`x_position`, nao `x_name_position`). */
 export const extraKey = (key: string, suffix: string): string => `${key.replace(/_name$/, '')}_${suffix}`;
 
@@ -116,6 +133,8 @@ export const valueTypes: Readonly<Record<string, ValueNormalizer>> = {
   phone,
   rg,
   money,
+  before_dash: beforeDash,
+  parenthesized,
   date,
   person,
   time,

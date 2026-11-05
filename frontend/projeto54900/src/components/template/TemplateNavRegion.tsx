@@ -54,10 +54,10 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
   const unread = useUnreadMessages(isAuthenticated && user?.role?.slug !== 'guest');
   const isAdmin = user?.role?.slug === 'admin' || user?.role?.slug === 'superuser';
 
-  // Variante plana (002 e 003): os itens ficam em uma linha e as setas deslizam a lista (mesmo padrao dos modelos).
-  const navScroll = useNavScroll(flat);
+  // Todas as variantes: os itens ficam em uma linha e as setas deslizam a lista (padrao validado no 002).
+  const navScroll = useNavScroll();
 
-  // Submenus da variante plana sao controlados pelo React, nao pelo dropdown do Bootstrap: a lista tem
+  // Submenus sao controlados pelo React, nao pelo dropdown do Bootstrap: a lista tem
   // overflow-hidden e cortaria o menu. A partir de lg o menu aberto e desenhado (portal) dentro do <nav>,
   // fora da lista, sob o item; abaixo de lg ele fica em fluxo, dentro do item da sanfona.
   const [navEl, setNavEl] = useState<HTMLElement | null>(null);
@@ -186,9 +186,9 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
         <span className="navbar-toggler-icon" />
       </button>
 
-      {/* minWidth 0 (variante plana): o item flex nao pode ter a largura minima dos itens, senao a lista nunca passa da caixa. */}
-      <div className="collapse navbar-collapse" id={NAV_COLLAPSE_ID} style={flat ? { minWidth: 0 } : undefined}>
-        {flat && navScroll.overflow && (
+      {/* minWidth 0: o item flex nao pode ter a largura minima dos itens, senao a lista nunca passa da caixa. */}
+      <div className="collapse navbar-collapse" id={NAV_COLLAPSE_ID} style={{ minWidth: 0 }}>
+        {navScroll.overflow && (
           <button
             type="button"
             className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
@@ -201,10 +201,10 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
         )}
         <ul
           ref={navScroll.ref}
-          className={`navbar-nav flex-lg-row align-items-lg-center small ${flat ? 'flex-lg-nowrap overflow-hidden ms-lg-auto' : 'ms-auto flex-wrap'}`}
+          className="navbar-nav flex-lg-row align-items-lg-center small flex-lg-nowrap overflow-hidden ms-lg-auto"
         >
           {entries.map((entry, i) =>
-            entry.children.length > 0 && flat ? (
+            entry.children.length > 0 ? (
               <li className="tpl-nav-item nav-item flex-shrink-0 text-nowrap d-lg-flex align-items-lg-center" key={entry.key}>
                 <button
                   type="button"
@@ -221,43 +221,9 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
                 {!isLg && openKey === entry.key && <ul className="tpl-group-menu dropdown-menu show">{groupMenuItems(entry)}</ul>}
                 {i < entries.length - 1 && <span className="d-none d-lg-inline mx-1 text-body-secondary">|</span>}
               </li>
-            ) : entry.children.length > 0 ? (
-              <li className="tpl-nav-item nav-item dropdown position-relative" key={entry.key}>
-                {entry.to ? (
-                  <NavLink className="tpl-nav-link nav-link dropdown-toggle" to={entry.to} end role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    {entry.icon && <i className={`bi bi-${entry.icon} me-1`} aria-hidden="true" />}
-                    {entry.label}
-                    {hasChatChild(entry) && <UnreadBadge total={unread} />}
-                  </NavLink>
-                ) : (
-                  <a
-                    className="tpl-nav-link nav-link dropdown-toggle"
-                    href="#"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    {entry.icon && <i className={`bi bi-${entry.icon} me-1`} aria-hidden="true" />}
-                    {entry.label}
-                    {hasChatChild(entry) && <UnreadBadge total={unread} />}
-                  </a>
-                )}
-                <ul className="dropdown-menu dropdown-menu-end">
-                  {entry.children.map((child) => (
-                    <li key={child.key}>
-                      <NavLink className="dropdown-item" to={child.to} end>
-                        {child.label}
-                        {child.to === paths.v1.messageChat.home && <UnreadBadge total={unread} />}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-                {i < entries.length - 1 && <span className="d-none d-lg-inline mx-1 text-body-secondary">|</span>}
-              </li>
             ) : (
               <li
-                className={`tpl-nav-item nav-item d-lg-flex align-items-lg-center ${flat ? 'flex-shrink-0 text-nowrap' : ''}`}
+                className="tpl-nav-item nav-item d-lg-flex align-items-lg-center flex-shrink-0 text-nowrap"
                 key={entry.key}
               >
                 <NavLink className="tpl-nav-link nav-link px-lg-1" to={entry.to ?? '#'} end>
@@ -269,7 +235,7 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
           )}
         </ul>
 
-        {flat && navScroll.overflow && (
+        {navScroll.overflow && (
           <button
             type="button"
             className="btn btn-sm border-0 text-body fs-5 lh-1 px-1 flex-shrink-0 d-none d-lg-inline-flex"
@@ -282,8 +248,7 @@ export default function TemplateNavRegion({ entries, menuButton, flat, palette, 
         )}
 
         {/* Submenu aberto (lg): dentro do nav, fora da lista que rola, para o overflow-hidden nao cortar. */}
-        {flat &&
-          isLg &&
+        {isLg &&
           openEntry &&
           navEl &&
           createPortal(

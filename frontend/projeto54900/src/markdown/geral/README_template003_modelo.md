@@ -25,7 +25,13 @@ O vínculo fica em `temp_manager.company_manager`, uma lista JSON de slugs de em
 | `company_manager`       | `[]`                                                                  |
 | `status`                | `active`                                                              |
 
-**Nenhuma empresa está vinculada ao `template003`** (lista vazia). Quem a usa hoje é só o usuário que
+**Atualização de 2026-11-05:** a empresa `menezes22001` foi vinculada ao `template003` (`company_manager` = `["menezes22001"]`) e
+removida do `template002` (que ficou só com `tryikads`), por pedido do usuário, direto no DEV (sem migration). A rota
+`template-public/get/menezes22001` passou a devolver `template003`. **Limite conhecido:** o menu Offcanvas só existe com sessão
+(`TemplateShell`: `menuOpen = isAuthenticated && ...`); o visitante da Home (sem login) tem só Home e Entrar, então para ele o 003 não
+mostra o botão da grade. Logado, o painel traz os itens `offcanvas` da empresa (`SVG-2026` e, para superuser, `SVG`).
+
+Estado de 2026-10-29 (antes): **nenhuma empresa estava vinculada ao `template003`** (lista vazia). Quem a usa hoje é só o usuário que
 a escolhe em "Editar perfil" (`user_manager.temp_manager_id`).
 
 **Pendência:** a empresa `drsergiopsicologo` (Dr Sérgio Psicologo, paleta `Purple_white`) não consta em

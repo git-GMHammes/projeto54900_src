@@ -27,6 +27,9 @@ class Jwt extends BaseConfig
     /** Duracao do refresh token, em segundos. */
     public int $refreshTtl;
 
+    /** Duracao do token especial das APIs Eleicoes (typ=eleicoes), em segundos. */
+    public int $eleicoesTtl;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,5 +37,6 @@ class Jwt extends BaseConfig
         $this->secret     = (string) env('JWT_SECRET', 'dev-only-change-me');
         $this->accessTtl  = (int) env('JWT_ACCESS_TTL', 900);
         $this->refreshTtl = (int) env('JWT_REFRESH_TTL', 604800);
+        $this->eleicoesTtl = (int) env('JWT_ELEICOES_TTL', 3600);
     }
 }

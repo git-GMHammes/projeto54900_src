@@ -15,6 +15,8 @@ export const paths = {
   template002: '/template002',
   // Template003 — variante do 002 sem menu lateral fixo (menu em Offcanvas); sem API
   template003: '/template003',
+  // Template004 — copia do 002 (sem bordas, degrade) para a empresa menezes22001; sem API
+  template004: '/template004',
 
   v1: {
     auth: {
@@ -88,6 +90,10 @@ export const paths = {
     // svgMap — mapa SVG dos municipios do RJ (rota estatica, sem API)
     svgMap: {
       view: '/v1/svg-map',
+    },
+    // svg2026 — duplicata do svgMap (empresa menezes22001; rota estatica, sem API)
+    svg2026: {
+      view: '/v1/svg-2026',
     },
     // Map — explorador do mapa e mapa de UM registro de qualquer modulo (map_links).
     map: {

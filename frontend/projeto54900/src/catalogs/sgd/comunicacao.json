@@ -1,8 +1,11 @@
 {
-  "sender_name": ["de", "remetente", "emitente", "autor"],
+  "sender_name": ["de", "remetente", "emitente"],
+  "plaintiff": ["autor", "autora", "requerente"],
+  "defendant": ["reu", "requerido"],
   "recipient_name": ["para", "destinatario", "a/c", "aos cuidados de"],
   "document_date": ["data", "data do documento"],
   "time": ["horario", "hora"],
+  "responsible_name": ["responsavel", "responsavel tecnico"],
   "place": ["local"],
   "agenda": ["pauta"]
 }

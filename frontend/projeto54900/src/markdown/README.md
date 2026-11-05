@@ -62,6 +62,7 @@ cada resumo termina com o link para o conteúdo completo.
 | 21  | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
 | 22  | [`mapa`](#mapa)             | Mapa Leaflet e vínculo a módulos        |
 | 23  | [`produtos`](#produtos)     | Produto, movimento, serviço: telas prontas |
+| 30  | [`svg2026`](#svg2026)       | SVG-2026: duplicata para Menezes 22001 |
 
 **6. Manutenção**
 
@@ -78,6 +79,7 @@ cada resumo termina com o link para o conteúdo completo.
 | 27  | [`temas`](#temas)         | Paletas JSON de cores selecionáveis |
 | 28  | [`template002`](#template002) | Template002 sem bordas, por empresa |
 | 29  | [`template003`](#template003) | Template003 com menu em Offcanvas   |
+| 31  | [`template004`](#template004) | Template004, cópia do 002 (Menezes) |
 
 ---
 
@@ -426,6 +428,22 @@ erro; inclui o compartilhamento de localização nas conversas de mensagens (geo
 
 [`geral/README_mapa.md`](geral/README_mapa.md) — componentes do mapa, rotas e como um módulo usa o mapa.
 
+### `svg2026`
+
+Duplicata do módulo `svg-map` (mapa SVG dos municípios do RJ, só frontend, sem API) para a empresa `menezes22001`
+(Menezes 22001): página `Svg2026Page`, rota `/v1/svg-2026`, assets em `public/svg-2026/` e estilo `#svg2026Wrapper`.
+Documenta os usuários vinculados (`gustavo.*`, `lorena.*`, `cel.menezes.*`), os registros de `route_manager` e
+`temp_menu` e a regra de menu: na empresa nova admin, user e guest veem só `SVG-2026`; o superuser vê `SVG` e `SVG-2026`.
+A restrição é só de menu (a rota não tem guarda por empresa). A empresa usa o Template 2
+com o cabeçalho e o rodapé do `default` (o Template 004 está inativo) e entra no `temp_nav`.
+Desde 2026-11-04 consome a API Eleicoes2026: clique no município abre modal com Coronel Menezes x Flávio Bolsonaro
+(votos no município e total do RJ); municípios marcados geram collapses com bairros e seções (admin only).
+
+[`geral/README_SVG_2026.md`](geral/README_SVG_2026.md) — módulo SVG-2026, empresa Menezes 22001 e regra de menu.
+
+Desde 2026-11-05 a Home `/menezes22001` é um **dashboard eleitoral** (Apache ECharts) alimentado pelas views `view_dash_*` com o
+token público, sem login: [`geral/README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md).
+
 ### `produtos`
 
 Telas de Produto (54 rotas), Movimento (36) e Serviço (90): árvores e tabelas,
@@ -495,6 +513,15 @@ arquivos.
 
 [`geral/README_template003_modelo.md`](geral/README_template003_modelo.md) — Template003: Offcanvas, vínculo com empresas e arquivos.
 
+### `template004`
+
+Template004: duplicata do 002 (sem bordas, degradê) para a empresa `menezes22001`. Registra o vínculo no banco
+(`temp_manager` id 4, `temp_header` e `temp_footer` id 4, com imagens em `public/img/template004/`), a retirada do
+slug da Menezes dos registros 2 (da Tryik), a rota `/template004` e os arquivos copiados do 002. Hoje o 004 está
+inativo e sem empresa: a Menezes usa o Template 2 com o cabeçalho e o rodapé do `default`.
+
+[`geral/README_template004_modelo.md`](geral/README_template004_modelo.md) — Template004: vínculo com a Menezes, rota e arquivos.
+
 ---
 
 ## Conteúdo
@@ -514,6 +541,8 @@ arquivos.
 - [`README_list_constructor.md`](geral/README_list_constructor.md) — modelo de dados do construtor de listas (`list_manager`/`list_columns`/`list_actions`) e estado do frontend.
 - [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`temp_nav`/`temp_menu`) são montadas.
 - [`README_mapa.md`](geral/README_mapa.md) — componentes react-leaflet (MapView, MapLinksPanel...), rotas `/v1/map`, serviços `map*` e como qualquer módulo usa o mapa.
+- [`README_SVG_2026.md`](geral/README_SVG_2026.md) — módulo SVG-2026 (duplicata do `svg-map`) para a empresa Menezes 22001: arquivos, banco, usuários e regra de menu.
+- [`README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md) — dashboard eleitoral da Home menezes22001: ECharts, views `view_dash_*`, arquivos e regras.
 - [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
 - [`README_dependencias_node.md`](geral/README_dependencias_node.md) — dependências e devDependencies do `package.json`, scripts e candidatas de OCR (SGD).
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
@@ -527,6 +556,7 @@ arquivos.
 - [`README_template001_modelo.md`](geral/README_template001_modelo.md) — Template001 como modelo para o template de cada empresa: JSON de conteúdo, regiões, responsividade, temas, X de fechar, histórico dos pedidos e passo a passo.
 - [`README_template002_modelo.md`](geral/README_template002_modelo.md) — Template002 (sem bordas): empresa vinculada no banco, rota, arquivos e diferenças em relação ao 001.
 - [`README_template003_modelo.md`](geral/README_template003_modelo.md) — Template003 (menu Offcanvas): vínculo com empresas no banco, pendência da `drsergiopsicologo`, rota e arquivos.
+- [`README_template004_modelo.md`](geral/README_template004_modelo.md) — Template004 (cópia do 002) da empresa Menezes 22001: vínculo no banco, rota e arquivos.
 
 ### `geral/modulos/`
 

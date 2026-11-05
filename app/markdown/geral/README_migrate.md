@@ -91,6 +91,9 @@ esta linha em toda resposta ao prompt acima; NÃO executar automaticamente:**
 cd C:\laragon\www\php\habilidade\projeto54900
 podman compose exec php php spark migrate
  
+cd C:\laragon\www\js\habilidade\projeto54900
+podman compose exec php php spark migrate
+ 
 cd C:\xampp\htdocs\php\projeto54900
 podman compose exec php php spark migrate
  
@@ -127,11 +130,11 @@ recria tudo do zero.
 **Um REMAKE = 3 SQLs + 3 classes PHP**, mesmo timestamp, em
 `app/Database/Migrations/`:
 
-| Ordem | SQL (dump do banco DEV)              | Classe PHP                                   | Conteúdo                                            |
-| ----- | ------------------------------------ | -------------------------------------------- | --------------------------------------------------- |
-| 1     | `AAAAMMDDHHMM_replace_table.sql`     | `AAAA-MM-DD-HHMM00_ReplaceTable<AAAAMMDD>.php` | `DROP TABLE IF EXISTS` + `CREATE TABLE` de todas    |
-| 2     | `AAAAMMDDHHMM_seed_table.sql`        | `AAAA-MM-DD-HHMM00_SeedTable<AAAAMMDD>.php`    | `DELETE` + `INSERT` de todos os dados               |
-| 3     | `AAAAMMDDHHMM_replace_view.sql`      | `AAAA-MM-DD-HHMM00_ReplaceView<AAAAMMDD>.php`  | `DROP VIEW IF EXISTS` + `CREATE VIEW` de todas      |
+| Ordem | SQL (dump do banco DEV)          | Classe PHP                                     | Conteúdo                                         |
+| ----- | -------------------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| 1     | `AAAAMMDDHHMM_replace_table.sql` | `AAAA-MM-DD-HHMM00_ReplaceTable<AAAAMMDD>.php` | `DROP TABLE IF EXISTS` + `CREATE TABLE` de todas |
+| 2     | `AAAAMMDDHHMM_seed_table.sql`    | `AAAA-MM-DD-HHMM00_SeedTable<AAAAMMDD>.php`    | `DELETE` + `INSERT` de todos os dados            |
+| 3     | `AAAAMMDDHHMM_replace_view.sql`  | `AAAA-MM-DD-HHMM00_ReplaceView<AAAAMMDD>.php`  | `DROP VIEW IF EXISTS` + `CREATE VIEW` de todas   |
 
 > **Mudança de sufixo (2026-09-27):** a 3ª migration passa de
 > `create_view.sql`/`CreateView` para **`replace_view.sql`/`ReplaceView`** —
@@ -384,11 +387,11 @@ cliente `mysql`).
 
 ### 1. Compatibilidade com MySQL 5.7 (conferir após CADA exportação/REMAKE)
 
-| Sintaxe do MySQL 8 (gerada pelo export) | Erro no 5.7 | Troca |
-| --- | --- | --- |
+| Sintaxe do MySQL 8 (gerada pelo export)                    | Erro no 5.7                                   | Troca                                                                                                |
+| ---------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `regexp_replace(coalesce(phone,''),'[^0-9]','')` nas views | `1305 FUNCTION regexp_replace does not exist` | `replace(replace(replace(replace(replace(coalesce(phone,''),'(',''),')',''),'-',''),' ',''),'+','')` |
-| `WITH RECURSIVE tree AS (...)` em `view_location_manager` | `1064 syntax error near 'recursive'` | auto-joins de profundidade fixa (8 níveis, `n0..n7`) no lugar do CTE |
-| `roles json NOT NULL DEFAULT (json_array(...))` | `CREATE TABLE` falha e a tabela NÃO é criada | `roles json DEFAULT NULL` |
+| `WITH RECURSIVE tree AS (...)` em `view_location_manager`  | `1064 syntax error near 'recursive'`          | auto-joins de profundidade fixa (8 níveis, `n0..n7`) no lugar do CTE                                 |
+| `roles json NOT NULL DEFAULT (json_array(...))`            | `CREATE TABLE` falha e a tabela NÃO é criada  | `roles json DEFAULT NULL`                                                                            |
 
 Checagem rápida antes de subir (deve retornar 0 ocorrências):
 ```bash
@@ -432,12 +435,12 @@ criação de MIGRATE, a IA deve sugerir essa forma de importação na KingHost. 
    `token_prev`, `token_prev_until`, `company_ids`.
 
 ### 4. Sintomas e causa
-| Sintoma | Causa provável |
-| --- | --- |
-| `1054 Unknown column 'um.company_ids'` ao criar view | `user_manager` do servidor é versão antiga; o `replace_table` não rodou até o fim |
-| `1146 Table ... doesn't exist` ao criar view | o `CREATE TABLE` dela falhou (ver tabela de compatibilidade) |
+| Sintoma                                                                         | Causa provável                                                                                                                              |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `1054 Unknown column 'um.company_ids'` ao criar view                            | `user_manager` do servidor é versão antiga; o `replace_table` não rodou até o fim                                                           |
+| `1146 Table ... doesn't exist` ao criar view                                    | o `CREATE TABLE` dela falhou (ver tabela de compatibilidade)                                                                                |
 | Login "não dá erro" e volta para a Home; 401 em `temp-nav/find`, `auth/refresh` | `UPDATE user_manager` do login falha (`Unknown column 'token_prev'`): tabela desatualizada. Sem gravar a sessão, todo token novo é recusado |
-| Acentos quebrados | importação sem UTF-8 (item 2) |
+| Acentos quebrados                                                               | importação sem UTF-8 (item 2)                                                                                                               |
 
 Se faltar só coluna e não puder perder dados, usar `ALTER TABLE ... ADD COLUMN` (sem DROP):
 ```sql

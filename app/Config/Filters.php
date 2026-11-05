@@ -40,6 +40,7 @@ class Filters extends BaseFilters
         'jwtauth'       => JwtAuthFilter::class,
         'jwtoptional'   => \App\Filters\JwtOptionalFilter::class,
         'adminonly'     => AdminOnlyFilter::class,
+        'eleicoesauth'  => \App\Filters\EleicoesAccessFilter::class,
         'superuseronly' => SuperuserOnlyFilter::class,
         'endpointaccess' => \App\Filters\EndpointAccessFilter::class,
         'auditlog'      => \App\Filters\AuditFilter::class,
@@ -294,6 +295,12 @@ class Filters extends BaseFilters
             'before' => [
                 'api/v1/user-manager-view/*',
                 'api/v1/audit-logs/*',
+            ],
+        ],
+        // Eleicoes2026 (somente leitura): token especial typ=eleicoes OU admin logado. Substitui jwtauth+adminonly aqui.
+        'eleicoesauth' => [
+            'before' => [
+                'api/v1/eleicoes2026-*/*',
             ],
         ],
         // Log de auditoria: grava uma linha por chamada de api/v1/* depois da resposta (Config/AuditLog.php).

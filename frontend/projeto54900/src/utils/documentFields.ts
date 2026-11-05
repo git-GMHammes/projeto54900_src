@@ -83,6 +83,8 @@ const findHits = (folded: string, entries: Entry[]): Hit[] => {
     for (const m of folded.matchAll(entry.inline)) {
       const start = m.index + (m[1]?.length ?? 0);
       const end = m.index + m[0].length;
+      // `;` no lugar de `:` e erro de OCR so no comeco da linha; no meio dela e pontuacao de frase ("no local;").
+      if (m[3]?.includes(';') && start > 0) continue;
       if (hits.some((h) => start < h.end && end > h.start)) continue;
       hits.push({ entry, start, end });
     }

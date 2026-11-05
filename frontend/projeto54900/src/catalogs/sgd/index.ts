@@ -12,15 +12,18 @@ import type { StructureRules } from '@/utils/documentStructure';
 import bancarios from './bancarios.json';
 import comunicacao from './comunicacao.json';
 import contato from './contato.json';
+import contrato from './contrato.json';
 import documentos from './documentos.json';
 import endereco from './endereco.json';
 import identificacao from './identificacao.json';
 import nfe from './nfe.json';
+import predial from './predial.json';
+import processual from './processual.json';
 import estrutura from './estrutura.json';
 import secoes from './secoes.json';
 import tipos from './tipos.json';
 
-const parts: readonly FieldDictionary[] = [identificacao, documentos, contato, endereco, bancarios, nfe, comunicacao];
+const parts: readonly FieldDictionary[] = [identificacao, documentos, contato, endereco, bancarios, nfe, comunicacao, predial, contrato, processual];
 
 // A mesma chave em mais de um JSON soma os rotulos (nunca um arquivo apaga o outro).
 const merged: Record<string, string[]> = {};

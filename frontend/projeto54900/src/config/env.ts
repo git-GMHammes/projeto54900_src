@@ -145,7 +145,7 @@ export interface AppEnv {
    * linhas `theme:` comentadas em `env`) = vale a cor da empresa do slug da URL (company_manager.color_theme).
    */
   readonly theme?: string;
-  /** Template (variante visual) do visitante, antes do login: template001, template002 ou template003. */
+  /** Template (variante visual) do visitante, antes do login: template001, template002, template003 ou template004. */
   readonly guestTemplate: string;
   /** WhatsApp de contato comercial, so digitos com DDI e DDD (ex.: "5551999999999"). Default: 5521980558545. */
   readonly whatsappNumber: string;
@@ -254,7 +254,7 @@ export const env: AppEnv = Object.freeze({
  * @see routes/RequireAuth.tsx — valida o slug contra user.companies.
  * -------------------------------------------------------------------------
  */
-const RESERVED_ROOT_SEGMENTS = new Set(['acesso-negado', 'template001', 'template002', 'template003']);
+const RESERVED_ROOT_SEGMENTS = new Set(['acesso-negado', 'template001', 'template002', 'template003', 'template004']);
 const VERSION_SEGMENT = /^v\d+[a-z]*$/;
 const SLUG_SEGMENT = /^[a-z0-9-]+$/;
 

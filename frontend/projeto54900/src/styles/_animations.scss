@@ -36,7 +36,7 @@
   }
 }
 
-:is(.template001, .template002, .template003) {
+:is(.template001, .template002, .template003, .template004) {
   // Entrada do cabecalho (desliza de cima) e fade da imagem de fundo.
   .tpl-enter-down {
     animation: tpl-slide-down 0.6s ease-out both;
@@ -192,7 +192,8 @@
 // vizinhas (variaveis --tpl-blend-* de config/theme.ts) e hover que so clareia,
 // pois nao ha borda 3D para aprofundar.
 .template002,
-.template003 {
+.template003,
+.template004 {
   .tpl-blend {
     background-image: linear-gradient(180deg, var(--tpl-blend-from), var(--tpl-blend-to));
   }
@@ -204,16 +205,16 @@
 
 // Menos movimento: sem animacao nem transicao; os blocos de revelacao ficam visiveis.
 @media (prefers-reduced-motion: reduce) {
-  :is(.template001, .template002, .template003),
-  :is(.template001, .template002, .template003) *,
-  :is(.template001, .template002, .template003) *::before,
-  :is(.template001, .template002, .template003) *::after {
+  :is(.template001, .template002, .template003, .template004),
+  :is(.template001, .template002, .template003, .template004) *,
+  :is(.template001, .template002, .template003, .template004) *::before,
+  :is(.template001, .template002, .template003, .template004) *::after {
     animation: none !important;
     transition: none !important;
   }
 
-  :is(.template001, .template002, .template003) .tpl-reveal,
-  :is(.template001, .template002, .template003) .tpl-reveal-group > * {
+  :is(.template001, .template002, .template003, .template004) .tpl-reveal,
+  :is(.template001, .template002, .template003, .template004) .tpl-reveal-group > * {
     opacity: 1;
     transform: none;
   }

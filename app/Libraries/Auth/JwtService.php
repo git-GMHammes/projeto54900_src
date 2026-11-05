@@ -73,6 +73,29 @@ class JwtService
         ]);
     }
 
+    /**
+     * Token especial das APIs Eleicoes2026 (sem usuario e sem sessao): typ="eleicoes" e scope="eleicoes2026".
+     * Como o JwtAuthFilter so aceita typ="access", este token nao vale em nenhuma outra API.
+     */
+    public function issueEleicoesToken(): string
+    {
+        $now = time();
+
+        return $this->encode([
+            'iss'   => $this->config->issuer,
+            'aud'   => $this->config->audience,
+            'iat'   => $now,
+            'exp'   => $now + $this->config->eleicoesTtl,
+            'typ'   => 'eleicoes',
+            'scope' => 'eleicoes2026',
+        ]);
+    }
+
+    public function eleicoesTtlSeconds(): int
+    {
+        return $this->config->eleicoesTtl;
+    }
+
     public function accessTtlSeconds(): int
     {
         return $this->config->accessTtl;

@@ -25,6 +25,11 @@
 export { authService } from './auth.service';
 export { userManagerTable } from './userManager.table';
 export { userManagerView } from './userManager.view';
+export {
+  eleicoes2026Candidato22001View,
+  eleicoes2026Candidato22001MunicipioView,
+  eleicoes2026Candidato22001BairroView,
+} from './eleicoes2026.view';
 export { userProfilesTable, userProfilesMe } from './userProfiles.table';
 export { userRolesTable } from './userRoles.table';
 export { uploadManagerTable } from './uploadManager.table';

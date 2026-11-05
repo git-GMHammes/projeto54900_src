@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 822 272" preserveAspectRatio="xMidYMid slice">
+  <rect width="822" height="272" fill="#dae8fc"/>
+  <g fill="none" stroke="#ea6b00" stroke-width="2" stroke-linejoin="round">
+    <rect x="390" y="110" width="47" height="48"/>
+    <circle cx="409" cy="128" r="4"/>
+    <polyline points="390,143 399,134 409,144 418,135 437,150"/>
+    <line x1="405" y1="146" x2="417" y2="158"/>
+  </g>
+</svg>

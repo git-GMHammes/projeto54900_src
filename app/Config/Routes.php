@@ -20,6 +20,93 @@ $routes->group('api/v1', static function ($routes) {
     });
 
     // =========================================================================
+    // /Eleicoes2026 — Eleicoes 2026 (RJ): um modulo por tabela/view, somente leitura (GET).
+    //                 Acesso admin: jwtauth + adminonly por wildcard 'api/v1/eleicoes2026-*/*'
+    //                 em Config/Filters.php. Candidato 22001 em subpasta propria (Candidato22001).
+    // =========================================================================
+
+    // Token especial (publico) das APIs Eleicoes2026: GET eleicoes-public/token
+    $routes->group('eleicoes-public', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/EleicoesToken/EndpointPublic.php';
+    });
+
+    $routes->group('eleicoes2026-eleitorado-1-turno-rj', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Eleitorado1TurnoRj/EndpointTable.php';
+    });
+
+    $routes->group('eleicoes2026-eleitorado-local-votacao-rj', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/EleitoradoLocalVotacaoRj/EndpointTable.php';
+    });
+
+    $routes->group('eleicoes2026-1-turno-bairro-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Eleicoes1TurnoBairro/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-candidato-22001', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Candidato22001/EndpointTable.php';
+    });
+
+    $routes->group('eleicoes2026-candidato-22001-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Candidato22001/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-candidato-22001-municipio-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Candidato22001Municipio/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-candidato-22001-bairro-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/Candidato22001Bairro/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-resumo-geral-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashResumoGeral/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-eleitorado-municipio-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashEleitoradoMunicipio/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-eleitorado-zona-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashEleitoradoZona/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-eleitorado-bairro-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashEleitoradoBairro/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-votos-municipio-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashVotosMunicipio/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-votos-zona-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashVotosZona/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-votos-bairro-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashVotosBairro/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-votos-local-votacao-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashVotosLocalVotacao/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-votos-partido-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashVotosPartido/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-ranking-municipio-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashRankingMunicipio/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-ranking-zona-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashRankingZona/EndPointView.php';
+    });
+
+    $routes->group('eleicoes2026-dash-ranking-bairro-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Eleicoes2026/DashRankingBairro/EndPointView.php';
+    });
+
+    // =========================================================================
     // /Audit — Consulta do log de auditoria e acesso (somente admin, via wildcard
     //          jwtauth + adminonly em Config/Filters.php)
     // =========================================================================

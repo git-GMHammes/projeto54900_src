@@ -55,6 +55,7 @@ import { v1aRoutes } from '@/routes/v1a';
 import { template001Routes } from '@/routes/template001.routes';
 import { template002Routes } from '@/routes/template002.routes';
 import { template003Routes } from '@/routes/template003.routes';
+import { template004Routes } from '@/routes/template004.routes';
 
 export const router = createBrowserRouter(
   [
@@ -62,6 +63,7 @@ export const router = createBrowserRouter(
     ...template001Routes,
     ...template002Routes,
     ...template003Routes,
+    ...template004Routes,
     {
       path: '/v1/chat-rooms-manager/chat/:id',
       element: <RequireAuth />,

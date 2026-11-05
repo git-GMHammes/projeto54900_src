@@ -1,7 +1,8 @@
 {
   "patterns": {
     "document_type": [
-      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o]"
+      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o]",
+      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Senten[cç]a|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta|Proposta Comercial)\\W*$"
     ],
     "email": [
       "[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+"
@@ -9,11 +10,133 @@
     "phone": [
       "\\(\\d{2}\\)\\s*(?:9\\s*)?\\d{4}[-\\s]?\\d{4}"
     ],
+    "cnpj": [
+      "CNPJ(?:/MF)?\\s*(?:n[º°o.]*)?\\s*[:;-]?\\s*(\\d{2}\\.?\\d{3}\\.?\\d{3}/?\\d{4}-?\\d{2})"
+    ],
+    "crea": [
+      "CREA\\s*(?:n[º°o.]*)?\\s*[:;-]?\\s*(\\d[\\d.]*(?:-[A-Z0-9])?)"
+    ],
+    "municipality": [
+      "\\bMUNIC[ÍI]PIO\\s+DE\\s+(\\p{L}+(?:\\s+\\p{L}+)*?)\\s*(?:,|$)"
+    ],
+    "contracting_address": [
+      "\\bsede\\s+na\\s+(.+?),\\s*neste\\s+ato"
+    ],
+    "contracting_representative": [
+      ",\\s*(\\p{L}[\\p{L}' ]*?),\\s*CPF\\s*[\\dOo.\\-]+,?\\s*doravante\\s+CONTRATANTE"
+    ],
+    "contracted_company": [
+      "^(\\p{L}[\\p{L}&.\\- ]*?),\\s*CNPJ\\s*n[º°o.]*\\s*[\\dOo]",
+      "\\bempresa\\s+(\\p{L}[\\p{L}&.\\- ]*?),\\s*CNPJ\\s*n[º°o.]*\\s*[\\dOo]"
+    ],
+    "contracted_address": [
+      "\\bsediada\\s+na\\s+(.+?),\\s*representad"
+    ],
+    "contracted_representative": [
+      ",\\s*(\\p{L}[\\p{L}' ]*?),\\s*CPF\\s*[\\dOo.\\-]+,?\\s*doravante\\s+CONTRATADA"
+    ],
+    "process_number": [
+      "Processo\\s*(?:n[º°o.]*)?\\s*[:-]?\\s*(\\d[\\d./-]*\\d)"
+    ],
+    "term_duration": [
+      "Vig[êe]ncia\\s*:\\s*(\\d+\\s*(?:meses|m[êe]s|anos?|dias?))"
+    ],
+    "amount": [
+      "\\bValor\\s*:\\s*(R\\$\\s*\\d[\\d.]*,\\d{2})"
+    ],
+    "grantor": [
+      "CONCEDENTE\\s*:\\s*(.+?),\\s*CNPJ"
+    ],
+    "grantor_representative": [
+      "CONCEDENTE\\s*:.*?representad[oa]\\s+(?:pel[oa]|por\\s+seu|por\\s+sua)\\s+(.+?),\\s*CPF"
+    ],
+    "grantee": [
+      "CONVENENTE\\s*:\\s*(.+?),\\s*CNPJ"
+    ],
+    "grantee_representative": [
+      "CONVENENTE\\s*:.*?representad[oa]\\s+(?:pel[oa]|por\\s+seu|por\\s+sua)\\s+(.+?),\\s*CPF"
+    ],
+    "filed_by": [
+      "ajuizad[ao]\\s+por\\s+(.+?)\\s+em\\s+face\\s+de"
+    ],
+    "folios": [
+      "\\bfls?\\.\\s*(\\d+(?:\\s*/\\s*\\d+)?)"
+    ],
+    "article": [
+      "\\bart\\.\\s*(\\d+)"
+    ],
+    "consumer_unit": [
+      "unidade\\s+consumidora\\s+n[º°o.]*\\s*(\\d[\\d-]*\\d)"
+    ],
+    "daily_fine": [
+      "multa\\s+di[áa]ria\\s+de\\s+(R\\$\\s*\\d[\\d.]*,\\d{2})"
+    ],
+    "fine_limit": [
+      "limitad[ao]\\s+a\\s+(R\\$\\s*\\d[\\d.]*,\\d{2})"
+    ],
+    "hearing_date": [
+      "concilia[çc][ãa]o\\s+para\\s+o\\s+dia\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "protocol_date": [
+      "protocolad[oa]\\s+em\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "contract_number": [
+      "\\bContrato\\s*n[º°o.]*\\s*(\\d[\\d./-]*\\d)"
+    ],
+    "term_end": [
+      "vig[êe]ncia\\s+se\\s+encerra\\s+em\\s+(\\d{1,2}/\\d{1,2}/\\d{4})",
+      "vig[êe]ncia\\s*(?::|at[ée])\\s*(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "global_amount": [
+      "valor\\s+global\\s+(?:atualizado\\s+)?(?:[ée]\\s+)?de\\s+(R\\$\\s*\\d[\\d.]*,\\d{2})"
+    ],
+    "contract_inspector": [
+      "fiscal\\s+do\\s+contrato,?\\s*(\\p{L}[\\p{L}' ]*?)\\s*(?:\\(|,|$)"
+    ],
+    "reserve_note": [
+      "Nota\\s+de\\s+Reserva\\s*n[º°o.]*\\s*(\\d[\\d./]*\\d)"
+    ],
+    "law_number": [
+      "\\bLei\\s*n[º°o.]*\\s*(\\d[\\d.]*\\d(?:/\\d{4})?)"
+    ],
+    "decree_number": [
+      "\\bDecreto\\s*n[º°o.]*\\s*(\\d[\\d.]*\\d(?:/\\d{4})?)"
+    ],
+    "response_deadline": [
+      "manifesta[çc][ãa]o\\s+at[ée]\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "e_signer_name": [
+      "assinado\\s+eletronicamente\\s+por\\s+(\\p{L}[\\p{L}' ]*?),"
+    ],
+    "website": [
+      "(https?://[^\\s,;)]+?)(?=[.,;)]*(?:\\s|$))"
+    ],
+    "proposal_validity": [
+      "Validade\\s+da\\s+proposta\\s*:\\s*(\\d+(?:\\s*\\([^)]+\\))?\\s*(?:dias?(?:\\s+(?:corridos|[úu]teis))?|meses|m[êe]s|anos?))"
+    ],
+    "delivery_term": [
+      "Prazo\\s+de\\s+entrega\\s*:\\s*(\\d+(?:\\s*\\([^)]+\\))?\\s*(?:dias?(?:\\s+(?:corridos|[úu]teis))?|meses|m[êe]s|anos?))"
+    ],
+    "warranty": [
+      "Garant[ií]a\\s*:\\s*(\\d+(?:\\s*\\([^)]+\\))?\\s*(?:meses|m[êe]s|anos?|dias?))"
+    ],
+    "payment_term": [
+      "Pagamento\\s*:\\s*(\\d+(?:\\s*\\([^)]+\\))?\\s*dias?(?:\\s+(?:corridos|[úu]teis))?)"
+    ],
+    "received_at": [
+      "RECEBIDO\\s*(?:em)?\\s*:?\\s*(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "total_amount": [
+      "VALOR\\s+(?:TOTAL|GERAL)(?:\\s+DA\\s+PROPOSTA)?\\s*:?\\s*(?:R\\$\\s*)?(\\d[\\d.]*,\\d{2})"
+    ],
+    "protocol_number": [
+      "Protocolo\\s*(?:n[º°o.]*)?\\s*[:-]?\\s*(\\d{4,})"
+    ],
     "zip_code": [
       "CEP[:\\s]*(\\d{5}-?\\d{3})"
     ],
     "document_number": [
-      "\\b(?:Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o.]*\\s*([\\d./-]*\\d)",
+      "\\b(?:Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta|Proposta)\\s*n[º°o.]*\\s*([\\d./-]*\\d(?:/[A-Z][A-Z0-9-]*)*)",
       "(?:^|\\s)n[º°o]\\.?\\s*(\\d+/\\d{4})"
     ],
     "issue_place": [
@@ -23,12 +146,91 @@
       "(\\d{1,2}\\s+de\\s+\\p{L}+\\s+de\\s+\\d{4})"
     ],
     "emitted_at": [
-      "emitido\\s+em\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+      "emitid[oa]\\s+em\\s+(\\d{1,2}/\\d{1,2}/\\d{4}(?:\\s+[àa]s\\s+\\d{1,2}:\\d{2})?)"
+    ],
+    "taxpayer_name": [
+      "^Contribuinte\\s+(.+?)\\s*$"
+    ],
+    "validity": [
+      "V[áa]lida\\s+at[ée]\\s+(\\d{1,2}/\\d{1,2}/\\d{4})"
+    ],
+    "parenthetical_note": [
+      "(?:\\d{4}|R\\$\\s*\\d[\\d.]*,\\d{2})\\s*(\\([^)]+\\))"
+    ],
+    "registration_number": [
+      "Matr[íi]cula\\s*(?:n[º°o.]*)?\\s*:?\\s*(\\d[\\d.-]*\\d)"
     ],
     "header_address": [
       "^((?:Rua|Av\\.?|Avenida|Travessa|Alameda|Rodovia|Estrada)\\s[^·]*?)\\s*[–-]\\s*CEP"
+    ],
+    "book_number": [
+      "Livro\\s+de\\s+Atas\\s*n[º°o.]*\\s*(\\d+)"
+    ],
+    "sheet_number": [
+      "Folha\\s*n?[º°o.]*\\s*(\\d+)"
+    ],
+    "meeting_title": [
+      "^ATA\\s+DA\\s+(.+?)\\s*$"
+    ],
+    "agenda_item": [
+      "\\bNo\\s+item\\s+(\\d+)"
+    ],
+    "revenue": [
+      "receitas?\\s+de\\s+R\\$\\s*(\\d[\\d.]*,\\d{2})"
+    ],
+    "expenses": [
+      "despesas?\\s+de\\s+R\\$\\s*(\\d[\\d.]*,\\d{2})"
+    ],
+    "balance": [
+      "saldo\\s+de\\s+R\\$\\s*(\\d[\\d.]*,\\d{2})"
     ]
   },
+  "occurrences": [
+    {
+      "key": "parenthetical_note",
+      "pattern": "(\\(?\\s*SE[Il1]\\s*n[º°o.]*\\s*\\d+\\s*\\)?)"
+    },
+    {
+      "key": "article",
+      "pattern": "\\bart\\.\\s*(\\d+[ºo°]?(?:\\s*,\\s*§\\s*\\d+[ºo°]?)?)"
+    },
+    {
+      "key": "deadline",
+      "pattern": "prazo\\s+de\\s+(\\d+\\s*\\([^)]+\\)\\s*(?:horas?|dias?(?:\\s+[úu]teis)?|meses|m[êe]s|anos?))"
+    },
+    {
+      "key": "cpf",
+      "pattern": "CPF\\s*(?:n[º°o.]*)?\\s*[:;-]?\\s*([\\dOo]{3}\\.?[\\dOo]{3}\\.?[\\dOo]{3}-?[\\dOo]{2})"
+    },
+    {
+      "key": "cnpj",
+      "pattern": "CNPJ(?:/MF)?\\s*(?:sob\\s+o\\s+)?(?:n[º°o.]*)?\\s*[:;-]?\\s*([\\dOo]{2}\\.?[\\dOo]{3}\\.?[\\dOo]{3}/?[\\dOo]{4}-?[\\dOo]{2})"
+    }
+  ],
+  "titles": [
+    {
+      "key": "title",
+      "minWords": 2,
+      "maxWords": 12,
+      "skip": [
+        "^(departamento|secretaria|diretoria|coordenadoria|coordenacao|gerencia|setor|prefeitura|camara|conselho|ministerio|tribunal)\\b"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "columns": [
+        {
+          "header": "^conselheiro(\\(a\\)|a|o)?$",
+          "key": "councilors"
+        },
+        {
+          "header": "^representacao$",
+          "key": "representations"
+        }
+      ]
+    }
+  ],
   "blocks": [
     {
       "before": "^(rua|av\\.?|avenida|travessa|alameda|rodovia|estrada) .*cep",
@@ -52,6 +254,28 @@
         "sender_name",
         "sender_position",
         "sender_department"
+      ]
+    },
+    {
+      "after": "^(atenciosamente|respeitosamente|cordialmente)",
+      "gap": 3,
+      "keys": [
+        "signature_name",
+        "signature_position"
+      ]
+    },
+    {
+      "after": "^recebido$",
+      "keys": [
+        "received_at"
+      ]
+    },
+    {
+      "before": "^matricula\\b",
+      "gap": 2.5,
+      "keys": [
+        "signature_name",
+        "signature_position"
       ]
     }
   ],

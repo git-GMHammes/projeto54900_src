@@ -55,6 +55,7 @@ o resumo correspondente; cada resumo termina com o link para o conteúdo complet
 | 19  | [`map`](#map)                                       | Mapas, pontos, trajetos e CEP     |
 | 20  | [`calendar-event-invites`](#calendar-event-invites) | Convite de evento por e-mail      |
 | 21  | [`location`](#location)                             | Locais em árvore recursiva livre  |
+| 22  | [`eleicoes2026`](#eleicoes2026)                     | Eleitorado e votos 2026, leitura  |
 
 **5. Operação e manutenção**
 
@@ -382,6 +383,20 @@ independente; a integração com Map, Produto, Estoque etc. fica para depois.
 
 [`geral/README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: tabelas, rotas, regras e pendências.
 
+### `eleicoes2026`
+
+Domínio `Eleicoes2026`: eleitorado e votos das eleições 2026 (RJ), importados no banco e expostos **somente para
+leitura** (admin). Um módulo por tabela e por view, no padrão do projeto: eleitorado do 1º turno, eleitorado por local
+de votação, view de bairro e o módulo `Candidato22001` (tabela de votos e view do candidato 22001, na mesma pasta). Grupos
+`eleicoes2026-...`; candidato novo = novo módulo `Candidato<numero>`. Substitui o antigo `data-explorer`
+(retirado). A view `view_eleicoes_2026_22001_22` já existe no banco.
+Desde 2026-11-04 há também as views agregadas por município e por bairro (módulos `Candidato22001Municipio` e
+`Candidato22001Bairro`), usadas pelo mapa SVG-2026 do frontend. Desde 2026-11-05 há 12 views de dashboard `view_dash_*`
+(resumo, eleitorado, votos e ranking por município, zona, bairro, local de votação e partido), lidas pela Home com o
+token especial sem login (módulos `Dash*`).
+
+[`geral/README_modulo_eleicoes2026.md`](geral/README_modulo_eleicoes2026.md) — domínio Eleicoes2026: módulos, rotas, regras e pendências.
+
 ### `kinghost`
 
 Setup completo de deploy via git na hospedagem KingHost (servidor `web36f42`):
@@ -499,6 +514,7 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_modulo_chatrooms.md`](geral/README_modulo_chatrooms.md) — módulo ChatRooms: 7 tabelas, 7 views (uma por tabela) e regras de moderação.
 - [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
 - [`README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: 2 tabelas, 1 view, 45 rotas, árvore recursiva por `parent_id` montável de baixo para cima.
+- [`README_modulo_eleicoes2026.md`](geral/README_modulo_eleicoes2026.md) — domínio Eleicoes2026: 3 tabelas e 1 view (eleitorado e votos RJ 2026), só leitura, admin, candidato 22001 em subpasta. Inclui as 12 views `view_dash_*` (dashboard da Home).
 - [`README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral: módulos independentes, ligação opcional (chave nula) só sob pedido, isolamento por empresa.
 - [`README_modulo_product.md`](geral/README_modulo_product.md) — módulo Product: 2 tabelas (produto e atributos), 2 views, 54 rotas, `location_id` opcional.
 - [`README_modulo_movement.md`](geral/README_modulo_movement.md) — módulo Movement: `movement_manager`, view de saldo, 36 rotas, separação e encomenda geram saída/entrada.

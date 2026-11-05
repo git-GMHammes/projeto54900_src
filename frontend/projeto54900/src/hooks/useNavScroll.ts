@@ -4,7 +4,7 @@
  * =========================================================================
  *
  * PROPOSITO: rolagem horizontal por setas da lista do nav quando os itens passam
- * da largura (Template002 e Template003, a partir de `lg`).
+ * da largura (Template002, Template003 e Template004, a partir de `lg`).
  *
  *   const { ref, overflow, atStart, atEnd, scrollNav } = useNavScroll(navOpen);
  *
@@ -15,7 +15,7 @@
  *   `scrollNav('prev')` desliza para a direita.
  *
  * DEPENDENCIAS: nenhuma (arquivo autocontido).
- * CONSUMIDORES: pages/Template002/Template002Page.tsx, pages/Template003/Template003Page.tsx.
+ * CONSUMIDORES: pages/Template002/Template002Page.tsx, pages/Template003/Template003Page.tsx, pages/Template004/Template004Page.tsx.
  *
  * COMO REAPROVEITAR: `active` deve ser `false` quando a lista nao esta montada
  * (ex.: nav fechado), para o hook medir de novo quando ela voltar.

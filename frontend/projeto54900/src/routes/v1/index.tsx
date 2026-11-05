@@ -21,6 +21,7 @@
  *   template.routes.tsx -> templateRoutes  temp-nav (a "casca" do app) e temp-menu (itens de menu)
  *   calendar.routes.tsx -> calendarRoutes  calendar-manager (listagem calendario->eventos)
  *   svgMap.routes.tsx -> svgMapRoutes  svg-map (mapa SVG dos municipios do RJ, rota estatica)
+ *   svg2026.routes.tsx -> svg2026Routes  svg-2026 (duplicata do svg-map para a empresa menezes22001)
  *   map.routes.tsx    -> mapRoutes     map (explorador Leaflet) + map/links/:module/:id (mapa de um registro)
  *   timeline.routes.tsx -> timelineRoutes  feed (timeline/timeline-posts) + as 5 listas padrão dos recursos
  *
@@ -74,6 +75,7 @@ import { listRoutes } from './list.routes';
 import { templateRoutes } from './template.routes';
 import { calendarRoutes, calendarInvitePublicRoutes } from './calendar.routes';
 import { svgMapRoutes } from './svgMap.routes';
+import { svg2026Routes } from './svg2026.routes';
 import { knowledgeRoutes } from './knowledge.routes';
 import { sgdRoutes } from './sgd.routes';
 import { mapRoutes } from './map.routes';
@@ -135,6 +137,7 @@ export const v1Routes: RouteObject = {
         ...templateRoutes,
         ...calendarRoutes,
         ...svgMapRoutes,
+        ...svg2026Routes,
         ...knowledgeRoutes,
         ...sgdRoutes,
         ...mapRoutes,

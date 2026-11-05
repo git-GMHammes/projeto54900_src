@@ -183,6 +183,27 @@ dl .text-break {
   fill: #243263;
 }
 
+// svg2026 (pages/v1/svg-2026/Svg2026Page.tsx) — preenchimento/hover dos
+// <path> do SVG inline. O checklist fica num Offcanvas do Bootstrap (sem CSS
+// proprio). Bootstrap nao estiliza SVG.
+#svg2026Wrapper svg {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+}
+
+#svg2026Wrapper svg path {
+  fill: #dfe7ef;
+  stroke: #3a5169;
+  stroke-width: 0.5;
+  cursor: pointer;
+  transition: fill 0.15s ease-in-out;
+}
+
+#svg2026Wrapper svg path:hover {
+  fill: #243263;
+}
+
 // Faixa de mídia fallback da timeline: desliza da direita p/ esquerda 2x; depois o React fixa no centro.
 .fallback-banner-text {
   display: inline-block;
@@ -200,21 +221,21 @@ dl .text-break {
 
 // Template001 (pages/Template001/Template001Page.tsx): o Bootstrap não escala a
 // fonte base por breakpoint. Em TV/monitor grande o rem cresce para toda a
-// interface (baseada em rem) acompanhar; escopo restrito às páginas com .template001, .template002 ou .template003.
+// interface (baseada em rem) acompanhar; escopo restrito às páginas com .template001, .template002, .template003 ou .template004.
 @media (min-width: 1920px) {
-  html:has(:is(.template001, .template002, .template003)) {
+  html:has(:is(.template001, .template002, .template003, .template004)) {
     font-size: 125%;
   }
 }
 
 @media (min-width: 2560px) {
-  html:has(:is(.template001, .template002, .template003)) {
+  html:has(:is(.template001, .template002, .template003, .template004)) {
     font-size: 175%;
   }
 }
 
 @media (min-width: 3840px) {
-  html:has(:is(.template001, .template002, .template003)) {
+  html:has(:is(.template001, .template002, .template003, .template004)) {
     font-size: 250%;
   }
 }
@@ -224,7 +245,8 @@ dl .text-break {
 @media (min-width: 992px) {
   .template001 .template001-sticky,
   .template002 .template002-sticky,
-  .template003 .template003-sticky {
+  .template003 .template003-sticky,
+  .template004 .template004-sticky {
     position: static;
     background-color: transparent !important;
   }
@@ -233,7 +255,7 @@ dl .text-break {
 // Template001: degradê de fundo da página, com as cores da paleta ativa
 // (variáveis --tpl-* vindas de config/theme.ts). O Bootstrap só tem
 // .bg-gradient (sobreposição sutil), não um degradê com cores próprias.
-:is(.template001, .template002, .template003) {
+:is(.template001, .template002, .template003, .template004) {
   background-image: linear-gradient(var(--tpl-bg-angle), var(--tpl-bg-from), var(--tpl-bg-to));
   background-attachment: fixed;
   color: var(--bs-body-color);

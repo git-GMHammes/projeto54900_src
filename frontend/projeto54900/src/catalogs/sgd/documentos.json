@@ -9,6 +9,8 @@
   "passport": ["passaporte", "numero do passaporte"],
   "pis": ["pis", "pis/pasep", "pasep", "nit"],
   "document_number": ["numero do documento", "n. do documento", "documento n.", "n. documento"],
+  "process_number": ["processo", "processo nº", "processo n°", "processo no", "numero do processo"],
+  "received_at": ["recebido em", "data de recebimento"],
   "subject": ["assunto", "referencia", "ref."],
   "validity": ["validade", "data de validade", "valido ate", "val."]
 }
