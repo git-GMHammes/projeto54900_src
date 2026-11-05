@@ -392,10 +392,11 @@ cliente `mysql`).
 | `regexp_replace(coalesce(phone,''),'[^0-9]','')` nas views | `1305 FUNCTION regexp_replace does not exist` | `replace(replace(replace(replace(replace(coalesce(phone,''),'(',''),')',''),'-',''),' ',''),'+','')` |
 | `WITH RECURSIVE tree AS (...)` em `view_location_manager`  | `1064 syntax error near 'recursive'`          | auto-joins de profundidade fixa (8 níveis, `n0..n7`) no lugar do CTE                                 |
 | `roles json NOT NULL DEFAULT (json_array(...))`            | `CREATE TABLE` falha e a tabela NÃO é criada  | `roles json DEFAULT NULL`                                                                            |
+| Função de janela: `sum(...) OVER (...)`, `rank() OVER (...)` (views `view_dash_*`) | `1064 ... near 'OVER ()'` | total por grupo: subconsulta escalar ou junção com derivada agregada; `rank()`: `1 + (select count(0) ... onde o valor do outro é maior)` com `<=>` na partição |
 
 Checagem rápida antes de subir (deve retornar 0 ocorrências):
 ```bash
-grep -niE "regexp_replace|with recursive|DEFAULT \(json_array|json_table|utf8mb4_0900" \
+grep -niE "regexp_replace|with recursive|DEFAULT \(json_array|json_table|utf8mb4_0900| over ?\(|row_number|dense_rank|json_arrayagg" \
   202610182152_replace_table.sql 202610182153_seed_table.sql 202610182154_replace_view.sql
 ```
 Tabelas afetadas por `roles`: `location_manager`, `movement_manager`, `product_manager`,

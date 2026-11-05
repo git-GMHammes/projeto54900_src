@@ -332,7 +332,7 @@ export default function Svg2026Page() {
 
       {/* Checklist em Offcanvas sem backdrop: o mapa segue clicavel com a lista aberta. */}
       <div
-        className="offcanvas offcanvas-start bg-white"
+        className="offcanvas offcanvas-start"
         tabIndex={-1}
         id="svg2026Offcanvas"
         aria-labelledby="svg2026OffcanvasLabel"

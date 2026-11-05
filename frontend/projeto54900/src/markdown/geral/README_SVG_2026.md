@@ -69,7 +69,13 @@ O módulo deixou de ser só estático: consome as views do domínio Eleicoes2026
 | Clique no bairro | Collapse discreto com tabela: Local (endereço em cinza, itálico, menor), Zona/Sessão, Votos |
 | Ordem | sempre do maior para o menor voto |
 
+Percentual do eleitorado no modal (2026-11-05): abaixo dos votos do município, cada card mostra "X,XX% do eleitorado (N eleitores)". Os eleitores vêm de `view_dash_votos_municipio` (`fetchDashVotosMunicipio`, `services/v1/eleicoes2026.dash.ts`), buscada em paralelo com os votos em `carregarTotaisMunicipios` e guardada em `TotaisMunicipio.eleitores`. O percentual é `votos / eleitores` (2 casas, `formatarPctEleitorado`), o mesmo cálculo de `pct_votos_eleitorado` da view. Se a view do eleitorado falhar, `eleitores` fica 0 e a linha não aparece; o modal segue só com os votos.
+
+Percentual por bairro (2026-11-05): em cada bairro do card de resultados (`ResultadosMunicipio`), logo abaixo do nome, uma linha menor, em itálico e cinza claro (`form-text fst-italic text-body-tertiary`): "X,XX% do eleitorado do bairro (N eleitores)". Os eleitores vêm de `view_dash_votos_bairro` (`fetchDashVotosBairro`), buscada uma única vez e guardada em cache no módulo (`eleitoresPorBairro` em `eleicoes2026.ts`), com chave código TSE do município + bairro em maiúsculas. Bairro sem correspondência, ou falha na busca, fica sem a linha (`BairroVotos.eleitores` = 0); a falha não é guardada no cache e a próxima abertura tenta de novo.
+
 Tema do modal: o `MunicipioModal` renderiza dentro do `ThemePortal` (`components/template/ThemePortal.tsx`), não de um `createPortal` puro no `document.body`. O portal puro tira o modal do `.tpl-app` do `TemplateShell` e ele perde `data-bs-theme` e as variáveis de cor (ficava branco no tema dark); o `ThemePortal` reaplica a paleta da empresa. Corrigido em 2026-11-05.
+
+Tema do Offcanvas (checklist de municípios): sem `bg-white` fixo. O Offcanvas do Bootstrap já usa `--bs-body-bg` e `--bs-body-color`, que acompanham o `data-bs-theme` do template (dark ou claro). O `bg-white` forçava o fundo branco no tema dark. Corrigido em 2026-11-05.
 
 Fotos dos candidatos: JPEG 200x200 (~10 KB, recorte quadrado central, q82) `menezes_22001.jpg` e `flavio_22.jpg` em `public/svg-2026/` (substituíram os originais grandes, de 220 KB e 111 KB). O campo `foto` de `Candidato`, em `eleicoes2026.ts`, aponta para elas; aparecem
 redondas, com o nome abaixo, nos cards do modal e dos collapses.

@@ -11,6 +11,7 @@ import {
   SEM_BAIRRO,
   carregarBairros,
   carregarSecoes,
+  formatarPctEleitorado,
   formatarVotos,
   urlFoto,
   type BairroVotos,
@@ -105,6 +106,11 @@ function CardCandidato({ candidato, cdTse, bairros }: { candidato: Candidato; cd
                 <span className="text-start">{b.bairro}</span>
                 <span className="fw-semibold">{formatarVotos(b.votos)}</span>
               </button>
+              {b.eleitores > 0 && (
+                <div className="form-text fst-italic text-body-tertiary px-3 pb-2" style={{ marginTop: '-0.25rem' }}>
+                  {formatarPctEleitorado(b.votos, b.eleitores)} do eleitorado do bairro ({formatarVotos(b.eleitores)} eleitores)
+                </div>
+              )}
               {expandido && (
                 <div className="bg-body-tertiary px-2 pb-2">
                   <TabelaSecoes cdTse={cdTse} bairro={b.bairro} cargo={candidato.cargo} />

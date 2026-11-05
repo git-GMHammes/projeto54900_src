@@ -9,6 +9,7 @@ import {
   eleicoes2026Candidato22001MunicipioView,
   eleicoes2026Candidato22001View,
 } from '@/services/v1';
+import { fetchDashVotosBairro, fetchDashVotosMunicipio } from '@/services/v1/eleicoes2026.dash';
 import { normalizeList } from '@/utils/apiResult';
 
 export interface Candidato {
@@ -31,11 +32,15 @@ export interface TotaisMunicipio {
   cdTse: string;
   nome: string;
   votos: VotosPorCargo;
+  /** Eleitores aptos do municipio (view_dash_votos_municipio); 0 quando indisponivel. */
+  eleitores: number;
 }
 
 export interface BairroVotos {
   bairro: string;
   votos: number;
+  /** Eleitores aptos do bairro (view_dash_votos_bairro); 0 quando indisponivel. */
+  eleitores: number;
 }
 
 export interface SecaoVotos {
@@ -81,18 +86,28 @@ export async function carregarTotaisMunicipios(): Promise<{
   porMunicipio: Record<string, TotaisMunicipio>;
   totalRj: VotosPorCargo;
 }> {
-  const linhas = await buscarTudo(
-    (f, p) => eleicoes2026Candidato22001MunicipioView.find(f, p),
-    {},
-    'qt_votos',
-  );
+  const [linhas, eleitorado] = await Promise.all([
+    buscarTudo((f, p) => eleicoes2026Candidato22001MunicipioView.find(f, p), {}, 'qt_votos'),
+    // O eleitorado e complemento: se falhar, o modal segue mostrando so os votos.
+    fetchDashVotosMunicipio().catch((err: unknown) => {
+      console.warn('[Svg2026] Eleitorado por municipio indisponivel:', err);
+      return [];
+    }),
+  ]);
+  const eleitoresPorMunicipio: Record<string, number> = {};
+  for (const e of eleitorado) eleitoresPorMunicipio[e.cd] = e.eleitores;
   const porMunicipio: Record<string, TotaisMunicipio> = {};
   const totalRj: VotosPorCargo = {};
   for (const l of linhas) {
     const cdTse = txt(l.cd_municipio);
     const cargo = txt(l.ds_cargo);
     const votos = num(l.qt_votos);
-    const atual = porMunicipio[cdTse] ?? { cdTse, nome: txt(l.nm_municipio), votos: {} };
+    const atual = porMunicipio[cdTse] ?? {
+      cdTse,
+      nome: txt(l.nm_municipio),
+      votos: {},
+      eleitores: eleitoresPorMunicipio[cdTse] ?? 0,
+    };
     atual.votos[cargo] = (atual.votos[cargo] ?? 0) + votos;
     porMunicipio[cdTse] = atual;
     totalRj[cargo] = (totalRj[cargo] ?? 0) + votos;
@@ -100,18 +115,40 @@ export async function carregarTotaisMunicipios(): Promise<{
   return { porMunicipio, totalRj };
 }
 
+/** Eleitores por bairro (chave: codigo TSE do municipio + bairro em maiusculas), carregados uma unica vez. */
+let cacheEleitoresBairro: Promise<Map<string, number>> | null = null;
+
+function chaveBairro(cdTse: string, bairro: string): string {
+  return `${cdTse}|${bairro.trim().toUpperCase()}`;
+}
+
+function eleitoresPorBairro(): Promise<Map<string, number>> {
+  cacheEleitoresBairro ??= fetchDashVotosBairro()
+    .then((linhas) => new Map(linhas.map((l) => [chaveBairro(l.cd, l.bairro), l.eleitores] as const)))
+    .catch((err: unknown) => {
+      // O eleitorado e complemento: sem ele a linha de percentual some. Na proxima abertura tenta de novo.
+      console.warn('[Svg2026] Eleitorado por bairro indisponivel:', err);
+      cacheEleitoresBairro = null;
+      return new Map<string, number>();
+    });
+  return cacheEleitoresBairro;
+}
+
 /** Bairros de um municipio com os votos de cada candidato, cada lista do maior para o menor. */
 export async function carregarBairros(cdTse: string): Promise<Record<Candidato['chave'], BairroVotos[]>> {
-  const linhas = await buscarTudo(
-    (f, p) => eleicoes2026Candidato22001BairroView.find(f, p),
-    { cd_municipio: cdTse },
-    'qt_votos',
-  );
+  const [linhas, eleitores] = await Promise.all([
+    buscarTudo((f, p) => eleicoes2026Candidato22001BairroView.find(f, p), { cd_municipio: cdTse }, 'qt_votos'),
+    eleitoresPorBairro(),
+  ]);
   const resultado: Record<Candidato['chave'], BairroVotos[]> = { menezes: [], flavio: [] };
   for (const c of CANDIDATOS) {
     resultado[c.chave] = linhas
       .filter((l) => txt(l.ds_cargo) === c.cargo)
-      .map((l) => ({ bairro: txt(l.nm_bairro).trim() || SEM_BAIRRO, votos: num(l.qt_votos) }))
+      .map((l) => ({
+        bairro: txt(l.nm_bairro).trim() || SEM_BAIRRO,
+        votos: num(l.qt_votos),
+        eleitores: eleitores.get(chaveBairro(cdTse, txt(l.nm_bairro))) ?? 0,
+      }))
       .sort((a, b) => b.votos - a.votos);
   }
   return resultado;
@@ -144,6 +181,12 @@ export function urlFoto(c: Candidato): string {
 
 export function formatarVotos(n: number): string {
   return n.toLocaleString('pt-BR');
+}
+
+/** Percentual de votos sobre o eleitorado, com 2 casas (ex.: 46,16%); vazio se nao houver eleitorado. */
+export function formatarPctEleitorado(votos: number, eleitores: number): string {
+  if (eleitores <= 0) return '';
+  return `${((votos / eleitores) * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 export { SEM_BAIRRO };
