@@ -75,6 +75,15 @@ Percentual por bairro (2026-11-05): em cada bairro do card de resultados (`Resul
 
 Tema do modal: o `MunicipioModal` renderiza dentro do `ThemePortal` (`components/template/ThemePortal.tsx`), não de um `createPortal` puro no `document.body`. O portal puro tira o modal do `.tpl-app` do `TemplateShell` e ele perde `data-bs-theme` e as variáveis de cor (ficava branco no tema dark); o `ThemePortal` reaplica a paleta da empresa. Corrigido em 2026-11-05.
 
+Menu Home da menezes22001 (2026-11-05): o item `Home` (`temp_menu` id 1, `/`, navbar, `roles=["guest","user","admin"]`) ganhou `menezes22001` no JSON `company_manager`, que passou a ser `["default","tryikads","drsergiopsicologo","menezes22001"]`. Sem linha nova (ver regra de menu por empresa em JSON). Comando aplicado no DEV e a aplicar na KingHost:
+
+```sql
+UPDATE temp_menu
+SET company_manager = JSON_ARRAY_APPEND(company_manager, '$', 'menezes22001')
+WHERE title = 'Home' AND react_route = '/' AND parent_id IS NULL AND deleted_at IS NULL
+  AND NOT JSON_CONTAINS(company_manager, '"menezes22001"');
+```
+
 Tema do Offcanvas (checklist de municípios): sem `bg-white` fixo. O Offcanvas do Bootstrap já usa `--bs-body-bg` e `--bs-body-color`, que acompanham o `data-bs-theme` do template (dark ou claro). O `bg-white` forçava o fundo branco no tema dark. Corrigido em 2026-11-05.
 
 Fotos dos candidatos: JPEG 200x200 (~10 KB, recorte quadrado central, q82) `menezes_22001.jpg` e `flavio_22.jpg` em `public/svg-2026/` (substituíram os originais grandes, de 220 KB e 111 KB). O campo `foto` de `Candidato`, em `eleicoes2026.ts`, aponta para elas; aparecem
