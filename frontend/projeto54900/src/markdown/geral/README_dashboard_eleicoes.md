@@ -44,8 +44,8 @@ pages/Home/company/menezes22001/
 | Mapa de calor das 20 maiores zonas | `view_dash_votos_zona` |
 | Dispersão eleitores x votos por local (600 maiores de cada cargo, eixo Y próprio por cargo) | `view_dash_votos_local_votacao` (`search` com `filters[ds_cargo]`) |
 
-Filtros: botões **Presidente / Dep. Estadual** (abre com Dep. Estadual selecionado; afetam top 10, treemap, rosca e ranking) e **Votos / % do eleitorado**
-(só o top 10). Presidente = Flávio Bolsonaro (22); Dep. Estadual = Coronel Menezes (22001). Os cargos só se distinguem
+Filtros: botões **Presidente / Governador / Dep. Estadual** (abre com Dep. Estadual selecionado; afetam top 10, treemap, rosca e ranking) e **Votos / % do eleitorado**
+(só o top 10). Presidente = Flávio Bolsonaro (22); Governador = Douglas Ruas (22, incluído em 2026-11-07, cor `#2ecc71`); Dep. Estadual = Coronel Menezes (22001). Os cargos só se distinguem
 por `ds_cargo`.
 
 ## Regras e cuidados
@@ -58,7 +58,10 @@ por `ds_cargo`.
   treemap usa 12 municípios x 10 bairros; a dispersão, 1.200 pontos.
 - **Heatmap:** a cor é relativa ao maior % de cada cargo (Presidente e Dep. Estadual têm escalas muito diferentes); o
   tooltip mostra o % real.
-- **Medidores:** escalas distintas por cargo (0–100% e 0–1%), indicadas no rótulo de cada um.
+- **Medidores:** 3 medidores (Presidente e Governador 0–100%, Dep. Estadual 0–1%), indicados no rótulo de cada um.
+- **KPIs:** 7 cards (`col-xxl` divide a linha por igual), incluindo "Votos Governador".
+- **Dispersão:** Presidente e Governador dividem o eixo Y da esquerda (mesma ordem de grandeza); Dep. Estadual tem eixo próprio. `fetchDashVotosLocais` busca 3 x 600 locais.
+- **Candidato novo:** nova constante `CARGO_*` em `eleicoes2026.dash.ts`, entrada em `CARGOS` (`dashFormat.ts`), medidor em `gaugeBuild` e KPI em `EleicoesDashboard.tsx`; as views `view_dash_*` já devolvem todo `ds_cargo` da tabela do candidato.
 
 ## Validação (2026-11-05)
 

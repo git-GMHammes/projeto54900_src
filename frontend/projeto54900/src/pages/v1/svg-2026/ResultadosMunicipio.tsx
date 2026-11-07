@@ -1,5 +1,5 @@
 // Resultado por municipio marcado no Offcanvas, abaixo do mapa: um Collapse
-// por municipio com 2 cards em row/col (empilhados no mobile; lista de bairros com rolagem interna de ate 60vh) (Menezes e Flavio). Cada card
+// por municipio com 3 cards em row/col (empilhados no mobile; lista de bairros com rolagem interna de ate 60vh) (Menezes, Flavio e Douglas). Cada card
 // lista os bairros agrupados com o total de votos; clicar no bairro abre um
 // Collapse discreto com a tabela de secoes (Local / Zona-Secao / Votos).
 // Tudo ordenado do maior para o menor voto. Collapse controlado por estado.
@@ -161,7 +161,7 @@ function ResultadoUm({ cdTse, nome }: { cdTse: string; nome: string }) {
           ) : (
             <div className="row g-3">
               {CANDIDATOS.map((c) => (
-                <div className="col-12 col-lg-6" key={c.chave}>
+                <div className="col-12 col-lg-4" key={c.chave}>
                   <CardCandidato candidato={c} cdTse={cdTse} bairros={bairros[c.chave]} />
                 </div>
               ))}

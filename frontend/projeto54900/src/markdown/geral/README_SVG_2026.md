@@ -40,6 +40,7 @@ Os ids do DOM (`svg2026Wrapper`, `svg2026Offcanvas`, `svg2026Labels`) foram reno
 | `route_manager` | `frontend` / `svg-2026` / `GET` / `/v1/svg-2026` / `pages/v1/svg-2026/Svg2026Page` | espelha a linha 801 do `svg-map` |
 | `temp_menu` | id 93, `SVG-2026`, `/v1/svg-2026`, `offcanvas`, `sort_order` 85 | `company_manager=["menezes22001"]`, `roles=["guest","user","admin"]` |
 | `temp_menu` | id 94, `SVG`, `/v1/svg-map`, `offcanvas`, `sort_order` 86 | `company_manager=["menezes22001"]`, `roles=["superuser"]` |
+| `temp_menu` | id 95, `Home`, `/`, `navbar`, `sort_order` 10 (2026-11-07) | `company_manager=["menezes22001"]`, `roles=["guest","user","admin","superuser"]`; `temp_nav_id`, `icon` copiados do id 1. Linha própria da empresa; o id 1 (Home das demais empresas) não foi alterado. Backup: `src/writable/claude/20261107190000_temp_menu_home_backup.sql`. Rollback: `DELETE FROM temp_menu WHERE id = 95` |
 
 Os dois itens foram inseridos direto no banco DEV; **não há migration/seed** para eles (a renovação do snapshot é feita
 no fim do ciclo, pelo usuário).
@@ -59,13 +60,15 @@ guardado só em memória em `services/v1/eleicoes2026.public.ts`:
 
 ## Eleições 2026 no mapa (2026-11-04)
 
+Douglas Ruas (22, GOVERNADOR) incluído em 2026-11-07: constante `DOUGLAS` em `eleicoes2026.ts` e entrada em `CANDIDATOS`; modal e collapses percorrem a lista, então não há código por candidato. Os dados vêm das mesmas views (carga na tabela `eleicoes_2026_votos_1t_2t_22001_RJ`, ver README do backend). Candidato novo = novo `Candidato` na lista + foto.
+
 O módulo deixou de ser só estático: consome as views do domínio Eleicoes2026
 (ver `app/markdown/geral/README_modulo_eleicoes2026.md`) pelo service `services/v1/eleicoes2026.view.ts`.
 
 | Elemento | Comportamento |
 | -------- | ------------- |
-| Clique no município | marca/desmarca o checkbox **e** abre o `MunicipioModal`: card do Coronel Menezes (deputado estadual) e card do Flávio Bolsonaro (presidente) lado a lado (Menezes acima no mobile), com os votos no município e o total do RJ |
-| Municípios marcados | `ResultadosMunicipio` abaixo do mapa: um Collapse por município (inicia recolhido) com `row`/`col` e 2 cards (lado a lado em `lg`, empilhados no mobile; a lista de bairros rola por dentro, máx. 60vh); cada um lista os bairros agrupados com o total de votos |
+| Clique no município | marca/desmarca o checkbox **e** abre o `MunicipioModal`: cards do Coronel Menezes (deputado estadual), do Flávio Bolsonaro (presidente) e do Douglas Ruas (governador) lado a lado em `md` (empilhados no mobile; `modal-xl`), com os votos no município e o total do RJ |
+| Municípios marcados | `ResultadosMunicipio` abaixo do mapa: um Collapse por município (inicia recolhido) com `row`/`col` e 3 cards (`col-lg-4`, lado a lado em `lg`, empilhados no mobile; a lista de bairros rola por dentro, máx. 60vh); cada um lista os bairros agrupados com o total de votos |
 | Clique no bairro | Collapse discreto com tabela: Local (endereço em cinza, itálico, menor), Zona/Sessão, Votos |
 | Ordem | sempre do maior para o menor voto |
 
@@ -75,7 +78,7 @@ Percentual por bairro (2026-11-05): em cada bairro do card de resultados (`Resul
 
 Tema do modal: o `MunicipioModal` renderiza dentro do `ThemePortal` (`components/template/ThemePortal.tsx`), não de um `createPortal` puro no `document.body`. O portal puro tira o modal do `.tpl-app` do `TemplateShell` e ele perde `data-bs-theme` e as variáveis de cor (ficava branco no tema dark); o `ThemePortal` reaplica a paleta da empresa. Corrigido em 2026-11-05.
 
-Menu Home da menezes22001 (2026-11-05): o item `Home` (`temp_menu` id 1, `/`, navbar, `roles=["guest","user","admin"]`) ganhou `menezes22001` no JSON `company_manager`, que passou a ser `["default","tryikads","drsergiopsicologo","menezes22001"]`. Sem linha nova (ver regra de menu por empresa em JSON). Comando aplicado no DEV e a aplicar na KingHost:
+Menu Home da menezes22001 (2026-11-05, SUBSTITUÍDO em 2026-11-07 pela linha própria id 95; o `company_manager` do id 1 no DEV não contém `menezes22001`): o item `Home` (`temp_menu` id 1, `/`, navbar, `roles=["guest","user","admin"]`) ganhou `menezes22001` no JSON `company_manager`, que passou a ser `["default","tryikads","drsergiopsicologo","menezes22001"]`. Sem linha nova (ver regra de menu por empresa em JSON). Comando aplicado no DEV e a aplicar na KingHost:
 
 ```sql
 UPDATE temp_menu
@@ -86,7 +89,7 @@ WHERE title = 'Home' AND react_route = '/' AND parent_id IS NULL AND deleted_at 
 
 Tema do Offcanvas (checklist de municípios): sem `bg-white` fixo. O Offcanvas do Bootstrap já usa `--bs-body-bg` e `--bs-body-color`, que acompanham o `data-bs-theme` do template (dark ou claro). O `bg-white` forçava o fundo branco no tema dark. Corrigido em 2026-11-05.
 
-Fotos dos candidatos: JPEG 200x200 (~10 KB, recorte quadrado central, q82) `menezes_22001.jpg` e `flavio_22.jpg` em `public/svg-2026/` (substituíram os originais grandes, de 220 KB e 111 KB). O campo `foto` de `Candidato`, em `eleicoes2026.ts`, aponta para elas; aparecem
+Fotos dos candidatos: JPEG 200x200 (~10 KB, recorte quadrado central, q82) `menezes_22001.jpg`, `flavio_22.jpg` e `douglas_22.jpg` (2026-11-07, recorte do rosto de `ruas_22.jpeg`, que é WebP 1200x1600 e foi mantido) em `public/svg-2026/` (substituíram os originais grandes, de 220 KB e 111 KB). O campo `foto` de `Candidato`, em `eleicoes2026.ts`, aponta para elas; aparecem
 redondas, com o nome abaixo, nos cards do modal e dos collapses.
 
 Arquivos: `pages/v1/svg-2026/{eleicoes2026.ts, MunicipioModal.tsx, ResultadosMunicipio.tsx}` e

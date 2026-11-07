@@ -53,6 +53,17 @@ Conferido por `SELECT`: as 18 colunas são as do `SqlViewModel` e a view devolve
 A view não tem `id` nem chave única (várias linhas por seção: cargo e partido); por isso não tem `get/{id}` e a
 ordenação deve usar `sort=cd_municipio_zona_secao`.
 
+### Carga de DOUGLAS RUAS (22) na tabela do candidato 22001 (2026-11-07)
+
+Inseridas em `eleicoes_2026_votos_1t_2t_22001_RJ` as 37.675 linhas de `bu_votos_1t_RJ` com `nr_votavel=22` e
+`nm_votavel='DOUGLAS RUAS'` (`ds_cargo` GOVERNADOR, 4.271.199 votos), por `INSERT ... SELECT` direto no DEV (sem
+migration). Regra de conversão: `cd_municipio` vira texto; `nr_zona = LPAD(...,3,'0')`; `nr_secao = LPAD(...,4,'0')`;
+`cd_municipio_zona_secao = CONCAT(cd_municipio,'.',nr_zona,'.',nr_secao)` (ex.: `58009.255.0023`). `nr_partido` e
+`sg_partido` foram preenchidos com 22 e PL (valores modelo da tabela; na origem eram NULL). A tabela passou de 58.918 para 96.593 linhas, e a view
+`view_eleicoes_2026_22001_22` também devolve 96.593 (GOVERNADOR aparece como terceiro `ds_cargo`). Backup anterior:
+`src/writable/claude/20261107120000_douglas_ruas_backup.sql`. Rollback:
+`DELETE FROM eleicoes_2026_votos_1t_2t_22001_RJ WHERE nm_votavel='DOUGLAS RUAS' AND ds_cargo='GOVERNADOR'`.
+
 ### Views agregadas (2026-11-04)
 
 Criadas direto no DEV (SQL em `doc/sql/view/view_eleicoes_2026_22001_22_municipio.sql` e `..._bairro.sql`; sem migration,

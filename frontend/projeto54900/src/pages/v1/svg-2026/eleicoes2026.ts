@@ -1,7 +1,7 @@
 // Dados e regras de apresentacao das Eleicoes 2026 no mapa SVG-2026.
-// Candidatos: na view os dois se distinguem apenas por ds_cargo (Menezes =
-// DEPUTADO ESTADUAL, Flavio Bolsonaro = PRESIDENTE). Ordem de exibicao sempre
-// do maior para o menor voto.
+// Candidatos: na view os tres se distinguem apenas por ds_cargo (Menezes =
+// DEPUTADO ESTADUAL, Flavio Bolsonaro = PRESIDENTE, Douglas Ruas = GOVERNADOR).
+// Ordem de exibicao dos bairros/secoes sempre do maior para o menor voto.
 
 import { env } from '@/config/env';
 import {
@@ -13,7 +13,7 @@ import { fetchDashVotosBairro, fetchDashVotosMunicipio } from '@/services/v1/ele
 import { normalizeList } from '@/utils/apiResult';
 
 export interface Candidato {
-  chave: 'menezes' | 'flavio';
+  chave: 'menezes' | 'flavio' | 'douglas';
   nome: string;
   cargo: string;
   numero: string;
@@ -23,7 +23,8 @@ export interface Candidato {
 
 export const MENEZES: Candidato = { chave: 'menezes', nome: 'Coronel Menezes', cargo: 'DEPUTADO ESTADUAL', numero: '22001', foto: 'menezes_22001.jpg' };
 export const FLAVIO: Candidato = { chave: 'flavio', nome: 'Flávio Bolsonaro', cargo: 'PRESIDENTE', numero: '22', foto: 'flavio_22.jpg' };
-export const CANDIDATOS: Candidato[] = [MENEZES, FLAVIO];
+export const DOUGLAS: Candidato = { chave: 'douglas', nome: 'Douglas Ruas', cargo: 'GOVERNADOR', numero: '22', foto: 'douglas_22.jpg' };
+export const CANDIDATOS: Candidato[] = [MENEZES, FLAVIO, DOUGLAS];
 
 /** Votos por ds_cargo. */
 export type VotosPorCargo = Record<string, number>;
@@ -140,7 +141,7 @@ export async function carregarBairros(cdTse: string): Promise<Record<Candidato['
     buscarTudo((f, p) => eleicoes2026Candidato22001BairroView.find(f, p), { cd_municipio: cdTse }, 'qt_votos'),
     eleitoresPorBairro(),
   ]);
-  const resultado: Record<Candidato['chave'], BairroVotos[]> = { menezes: [], flavio: [] };
+  const resultado: Record<Candidato['chave'], BairroVotos[]> = { menezes: [], flavio: [], douglas: [] };
   for (const c of CANDIDATOS) {
     resultado[c.chave] = linhas
       .filter((l) => txt(l.ds_cargo) === c.cargo)

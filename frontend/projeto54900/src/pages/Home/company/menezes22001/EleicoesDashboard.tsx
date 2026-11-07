@@ -5,7 +5,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 
 import EChart from '@/components/charts/EChart';
-import { CARGO_DEPUTADO, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
+import { CARGO_DEPUTADO, CARGO_GOVERNADOR, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
 
 import { donutBuild, gaugeBuild, heatmapBuild, type Metrica, scatterBuild, topMunicipiosBuild, treemapBuild } from './chartOptions';
 import { CARGOS, type Cargo, fmtInt, fmtPct } from './dashFormat';
@@ -42,7 +42,7 @@ function Skeleton() {
     <div className="placeholder-glow" aria-busy="true">
       <div className="row g-3 mb-3">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="col-6 col-lg-4 col-xxl-2">
+          <div key={i} className="col-6 col-lg-4 col-xxl">
             <span className="placeholder col-12 rounded-3" style={{ height: 92 }} />
           </div>
         ))}
@@ -73,8 +73,9 @@ export default function EleicoesDashboard() {
   const scatter = useMemo(() => (data ? scatterBuild(data.locais) : null), [data]);
 
   const pres = data?.resumo.find((r) => r.cargo === CARGO_PRESIDENTE);
+  const gov = data?.resumo.find((r) => r.cargo === CARGO_GOVERNADOR);
   const dep = data?.resumo.find((r) => r.cargo === CARGO_DEPUTADO);
-  const base = pres ?? dep;
+  const base = pres ?? gov ?? dep;
   const cargoAtual = CARGOS.find((c) => c.key === cargo);
 
   return (
@@ -88,7 +89,8 @@ export default function EleicoesDashboard() {
             </div>
             <h1 className="display-6 fw-bold my-2">Sistema Eleitoral 2026</h1>
             <p className="mb-0 opacity-75">
-              Votação de Flávio Bolsonaro (Presidente) e Coronel Menezes 22001 (Deputado Estadual) cruzada com o
+              Votação de Flávio Bolsonaro (Presidente), Douglas Ruas (Governador) e Coronel Menezes 22001 (Deputado
+              Estadual) cruzada com o
               eleitorado de {base ? fmtInt(base.municipios) : '—'} municípios, {base ? fmtInt(base.zonas) : '—'} zonas e{' '}
               {base ? fmtInt(base.locais) : '—'} locais de votação.
             </p>
@@ -127,22 +129,25 @@ export default function EleicoesDashboard() {
       {data && gauge && top && treemap && donut && heatmap && scatter ? (
         <>
           <div className="row g-3 mb-3">
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-people-fill" label="Eleitores" value={base?.eleitores ?? 0} hint={`${fmtInt(base?.secoes ?? 0)} seções`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-person-badge-fill" label="Votos Presidente" value={pres?.votos ?? 0} tone="info" hint={`${fmtPct(pres?.pctEleitorado ?? 0)} do eleitorado`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
+              <KpiCard icon="bi-bank2" label="Votos Governador" value={gov?.votos ?? 0} tone="success" hint={`${fmtPct(gov?.pctEleitorado ?? 0)} do eleitorado`} />
+            </div>
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-patch-check-fill" label="Votos Dep. Estadual" value={dep?.votos ?? 0} tone="warning" hint={`${fmtPct(dep?.pctEleitorado ?? 0)} do eleitorado`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-geo-alt-fill" label="Municípios" value={base?.municipios ?? 0} tone="success" hint={`${fmtInt(base?.bairros ?? 0)} bairros`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-diagram-3-fill" label="Zonas eleitorais" value={base?.zonas ?? 0} tone="danger" hint={`${fmtInt(pres?.secoesComVoto ?? 0)} seções com voto`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl-2">
+            <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-building-fill" label="Locais de votação" value={base?.locais ?? 0} tone="secondary" />
             </div>
           </div>

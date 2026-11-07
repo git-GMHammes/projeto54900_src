@@ -1,6 +1,6 @@
 // Formatadores e constantes visuais do dashboard de Eleicoes (Home menezes22001). Tudo em pt-BR.
 
-import { CARGO_DEPUTADO, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
+import { CARGO_DEPUTADO, CARGO_GOVERNADOR, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
 
 const INT = new Intl.NumberFormat('pt-BR');
 const COMPACT = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
@@ -15,10 +15,11 @@ export const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** Cargo selecionado no painel. */
-export type Cargo = typeof CARGO_PRESIDENTE | typeof CARGO_DEPUTADO;
+export type Cargo = typeof CARGO_PRESIDENTE | typeof CARGO_DEPUTADO | typeof CARGO_GOVERNADOR;
 
 export const CARGOS: readonly { key: Cargo; label: string; candidato: string; color: string }[] = [
   { key: CARGO_PRESIDENTE, label: 'Presidente', candidato: 'Flávio Bolsonaro (22)', color: '#4f7cff' },
+  { key: CARGO_GOVERNADOR, label: 'Governador', candidato: 'Douglas Ruas (22)', color: '#2ecc71' },
   { key: CARGO_DEPUTADO, label: 'Dep. Estadual', candidato: 'Coronel Menezes (22001)', color: '#ff9f43' },
 ];
 

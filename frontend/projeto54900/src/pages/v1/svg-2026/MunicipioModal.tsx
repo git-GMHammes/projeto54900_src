@@ -1,6 +1,6 @@
-// Modal do municipio clicado no mapa SVG-2026: card do Menezes e card do
-// Flavio Bolsonaro lado a lado (Menezes acima no mobile), com os votos no
-// municipio e a totalizacao no Rio de Janeiro. Controlado por estado React.
+// Modal do municipio clicado no mapa SVG-2026: cards do Menezes, do Flavio
+// Bolsonaro e do Douglas Ruas lado a lado (empilhados no mobile), com os votos
+// no municipio e a totalizacao no Rio de Janeiro. Controlado por estado React.
 // Renderizado via ThemePortal (portal no document.body com a paleta da empresa):
 // dentro do conteudo do template o position: fixed/backdrop ficariam presos ao
 // contexto de empilhamento dele, e um portal puro perderia o tema dark.
@@ -23,7 +23,7 @@ export default function MunicipioModal({ nomeMunicipio, totaisMunicipio, totalRj
     <ThemePortal>
       <div className="modal fade show d-block" tabIndex={-1} role="dialog" aria-modal="true" onClick={onClose}>
         <div
-          className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"
+          className="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="modal-content">
@@ -42,7 +42,7 @@ export default function MunicipioModal({ nomeMunicipio, totaisMunicipio, totalRj
               ) : (
                 <div className="row g-3">
                   {CANDIDATOS.map((c) => (
-                    <div className="col-12 col-md-6" key={c.chave}>
+                    <div className="col-12 col-md-4" key={c.chave}>
                       <div className="card h-100">
                         <div className="card-body">
                           <div className="text-center">

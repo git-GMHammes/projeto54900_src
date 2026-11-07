@@ -7,8 +7,8 @@
  * menezes22001, SEM LOGIN, pelo token especial (eleicoes2026.public.ts). Espelho de
  * app/Config/Routes/Api/v1/Eleicoes2026/Dash*\/EndPointView.php. Somente leitura (GET get-no-pagination).
  *   - A API devolve numeros como texto: aqui tudo vira number/string tipado (nenhum `any`).
- *   - Votos do candidato 22001 so se distinguem por `ds_cargo` (PRESIDENTE = Flavio Bolsonaro; DEPUTADO ESTADUAL =
- *     Coronel Menezes).
+ *   - Os candidatos so se distinguem por `ds_cargo` (PRESIDENTE = Flavio Bolsonaro; DEPUTADO ESTADUAL =
+ *     Coronel Menezes; GOVERNADOR = Douglas Ruas).
  *
  * CONSUMIDORES: pages/Home/company/menezes22001/useDashboardData.ts.
  * Documentacao: markdown/geral/README_dashboard_eleicoes.md.
@@ -22,6 +22,7 @@ import { normalizeList } from '@/utils/apiResult';
 
 export const CARGO_PRESIDENTE = 'PRESIDENTE';
 export const CARGO_DEPUTADO = 'DEPUTADO ESTADUAL';
+export const CARGO_GOVERNADOR = 'GOVERNADOR';
 
 type Raw = Record<string, unknown>;
 
@@ -153,7 +154,7 @@ export async function fetchDashVotosBairro(): Promise<DashVotosBairro[]> {
 /** Os 600 locais de votacao com mais votos de CADA cargo (a view tem ~9.400 linhas; o grafico nao precisa de todas). */
 export async function fetchDashVotosLocais(): Promise<DashVotosLocal[]> {
   const porCargo = await Promise.all(
-    [CARGO_PRESIDENTE, CARGO_DEPUTADO].map(async (cargo) => {
+    [CARGO_PRESIDENTE, CARGO_DEPUTADO, CARGO_GOVERNADOR].map(async (cargo) => {
       const raw = await eleicoesPublicGet(API_GROUPS.eleicoes2026DashVotosLocalVotacaoView, 'search', {
         'filters[ds_cargo]': cargo,
         sort: 'qt_votos',

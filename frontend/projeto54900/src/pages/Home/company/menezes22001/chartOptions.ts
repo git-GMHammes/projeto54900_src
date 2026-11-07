@@ -6,6 +6,7 @@ import type { EChartsOption } from 'echarts';
 import type { ChartTheme } from '@/components/charts/EChart';
 import {
   CARGO_DEPUTADO,
+  CARGO_GOVERNADOR,
   CARGO_PRESIDENTE,
   type DashResumo,
   type DashVotosBairro,
@@ -27,9 +28,10 @@ const tip = (t: ChartTheme) => ({
   textStyle: { color: t.text },
 });
 
-/** Dois medidores: % dos votos sobre o eleitorado, por cargo. */
+/** Tres medidores: % dos votos sobre o eleitorado, por cargo. */
 export function gaugeBuild(resumo: DashResumo[]): Build {
   const pres = resumo.find((r) => r.cargo === CARGO_PRESIDENTE);
+  const gov = resumo.find((r) => r.cargo === CARGO_GOVERNADOR);
   const dep = resumo.find((r) => r.cargo === CARGO_DEPUTADO);
   return (t) => {
     const gauge = (cx: string, r: DashResumo | undefined, cargo: Cargo, max: number, name: string) => ({
@@ -60,8 +62,9 @@ export function gaugeBuild(resumo: DashResumo[]): Build {
     return {
       tooltip: { show: false },
       series: [
-        gauge('26%', pres, CARGO_PRESIDENTE, 100, 'Presidente · escala 0–100%'),
-        gauge('74%', dep, CARGO_DEPUTADO, 1, 'Dep. Estadual · escala 0–1%'),
+        gauge('17%', pres, CARGO_PRESIDENTE, 100, 'Presidente · escala 0–100%'),
+        gauge('50%', gov, CARGO_GOVERNADOR, 100, 'Governador · escala 0–100%'),
+        gauge('83%', dep, CARGO_DEPUTADO, 1, 'Dep. Estadual · escala 0–1%'),
       ],
     };
   };
@@ -324,18 +327,30 @@ export function scatterBuild(rows: DashVotosLocal[]): Build {
       axisLabel: { color: t.muted, formatter: (v: number) => fmtCompact(v) },
       splitLine: { lineStyle: { color: t.border, type: 'dashed' } },
     },
-    yAxis: CARGOS.map((c, i) => ({
-      type: 'value' as const,
-      name: i === 0 ? 'Votos (Pres.)' : 'Votos (Dep.)',
-      nameGap: 12,
-      position: i === 0 ? ('left' as const) : ('right' as const),
-      nameTextStyle: { color: c.color },
-      axisLabel: { color: c.color, formatter: (v: number) => fmtCompact(v) },
-      splitLine: i === 0 ? { lineStyle: { color: t.border, type: 'dashed' as const } } : { show: false },
-    })),
+    // Presidente e Governador dividem o eixo da esquerda (mesma ordem de grandeza); Dep. Estadual tem eixo proprio.
+    yAxis: [
+      {
+        type: 'value' as const,
+        name: 'Votos (Pres./Gov.)',
+        nameGap: 12,
+        position: 'left' as const,
+        nameTextStyle: { color: t.muted },
+        axisLabel: { color: t.muted, formatter: (v: number) => fmtCompact(v) },
+        splitLine: { lineStyle: { color: t.border, type: 'dashed' as const } },
+      },
+      {
+        type: 'value' as const,
+        name: 'Votos (Dep.)',
+        nameGap: 12,
+        position: 'right' as const,
+        nameTextStyle: { color: colorOf(CARGO_DEPUTADO) },
+        axisLabel: { color: colorOf(CARGO_DEPUTADO), formatter: (v: number) => fmtCompact(v) },
+        splitLine: { show: false },
+      },
+    ],
     dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
-    series: CARGOS.map((c, i) => ({
-      yAxisIndex: i,
+    series: CARGOS.map((c) => ({
+      yAxisIndex: c.key === CARGO_DEPUTADO ? 1 : 0,
       type: 'scatter' as const,
       name: c.label,
       symbolSize: 8,
