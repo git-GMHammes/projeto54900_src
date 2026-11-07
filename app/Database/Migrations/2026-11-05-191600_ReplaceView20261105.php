@@ -6,18 +6,18 @@ use CodeIgniter\Database\Migration;
 
 /**
  * Recria as 75 views do banco a partir da definicao real de cada uma no banco
- * DEV, conferida em 2026-10-29 (202610291622_replace_view.sql — DROP VIEW IF
+ * DEV, conferida em 2026-11-05 (202611051916_replace_view.sql — DROP VIEW IF
  * EXISTS + CREATE VIEW de cada uma).
  *
- * Depende do ReplaceTable20261029: as views apontam pras tabelas do banco.
- * Timestamp da classe (16:22) apos o SeedTable20261029 (16:21),
+ * Depende do ReplaceTable20261105: as views apontam pras tabelas do banco.
+ * Timestamp da classe (19:16) apos o SeedTable20261105 (19:15),
  * preservando a ordem de execucao do REMAKE.
  */
-class ReplaceView20261029 extends Migration
+class ReplaceView20261105 extends Migration
 {
     public function up()
     {
-        $this->executeSqlFile(__DIR__ . '/202610291622_replace_view.sql');
+        $this->executeSqlFile(__DIR__ . '/202611051916_replace_view.sql');
     }
 
     public function down()
