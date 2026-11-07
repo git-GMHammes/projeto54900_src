@@ -1,1 +1,0 @@
-import{D as s,a0 as a,a1 as c}from"./index-OzE7Avrk.js";const t=`/${a}/${c.dbSchema}`,m={tables:e=>s.get(`${t}/tables`,e),columns:(e,o)=>s.get(`${t}/columns/${encodeURIComponent(e)}`,o),describe:(e,o)=>s.get(`${t}/describe/${encodeURIComponent(e)}`,o)};export{m as d};
