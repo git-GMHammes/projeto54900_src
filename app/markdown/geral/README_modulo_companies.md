@@ -170,6 +170,11 @@ das rotas (`/default/template001`) e, nos perfis, de `roles`.
 - **Fora das `temp_*`** a ligação continua por id: `company_id`, `company_members`
   e `user_manager.company_ids`.
 
+## Empresa `isquierdo22077` (id 7, 2026-11-08)
+
+Criada direto no DEV, como `paes55`: `company_manager` id 7 (`color_theme` Dark), Template 3, header/footer próprios e usuários
+`isquierdo.admin|user|guest`. Ver `README_modulo_template.md`.
+
 ## Pendências
 
 - Entrar nas migrations REMAKE (tabelas, coluna, views, seeds) — exige autorização do usuário.

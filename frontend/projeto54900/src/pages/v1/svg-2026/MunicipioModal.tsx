@@ -7,7 +7,7 @@
 
 import ThemePortal from '@/components/template/ThemePortal';
 
-import { CANDIDATOS, COL_CANDIDATO, formatarPctEleitorado, formatarVotos, urlFoto, type TotaisMunicipio, type VotosPorCargo } from './eleicoes2026';
+import { CANDIDATOS, chaveVotos, COL_CANDIDATO, formatarPctEleitorado, formatarVotos, urlFoto, type TotaisMunicipio, type VotosPorCargo } from './eleicoes2026';
 
 interface Props {
   nomeMunicipio: string;
@@ -57,16 +57,16 @@ export default function MunicipioModal({ nomeMunicipio, totaisMunicipio, totalRj
                             <div className="text-muted small">{c.cargo} · {c.numero}</div>
                           </div>
                           <div className="mt-2 small text-muted">Votos em {nomeMunicipio}</div>
-                          <div className="fs-3 fw-bold">{formatarVotos(totaisMunicipio?.votos[c.cargo] ?? 0)}</div>
+                          <div className="fs-3 fw-bold">{formatarVotos(totaisMunicipio?.votos[chaveVotos(c)] ?? 0)}</div>
                           {totaisMunicipio && totaisMunicipio.eleitores > 0 && (
                             <div className="small text-muted">
-                              {formatarPctEleitorado(totaisMunicipio.votos[c.cargo] ?? 0, totaisMunicipio.eleitores)} do
+                              {formatarPctEleitorado(totaisMunicipio.votos[chaveVotos(c)] ?? 0, totaisMunicipio.eleitores)} do
                               eleitorado ({formatarVotos(totaisMunicipio.eleitores)} eleitores)
                             </div>
                           )}
                           <hr />
                           <div className="small text-muted">Total no Rio de Janeiro</div>
-                          <div className="fs-4 fw-semibold">{formatarVotos(totalRj?.[c.cargo] ?? 0)}</div>
+                          <div className="fs-4 fw-semibold">{formatarVotos(totalRj?.[chaveVotos(c)] ?? 0)}</div>
                         </div>
                       </div>
                     </div>

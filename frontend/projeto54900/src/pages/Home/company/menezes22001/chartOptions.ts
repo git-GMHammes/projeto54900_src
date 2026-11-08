@@ -4,16 +4,15 @@
 import type { EChartsOption } from 'echarts';
 
 import type { ChartTheme } from '@/components/charts/EChart';
-import {
-  CARGO_DEPUTADO,
-  type DashResumo,
-  type DashVotosBairro,
-  type DashVotosLocal,
-  type DashVotosMunicipio,
-  type DashVotosZona,
+import type {
+  DashResumo,
+  DashVotosBairro,
+  DashVotosLocal,
+  DashVotosMunicipio,
+  DashVotosZona,
 } from '@/services/v1/eleicoes2026.dash';
 
-import { CARGOS, type Cargo, colorOf, esc, fmtCompact, fmtInt, fmtPct, labelOf, temCargo, titleCase } from './dashFormat';
+import { CARGOS, type Cargo, colorOf, esc, fmtCompact, fmtInt, fmtPct, ehDeputado, idDe, labelOf, temDeputado, titleCase } from './dashFormat';
 
 export type Metrica = 'votos' | 'pct';
 type Build = (t: ChartTheme) => EChartsOption;
@@ -60,8 +59,8 @@ export function gaugeBuild(resumo: DashResumo[]): Build {
       series: CARGOS.map((c, i) =>
         gauge(
           `${String(Math.round(((i + 0.5) / CARGOS.length) * 100))}%`,
-          resumo.find((r) => r.cargo === c.key),
-          c.key,
+          resumo.find((r) => idDe(r.cargo, r.numero) === c.id),
+          c.id,
           c.gaugeMax,
           `${c.label} · escala 0–${String(c.gaugeMax)}%`,
         ),
@@ -73,7 +72,7 @@ export function gaugeBuild(resumo: DashResumo[]): Build {
 /** Top 10 municipios por votos ou por % do eleitorado (barras horizontais). */
 export function topMunicipiosBuild(rows: DashVotosMunicipio[], cargo: Cargo, metrica: Metrica): Build {
   const top = rows
-    .filter((r) => r.cargo === cargo)
+    .filter((r) => idDe(r.cargo, r.numero) === cargo)
     .sort((a, b) => (metrica === 'votos' ? b.votos - a.votos : b.pctEleitorado - a.pctEleitorado))
     .slice(0, 10)
     .reverse();
@@ -125,7 +124,7 @@ export function topMunicipiosBuild(rows: DashVotosMunicipio[], cargo: Cargo, met
 export function treemapBuild(rows: DashVotosBairro[], cargo: Cargo): Build {
   const porMun = new Map<string, { nome: string; total: number; bairros: DashVotosBairro[] }>();
   for (const r of rows) {
-    if (r.cargo !== cargo) continue;
+    if (idDe(r.cargo, r.numero) !== cargo) continue;
     const m = porMun.get(r.cd) ?? { nome: r.municipio, total: 0, bairros: [] };
     m.total += r.votos;
     m.bairros.push(r);
@@ -180,7 +179,7 @@ export function treemapBuild(rows: DashVotosBairro[], cargo: Cargo): Build {
 
 /** Rosca: participacao dos maiores municipios no total de votos do cargo. */
 export function donutBuild(rows: DashVotosMunicipio[], cargo: Cargo): Build {
-  const lista = rows.filter((r) => r.cargo === cargo).sort((a, b) => b.votos - a.votos);
+  const lista = rows.filter((r) => idDe(r.cargo, r.numero) === cargo).sort((a, b) => b.votos - a.votos);
   const top = lista.slice(0, 8);
   const resto = lista.slice(8).reduce((s, r) => s + r.votos, 0);
   const data = [
@@ -238,18 +237,18 @@ export function heatmapBuild(rows: DashVotosZona[]): Build {
       eleitores: r.eleitores,
       pct: new Map<string, number>(),
     };
-    z.pct.set(r.cargo, r.pctEleitorado);
+    z.pct.set(idDe(r.cargo, r.numero), r.pctEleitorado);
     zonas.set(k, z);
   }
   const top = [...zonas.values()].sort((a, b) => b.eleitores - a.eleitores).slice(0, 20);
   const max = new Map<string, number>(
-    CARGOS.map((c) => [c.key, Math.max(...rows.filter((r) => r.cargo === c.key).map((r) => r.pctEleitorado), 0.0001)]),
+    CARGOS.map((c) => [c.id, Math.max(...rows.filter((r) => idDe(r.cargo, r.numero) === c.id).map((r) => r.pctEleitorado), 0.0001)]),
   );
   const cells: [number, number, number][] = [];
   top.forEach((z, y) => {
     CARGOS.forEach((c, x) => {
-      const p = z.pct.get(c.key) ?? 0;
-      cells.push([x, y, Math.round((p / (max.get(c.key) ?? 1)) * 100)]);
+      const p = z.pct.get(c.id) ?? 0;
+      cells.push([x, y, Math.round((p / (max.get(c.id) ?? 1)) * 100)]);
     });
   });
   return (t) => ({
@@ -260,7 +259,7 @@ export function heatmapBuild(rows: DashVotosZona[]): Build {
         const z = top[v[1]];
         const c = CARGOS[v[0]];
         if (!z || !c) return '';
-        return `<b>${esc(z.nome)}</b><br/>${esc(c.label)}: <b>${fmtPct(z.pct.get(c.key) ?? 0)}</b> do eleitorado<br/>Eleitores da zona: ${fmtInt(z.eleitores)}`;
+        return `<b>${esc(z.nome)}</b><br/>${esc(c.label)}: <b>${fmtPct(z.pct.get(c.id) ?? 0)}</b> do eleitorado<br/>Eleitores da zona: ${fmtInt(z.eleitores)}`;
       },
     },
     grid: { left: 8, right: 16, top: 8, bottom: 56, containLabel: true },
@@ -307,13 +306,14 @@ export function heatmapBuild(rows: DashVotosZona[]): Build {
 
 /** Dispersao dos 600 locais com mais votos de cada cargo: eleitores (x) x votos (y), um conjunto por cargo. */
 export function scatterBuild(rows: DashVotosLocal[]): Build {
+  const soDeputados = CARGOS.every((c) => ehDeputado(c.key));
   return (t) => ({
     tooltip: {
       ...tip(t),
       trigger: 'item',
       formatter: (p: unknown) => {
         const l = (p as { data: { l: DashVotosLocal } }).data.l;
-        return `<b>${esc(titleCase(l.local))}</b><br/>${esc(titleCase(l.municipio))} · ${esc(titleCase(l.bairro))} · Z${esc(l.zona)}<br/>${esc(labelOf(l.cargo))}: <b>${fmtInt(l.votos)}</b> votos (${fmtPct(l.pctEleitorado)})<br/>Eleitores: ${fmtInt(l.eleitores)}`;
+        return `<b>${esc(titleCase(l.local))}</b><br/>${esc(titleCase(l.municipio))} · ${esc(titleCase(l.bairro))} · Z${esc(l.zona)}<br/>${esc(labelOf(idDe(l.cargo, l.numero)))}: <b>${fmtInt(l.votos)}</b> votos (${fmtPct(l.pctEleitorado)})<br/>Eleitores: ${fmtInt(l.eleitores)}`;
       },
     },
     legend: { top: 0, textStyle: { color: t.muted } },
@@ -327,11 +327,11 @@ export function scatterBuild(rows: DashVotosLocal[]): Build {
       axisLabel: { color: t.muted, formatter: (v: number) => fmtCompact(v) },
       splitLine: { lineStyle: { color: t.border, type: 'dashed' } },
     },
-    // Presidente e Governador dividem o eixo da esquerda (mesma ordem de grandeza); Dep. Estadual tem eixo proprio.
+    // Presidente e Governador dividem o eixo da esquerda (mesma ordem de grandeza); deputados tem eixo proprio (ou o unico eixo, se a empresa so tem deputados).
     yAxis: [
       {
         type: 'value' as const,
-        name: 'Votos (Pres./Gov.)',
+        name: soDeputados ? 'Votos (Dep.)' : 'Votos (Pres./Gov.)',
         nameGap: 12,
         position: 'left' as const,
         nameTextStyle: { color: t.muted },
@@ -339,25 +339,25 @@ export function scatterBuild(rows: DashVotosLocal[]): Build {
         splitLine: { lineStyle: { color: t.border, type: 'dashed' as const } },
       },
       // Eixo do Dep. Estadual so quando o cargo e exibido (empresa sem o cargo nao mostra o eixo).
-      ...(temCargo(CARGO_DEPUTADO) ? [{
+      ...(!soDeputados && temDeputado() ? [{
         type: 'value' as const,
         name: 'Votos (Dep.)',
         nameGap: 12,
         position: 'right' as const,
-        nameTextStyle: { color: colorOf(CARGO_DEPUTADO) },
-        axisLabel: { color: colorOf(CARGO_DEPUTADO), formatter: (v: number) => fmtCompact(v) },
+        nameTextStyle: { color: t.muted },
+        axisLabel: { color: t.muted, formatter: (v: number) => fmtCompact(v) },
         splitLine: { show: false },
       }] : []),
     ],
     dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
     series: CARGOS.map((c) => ({
-      yAxisIndex: c.key === CARGO_DEPUTADO ? 1 : 0,
+      yAxisIndex: !soDeputados && ehDeputado(c.key) ? 1 : 0,
       type: 'scatter' as const,
       name: c.label,
       symbolSize: 8,
       itemStyle: { color: c.color, opacity: 0.65 },
       emphasis: { itemStyle: { opacity: 1, borderColor: t.text, borderWidth: 1 } },
-      data: rows.filter((r) => r.cargo === c.key).map((l) => ({ value: [l.eleitores, l.votos] as [number, number], l })),
+      data: rows.filter((r) => idDe(r.cargo, r.numero) === c.id).map((l) => ({ value: [l.eleitores, l.votos] as [number, number], l })),
     })),
   });
 }

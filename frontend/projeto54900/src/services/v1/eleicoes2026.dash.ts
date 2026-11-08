@@ -22,6 +22,7 @@ import { normalizeList } from '@/utils/apiResult';
 
 export const CARGO_PRESIDENTE = 'PRESIDENTE';
 export const CARGO_DEPUTADO = 'DEPUTADO ESTADUAL';
+export const CARGO_DEPUTADO_FEDERAL = 'DEPUTADO FEDERAL';
 export const CARGO_GOVERNADOR = 'GOVERNADOR';
 
 type Raw = Record<string, unknown>;

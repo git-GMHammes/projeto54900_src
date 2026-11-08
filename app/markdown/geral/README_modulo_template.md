@@ -39,6 +39,21 @@ Todas as `temp_*` têm `company_manager` (JSON NOT NULL): lista de **slugs**, po
 - **Escrita:** `adminonly` nas 7 rotas de escrita (`create`, `update`, `delete-soft`,
   `delete-restore`, `delete-hard`, `clear-deleted` e `clear-deleted/{id}`) de `temp-nav`,
   `temp-menu`, `temp-header` e `temp-footer`.
+- **Empresa `paes55` (Eduardo Paes, id 6, 2026-11-08):** `temp_manager` 3 (template003), `temp_nav` 1 e 2 e `temp_menu` 95 (Home)
+  receberam o slug; `temp_menu` 93 e 94 (SVG-2026) também (candidatos da empresa em `eleicoes2026.ts`). `temp_header` 7 e
+  `temp_footer` 7 próprios (`["paes55"]`, sem imagens e sem textos de rodapé: a configurar). Backup/rollback em
+  `src/writable/claude/20261108060000_empresa_paes55_backup.sql`.
+- **Empresa `isquierdo22077` (Alexandre Isquierdo 22077, id 7, 2026-11-08, DEV direto no banco):** `temp_manager` 3 (template003), `temp_nav` 1 e 2
+  e `temp_menu` 95 receberam o slug; `temp_header` 8 e `temp_footer` 8 são **linhas novas**, cópia do conteúdo do `default` (id 1), com
+  `["isquierdo22077"]` (nada compartilhado com outras empresas). Usuários `isquierdo.admin|user|guest` (senha = usuário, `company_ids=[7]`),
+  mesmos 12 membros-base das outras empresas; `gustavo.*`/`lorena.*` ganharam o 7. Rollback em
+  `src/writable/claude/20261108210000_empresa_isquierdo22077_backup.sql`. Sem Home própria (usa a `default`).
+  **Cabeçalho (`temp_header` 8):** `background_image=img/isquierdo22077/header_background.jpg` (UPDATE direto no DEV); `logo_center_image=img/isquierdo22077/header_logo_center.png` (recorte sem fundo do `Avatar-819x1024.jpg` com rembg `u2net_human_seg`, original mantido); `logo_right_image=img/isquierdo22077/logo2.png` (logo da ALERJ em branco com alfa, por causa do fundo escuro; vem do `center_logo.webp` convertido e recolorido, renomeado pelo usuário; `header_logo_right.png` é a versão azul); `logo_left_image=img/isquierdo22077/logo1.png` (o `logo1.jpg` foi substituído pelo usuário por um emblema dourado em círculo sobre fundo escuro; `logo1.png` é o mesmo com máscara circular, centro 121,106 e raio 98 px, fora do círculo transparente; o JPG original foi mantido; `header_logo_left.png` é o recorte antigo da logo branca "Assembleia de Deus Vitória em Cristo", sem uso); `company_name` (expressão sob o logo) = "PROJETOS E RESULTADOS CONCRETOS", título de seção do site (o site não tem slogan próprio).
+  **Rodapé (`temp_footer` 8, 2026-11-08)**, com o conteúdo do site público (`doc/html/isquierdo/index.html` e páginas do site): coluna 1 "Quem é
+  Alexandre Isquierdo" (trajetória e redes sociais); coluna 2 só imagem, o logo do rodapé do site (`img/isquierdo22077/footer_logo.png`); coluna 3
+  "Propostas para a ALERJ" (os 8 eixos); coluna 4 "Resultados que já aconteceram" (números do site) com PL, CNPJ de campanha 68.269.095/0001-87 e
+  "Eleição 2026". Primeira versão (só partido, redes e privacidade) foi descartada por pouco útil; o texto de privacidade saiu. O renderizador não quebra
+  linha nem faz link nas colunas: itens separados por ". " ou " · ". O site escreve "Moreira" no rodapé, mas o logo e o TSE dizem MALAFAIA: usado Malafaia.
 - **Cabeçalho/rodapé próprios (2026-11-08):** `helcio-angelo-70222` deixou de compartilhar
   `temp_header`/`temp_footer` id 1 com `default` e tem o id 6 em cada (`["helcio-angelo-70222"]`;
   header com `img/ha_70222/header_background.png`, footer com `img/ha_70222/rodape.jpg`).

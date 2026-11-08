@@ -41,6 +41,23 @@ WHERE company_id = 5` e `DELETE FROM company_manager WHERE id = 5`. O cabeçalho
 API (filtro só na tela). Tela do SVG-2026 nesta empresa **não conferida** (exige login). Rodapé (`temp_footer` id 6, 2026-11-08): colunas de texto **Esporte**, **Saúde** e **Segurança** com propostas de políticas públicas (coluna 2 = imagem `img/ha_70222/rodape.jpg`); UPDATE direto no DEV, backup em `src/writable/claude/20261108040000_rodape_helcio_backup.sql`. Imagens da empresa em `public/img/ha_70222/`: `logo1.jpg` (brasão com o xadrez de "transparente" gravado nos pixels) e `logo1_sem_fundo.png` (2026-11-08: PNG RGBA 606x735 sem o fundo, recortado nas margens; gerado por máscara de cor, o original ficou intacto). Backup do `company_ids` anterior à mudança:
 `src/writable/claude/20261104155758_company_ids_backup.json`.
 
+### Empresa Alexandre Isquierdo (2026-11-08)
+
+Slug `isquierdo22077` (id 7). `CANDIDATOS_POR_EMPRESA`: `[ISQUIERDO, LUIZINHO, SARAH]` (Dep. Estadual 22077 principal; Dep. Federal 1177 e 7777).
+`Candidato['chave']` ganhou `isquierdo`, `luizinho` e `sarah`. O slug entrou em `temp_menu` 93 e 94 (menu SVG-2026). **Fotos (2026-11-08):** os originais enviados
+(`isquierdo_22077.png` 802x986, `Sarah_7777.png` 1920x2769, `luizinho_1177.jpg` 4528x3016, até 6 MB) ficam em `public/svg-2026/` sem uso; o
+mapa usa recortes quadrados 200x200 centrados no rosto (padrão das demais fotos, ~10 KB): `isquierdo_22077_200.png` (PNG com transparência),
+`sarah_7777_200.jpg` e `luizinho_1177_200.jpg`, mostrados em círculo nos modais de município e nos colapses de bairros. `sem_foto.svg` segue
+como imagem reserva, hoje sem uso. `tsc -b` e ESLint ok; a tela **não foi
+conferida logada** (sem login, `/v1/svg-2026` redireciona para o login).
+
+### Empresa Eduardo Paes (2026-11-08)
+
+Slug `paes55` (id 6). `CANDIDATOS_POR_EMPRESA`: `[PAES, DOUGLAS, GAROTINHO]`, os três GOVERNADOR (55, 22, 10), com fotos
+`Paes_55.jpg` e `Garotinho_55.jpg`. Como há **três candidatos no mesmo cargo**, `VotosPorCargo` passou a ser indexado por candidato
+(`chaveVotos` = `ds_cargo|nr_votavel`) e `carregarSecoes` recebe também o `nr_votavel`. `Candidato['chave']` ganhou `paes` e `garotinho`.
+`tsc -b` e ESLint ok; tela **não conferida** (exige login com `paes.admin`).
+
 ## Arquivos do módulo
 
 | Original (`svg-map`) | Cópia (`svg-2026`) |

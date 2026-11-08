@@ -74,6 +74,27 @@ Inseridas em `eleicoes_2026_votos_1t_2t_22001_RJ` as 1.867 linhas de `bu_votos_1
 `cd_municipio_zona_secao` e a concatenacao. Rollback:
 `DELETE FROM eleicoes_2026_votos_1t_2t_22001_RJ WHERE nr_votavel=70222 AND nm_votavel='HELCIO ANGELO'`.
 
+### Carga de EDUARDO PAES (55) e GAROTINHO (10) na tabela do candidato 22001 (2026-11-08)
+
+Inseridas em `eleicoes_2026_votos_1t_2t_22001_RJ` 74.516 linhas de `bu_votos_1t_RJ` com `ds_cargo='GOVERNADOR'`, `nr_turno=1` e
+`nr_votavel IN (55,10)` (o 55 tambem e Ronaldo Caiado, PRESIDENTE: por isso o filtro de cargo), por `INSERT ... SELECT` direto
+no DEV (sem migration/seed), mesma regra de conversao da carga de DOUGLAS RUAS (`LPAD` de municipio 5, zona 3, secao 4 e
+`cd_municipio_zona_secao` montado). EDUARDO PAES: 37.675 linhas, 3.706.984 votos, partido 55 PSD. GAROTINHO: 36.841 linhas,
+274.411 votos, partido 10 REPUBLICANOS. Na origem os dois vinham sem partido; `nr_partido`/`sg_partido` foram preenchidos por
+`UPDATE` com as siglas que `bu_votos_1t_RJ` ja usa para os numeros 55 e 10. Rollback:
+`DELETE FROM eleicoes_2026_votos_1t_2t_22001_RJ WHERE ds_cargo='GOVERNADOR' AND nr_votavel IN (55,10)`. As views `view_dash_*`
+passaram a devolver GOVERNADOR com tres candidatos (22, 55, 10); a Home da empresa `paes55` os separa por `nr_votavel`.
+
+### Carga dos candidatos da empresa `isquierdo22077` na tabela do candidato 22001 (2026-11-08)
+
+Inseridas em `eleicoes_2026_votos_1t_2t_22001_RJ` 66.022 linhas de `bu_votos_1t_RJ` (`nr_turno=1`), por `INSERT ... SELECT` direto no DEV (sem
+migration/seed), mesma regra de conversão da carga de DOUGLAS RUAS. **ALEXANDRE ISQUIERDO MALAFAIA** (22077, DEPUTADO ESTADUAL, PL 22):
+26.224 linhas, 83.461 votos. **DR. LUIZINHO** (1177, DEPUTADO FEDERAL, PP 11): 29.137 linhas, 213.904 votos. **SARAH PONCIO** (7777,
+DEPUTADO FEDERAL, SOLIDARIEDADE 77): 10.661 linhas, 20.474 votos. Partido, tipo e votos vieram da origem (sem UPDATE). Os outros "Luizinho"
+da origem (2247, 7099, 12030) não foram copiados. Primeira vez com **DEPUTADO FEDERAL** na tabela; as views `view_dash_*` e
+`view_eleicoes_2026_22001_22*` o devolvem sem alteração (conferido: totais iguais aos da origem, zero divergência em `cd_municipio_zona_secao`).
+Tabela: 172.976 → 238.998 linhas. Rollback: `src/writable/claude/20261108220000_isquierdo22077_candidatos_backup.sql`.
+
 ### Coluna `nr_votavel` nas views (2026-11-08)
 
 Menezes (22001) e Hélcio (70222) são ambos `DEPUTADO ESTADUAL`; as views agrupavam só por `ds_cargo` e somavam os dois. Recriadas

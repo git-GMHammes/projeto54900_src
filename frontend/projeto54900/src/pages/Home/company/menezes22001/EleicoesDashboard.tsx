@@ -5,10 +5,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
 
 import EChart from '@/components/charts/EChart';
-import { CARGO_DEPUTADO, CARGO_GOVERNADOR, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
 
 import { donutBuild, gaugeBuild, heatmapBuild, type Metrica, scatterBuild, topMunicipiosBuild, treemapBuild } from './chartOptions';
-import { CARGO_INICIAL, CARGOS, type Cargo, fmtInt, fmtPct, temCargo } from './dashFormat';
+import { CARGO_INICIAL, CARGOS, type Cargo, fmtInt, fmtPct, idDe } from './dashFormat';
 import KpiCard from './KpiCard';
 import RankingBairros from './RankingBairros';
 import { useDashboardData } from './useDashboardData';
@@ -72,15 +71,15 @@ export default function EleicoesDashboard() {
   const heatmap = useMemo(() => (data ? heatmapBuild(data.zonas) : null), [data]);
   const scatter = useMemo(() => (data ? scatterBuild(data.locais) : null), [data]);
 
-  const pres = data?.resumo.find((r) => r.cargo === CARGO_PRESIDENTE);
-  const gov = data?.resumo.find((r) => r.cargo === CARGO_GOVERNADOR);
-  const dep = data?.resumo.find((r) => r.cargo === CARGO_DEPUTADO);
-  const base = pres ?? gov ?? dep;
+  const resumoDe = (id: Cargo) => data?.resumo.find((r) => idDe(r.cargo, r.numero) === id);
+  // Base do eleitorado (mesma para todos): o primeiro candidato exibido que tem resumo.
+  const base = CARGOS.map((c) => resumoDe(c.id)).find((r) => r !== undefined);
+  const principal = CARGOS.find((c) => c.principal);
   // Texto do cabecalho conforme os cargos exibidos pela empresa (ex.: "A (Presidente), B (Governador) e C (...)").
   const descricoes = CARGOS.map((c) => c.descricao);
   const candidatosTexto =
     descricoes.length > 1 ? `${descricoes.slice(0, -1).join(', ')} e ${descricoes[descricoes.length - 1] ?? ''}` : (descricoes[0] ?? '');
-  const cargoAtual = CARGOS.find((c) => c.key === cargo);
+  const cargoAtual = CARGOS.find((c) => c.id === cargo);
 
   return (
     <div className="container-fluid py-4">
@@ -101,11 +100,11 @@ export default function EleicoesDashboard() {
             <div className="btn-group" role="group" aria-label="Cargo">
               {CARGOS.map((c) => (
                 <button
-                  key={c.key}
+                  key={c.id}
                   type="button"
-                  className={`btn ${cargo === c.key ? 'btn-light' : 'btn-outline-light'}`}
+                  className={`btn ${cargo === c.id ? 'btn-light' : 'btn-outline-light'}`}
                   onClick={() => {
-                    setCargo(c.key);
+                    setCargo(c.id);
                   }}
                 >
                   {c.label}
@@ -113,6 +112,7 @@ export default function EleicoesDashboard() {
               ))}
             </div>
             <div className="small opacity-75 mt-2">{cargoAtual?.candidato}</div>
+            {principal && cargoAtual?.id !== principal.id ? <div className="small opacity-75">Candidato principal: {principal.label}</div> : null}
           </div>
         </div>
       </div>
@@ -134,26 +134,19 @@ export default function EleicoesDashboard() {
             <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-people-fill" label="Eleitores" value={base?.eleitores ?? 0} hint={`${fmtInt(base?.secoes ?? 0)} seções`} />
             </div>
-            {temCargo(CARGO_PRESIDENTE) ? (
-              <div className="col-6 col-lg-4 col-xxl">
-                <KpiCard icon="bi-person-badge-fill" label="Votos Presidente" value={pres?.votos ?? 0} tone="info" hint={`${fmtPct(pres?.pctEleitorado ?? 0)} do eleitorado`} />
-              </div>
-            ) : null}
-            {temCargo(CARGO_GOVERNADOR) ? (
-              <div className="col-6 col-lg-4 col-xxl">
-                <KpiCard icon="bi-bank2" label="Votos Governador" value={gov?.votos ?? 0} tone="success" hint={`${fmtPct(gov?.pctEleitorado ?? 0)} do eleitorado`} />
-              </div>
-            ) : null}
-            {temCargo(CARGO_DEPUTADO) ? (
-              <div className="col-6 col-lg-4 col-xxl">
-                <KpiCard icon="bi-patch-check-fill" label="Votos Dep. Estadual" value={dep?.votos ?? 0} tone="warning" hint={`${fmtPct(dep?.pctEleitorado ?? 0)} do eleitorado`} />
-              </div>
-            ) : null}
+            {CARGOS.map((c) => {
+              const r = resumoDe(c.id);
+              return (
+                <div key={c.id} className="col-6 col-lg-4 col-xxl">
+                  <KpiCard icon={c.icon} label={`Votos ${c.label}`} value={r?.votos ?? 0} tone={c.tone} hint={`${fmtPct(r?.pctEleitorado ?? 0)} do eleitorado`} />
+                </div>
+              );
+            })}
             <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-geo-alt-fill" label="Municípios" value={base?.municipios ?? 0} tone="success" hint={`${fmtInt(base?.bairros ?? 0)} bairros`} />
             </div>
             <div className="col-6 col-lg-4 col-xxl">
-              <KpiCard icon="bi-diagram-3-fill" label="Zonas eleitorais" value={base?.zonas ?? 0} tone="danger" hint={`${fmtInt(pres?.secoesComVoto ?? 0)} seções com voto`} />
+              <KpiCard icon="bi-diagram-3-fill" label="Zonas eleitorais" value={base?.zonas ?? 0} tone="danger" hint={`${fmtInt(base?.secoesComVoto ?? 0)} seções com voto`} />
             </div>
             <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-building-fill" label="Locais de votação" value={base?.locais ?? 0} tone="secondary" />

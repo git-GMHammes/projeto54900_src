@@ -24,6 +24,7 @@ cada resumo termina com o link para o conteúdo completo.
 | 3   | [`alerta`](#alerta)           | Checklist antes de criar UI        |
 | 4   | [`placeholder`](#placeholder) | Placeholder vazio não é bug        |
 | 5   | [`comentario`](#comentario)   | Comentar código em estilo didático |
+| 6   | [`porta`](#porta)             | Porta 54910 ocupada, solução WSL   |
 
 **2. Telas e navegação**
 
@@ -156,6 +157,16 @@ alvos do stack: Página (`pages/v1/.../XPage.tsx`), camada Core (`services/`,
 `hooks/`, `context/`, `utils/`) e componente de campo do `FormGrid`.
 
 [`geral/README_comenta-codigo-didatico.md`](geral/README_comenta-codigo-didatico.md) — como comentar código React/TSX em blocos didáticos.
+
+### `porta`
+
+Erro `Port 54910 is already in use` ao rodar `npm run dev`. Causa confirmada:
+o WSL em `networkingMode=mirrored` prende a porta e nenhum processo do Windows
+aparece como dono (`netstat` e `taskkill` não resolvem). Solução:
+`wsl --shutdown` e depois `npm run dev`; os containers do Podman caem e precisam
+subir de novo.
+
+[`geral/README_suporte_porta_54910.md`](geral/README_suporte_porta_54910.md) — solução da porta 54910 ocupada (WSL espelhado).
 
 ### `rotas`
 
@@ -546,8 +557,9 @@ inativo e sem empresa: a Menezes usa o Template 2 com o cabeçalho e o rodapé d
 - [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`temp_nav`/`temp_menu`) são montadas.
 - [`README_mapa.md`](geral/README_mapa.md) — componentes react-leaflet (MapView, MapLinksPanel...), rotas `/v1/map`, serviços `map*` e como qualquer módulo usa o mapa.
 - [`README_SVG_2026.md`](geral/README_SVG_2026.md) — módulo SVG-2026 (duplicata do `svg-map`) para a empresa Menezes 22001: arquivos, banco, usuários e regra de menu.
-- [`README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md) — dashboard eleitoral das Homes menezes22001 e helcio-angelo-70222: ECharts, views `view_dash_*`, cargos por empresa, arquivos e regras.
+- [`README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md) — dashboard eleitoral das Homes menezes22001, helcio-angelo-70222 e paes55 (vários candidatos por cargo): ECharts, views `view_dash_*`, cargos por empresa, arquivos e regras.
 - [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
+- [`README_suporte_porta_54910.md`](geral/README_suporte_porta_54910.md) — porta 54910 ocupada no `npm run dev`: causa (WSL espelhado) e solução `wsl --shutdown`.
 - [`README_dependencias_node.md`](geral/README_dependencias_node.md) — dependências e devDependencies do `package.json`, scripts e candidatas de OCR (SGD).
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
 - [`README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação (`pages/v1/<modulo>/<recurso>/<Acao>Page.tsx`) e fluxo composto em pasta própria.

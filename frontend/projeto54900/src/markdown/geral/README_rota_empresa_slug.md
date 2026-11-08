@@ -61,7 +61,17 @@ A rota índice (`/` e `/<slug>`) renderiza `pages/Home/CompanyHome.tsx`, que esc
   em `company_members` com `company_id=5`. Senha igual ao usuário (padrão de teste de `doc/txt/usuarios.txt`), hash bcrypt.
   `gustavo.hammes` segue Superuser (`*`) com acesso a todas as empresas (1 a 5).
   O `*_seed_table.sql` só os incluirá na renovação do snapshot do fim do ciclo.
-- **Empresa sem Home própria usa a da `default`** (fallback em `CompanyHome`): `/`, `/default` e
+- **`paes55` (`PaesHome.tsx`, 2026-11-08):** empresa **Eduardo Paes** (id 6, DEV, direto no banco, fora do seed), mesmo dashboard, só
+  **Governador**, com 3 candidatos: **Eduardo Paes (55, principal)**, Douglas Ruas (22) e Garotinho (10) (ver `README_dashboard_eleicoes.md`).
+  Usuários `paes.admin` (Admin, `company_members.role=admin`), `paes.user` (User) e `paes.guest` (Guest), `company_ids=[6]`, e-mail
+  `paes.<perfil>@exemplo.com.br`, senha igual ao usuário, hash bcrypt; mesmos 12 membros-base da Helcio; `gustavo.*`/`lorena.*`
+  ganharam o 6 em `company_ids`. Rodapé: `temp_footer` 7 com `col2_image=img/paes55/footer_col2.jpg` (2026-11-08); colunas 1, 3 e 4 com Segurança Pública, Asfalto Limpo e BRT (textos redigidos por IA, a revisar); cabeçalho (`temp_header` 7) com o do `default` e `logo_center_image=img/paes55/header_logo_center.png e `logo_left_image=img/paes55/header_logo_left.png` (logo à esquerda, 2026-11-08, UPDATE direto no DEV; rollback em `src/writable/claude/20261108190000_logo_esquerda_header_paes55_backup.sql`)` (recorte 3x4 sem fundo feito com rembg `u2net_human_seg`; original `Paes_55.jpg` mantido). Tela SVG-2026 liberada (2026-11-08): `paes55` volta
+  em `temp_menu` 93 e 94 e `CANDIDATOS_POR_EMPRESA` ganhou `[PAES, DOUGLAS, GAROTINHO]` (fotos `Paes_55.jpg` e `Garotinho_55.jpg`
+  em `public/svg-2026/`). `/paes55/v1/login` e a tela SVG-2026 não testados em tela (só a Home).
+- **`isquierdo22077` (Alexandre Isquierdo 22077, id 7, 2026-11-08, DEV, fora do seed):** Template 3, header/footer próprios (cópia do `default`),
+  usuários `isquierdo.admin|user|guest` (senha igual ao usuário, e-mail `isquierdo.<perfil>@exemplo.com.br`), sem Home própria (fallback `default`).
+  Detalhe em `README_modulo_template.md` (backend). `/isquierdo22077/v1/login` não testado em tela.
+- **Empresa sem Home própria usa a da `default`**- **Empresa sem Home própria usa a da `default`** (fallback em `CompanyHome`): `/`, `/default` e
   `/drsergiopsicologo` mostram os cards.
 - **`tryikads` (`TryikadsHome.tsx`)** tem Home própria, construída aos poucos em **rows responsivas do Bootstrap**.
   Hoje só a **row 1**, montada a partir da arte do cliente (`doc/img/tryikads/img_8.jpeg`): `row g-0` com a
@@ -141,3 +151,12 @@ A rota índice (`/` e `/<slug>`) renderiza `pages/Home/CompanyHome.tsx`, que esc
 | **Local**           | Rio de Janeiro                                                                                                               |
 | **LinkedIn**        | [linkedin.com/in/gustavo-hammes](https://www.linkedin.com/in/gustavo-hammes)                                                 |
 | **Stack principal** | PHP (Laravel, Symfony, Cake, Codeigniter), Java Spring Boot, JS/TS (React, Angular, Node.js), Mobile (React Native, Flutter) |
+
+## Logo no header por empresa
+
+O `Navbar` (components/layout/Navbar.tsx) exibe, a esquerda da marca, o logo da empresa do slug da URL, conforme o mapa `COMPANY_LOGOS` (PNG transparente em `public/img/`). `paes55`: `img/paes55/header_logo_left.png` (gerado de `logo1.jpg`, que tinha o xadrez embutido; original preservado).
+
+### Imagens da paes55 (2026-11-08)
+
+Pasta `public/img/paes55/` só com cabeçalho e rodapé, nomes padronizados (UPDATE direto no DEV em `temp_header` 7 e `temp_footer` 7; seed ainda não atualizado):
+`header_background.jpg` (fundo), `header_logo_left.png` (esquerda, também usado no `Navbar`), `header_logo_center.png` (foto recortada, centro), `header_logo_right.png` (brasão, direita), `footer_col2.jpg` (rodapé, coluna 2). Originais e versões intermediárias foram apagados.

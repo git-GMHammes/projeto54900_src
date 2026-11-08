@@ -74,6 +74,11 @@ function withoutRootLogin(items: SiteMenuItem[]): SiteMenuItem[] {
   return items.filter((item) => item.link?.to !== paths.v1.auth.login);
 }
 
+/** Logo (PNG transparente, em public/) exibido a esquerda do header por empresa (slug da URL). */
+const COMPANY_LOGOS: Record<string, string> = {
+  paes55: 'img/paes55/header_logo_left.png',
+};
+
 export default function Navbar() {
   const { appName, apiVersion } = useAppConfig();
   const { isAuthenticated, user, bootstrapping, logout } = useAuth();
@@ -81,6 +86,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [leaving, setLeaving] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const companyLogo = companySlug ? COMPANY_LOGOS[companySlug] : undefined;
   /** Fecha o Offcanvas pelo botao fechar (data-bs-dismiss) sem bloquear a navegacao do link. */
   const closeOffcanvas = () => closeRef.current?.click();
   const hasMenu = menu !== null && (menu.navbar.length > 0 || menu.offcanvas.length > 0);
@@ -111,6 +117,9 @@ export default function Navbar() {
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
         <div className="container">
           <NavLink className="navbar-brand fw-semibold" to={paths.home}>
+            {companyLogo && (
+              <img src={`${env.basePath}/${companyLogo}`} alt="" height={40} className="me-2 align-middle" />
+            )}
             {appName}
             <span className="badge text-bg-light ms-2 align-middle">{apiVersion}</span>
           </NavLink>

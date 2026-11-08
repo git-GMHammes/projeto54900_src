@@ -29,20 +29,20 @@ function mensagemErro(err: unknown): string {
     : 'Não foi possível carregar os votos.';
 }
 
-function TabelaSecoes({ cdTse, bairro, cargo }: { cdTse: string; bairro: string; cargo: string }) {
+function TabelaSecoes({ cdTse, bairro, cargo, numero }: { cdTse: string; bairro: string; cargo: string; numero: string }) {
   const [secoes, setSecoes] = useState<SecaoVotos[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
-    carregarSecoes(cdTse, bairro, cargo)
+    carregarSecoes(cdTse, bairro, cargo, numero)
       .then((s) => { if (ativo) setSecoes(s); })
       .catch((err: unknown) => {
         console.error('[Svg2026] Falha ao carregar seções:', err);
         if (ativo) setErro(mensagemErro(err));
       });
     return () => { ativo = false; };
-  }, [cdTse, bairro, cargo]);
+  }, [cdTse, bairro, cargo, numero]);
 
   if (erro) return <div className="small text-danger px-2 py-1">{erro}</div>;
   if (!secoes) return <div className="small text-muted px-2 py-1">Carregando seções...</div>;
@@ -114,7 +114,7 @@ function CardCandidato({ candidato, cdTse, bairros }: { candidato: Candidato; cd
               )}
               {expandido && (
                 <div className="bg-body-tertiary px-2 pb-2">
-                  <TabelaSecoes cdTse={cdTse} bairro={b.bairro} cargo={candidato.cargo} />
+                  <TabelaSecoes cdTse={cdTse} bairro={b.bairro} cargo={candidato.cargo} numero={candidato.numero} />
                 </div>
               )}
             </div>

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import type { DashVotosBairro } from '@/services/v1/eleicoes2026.dash';
 
-import { type Cargo, colorOf, fmtInt, fmtPct, titleCase } from './dashFormat';
+import { type Cargo, colorOf, fmtInt, fmtPct, idDe, titleCase } from './dashFormat';
 
 const PAGE = 10;
 
@@ -19,7 +19,7 @@ export default function RankingBairros({ rows, cargo }: RankingBairrosProps) {
   const [page, setPage] = useState(0);
 
   const ranked = useMemo(() => {
-    const base = rows.filter((r) => r.cargo === cargo).sort((a, b) => b.votos - a.votos);
+    const base = rows.filter((r) => idDe(r.cargo, r.numero) === cargo).sort((a, b) => b.votos - a.votos);
     return base.map((r, i) => ({ ...r, pos: i + 1 }));
   }, [rows, cargo]);
 
@@ -65,7 +65,7 @@ export default function RankingBairros({ rows, cargo }: RankingBairrosProps) {
           </thead>
           <tbody>
             {slice.map((r) => (
-              <tr key={`${r.cd}-${r.bairro}`}>
+              <tr key={`${r.cd}-${r.bairro}-${r.numero}`}>
                 <td className="text-end text-body-secondary">{r.pos}</td>
                 <td className="fw-semibold">{titleCase(r.bairro)}</td>
                 <td>{titleCase(r.municipio)}</td>

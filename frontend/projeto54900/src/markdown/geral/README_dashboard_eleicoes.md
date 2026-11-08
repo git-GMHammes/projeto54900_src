@@ -2,7 +2,7 @@
 
 ---
 
-# Dashboard de Eleições 2026 — Home da empresa `menezes22001`
+# Dashboard de Eleições 2026 — Home da empresa `menezes22001` (e helcio-angelo-70222, paes55)
 
 Criado em 2026-11-05. Título da Home: "Sistema Eleitoral 2026". Painel eleitoral na Home `/menezes22001`, **sem login**: lê as views `view_dash_*` do domínio
 Eleicoes2026 pelo token especial (`typ=eleicoes`, ver `services/v1/eleicoes2026.public.ts` e o README do backend
@@ -65,6 +65,28 @@ um (`DEPUTADO_POR_EMPRESA` troca o Menezes pelo Hélcio). `useDashboardData` des
 e `fetchDashVotosLocais` consulta só os candidatos da empresa. **Limite:** o filtro é só de tela; as views inteiras (inclui os dois
 deputados) continuam nas respostas da API (DevTools). Validado em tela em 2026-11-08: `/helcio-angelo-70222` mostra Dep. Estadual
 0,02% do eleitorado (Hélcio) e nenhum texto "Menezes"; `/menezes22001` segue com 46.700 votos.
+
+## Vários candidatos no mesmo cargo — `paes55` (2026-11-08)
+
+`dashFormat.ts`: cada candidato é um `CargoInfo` com `id = cargo|numero` (`idDe(ds_cargo, nr_votavel)`), `icon`, `tone` e `principal`.
+O estado `cargo` do painel passou a ser esse `id` (tipo `Cargo = string`); gráficos, ranking, heatmap, medidores e KPIs filtram por
+`idDe(linha.cargo, linha.numero) === id`, e os KPIs são um por candidato (`Votos <label>`). Empresa com lista própria usa
+`CANDIDATOS_POR_EMPRESA` (tem prioridade sobre `CARGOS_POR_EMPRESA`). `CARGO_INICIAL` = candidato `principal`; o cabeçalho mostra "Candidato
+principal" quando outro está selecionado. Menezes e Helcio continuam com a mesma tela.
+
+| Empresa | Home | Candidatos | Abre com |
+| ------- | ---- | ---------- | -------- |
+| `paes55` | `PaesHome.tsx` | Governador: Eduardo Paes (55, principal), Douglas Ruas (22), Garotinho (10) | Eduardo Paes |
+| `isquierdo22077` | `IsquierdoHome.tsx` | Dep. Estadual: Alexandre Isquierdo (22077, principal); Dep. Federal: Dr. Luizinho (1177), Sarah Poncio (7777) | Alexandre Isquierdo |
+
+**`isquierdo22077` (2026-11-08):** primeira empresa só com **deputados** e com **Dep. Federal** (`CARGO_DEPUTADO_FEDERAL` em
+`eleicoes2026.dash.ts`; `CargoKey` e `ehDeputado()`/`temDeputado()` em `dashFormat.ts`). No gráfico de dispersão de locais, quando todos os
+candidatos são deputados (`soDeputados`) há um único eixo "Votos (Dep.)"; com Presidente/Governador junto, deputados seguem no eixo da direita.
+Medidores: Alexandre 0–1%, Dr. Luizinho 0–2%, Sarah 0–1%. Conferido em Chrome headless: Home carrega com os 3 candidatos e os percentuais do eleitorado
+(0,65%, 1,66%, 0,16%); `tsc -b` e ESLint sem erro. Os contadores animados e os gráficos ainda estavam em animação na captura.
+
+Conferido em tela (Chrome headless, 2026-11-08): Paes 28,83% do eleitorado, Douglas Ruas 33,22%, Garotinho 2,13%; `tsc -b` e ESLint sem erro.
+Medidores: Paes e Ruas 0–100%, Garotinho 0–10%.
 
 ## Regras e cuidados
 

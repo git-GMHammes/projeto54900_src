@@ -14,7 +14,7 @@ import { fetchDashVotosBairro, fetchDashVotosMunicipio } from '@/services/v1/ele
 import { normalizeList } from '@/utils/apiResult';
 
 export interface Candidato {
-  chave: 'menezes' | 'flavio' | 'douglas' | 'helcio';
+  chave: 'menezes' | 'flavio' | 'douglas' | 'helcio' | 'paes' | 'garotinho' | 'isquierdo' | 'luizinho' | 'sarah';
   nome: string;
   cargo: string;
   numero: string;
@@ -26,11 +26,20 @@ export const MENEZES: Candidato = { chave: 'menezes', nome: 'Coronel Menezes', c
 export const FLAVIO: Candidato = { chave: 'flavio', nome: 'Flávio Bolsonaro', cargo: 'PRESIDENTE', numero: '22', foto: 'flavio_22.jpg' };
 export const DOUGLAS: Candidato = { chave: 'douglas', nome: 'Douglas Ruas', cargo: 'GOVERNADOR', numero: '22', foto: 'douglas_22.jpg' };
 export const HELCIO: Candidato = { chave: 'helcio', nome: 'Hélcio Ângelo', cargo: 'DEPUTADO ESTADUAL', numero: '70222', foto: 'ha_70222.jpg' };
+export const PAES: Candidato = { chave: 'paes', nome: 'Eduardo Paes', cargo: 'GOVERNADOR', numero: '55', foto: 'Paes_55.jpg' };
+export const GAROTINHO: Candidato = { chave: 'garotinho', nome: 'Garotinho', cargo: 'GOVERNADOR', numero: '10', foto: 'Garotinho_55.jpg' };
+export const ISQUIERDO: Candidato = { chave: 'isquierdo', nome: 'Alexandre Isquierdo', cargo: 'DEPUTADO ESTADUAL', numero: '22077', foto: 'isquierdo_22077_200.png' };
+export const LUIZINHO: Candidato = { chave: 'luizinho', nome: 'Dr. Luizinho', cargo: 'DEPUTADO FEDERAL', numero: '1177', foto: 'luizinho_1177_200.jpg' };
+export const SARAH: Candidato = { chave: 'sarah', nome: 'Sarah Poncio', cargo: 'DEPUTADO FEDERAL', numero: '7777', foto: 'sarah_7777_200.jpg' };
 
 /** Candidatos exibidos por empresa (slug da URL). Empresa sem entrada usa a lista completa. */
 const CANDIDATOS_POR_EMPRESA: Readonly<Record<string, Candidato[]>> = {
   // Helcio Angelo: Presidente, Governador e ele mesmo (Dep. Estadual 70222); o Coronel Menezes nao aparece.
   'helcio-angelo-70222': [HELCIO, FLAVIO, DOUGLAS],
+  // Eduardo Paes (principal) com Douglas Ruas e Garotinho: os tres sao GOVERNADOR, distintos por nr_votavel.
+  paes55: [PAES, DOUGLAS, GAROTINHO],
+  // Alexandre Isquierdo (Dep. Estadual 22077, principal) com Dr. Luizinho (1177) e Sarah Poncio (7777), Dep. Federal.
+  isquierdo22077: [ISQUIERDO, LUIZINHO, SARAH],
 };
 
 export const CANDIDATOS: Candidato[] = CANDIDATOS_POR_EMPRESA[companySlug ?? ''] ?? [MENEZES, FLAVIO, DOUGLAS];
@@ -43,8 +52,11 @@ function ehCandidatoDaEmpresa(l: Record<string, unknown>): boolean {
 
 export const COL_CANDIDATO = CANDIDATOS.length >= 3 ? 4 : 12 / Math.max(CANDIDATOS.length, 1);
 
-/** Votos por ds_cargo. */
+/** Votos por candidato (chave = chaveVotos: ds_cargo + nr_votavel; um cargo pode ter varios candidatos). */
 export type VotosPorCargo = Record<string, number>;
+
+/** Chave de um candidato em VotosPorCargo. */
+export const chaveVotos = (c: { cargo: string; numero: string }): string => `${c.cargo}|${c.numero}`;
 
 export interface TotaisMunicipio {
   cdTse: string;
@@ -118,7 +130,7 @@ export async function carregarTotaisMunicipios(): Promise<{
   const totalRj: VotosPorCargo = {};
   for (const l of linhas.filter(ehCandidatoDaEmpresa)) {
     const cdTse = txt(l.cd_municipio);
-    const cargo = txt(l.ds_cargo);
+    const cargo = `${txt(l.ds_cargo)}|${txt(l.nr_votavel)}`;
     const votos = num(l.qt_votos);
     const atual = porMunicipio[cdTse] ?? {
       cdTse,
@@ -158,7 +170,7 @@ export async function carregarBairros(cdTse: string): Promise<Record<Candidato['
     buscarTudo((f, p) => eleicoes2026Candidato22001BairroView.find(f, p), { cd_municipio: cdTse }, 'qt_votos'),
     eleitoresPorBairro(),
   ]);
-  const resultado: Record<Candidato['chave'], BairroVotos[]> = { menezes: [], flavio: [], douglas: [], helcio: [] };
+  const resultado: Record<Candidato['chave'], BairroVotos[]> = { menezes: [], flavio: [], douglas: [], helcio: [], paes: [], garotinho: [], isquierdo: [], luizinho: [], sarah: [] };
   for (const c of CANDIDATOS) {
     resultado[c.chave] = linhas
       .filter((l) => txt(l.ds_cargo) === c.cargo && txt(l.nr_votavel) === c.numero)
@@ -173,11 +185,10 @@ export async function carregarBairros(cdTse: string): Promise<Record<Candidato['
 }
 
 /** Secoes de um bairro (local, endereco, zona/secao, votos), do maior para o menor voto. */
-export async function carregarSecoes(cdTse: string, bairro: string, cargo: string): Promise<SecaoVotos[]> {
-  const numero = CANDIDATOS.find((c) => c.cargo === cargo)?.numero;
+export async function carregarSecoes(cdTse: string, bairro: string, cargo: string, numero: string): Promise<SecaoVotos[]> {
   const linhas = await buscarTudo(
     (f, p) => eleicoes2026Candidato22001View.find(f, p),
-    { cd_municipio: cdTse, nm_bairro: bairro, ds_cargo: cargo, ...(numero ? { nr_votavel: numero } : {}) },
+    { cd_municipio: cdTse, nm_bairro: bairro, ds_cargo: cargo, nr_votavel: numero },
     'qt_votos',
   );
   return linhas
