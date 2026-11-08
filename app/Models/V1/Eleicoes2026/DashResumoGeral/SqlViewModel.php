@@ -21,6 +21,7 @@ class SqlViewModel extends BaseViewModel
 
     protected array $sortableFields = [
         'ds_cargo',
+        'nr_votavel',
         'qt_votos',
         'qt_secoes_com_voto',
         'qt_municipios_com_voto',
@@ -39,6 +40,7 @@ class SqlViewModel extends BaseViewModel
 
     public array $filterFields = [
         'ds_cargo',
+        'nr_votavel',
         'qt_votos',
         'qt_secoes_com_voto',
         'qt_municipios_com_voto',

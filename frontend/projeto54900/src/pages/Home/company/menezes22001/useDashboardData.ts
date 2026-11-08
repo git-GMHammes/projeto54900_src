@@ -16,6 +16,8 @@ import {
   fetchDashVotosZona,
 } from '@/services/v1/eleicoes2026.dash';
 
+import { CARGOS, ehCandidatoExibido } from './dashFormat';
+
 export interface DashboardData {
   resumo: DashResumo[];
   municipios: DashVotosMunicipio[];
@@ -42,11 +44,23 @@ export function useDashboardData(): { state: DashboardState; reload: () => void 
       fetchDashVotosMunicipio(),
       fetchDashVotosZona(),
       fetchDashVotosBairro(),
-      fetchDashVotosLocais(),
+      fetchDashVotosLocais(CARGOS.map((c) => ({ cargo: c.key, numero: c.numero }))),
     ])
       .then(([resumo, municipios, zonas, bairros, locais]) => {
         if (cancelled) return;
-        setState({ status: 'ok', data: { resumo, municipios, zonas, bairros, locais, carregadoEm: new Date() } });
+        // As views trazem todos os candidatos; cada empresa mostra so os seus (cargo + numero).
+        const so = <T extends { cargo: string; numero: string }>(linhas: T[]): T[] => linhas.filter((l) => ehCandidatoExibido(l.cargo, l.numero));
+        setState({
+          status: 'ok',
+          data: {
+            resumo: so(resumo),
+            municipios: so(municipios),
+            zonas: so(zonas),
+            bairros: so(bairros),
+            locais: so(locais),
+            carregadoEm: new Date(),
+          },
+        });
       })
       .catch((e: unknown) => {
         if (cancelled) return;

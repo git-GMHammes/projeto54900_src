@@ -1,5 +1,6 @@
 // Formatadores e constantes visuais do dashboard de Eleicoes (Home menezes22001). Tudo em pt-BR.
 
+import { companySlug } from '@/config/env';
 import { CARGO_DEPUTADO, CARGO_GOVERNADOR, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
 
 const INT = new Intl.NumberFormat('pt-BR');
@@ -17,11 +18,51 @@ export const esc = (s: string): string =>
 /** Cargo selecionado no painel. */
 export type Cargo = typeof CARGO_PRESIDENTE | typeof CARGO_DEPUTADO | typeof CARGO_GOVERNADOR;
 
-export const CARGOS: readonly { key: Cargo; label: string; candidato: string; color: string }[] = [
-  { key: CARGO_PRESIDENTE, label: 'Presidente', candidato: 'Flávio Bolsonaro (22)', color: '#4f7cff' },
-  { key: CARGO_GOVERNADOR, label: 'Governador', candidato: 'Douglas Ruas (22)', color: '#2ecc71' },
-  { key: CARGO_DEPUTADO, label: 'Dep. Estadual', candidato: 'Coronel Menezes (22001)', color: '#ff9f43' },
+export interface CargoInfo {
+  key: Cargo;
+  /** nr_votavel do candidato exibido no cargo (distingue candidatos do mesmo cargo nas views). */
+  numero: string;
+  label: string;
+  candidato: string;
+  /** Nome do candidato e cargo por extenso, para o texto do cabecalho. */
+  descricao: string;
+  color: string;
+  /** Escala maxima do medidor (%). */
+  gaugeMax: number;
+}
+
+const TODOS_CARGOS: readonly CargoInfo[] = [
+  { key: CARGO_PRESIDENTE, numero: '22', label: 'Presidente', candidato: 'Flávio Bolsonaro (22)', descricao: 'Flávio Bolsonaro (Presidente)', color: '#4f7cff', gaugeMax: 100 },
+  { key: CARGO_GOVERNADOR, numero: '22', label: 'Governador', candidato: 'Douglas Ruas (22)', descricao: 'Douglas Ruas (Governador)', color: '#2ecc71', gaugeMax: 100 },
+  { key: CARGO_DEPUTADO, numero: '22001', label: 'Dep. Estadual', candidato: 'Coronel Menezes (22001)', descricao: 'Coronel Menezes 22001 (Deputado Estadual)', color: '#ff9f43', gaugeMax: 1 },
 ];
+
+/** Cargos exibidos por empresa (slug da URL). Empresa sem entrada usa todos. */
+const CARGOS_POR_EMPRESA: Readonly<Record<string, readonly Cargo[]>> = {
+  // Helcio Angelo: Presidente, Governador e Dep. Estadual (ele mesmo, 70222); o Coronel Menezes nao aparece.
+  'helcio-angelo-70222': [CARGO_PRESIDENTE, CARGO_GOVERNADOR, CARGO_DEPUTADO],
+};
+
+/** Candidato do Dep. Estadual por empresa (substitui o padrao Coronel Menezes 22001). */
+const DEPUTADO_POR_EMPRESA: Readonly<Record<string, Partial<CargoInfo>>> = {
+  'helcio-angelo-70222': { numero: '70222', candidato: 'Hélcio Ângelo (70222)', descricao: 'Hélcio Ângelo 70222 (Deputado Estadual)' },
+};
+
+const cargosDaEmpresa = CARGOS_POR_EMPRESA[companySlug ?? ''];
+const deputadoDaEmpresa = DEPUTADO_POR_EMPRESA[companySlug ?? ''];
+
+export const CARGOS: readonly CargoInfo[] = (
+  cargosDaEmpresa ? TODOS_CARGOS.filter((c) => cargosDaEmpresa.includes(c.key)) : TODOS_CARGOS
+).map((c) => (c.key === CARGO_DEPUTADO && deputadoDaEmpresa ? { ...c, ...deputadoDaEmpresa } : c));
+
+/** A linha da view (cargo + nr_votavel) e de um candidato exibido pela empresa? */
+export const ehCandidatoExibido = (cargo: string, numero: string): boolean =>
+  CARGOS.some((c) => c.key === cargo && c.numero === numero);
+
+/** Cargo que abre selecionado: Dep. Estadual quando exibido; senao o primeiro da lista. */
+export const CARGO_INICIAL: Cargo = CARGOS.some((c) => c.key === CARGO_DEPUTADO) ? CARGO_DEPUTADO : (CARGOS[0]?.key ?? CARGO_PRESIDENTE);
+
+export const temCargo = (cargo: Cargo): boolean => CARGOS.some((c) => c.key === cargo);
 
 export const colorOf = (cargo: string): string => CARGOS.find((c) => c.key === cargo)?.color ?? '#4f7cff';
 export const labelOf = (cargo: string): string => CARGOS.find((c) => c.key === cargo)?.label ?? cargo;

@@ -52,6 +52,15 @@ A rota índice (`/` e `/<slug>`) renderiza `pages/Home/CompanyHome.tsx`, que esc
 
 - Registro: `pages/Home/company/companyHomes.ts` (`COMPANY_HOMES`, slug -> componente).
 - **`default` (`DefaultHome.tsx`)** mantém a página de cards informativos do projeto (`HomePage.tsx`).
+- **`menezes22001` (`Menezes22001Home.tsx`)** e **`helcio-angelo-70222` (`HelcioAngelo70222Home.tsx`, 2026-11-07)**
+  renderizam o dashboard eleitoral (`EleicoesDashboard`); os cargos exibidos são por empresa (ver
+  `README_dashboard_eleicoes.md`). Slug com hífen entra entre aspas no `COMPANY_HOMES`.
+- **Usuários da `helcio-angelo-70222` (2026-11-07, DEV, criados direto no banco, fora do seed):** `ha.admin`
+  (papel Admin, `company_members.role=admin`), `ha.user` (User) e `ha.guest` (Guest), ambos `member`.
+  Cada um tem `user_manager.company_ids=[5]`, `user_profiles` (e-mail `ha.<perfil>@exemplo.com.br`) e um vínculo
+  em `company_members` com `company_id=5`. Senha igual ao usuário (padrão de teste de `doc/txt/usuarios.txt`), hash bcrypt.
+  `gustavo.hammes` segue Superuser (`*`) com acesso a todas as empresas (1 a 5).
+  O `*_seed_table.sql` só os incluirá na renovação do snapshot do fim do ciclo.
 - **Empresa sem Home própria usa a da `default`** (fallback em `CompanyHome`): `/`, `/default` e
   `/drsergiopsicologo` mostram os cards.
 - **`tryikads` (`TryikadsHome.tsx`)** tem Home própria, construída aos poucos em **rows responsivas do Bootstrap**.

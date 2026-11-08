@@ -64,6 +64,26 @@ migration). Regra de conversão: `cd_municipio` vira texto; `nr_zona = LPAD(...,
 `src/writable/claude/20261107120000_douglas_ruas_backup.sql`. Rollback:
 `DELETE FROM eleicoes_2026_votos_1t_2t_22001_RJ WHERE nm_votavel='DOUGLAS RUAS' AND ds_cargo='GOVERNADOR'`.
 
+### Carga de HELCIO ANGELO (70222) na tabela do candidato 22001 (2026-11-07)
+
+Inseridas em `eleicoes_2026_votos_1t_2t_22001_RJ` as 1.867 linhas de `bu_votos_1t_RJ` com `nr_votavel=70222` e
+`nm_votavel='HELCIO ANGELO'` (`ds_cargo` DEPUTADO ESTADUAL, AVANTE nr_partido 70, 2.788 votos, 1o turno), por
+`INSERT ... SELECT` direto no DEV (sem migration/seed), mesma regra de conversao da carga de DOUGLAS RUAS
+(registro modelo: origem id 1179, 58009/255/30 -> `58009`/`255`/`0030`/`58009.255.0030`). `sg_partido`, `nr_partido`,
+`tp_voto` e `qt_votos` vieram da origem. Ids novos 7161249 a 7163115; zero divergencia entre
+`cd_municipio_zona_secao` e a concatenacao. Rollback:
+`DELETE FROM eleicoes_2026_votos_1t_2t_22001_RJ WHERE nr_votavel=70222 AND nm_votavel='HELCIO ANGELO'`.
+
+### Coluna `nr_votavel` nas views (2026-11-08)
+
+Menezes (22001) e Hélcio (70222) são ambos `DEPUTADO ESTADUAL`; as views agrupavam só por `ds_cargo` e somavam os dois. Recriadas
+**direto no DEV** (sem editar o `replace_view`, só no fim do ciclo) com `nr_votavel` na seleção, nos `GROUP BY` e no join do total por cargo:
+`view_eleicoes_2026_22001_22` (+`_bairro`, `_municipio`), `view_dash_resumo_geral`, `view_dash_votos_bairro|local_votacao|municipio|zona` e
+`view_dash_ranking_bairro|municipio|zona` (ranking particiona por cargo + `nr_votavel`). `view_dash_votos_partido` já tinha a coluna.
+Models `SqlViewModel` correspondentes: `nr_votavel` em `filterFields` e `sortableFields`. Conferido: Dep. Estadual 22001 = 46.700 e
+70222 = 2.788 em todas as views. Backup das definições antigas: `src/writable/claude/20261108000000_views_votavel_backup.sql`.
+**Pendência:** o `replace_view` do snapshot precisa receber essas definições na renovação do fim do ciclo.
+
 ### Views agregadas (2026-11-04)
 
 Criadas direto no DEV (SQL em `doc/sql/view/view_eleicoes_2026_22001_22_municipio.sql` e `..._bairro.sql`; sem migration,

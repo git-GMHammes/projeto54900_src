@@ -17,7 +17,28 @@ Sobre o módulo original, ver a seção `svgMap` de [`README_rotas_frontend.md`]
 | Vínculo | linha ativa em `company_members` e id 4 em `user_manager.company_ids` |
 | Role no vínculo | conta com role Admin entra como `admin`; as demais, como `member` |
 
-Entrada pela URL `/menezes22001/v1/login`. Backup do `company_ids` anterior à mudança:
+Entrada pela URL `/menezes22001/v1/login`.
+
+### Empresa Hélcio Ângelo (2026-11-07)
+
+Segunda empresa do módulo, criada a partir da Menezes, **sem o Coronel Menezes** no SVG e no Dashboard; o Dep. Estadual exibido é o próprio **Hélcio Ângelo (70222)** (2026-11-08, carga em
+`eleicoes_2026_votos_1t_2t_22001_RJ`). `eleicoes2026.ts`: `HELCIO` (foto `public/svg-2026/ha_70222.jpg`) em `CANDIDATOS_POR_EMPRESA`; os loaders
+(`carregarTotaisMunicipios`, `carregarBairros`, `carregarSecoes`) filtram por `ds_cargo` + `nr_votavel`, pois Menezes e Hélcio são ambos DEPUTADO ESTADUAL.
+
+| Item | Valor |
+| ---- | ----- |
+| Empresa | `Hélcio Ângelo` (`company_manager.id` 5), slug `helcio-angelo-70222`, ativa, `color_theme=Dark` |
+| Menu | slug acrescentado em `temp_menu` 93 (SVG-2026), 94 (SVG, superuser) e 95 (Home); sem linha nova |
+| Template | `temp_manager` 3 (template003, o mesmo da Menezes), `temp_nav` 1 e 2, `temp_header`/`temp_footer` **1** (neutros do `default`; os registros 5 têm a marca Menezes e não foram usados) |
+| Usuários | `gustavo.*` (ids 1-6, 142-144) e `lorena.*` (145-147), mesma role da Menezes; `cel.menezes.*` **não** vinculados; `company_ids` acrescido do 5 |
+| Candidatos | `CANDIDATOS_POR_EMPRESA` em `eleicoes2026.ts`: `[FLAVIO, DOUGLAS]`; cards com `COL_CANDIDATO` (2 candidatos = `col-md-6`/`col-lg-6`) |
+| Home | `HelcioAngelo70222Home.tsx` (dashboard, ver `README_dashboard_eleicoes.md`) |
+
+Entrada: `/helcio-angelo-70222/v1/login`. Banco só no DEV, sem migration/seed. Backup antes da mudança:
+`src/writable/claude/20261107215114_helcio_angelo_backup.sql`. Rollback: restaurar o backup, `DELETE FROM company_members
+WHERE company_id = 5` e `DELETE FROM company_manager WHERE id = 5`. O cabeçalho do `default` traz o slogan
+"FORÇA . HONRA . SERVIÇO" (texto do registro 1, não da Menezes). Os dados dos demais candidatos continuam nas respostas da
+API (filtro só na tela). Tela do SVG-2026 nesta empresa **não conferida** (exige login). Rodapé (`temp_footer` id 6, 2026-11-08): colunas de texto **Esporte**, **Saúde** e **Segurança** com propostas de políticas públicas (coluna 2 = imagem `img/ha_70222/rodape.jpg`); UPDATE direto no DEV, backup em `src/writable/claude/20261108040000_rodape_helcio_backup.sql`. Imagens da empresa em `public/img/ha_70222/`: `logo1.jpg` (brasão com o xadrez de "transparente" gravado nos pixels) e `logo1_sem_fundo.png` (2026-11-08: PNG RGBA 606x735 sem o fundo, recortado nas margens; gerado por máscara de cor, o original ficou intacto). Backup do `company_ids` anterior à mudança:
 `src/writable/claude/20261104155758_company_ids_backup.json`.
 
 ## Arquivos do módulo
@@ -118,7 +139,10 @@ estando logado em outra empresa abre a página.
 
 ## Template da empresa (Template 2 com cabeçalho e rodapé do default)
 
-Situação atual (2026-11-04): a empresa usa o **Template 2** (visual sem bordas) com o **cabeçalho e o rodapé do
+**Desatualizado (conferido no DEV em 2026-11-07):** a Menezes usa hoje o `temp_manager` id 3 (`template003`) com
+cabeçalho e rodapé próprios (id 5); o id 2 (`template002`) lista só `tryikads`. A tabela abaixo é histórica.
+
+Situação em 2026-11-04: a empresa usa o **Template 2** (visual sem bordas) com o **cabeçalho e o rodapé do
 `default`** (modelos neutros: logo "LOGOMARCA" e textos genéricos). O template define só o visual; cabeçalho e
 rodapé são por empresa (lista `company_manager` de cada linha). Histórico: primeiro a empresa foi ligada aos registros 2
 (trouxe a marca da Tryik), depois ao Template 004 (cópia do 002, ver

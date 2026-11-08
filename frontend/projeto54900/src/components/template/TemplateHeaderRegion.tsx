@@ -10,6 +10,9 @@ import type { TemplateHeaderData, TemplateLogo } from '@/types/template';
 
 const assetUrl = (path: string): string => `${env.basePath}/${path}`;
 
+/** Altura padrao das logomarcas (esq./centro/dir.): todas iguais, sem distorcer (contain) e responsiva. */
+const LOGO_STYLE = { height: 'clamp(110px, 16vw, 220px)', width: 'auto', maxWidth: '100%', objectFit: 'contain' } as const;
+
 const POSITIONS: { position: TemplateLogo['position']; className: string }[] = [
   { position: 'left', className: 'text-start' },
   { position: 'center', className: 'text-center' },
@@ -56,7 +59,7 @@ export default function TemplateHeaderRegion({ header, flat, palette, collapsibl
                   <div key={position} className={`col-4 ${className}`}>
                     {logo &&
                       (logo.image_url ? (
-                        <img src={assetUrl(logo.image_url)} alt={logo.alt} className="img-fluid" />
+                        <img src={assetUrl(logo.image_url)} alt={logo.alt} style={LOGO_STYLE} />
                       ) : (
                         logo.text
                       ))}

@@ -6,8 +6,6 @@ import type { EChartsOption } from 'echarts';
 import type { ChartTheme } from '@/components/charts/EChart';
 import {
   CARGO_DEPUTADO,
-  CARGO_GOVERNADOR,
-  CARGO_PRESIDENTE,
   type DashResumo,
   type DashVotosBairro,
   type DashVotosLocal,
@@ -15,7 +13,7 @@ import {
   type DashVotosZona,
 } from '@/services/v1/eleicoes2026.dash';
 
-import { CARGOS, type Cargo, colorOf, esc, fmtCompact, fmtInt, fmtPct, labelOf, titleCase } from './dashFormat';
+import { CARGOS, type Cargo, colorOf, esc, fmtCompact, fmtInt, fmtPct, labelOf, temCargo, titleCase } from './dashFormat';
 
 export type Metrica = 'votos' | 'pct';
 type Build = (t: ChartTheme) => EChartsOption;
@@ -28,11 +26,8 @@ const tip = (t: ChartTheme) => ({
   textStyle: { color: t.text },
 });
 
-/** Tres medidores: % dos votos sobre o eleitorado, por cargo. */
+/** Um medidor por cargo exibido (CARGOS): % dos votos sobre o eleitorado. */
 export function gaugeBuild(resumo: DashResumo[]): Build {
-  const pres = resumo.find((r) => r.cargo === CARGO_PRESIDENTE);
-  const gov = resumo.find((r) => r.cargo === CARGO_GOVERNADOR);
-  const dep = resumo.find((r) => r.cargo === CARGO_DEPUTADO);
   return (t) => {
     const gauge = (cx: string, r: DashResumo | undefined, cargo: Cargo, max: number, name: string) => ({
       type: 'gauge' as const,
@@ -61,11 +56,16 @@ export function gaugeBuild(resumo: DashResumo[]): Build {
     });
     return {
       tooltip: { show: false },
-      series: [
-        gauge('17%', pres, CARGO_PRESIDENTE, 100, 'Presidente · escala 0–100%'),
-        gauge('50%', gov, CARGO_GOVERNADOR, 100, 'Governador · escala 0–100%'),
-        gauge('83%', dep, CARGO_DEPUTADO, 1, 'Dep. Estadual · escala 0–1%'),
-      ],
+      // Centros distribuidos por igual (3 cargos: 17%, 50%, 83%; 2 cargos: 25%, 75%).
+      series: CARGOS.map((c, i) =>
+        gauge(
+          `${String(Math.round(((i + 0.5) / CARGOS.length) * 100))}%`,
+          resumo.find((r) => r.cargo === c.key),
+          c.key,
+          c.gaugeMax,
+          `${c.label} · escala 0–${String(c.gaugeMax)}%`,
+        ),
+      ),
     };
   };
 }
@@ -338,7 +338,8 @@ export function scatterBuild(rows: DashVotosLocal[]): Build {
         axisLabel: { color: t.muted, formatter: (v: number) => fmtCompact(v) },
         splitLine: { lineStyle: { color: t.border, type: 'dashed' as const } },
       },
-      {
+      // Eixo do Dep. Estadual so quando o cargo e exibido (empresa sem o cargo nao mostra o eixo).
+      ...(temCargo(CARGO_DEPUTADO) ? [{
         type: 'value' as const,
         name: 'Votos (Dep.)',
         nameGap: 12,
@@ -346,7 +347,7 @@ export function scatterBuild(rows: DashVotosLocal[]): Build {
         nameTextStyle: { color: colorOf(CARGO_DEPUTADO) },
         axisLabel: { color: colorOf(CARGO_DEPUTADO), formatter: (v: number) => fmtCompact(v) },
         splitLine: { show: false },
-      },
+      }] : []),
     ],
     dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
     series: CARGOS.map((c) => ({

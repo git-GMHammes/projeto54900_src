@@ -8,7 +8,7 @@ import EChart from '@/components/charts/EChart';
 import { CARGO_DEPUTADO, CARGO_GOVERNADOR, CARGO_PRESIDENTE } from '@/services/v1/eleicoes2026.dash';
 
 import { donutBuild, gaugeBuild, heatmapBuild, type Metrica, scatterBuild, topMunicipiosBuild, treemapBuild } from './chartOptions';
-import { CARGOS, type Cargo, fmtInt, fmtPct } from './dashFormat';
+import { CARGO_INICIAL, CARGOS, type Cargo, fmtInt, fmtPct, temCargo } from './dashFormat';
 import KpiCard from './KpiCard';
 import RankingBairros from './RankingBairros';
 import { useDashboardData } from './useDashboardData';
@@ -60,7 +60,7 @@ function Skeleton() {
 
 export default function EleicoesDashboard() {
   const { state, reload } = useDashboardData();
-  const [cargo, setCargo] = useState<Cargo>(CARGO_DEPUTADO);
+  const [cargo, setCargo] = useState<Cargo>(CARGO_INICIAL);
   const [metrica, setMetrica] = useState<Metrica>('votos');
 
   const data = state.status === 'ok' ? state.data : null;
@@ -76,6 +76,10 @@ export default function EleicoesDashboard() {
   const gov = data?.resumo.find((r) => r.cargo === CARGO_GOVERNADOR);
   const dep = data?.resumo.find((r) => r.cargo === CARGO_DEPUTADO);
   const base = pres ?? gov ?? dep;
+  // Texto do cabecalho conforme os cargos exibidos pela empresa (ex.: "A (Presidente), B (Governador) e C (...)").
+  const descricoes = CARGOS.map((c) => c.descricao);
+  const candidatosTexto =
+    descricoes.length > 1 ? `${descricoes.slice(0, -1).join(', ')} e ${descricoes[descricoes.length - 1] ?? ''}` : (descricoes[0] ?? '');
   const cargoAtual = CARGOS.find((c) => c.key === cargo);
 
   return (
@@ -89,9 +93,7 @@ export default function EleicoesDashboard() {
             </div>
             <h1 className="display-6 fw-bold my-2">Sistema Eleitoral 2026</h1>
             <p className="mb-0 opacity-75">
-              Votação de Flávio Bolsonaro (Presidente), Douglas Ruas (Governador) e Coronel Menezes 22001 (Deputado
-              Estadual) cruzada com o
-              eleitorado de {base ? fmtInt(base.municipios) : '—'} municípios, {base ? fmtInt(base.zonas) : '—'} zonas e{' '}
+              Votação de {candidatosTexto} cruzada com o eleitorado de {base ? fmtInt(base.municipios) : '—'} municípios, {base ? fmtInt(base.zonas) : '—'} zonas e{' '}
               {base ? fmtInt(base.locais) : '—'} locais de votação.
             </p>
           </div>
@@ -132,15 +134,21 @@ export default function EleicoesDashboard() {
             <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-people-fill" label="Eleitores" value={base?.eleitores ?? 0} hint={`${fmtInt(base?.secoes ?? 0)} seções`} />
             </div>
-            <div className="col-6 col-lg-4 col-xxl">
-              <KpiCard icon="bi-person-badge-fill" label="Votos Presidente" value={pres?.votos ?? 0} tone="info" hint={`${fmtPct(pres?.pctEleitorado ?? 0)} do eleitorado`} />
-            </div>
-            <div className="col-6 col-lg-4 col-xxl">
-              <KpiCard icon="bi-bank2" label="Votos Governador" value={gov?.votos ?? 0} tone="success" hint={`${fmtPct(gov?.pctEleitorado ?? 0)} do eleitorado`} />
-            </div>
-            <div className="col-6 col-lg-4 col-xxl">
-              <KpiCard icon="bi-patch-check-fill" label="Votos Dep. Estadual" value={dep?.votos ?? 0} tone="warning" hint={`${fmtPct(dep?.pctEleitorado ?? 0)} do eleitorado`} />
-            </div>
+            {temCargo(CARGO_PRESIDENTE) ? (
+              <div className="col-6 col-lg-4 col-xxl">
+                <KpiCard icon="bi-person-badge-fill" label="Votos Presidente" value={pres?.votos ?? 0} tone="info" hint={`${fmtPct(pres?.pctEleitorado ?? 0)} do eleitorado`} />
+              </div>
+            ) : null}
+            {temCargo(CARGO_GOVERNADOR) ? (
+              <div className="col-6 col-lg-4 col-xxl">
+                <KpiCard icon="bi-bank2" label="Votos Governador" value={gov?.votos ?? 0} tone="success" hint={`${fmtPct(gov?.pctEleitorado ?? 0)} do eleitorado`} />
+              </div>
+            ) : null}
+            {temCargo(CARGO_DEPUTADO) ? (
+              <div className="col-6 col-lg-4 col-xxl">
+                <KpiCard icon="bi-patch-check-fill" label="Votos Dep. Estadual" value={dep?.votos ?? 0} tone="warning" hint={`${fmtPct(dep?.pctEleitorado ?? 0)} do eleitorado`} />
+              </div>
+            ) : null}
             <div className="col-6 col-lg-4 col-xxl">
               <KpiCard icon="bi-geo-alt-fill" label="Municípios" value={base?.municipios ?? 0} tone="success" hint={`${fmtInt(base?.bairros ?? 0)} bairros`} />
             </div>

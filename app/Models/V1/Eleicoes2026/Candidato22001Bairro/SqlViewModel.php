@@ -27,6 +27,7 @@ class SqlViewModel extends BaseViewModel
         'nm_municipio',
         'nm_bairro',
         'ds_cargo',
+        'nr_votavel',
         'qt_votos',
         'qt_secoes',
     ];
@@ -42,6 +43,7 @@ class SqlViewModel extends BaseViewModel
         'nm_municipio',
         'nm_bairro',
         'ds_cargo',
+        'nr_votavel',
         'qt_votos',
         'qt_secoes',
     ];

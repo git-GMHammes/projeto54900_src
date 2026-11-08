@@ -7,8 +7,8 @@
  * menezes22001, SEM LOGIN, pelo token especial (eleicoes2026.public.ts). Espelho de
  * app/Config/Routes/Api/v1/Eleicoes2026/Dash*\/EndPointView.php. Somente leitura (GET get-no-pagination).
  *   - A API devolve numeros como texto: aqui tudo vira number/string tipado (nenhum `any`).
- *   - Os candidatos so se distinguem por `ds_cargo` (PRESIDENTE = Flavio Bolsonaro; DEPUTADO ESTADUAL =
- *     Coronel Menezes; GOVERNADOR = Douglas Ruas).
+ *   - Os candidatos se distinguem por `ds_cargo` + `nr_votavel` (PRESIDENTE 22 = Flavio Bolsonaro;
+ *     DEPUTADO ESTADUAL 22001 = Coronel Menezes, 70222 = Helcio Angelo; GOVERNADOR 22 = Douglas Ruas).
  *
  * CONSUMIDORES: pages/Home/company/menezes22001/useDashboardData.ts.
  * Documentacao: markdown/geral/README_dashboard_eleicoes.md.
@@ -40,6 +40,8 @@ async function fetchRows(group: string, params?: QueryParams): Promise<Raw[]> {
 /** Totais do estado por cargo (view_dash_resumo_geral). */
 export interface DashResumo {
   cargo: string;
+  /** nr_votavel: distingue candidatos do mesmo cargo (ex.: Dep. Estadual 22001 x 70222). */
+  numero: string;
   votos: number;
   secoesComVoto: number;
   eleitores: number;
@@ -56,6 +58,8 @@ export interface DashVotosMunicipio {
   cd: string;
   nome: string;
   cargo: string;
+  /** nr_votavel: distingue candidatos do mesmo cargo (ex.: Dep. Estadual 22001 x 70222). */
+  numero: string;
   votos: number;
   eleitores: number;
   pctEleitorado: number;
@@ -68,6 +72,8 @@ export interface DashVotosZona {
   nome: string;
   zona: string;
   cargo: string;
+  /** nr_votavel: distingue candidatos do mesmo cargo (ex.: Dep. Estadual 22001 x 70222). */
+  numero: string;
   votos: number;
   eleitores: number;
   pctEleitorado: number;
@@ -79,6 +85,8 @@ export interface DashVotosBairro {
   municipio: string;
   bairro: string;
   cargo: string;
+  /** nr_votavel: distingue candidatos do mesmo cargo (ex.: Dep. Estadual 22001 x 70222). */
+  numero: string;
   votos: number;
   eleitores: number;
   pctEleitorado: number;
@@ -91,6 +99,8 @@ export interface DashVotosLocal {
   local: string;
   bairro: string;
   cargo: string;
+  /** nr_votavel: distingue candidatos do mesmo cargo (ex.: Dep. Estadual 22001 x 70222). */
+  numero: string;
   votos: number;
   eleitores: number;
   pctEleitorado: number;
@@ -100,6 +110,7 @@ export async function fetchDashResumo(): Promise<DashResumo[]> {
   const rows = await fetchRows(API_GROUPS.eleicoes2026DashResumoGeralView);
   return rows.map((r) => ({
     cargo: txt(r.ds_cargo),
+    numero: txt(r.nr_votavel),
     votos: num(r.qt_votos),
     secoesComVoto: num(r.qt_secoes_com_voto),
     eleitores: num(r.qt_eleitores),
@@ -118,6 +129,7 @@ export async function fetchDashVotosMunicipio(): Promise<DashVotosMunicipio[]> {
     cd: txt(r.cd_municipio),
     nome: txt(r.nm_municipio),
     cargo: txt(r.ds_cargo),
+    numero: txt(r.nr_votavel),
     votos: num(r.qt_votos),
     eleitores: num(r.qt_eleitores),
     pctEleitorado: num(r.pct_votos_eleitorado),
@@ -132,6 +144,7 @@ export async function fetchDashVotosZona(): Promise<DashVotosZona[]> {
     nome: txt(r.nm_municipio),
     zona: txt(r.nr_zona),
     cargo: txt(r.ds_cargo),
+    numero: txt(r.nr_votavel),
     votos: num(r.qt_votos),
     eleitores: num(r.qt_eleitores),
     pctEleitorado: num(r.pct_votos_eleitorado),
@@ -145,18 +158,26 @@ export async function fetchDashVotosBairro(): Promise<DashVotosBairro[]> {
     municipio: txt(r.nm_municipio),
     bairro: txt(r.nm_bairro),
     cargo: txt(r.ds_cargo),
+    numero: txt(r.nr_votavel),
     votos: num(r.qt_votos),
     eleitores: num(r.qt_eleitores),
     pctEleitorado: num(r.pct_votos_eleitorado),
   }));
 }
 
-/** Os 600 locais de votacao com mais votos de CADA cargo (a view tem ~9.400 linhas; o grafico nao precisa de todas). */
-export async function fetchDashVotosLocais(): Promise<DashVotosLocal[]> {
+/** Alvo de uma consulta: um candidato = cargo + numero (nr_votavel). */
+export interface AlvoCandidato {
+  cargo: string;
+  numero: string;
+}
+
+/** Os 600 locais de votacao com mais votos de CADA candidato informado (a view tem ~9.400 linhas; o grafico nao precisa de todas). */
+export async function fetchDashVotosLocais(alvos: readonly AlvoCandidato[]): Promise<DashVotosLocal[]> {
   const porCargo = await Promise.all(
-    [CARGO_PRESIDENTE, CARGO_DEPUTADO, CARGO_GOVERNADOR].map(async (cargo) => {
+    alvos.map(async ({ cargo, numero }) => {
       const raw = await eleicoesPublicGet(API_GROUPS.eleicoes2026DashVotosLocalVotacaoView, 'search', {
         'filters[ds_cargo]': cargo,
+        'filters[nr_votavel]': numero,
         sort: 'qt_votos',
         order: 'desc',
         limit: 600,
@@ -170,6 +191,7 @@ export async function fetchDashVotosLocais(): Promise<DashVotosLocal[]> {
     local: txt(r.nm_local_votacao),
     bairro: txt(r.nm_bairro),
     cargo: txt(r.ds_cargo),
+    numero: txt(r.nr_votavel),
     votos: num(r.qt_votos),
     eleitores: num(r.qt_eleitores),
     pctEleitorado: num(r.pct_votos_eleitorado),

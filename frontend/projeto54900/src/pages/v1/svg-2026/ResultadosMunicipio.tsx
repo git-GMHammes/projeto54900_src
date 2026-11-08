@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 
 import {
   CANDIDATOS,
+  COL_CANDIDATO,
   SEM_BAIRRO,
   carregarBairros,
   carregarSecoes,
@@ -161,7 +162,7 @@ function ResultadoUm({ cdTse, nome }: { cdTse: string; nome: string }) {
           ) : (
             <div className="row g-3">
               {CANDIDATOS.map((c) => (
-                <div className="col-12 col-lg-4" key={c.chave}>
+                <div className={`col-12 col-lg-${COL_CANDIDATO}`} key={c.chave}>
                   <CardCandidato candidato={c} cdTse={cdTse} bairros={bairros[c.chave]} />
                 </div>
               ))}

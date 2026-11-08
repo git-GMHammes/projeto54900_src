@@ -294,6 +294,8 @@ fechar não afeta a responsividade e as regiões restantes expandem.
 | Região | Onde | Chave | Observações |
 | ------ | ---- | ----- | ----------- |
 | Cabeçalho | `TemplateHeaderRegion` | `header-{id}` | um X por cabeçalho; fechar um não fecha os outros |
+
+**Logomarcas do cabeçalho (2026-11-08):** as três (esquerda, centro, direita) têm a mesma altura, `clamp(110px, 16vw, 220px)`, com `width:auto`, `max-width:100%` e `object-fit:contain` (constante `LOGO_STYLE` em `TemplateHeaderRegion.tsx`), sem distorcer. Vale para todas as empresas; não há campo de altura no `temp_header` (diferente do `image_height` do rodapé).
 | Nav | `TemplateNavRegion` (`onClose`) | `nav` | dentro de `tpl-collapsible` + `tpl-collapsible-inner` com **`style={{ minWidth: 0 }}`** (obrigatório, ver seção 4 do 002); padding `ps-3 pe-5 pe-lg-4` reserva o canto do X |
 | Menu lateral | `TemplateSideMenu` modo coluna (`closing`, `onClose`) | `menu` | X só a partir de `lg` (`d-none d-lg-block`); abaixo de `lg` o painel tem o próprio botão fechar; ao fechar só desvanece (`tpl-fade-out`) e o conteúdo vai a `col-12`. **No 003 (Offcanvas) não há X permanente** |
 | Rodapé | `TemplateFooterRegion` | `footer-{id}` | um X por rodapé; o rodapé simples (sem dados) não tem X |

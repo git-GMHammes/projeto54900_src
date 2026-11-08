@@ -45,8 +45,26 @@ pages/Home/company/menezes22001/
 | Dispersão eleitores x votos por local (600 maiores de cada cargo, eixo Y próprio por cargo) | `view_dash_votos_local_votacao` (`search` com `filters[ds_cargo]`) |
 
 Filtros: botões **Presidente / Governador / Dep. Estadual** (abre com Dep. Estadual selecionado; afetam top 10, treemap, rosca e ranking) e **Votos / % do eleitorado**
-(só o top 10). Presidente = Flávio Bolsonaro (22); Governador = Douglas Ruas (22, incluído em 2026-11-07, cor `#2ecc71`); Dep. Estadual = Coronel Menezes (22001). Os cargos só se distinguem
-por `ds_cargo`.
+(só o top 10). Presidente = Flávio Bolsonaro (22); Governador = Douglas Ruas (22, incluído em 2026-11-07, cor `#2ecc71`); Dep. Estadual = Coronel Menezes (22001). Dep. Estadual da empresa `helcio-angelo-70222` = Hélcio Ângelo (70222). Desde 2026-11-08 as views têm a coluna `nr_votavel` e os candidatos se distinguem por
+`ds_cargo` + `nr_votavel` (Dep. Estadual tem dois: 22001 e 70222).
+
+## Cargos por empresa (2026-11-07)
+
+O mesmo `EleicoesDashboard` serve mais de uma empresa. `dashFormat.ts` define `CARGOS_POR_EMPRESA` (slug da URL ->
+cargos); empresa sem entrada mostra os 3. `CARGOS` (já filtrado), `CARGO_INICIAL` e `temCargo()` comandam botões,
+KPIs, medidores (um por cargo, centros distribuídos por igual), heatmap, dispersão (o eixo Y do Dep. Estadual só existe
+com o cargo) e o texto do cabeçalho (`CargoInfo.descricao`).
+
+| Empresa | Home | Cargos | Abre com |
+| ------- | ---- | ------ | -------- |
+| `menezes22001` | `Menezes22001Home.tsx` | Presidente, Governador, Dep. Estadual | Dep. Estadual |
+| `helcio-angelo-70222` | `HelcioAngelo70222Home.tsx` | Presidente, Governador, Dep. Estadual (Hélcio 70222; sem Coronel Menezes) | Dep. Estadual |
+
+**Filtro por candidato:** `dashFormat.ts` define, por empresa, os cargos (`CARGOS_POR_EMPRESA`) e o `numero` (nr_votavel) de cada
+um (`DEPUTADO_POR_EMPRESA` troca o Menezes pelo Hélcio). `useDashboardData` descarta as linhas fora de `ehCandidatoExibido(cargo, numero)`
+e `fetchDashVotosLocais` consulta só os candidatos da empresa. **Limite:** o filtro é só de tela; as views inteiras (inclui os dois
+deputados) continuam nas respostas da API (DevTools). Validado em tela em 2026-11-08: `/helcio-angelo-70222` mostra Dep. Estadual
+0,02% do eleitorado (Hélcio) e nenhum texto "Menezes"; `/menezes22001` segue com 46.700 votos.
 
 ## Regras e cuidados
 
@@ -58,10 +76,10 @@ por `ds_cargo`.
   treemap usa 12 municípios x 10 bairros; a dispersão, 1.200 pontos.
 - **Heatmap:** a cor é relativa ao maior % de cada cargo (Presidente e Dep. Estadual têm escalas muito diferentes); o
   tooltip mostra o % real.
-- **Medidores:** 3 medidores (Presidente e Governador 0–100%, Dep. Estadual 0–1%), indicados no rótulo de cada um.
-- **KPIs:** 7 cards (`col-xxl` divide a linha por igual), incluindo "Votos Governador".
+- **Medidores:** um por cargo exibido (Presidente e Governador 0–100%, Dep. Estadual 0–1%), indicados no rótulo de cada um.
+- **KPIs:** 7 cards (6 sem o Dep. Estadual) (`col-xxl` divide a linha por igual), incluindo "Votos Governador".
 - **Dispersão:** Presidente e Governador dividem o eixo Y da esquerda (mesma ordem de grandeza); Dep. Estadual tem eixo próprio. `fetchDashVotosLocais` busca 3 x 600 locais.
-- **Candidato novo:** nova constante `CARGO_*` em `eleicoes2026.dash.ts`, entrada em `CARGOS` (`dashFormat.ts`), medidor em `gaugeBuild` e KPI em `EleicoesDashboard.tsx`; as views `view_dash_*` já devolvem todo `ds_cargo` da tabela do candidato.
+- **Candidato novo:** nova constante `CARGO_*` em `eleicoes2026.dash.ts`, entrada em `TODOS_CARGOS` (`dashFormat.ts`, com `descricao` e `gaugeMax`; o medidor sai sozinho) e KPI em `EleicoesDashboard.tsx`; as views `view_dash_*` já devolvem todo `ds_cargo` da tabela do candidato.
 
 ## Validação (2026-11-05)
 

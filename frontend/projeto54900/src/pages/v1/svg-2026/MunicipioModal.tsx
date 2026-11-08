@@ -7,7 +7,7 @@
 
 import ThemePortal from '@/components/template/ThemePortal';
 
-import { CANDIDATOS, formatarPctEleitorado, formatarVotos, urlFoto, type TotaisMunicipio, type VotosPorCargo } from './eleicoes2026';
+import { CANDIDATOS, COL_CANDIDATO, formatarPctEleitorado, formatarVotos, urlFoto, type TotaisMunicipio, type VotosPorCargo } from './eleicoes2026';
 
 interface Props {
   nomeMunicipio: string;
@@ -42,7 +42,7 @@ export default function MunicipioModal({ nomeMunicipio, totaisMunicipio, totalRj
               ) : (
                 <div className="row g-3">
                   {CANDIDATOS.map((c) => (
-                    <div className="col-12 col-md-4" key={c.chave}>
+                    <div className={`col-12 col-md-${COL_CANDIDATO}`} key={c.chave}>
                       <div className="card h-100">
                         <div className="card-body">
                           <div className="text-center">

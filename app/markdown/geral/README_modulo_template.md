@@ -39,6 +39,10 @@ Todas as `temp_*` têm `company_manager` (JSON NOT NULL): lista de **slugs**, po
 - **Escrita:** `adminonly` nas 7 rotas de escrita (`create`, `update`, `delete-soft`,
   `delete-restore`, `delete-hard`, `clear-deleted` e `clear-deleted/{id}`) de `temp-nav`,
   `temp-menu`, `temp-header` e `temp-footer`.
+- **Cabeçalho/rodapé próprios (2026-11-08):** `helcio-angelo-70222` deixou de compartilhar
+  `temp_header`/`temp_footer` id 1 com `default` e tem o id 6 em cada (`["helcio-angelo-70222"]`;
+  header com `img/ha_70222/header_background.png`, footer com `img/ha_70222/rodape.jpg`).
+  O id 1 ficou só `["default"]`. Mesmo padrão de `menezes22001` (id 5).
 
 ## Catálogo de templates (`temp_manager`)
 

@@ -62,7 +62,7 @@ cada resumo termina com o link para o conteúdo completo.
 | 21  | [`calendario`](#calendario) | Módulo calendário: só visualização hoje |
 | 22  | [`mapa`](#mapa)             | Mapa Leaflet e vínculo a módulos        |
 | 23  | [`produtos`](#produtos)     | Produto, movimento, serviço: telas prontas |
-| 30  | [`svg2026`](#svg2026)       | SVG-2026: duplicata para Menezes 22001 |
+| 30  | [`svg2026`](#svg2026)       | SVG-2026: Menezes 22001 e Hélcio Ângelo |
 
 **6. Manutenção**
 
@@ -444,6 +444,10 @@ Desde 2026-11-04 consome a API Eleicoes2026: clique no município abre modal com
 Desde 2026-11-05 a Home `/menezes22001` é um **dashboard eleitoral** (Apache ECharts) alimentado pelas views `view_dash_*` com o
 token público, sem login: [`geral/README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md).
 
+Desde 2026-11-07 a empresa **Hélcio Ângelo** (`helcio-angelo-70222`, id 5) usa o mesmo SVG-2026 e o mesmo dashboard, só com
+Flávio Bolsonaro (Presidente) e Douglas Ruas (Governador): candidatos/cargos por empresa em `eleicoes2026.ts`
+(`CANDIDATOS_POR_EMPRESA`) e `dashFormat.ts` (`CARGOS_POR_EMPRESA`). O Coronel Menezes não aparece nessa empresa.
+
 ### `produtos`
 
 Telas de Produto (54 rotas), Movimento (36) e Serviço (90): árvores e tabelas,
@@ -542,7 +546,7 @@ inativo e sem empresa: a Menezes usa o Template 2 com o cabeçalho e o rodapé d
 - [`README_menu.md`](geral/README_menu.md) — como a navbar e a árvore administrativa de menu (`temp_nav`/`temp_menu`) são montadas.
 - [`README_mapa.md`](geral/README_mapa.md) — componentes react-leaflet (MapView, MapLinksPanel...), rotas `/v1/map`, serviços `map*` e como qualquer módulo usa o mapa.
 - [`README_SVG_2026.md`](geral/README_SVG_2026.md) — módulo SVG-2026 (duplicata do `svg-map`) para a empresa Menezes 22001: arquivos, banco, usuários e regra de menu.
-- [`README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md) — dashboard eleitoral da Home menezes22001: ECharts, views `view_dash_*`, arquivos e regras.
+- [`README_dashboard_eleicoes.md`](geral/README_dashboard_eleicoes.md) — dashboard eleitoral das Homes menezes22001 e helcio-angelo-70222: ECharts, views `view_dash_*`, cargos por empresa, arquivos e regras.
 - [`README_modal.md`](geral/README_modal.md) — padrão de modal centralizado e controlado por estado React.
 - [`README_dependencias_node.md`](geral/README_dependencias_node.md) — dependências e devDependencies do `package.json`, scripts e candidatas de OCR (SGD).
 - [`README_node_comandos_modulos.md`](geral/README_node_comandos_modulos.md) — comandos Node/Vite (dev no host), build/deploy por `dist/` e mapa dos módulos de `src/`.
