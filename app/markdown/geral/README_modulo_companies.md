@@ -175,6 +175,11 @@ das rotas (`/default/template001`) e, nos perfis, de `roles`.
 Criada direto no DEV, como `paes55`: `company_manager` id 7 (`color_theme` Dark), Template 3, header/footer próprios e usuários
 `isquierdo.admin|user|guest`. Ver `README_modulo_template.md`.
 
+## Empresa `jcfroes` (id 8, 2026-11-08)
+
+Criada direto no DEV, como `isquierdo22077`: `company_manager` id 8 ("João Claudio E Foes", `color_theme` Dark), Template 3, `temp_header` 9 e
+`temp_footer` 9 próprios (cópia do `default`) e usuários `jcfroes.admin|user|guest`. Ver `README_modulo_template.md`.
+
 ## Pendências
 
 - Entrar nas migrations REMAKE (tabelas, coluna, views, seeds) — exige autorização do usuário.

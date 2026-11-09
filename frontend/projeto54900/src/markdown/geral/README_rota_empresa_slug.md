@@ -71,6 +71,9 @@ A rota índice (`/` e `/<slug>`) renderiza `pages/Home/CompanyHome.tsx`, que esc
 - **`isquierdo22077` (Alexandre Isquierdo 22077, id 7, 2026-11-08, DEV, fora do seed):** Template 3, header/footer próprios (cópia do `default`),
   usuários `isquierdo.admin|user|guest` (senha igual ao usuário, e-mail `isquierdo.<perfil>@exemplo.com.br`), sem Home própria (fallback `default`).
   Detalhe em `README_modulo_template.md` (backend). `/isquierdo22077/v1/login` não testado em tela.
+- **`jcfroes` (João Claudio E Foes, id 8, 2026-11-08, DEV, fora do seed):** Template 3, header/footer próprios (cópia do `default`),
+  usuários `jcfroes.admin|user|guest` (senha igual ao usuário, e-mail `jcfroes.<perfil>@exemplo.com.br`), sem Home própria (fallback `default`).
+  Detalhe em `README_modulo_template.md` (backend). `/jcfroes/v1/login` não testado em tela.
 - **Empresa sem Home própria usa a da `default`**- **Empresa sem Home própria usa a da `default`** (fallback em `CompanyHome`): `/`, `/default` e
   `/drsergiopsicologo` mostram os cards.
 - **`tryikads` (`TryikadsHome.tsx`)** tem Home própria, construída aos poucos em **rows responsivas do Bootstrap**.

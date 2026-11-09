@@ -78,6 +78,9 @@ principal" quando outro está selecionado. Menezes e Helcio continuam com a mesm
 | ------- | ---- | ---------- | -------- |
 | `paes55` | `PaesHome.tsx` | Governador: Eduardo Paes (55, principal), Douglas Ruas (22), Garotinho (10) | Eduardo Paes |
 | `isquierdo22077` | `IsquierdoHome.tsx` | Dep. Estadual: Alexandre Isquierdo (22077, principal); Dep. Federal: Dr. Luizinho (1177), Sarah Poncio (7777) | Alexandre Isquierdo |
+| `jcfroes` | `JcfroesHome.tsx` | Governador: Douglas Ruas (22, principal) e Eduardo Paes (55); Presidente: Flávio Bolsonaro (22) | Douglas Ruas |
+
+**`jcfroes` (2026-11-08):** sem carga de dados (os três já estão na tabela, 1º turno: Flávio 4.966.844 votos, Douglas 4.271.199, Paes 3.706.984). Entrada `jcfroes` em `CANDIDATOS_POR_EMPRESA` de `dashFormat.ts`, Home `JcfroesHome.tsx` registrada em `companyHomes.ts`. Não conferido logado em tela.
 
 **`isquierdo22077` (2026-11-08):** primeira empresa só com **deputados** e com **Dep. Federal** (`CARGO_DEPUTADO_FEDERAL` em
 `eleicoes2026.dash.ts`; `CargoKey` e `ehDeputado()`/`temDeputado()` em `dashFormat.ts`). No gráfico de dispersão de locais, quando todos os
@@ -112,3 +115,4 @@ Modo claro e celular **não** conferidos em tela.
 ---
 
 [◄ Índice da base de conhecimento](../README.md)
+

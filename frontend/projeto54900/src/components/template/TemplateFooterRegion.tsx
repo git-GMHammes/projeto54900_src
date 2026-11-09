@@ -29,6 +29,33 @@ function renderAccent(text: string): ReactNode[] {
   );
 }
 
+/**
+ * Texto de coluna com links no formato [texto](https://endereco): vira <a> em nova aba. So http/https entram como link;
+ * qualquer outra coisa segue como texto puro. Sem HTML cru (so elementos do React).
+ */
+const LINK_PATTERN = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+
+function renderText(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  let last = 0;
+  for (const m of text.matchAll(LINK_PATTERN)) {
+    const index = m.index ?? 0;
+    parts.push(text.slice(last, index));
+    parts.push(
+      <a key={index} href={m[2]} target="_blank" rel="noopener noreferrer" className="fw-semibold text-decoration-underline">
+        {m[1]}
+      </a>,
+    );
+    last = index + m[0].length;
+  }
+  parts.push(text.slice(last));
+  return parts;
+}
+
+/** Quebras de linha (
+) do texto da coluna viram linhas no rodape. */
+const PRE_LINE = { whiteSpace: 'pre-line' } as const;
+
 export interface TemplateFooterRegionProps {
   /** null = rodape simples do visitante. */
   footer: TemplateFooterData | null;
@@ -89,7 +116,7 @@ export default function TemplateFooterRegion({ footer, flat, palette, collapsibl
                       </span>
                     )}
                     {heading && heading.title !== '' && <h3 className="h6 fw-bold">{heading.title}</h3>}
-                    {heading && <p className="small mb-0">{heading.text}</p>}
+                    {heading && <p className="small mb-0" style={PRE_LINE}>{renderText(heading.text)}</p>}
                     {image && <img src={assetUrl(image.url)} alt={image.alt} className={imageClass} style={imageStyle} />}
                   </div>
                 ))}
@@ -112,7 +139,7 @@ export default function TemplateFooterRegion({ footer, flat, palette, collapsibl
                 {heading && (
                   <>
                     <h1 className="h4 fw-bold">{heading.title}</h1>
-                    <p className="small mb-0">{heading.text}</p>
+                    <p className="small mb-0" style={PRE_LINE}>{renderText(heading.text)}</p>
                   </>
                 )}
                 {image && <img src={assetUrl(image.url)} alt={image.alt} className={imageClass} style={imageStyle} />}

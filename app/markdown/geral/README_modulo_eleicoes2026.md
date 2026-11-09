@@ -95,6 +95,10 @@ da origem (2247, 7099, 12030) não foram copiados. Primeira vez com **DEPUTADO F
 `view_eleicoes_2026_22001_22*` o devolvem sem alteração (conferido: totais iguais aos da origem, zero divergência em `cd_municipio_zona_secao`).
 Tabela: 172.976 → 238.998 linhas. Rollback: `src/writable/claude/20261108220000_isquierdo22077_candidatos_backup.sql`.
 
+### Empresa `jcfroes` (2026-11-08)
+
+Sem carga: Douglas Ruas (GOVERNADOR 22), Flávio Bolsonaro (PRESIDENTE 22) e Eduardo Paes (GOVERNADOR 55) já existem na tabela (37.675 linhas cada, 1º turno). Só código do frontend e o slug em `temp_menu` 93/94 (feito na criação da empresa).
+
 ### Coluna `nr_votavel` nas views (2026-11-08)
 
 Menezes (22001) e Hélcio (70222) são ambos `DEPUTADO ESTADUAL`; as views agrupavam só por `ds_cargo` e somavam os dois. Recriadas

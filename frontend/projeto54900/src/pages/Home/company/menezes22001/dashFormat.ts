@@ -75,6 +75,12 @@ const CANDIDATOS_POR_EMPRESA: Readonly<Record<string, readonly CargoInfo[]>> = {
     { key: CARGO_GOVERNADOR, numero: '22', label: 'Douglas Ruas', candidato: 'Douglas Ruas (22) · secundário', descricao: 'Douglas Ruas 22 (Governador)', color: '#2ecc71', gaugeMax: 100, icon: 'bi-bank2', tone: 'success' },
     { key: CARGO_GOVERNADOR, numero: '10', label: 'Garotinho', candidato: 'Garotinho (10) · secundário', descricao: 'Garotinho 10 (Governador)', color: '#f06595', gaugeMax: 10, icon: 'bi-person-fill', tone: 'danger' },
   ] satisfies CargoBase[]).map(comId),
+  // jcfroes: Douglas Ruas (Governador 22) e o principal; Flavio Bolsonaro (Presidente 22) e Eduardo Paes (Governador 55) sao secundarios.
+  jcfroes: ([
+    { key: CARGO_GOVERNADOR, numero: '22', label: 'Douglas Ruas', candidato: 'Douglas Ruas (22) · principal', descricao: 'Douglas Ruas 22 (Governador, principal)', color: '#339af0', gaugeMax: 100, icon: 'bi-star-fill', tone: 'primary', principal: true },
+    { key: CARGO_PRESIDENTE, numero: '22', label: 'Flávio Bolsonaro', candidato: 'Flávio Bolsonaro (22) · Presidente', descricao: 'Flávio Bolsonaro 22 (Presidente)', color: '#4f7cff', gaugeMax: 100, icon: 'bi-person-badge-fill', tone: 'info' },
+    { key: CARGO_GOVERNADOR, numero: '55', label: 'Eduardo Paes', candidato: 'Eduardo Paes (55) · Governador', descricao: 'Eduardo Paes 55 (Governador)', color: '#f06595', gaugeMax: 100, icon: 'bi-person-fill', tone: 'danger' },
+  ] satisfies CargoBase[]).map(comId),
   // isquierdo22077: Alexandre Isquierdo (Dep. Estadual 22077) e o principal; Dr. Luizinho (1177) e Sarah Poncio (7777) sao Dep. Federal.
   isquierdo22077: ([
     { key: CARGO_DEPUTADO, numero: '22077', label: 'Alexandre Isquierdo', candidato: 'Alexandre Isquierdo (22077) · principal', descricao: 'Alexandre Isquierdo Malafaia 22077 (Deputado Estadual, principal)', color: '#339af0', gaugeMax: 1, icon: 'bi-star-fill', tone: 'primary', principal: true },

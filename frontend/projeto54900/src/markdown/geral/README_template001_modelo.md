@@ -75,6 +75,9 @@ em português.
 | `footer.footer_headings[]`  | `{ id, order, column, title, text }`                      |
 | `footer.footer_images[]`    | `{ id, order, column, url, alt }`                         |
 
+**Links no texto das colunas (2026-11-08):** `TemplateFooterRegion.tsx` renderiza `[texto](https://endereco)` em `col*_text` como `<a>` em nova aba (`rel="noopener noreferrer"`). Só `http`/`https` viram link; o resto segue texto puro. Ex.: `[WhatsApp: (21) 98055-8545](https://wa.me/5521980558545)` na `jcfroes`. `
+` no texto vira quebra de linha (`white-space: pre-line`). Vale para os dois modelos de rodapé (padrão e `highlight`). Efeito no build: só aparece em `src/public/app/` após novo `npm run build`.
+
 Regras de leitura:
 
 - **Logomarca:** `position` é `left`, `center` ou `right`. Com `image_url`

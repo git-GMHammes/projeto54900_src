@@ -9,6 +9,7 @@ import type { ComponentType } from 'react';
 import DefaultHome from '@/pages/Home/company/DefaultHome';
 import HelcioAngelo70222Home from '@/pages/Home/company/HelcioAngelo70222Home';
 import IsquierdoHome from '@/pages/Home/company/IsquierdoHome';
+import JcfroesHome from '@/pages/Home/company/JcfroesHome';
 import Menezes22001Home from '@/pages/Home/company/Menezes22001Home';
 import PaesHome from '@/pages/Home/company/PaesHome';
 import TryikadsHome from '@/pages/Home/company/TryikadsHome';
@@ -20,6 +21,7 @@ export const COMPANY_HOMES: Readonly<Record<string, ComponentType>> = {
   'helcio-angelo-70222': HelcioAngelo70222Home,
   paes55: PaesHome,
   isquierdo22077: IsquierdoHome,
+  jcfroes: JcfroesHome,
 };
 
 /** Slug usado quando a URL nao traz empresa e como Home de quem nao tem a propria. */

@@ -40,6 +40,8 @@ const CANDIDATOS_POR_EMPRESA: Readonly<Record<string, Candidato[]>> = {
   paes55: [PAES, DOUGLAS, GAROTINHO],
   // Alexandre Isquierdo (Dep. Estadual 22077, principal) com Dr. Luizinho (1177) e Sarah Poncio (7777), Dep. Federal.
   isquierdo22077: [ISQUIERDO, LUIZINHO, SARAH],
+  // jcfroes: Douglas Ruas (Governador 22, principal) com Flavio Bolsonaro (Presidente 22) e Eduardo Paes (Governador 55).
+  jcfroes: [DOUGLAS, FLAVIO, PAES],
 };
 
 export const CANDIDATOS: Candidato[] = CANDIDATOS_POR_EMPRESA[companySlug ?? ''] ?? [MENEZES, FLAVIO, DOUGLAS];

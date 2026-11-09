@@ -41,6 +41,10 @@ WHERE company_id = 5` e `DELETE FROM company_manager WHERE id = 5`. O cabeçalho
 API (filtro só na tela). Tela do SVG-2026 nesta empresa **não conferida** (exige login). Rodapé (`temp_footer` id 6, 2026-11-08): colunas de texto **Esporte**, **Saúde** e **Segurança** com propostas de políticas públicas (coluna 2 = imagem `img/ha_70222/rodape.jpg`); UPDATE direto no DEV, backup em `src/writable/claude/20261108040000_rodape_helcio_backup.sql`. Imagens da empresa em `public/img/ha_70222/`: `logo1.jpg` (brasão com o xadrez de "transparente" gravado nos pixels) e `logo1_sem_fundo.png` (2026-11-08: PNG RGBA 606x735 sem o fundo, recortado nas margens; gerado por máscara de cor, o original ficou intacto). Backup do `company_ids` anterior à mudança:
 `src/writable/claude/20261104155758_company_ids_backup.json`.
 
+### Empresa João Claudio E Foes (2026-11-08)
+
+Slug `jcfroes` (id 8). `CANDIDATOS_POR_EMPRESA`: `[DOUGLAS, FLAVIO, PAES]` (Douglas Ruas Governador 22 principal; Flávio Bolsonaro Presidente 22; Eduardo Paes Governador 55). Sem chave nem foto nova; o slug já está em `temp_menu` 93 e 94. Não conferido logado em tela.
+
 ### Empresa Alexandre Isquierdo (2026-11-08)
 
 Slug `isquierdo22077` (id 7). `CANDIDATOS_POR_EMPRESA`: `[ISQUIERDO, LUIZINHO, SARAH]` (Dep. Estadual 22077 principal; Dep. Federal 1177 e 7777).
