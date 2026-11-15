@@ -6,7 +6,7 @@
 
 > NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
 
-> **Status (2026-11-02):** frontend completo e validado — telas, menu, leitura de documento por OCR no navegador, dicionário de campos e tratamento de valores. **Ainda não existem** tabela, API nem rotas de backend: o botão **Enviar** não faz nada (por decisão). Roteiro dos próximos passos na seção 10.
+> **Status (2026-11-02):** frontend completo e validado — telas, menu, leitura de documento por OCR no navegador, dicionário de campos e tratamento de valores. Em 2026-11-15 nasceu a tabela de tipos de documento (`sgd_document_types`, seção 13); **ainda não existem** API nem rotas de backend: o botão **Enviar** não faz nada (por decisão). Roteiro dos próximos passos na seção 10.
 
 ## 1. Objetivo
 
@@ -83,6 +83,14 @@ O OCR devolve cada caixa de texto com a posição. O valor de um rótulo é:
 2. senão, a caixa **ao lado** (mesma linha) ou **logo abaixo** do rótulo — vale tanto `Nome: Maria` quanto rótulo numa linha e valor na de baixo, em várias colunas.
 
 Os rótulos disputam as caixas próximas, do par mais perto para o mais longe, e cada caixa serve a um só rótulo; o valor pode estar deslocado da coluna do rótulo. **Texto que termina em `:` é sempre rótulo** (inclusive desconhecido), nunca valor. Vale a primeira ocorrência da chave. Em texto puro (sem posição) o valor é a linha seguinte. Lógica: `documentLayout.ts` (`assignValues`) e `documentFields.ts`. As constantes de distância (em múltiplos da altura do rótulo) ficam no topo do `documentLayout.ts`.
+
+**Texto corrido sem rótulo (`texts` em `catalogs/sgd/estrutura.json`, `documentStructure.ts`).** Cada regra lê o trecho entre uma âncora `after` (linha antes) e `until` (linha depois) em um único campo. Opções: `paragraphs` (lê só os N primeiros parágrafos) e `gap` (vão, em alturas de linha, que separa parágrafos; sem ele vale 1,0). Exemplos: `body` (corpo do ofício, da saudação ao fecho) e `executive_summary` (Relatório: `paragraphs: 1`, `gap: 0.3` — o parágrafo do resumo termina a 0,58 altura dos cartões numéricos, abaixo do vão padrão). Âncora sempre sobre a linha sem acento e em minúsculo.
+
+**Dica do nome do arquivo (`catalogs/sgd/arquivo.json`, `utils/documentFileHints.ts`).** O nome do arquivo quase sempre traz o tipo (`Relatório.pdf`, `nota_tecnica.pdf`). Regra: **o que o OCR identificou sempre vale**; só se a chave (hoje `document_type`) não foi achada no documento, vale o nome do arquivo. O campo vindo do nome sai com alias `nome do arquivo`. O nome é comparado sem extensão, sem acento e em minúsculo, símbolos viram espaço, e o termo casa palavra inteira (o mais longo vence). Formato do JSON: `{ chave: { valor: [termos] } }`; tipo novo = linha nova no JSON. Nome sem tipo (ex.: `000.073.162.pdf`) não gera nada. Ligação: prop `fileHints` do `DocumentFieldReader`. **Desempate:** quando o documento tem mais de um candidato (ex.: cabeçalho `Ata nº 07/2026` e título `RESOLUÇÃO CONSAD Nº 12`), o tipo que o nome do arquivo confirma vale (`matchFileHints` → dicas de `extractStructure`: vale o primeiro candidato cujo trecho casado contém a dica, palavra inteira); sem dica casando, vale o primeiro, como antes. A dica só escolhe entre candidatos reais do OCR, nunca cria valor.
+
+**Campos do Requerimento (`patterns` em `estrutura.json`, testado com `doc/pdf/REQUERIMENTO.pdf`).** `protocol_number` lê o número completo (`4587/2026`, antes truncava em `4587`); novos: `property_number` (`imóvel nº 15.882`; não pega "imóvel situado na Rua ..., nº 410"), `property_inscription` (`inscrição imobiliária nº ...`), `fee_amount` (`taxa de R$ 86,40` → tipo `money`, sai `86.40`) e `response_term` (`Prazo para resposta: 15 (quinze) dias úteis`). Num Requerimento o `N° 4587/2026` do cabeçalho vira `document_number` e é o mesmo número do protocolo.
+
+**Resolução (testado com `doc/pdf/RESOLUÇÃO.pdf`).** `document_type`/`document_number` aceitam UMA sigla de órgão entre o tipo e o `nº` (`RESOLUÇÃO CONSAD Nº 12` → `RESOLUÇÃO` e `12`); novo `votes_in_favor` (`Aprovada por 7 (sete) votos favoráveis` → `7 (sete) votos favoráveis`). Sem o nome do arquivo, o tipo desse PDF sai `Ata` (cabeçalho `Ata nº 07/2026` vem primeiro); com `RESOLUÇÃO.pdf`, sai `RESOLUÇÃO`.
 
 ## 8. Tipos de valor (pronto para o banco)
 
@@ -167,7 +175,7 @@ Dev: `npm run dev` (porta 54910). Teste de fluxo completo em Chrome headless (CD
 
 ## 11. Planos executados (`src/writable/claude/`)
 
-Prefixos `20261102120000` (doc em branco), `130000` (README de dependências), `140000` (UploadPage — **desfeito**), `150000` (telas e menu), `170000` (dicionário e OCR Tesseract), `180000` (e-mail), `190000` (tipos de valor), `200000` (motor PaddleOCR), `210000` (máscara/dinheiro/data), `220000` (leitura por posição), `230000` (telefone e RG).
+Prefixos `20261102120000` (doc em branco), `130000` (README de dependências), `140000` (UploadPage — **desfeito**), `150000` (telas e menu), `170000` (dicionário e OCR Tesseract), `180000` (e-mail), `190000` (tipos de valor), `200000` (motor PaddleOCR), `210000` (máscara/dinheiro/data), `220000` (leitura por posição), `230000` (telefone e RG), `20261115130000` (resumo executivo do Relatório: opções `paragraphs` e `gap` em `texts`), `20261115150000` (tipo do documento pelo nome do arquivo), `20261115170000` (campos do Requerimento), `20261115190000` (Resolução: tipo confirmado pelo nome do arquivo, número e votos), `20261115210000` (tabela `sgd_document_types`).
 
 ## 12. Documentos-alvo dos testes (OCR e dicionário)
 
@@ -183,7 +191,7 @@ Decisão de 2026-11-02: o módulo será testado com **todos** os tipos de docume
 | 6 | Informação | a testar |
 | 7 | Portaria | a testar |
 | 8 | Decisão | a testar |
-| 9 | Resolução | a testar |
+| 9 | Resolução | testado (`doc/pdf/RESOLUÇÃO.pdf`) |
 | 10 | Instrução Normativa | a testar |
 | 11 | Circular | a testar |
 | 12 | Comunicado | a testar |
@@ -192,8 +200,8 @@ Decisão de 2026-11-02: o módulo será testado com **todos** os tipos de docume
 | 15 | Convênio | a testar |
 | 16 | Termo de Referência | a testar |
 | 17 | Ata | a testar |
-| 18 | Relatório | a testar |
-| 19 | Requerimento | a testar |
+| 18 | Relatório | testado (`doc/pdf/Relatório.pdf`; campo `executive_summary` lido em 2026-11-15) |
+| 19 | Requerimento | testado (`doc/pdf/REQUERIMENTO.pdf`) |
 | 20 | Declaração | testado (declaração de dados bancários, `doc/pdf/DECLARACAO_NUBANK.pdf`) |
 | 21 | Certidão | a testar |
 | 22 | Minuta | a testar |
@@ -202,3 +210,50 @@ Decisão de 2026-11-02: o módulo será testado com **todos** os tipos de docume
 | 25 | Documento Externo | a testar |
 
 Fora da lista, já exercitado: **NF-e/DANFE** (`doc/pdf/000.073.162.pdf`).
+
+## 13. Banco de dados — tipos de documento (`sgd_`)
+
+Prefixo das tabelas do módulo: **`sgd_`**. Criada em 2026-11-15, direto no banco DEV (sem migrate: o `Database/Migrations/` só muda no REMAKE de fim de ciclo — até lá, aplicar o snapshot atual não recria a tabela).
+
+**`sgd_document_types`** — todos os tipos de documento que podem ser cadastrados (modelo: `map_categories`).
+
+| Coluna | Tipo | Observação |
+| --- | --- | --- |
+| `id` | bigint, PK | |
+| `company_id` | bigint, NOT NULL | FK `fk_sgd_document_types_company` -> `company_manager` (SaaS: um conjunto por empresa) |
+| `slug` | varchar(50) | slug sem acento (`oficio`, `nota-tecnica`); único por empresa (`uq_sgd_document_types_company_slug`) |
+| `name` | varchar(150) | nome de exibição (`Ofício`) |
+| `sort_order` | int, default 0 | ordem de exibição |
+| `status` | enum `active`/`inactive` | default `active` |
+| `created_at`, `updated_at`, `deleted_at` | datetime | exclusão lógica |
+
+**View `view_sgd_document_types`:** `id`, `company_id`, `sdt_slug`, `sdt_name`, `sdt_sort_order`, `sdt_status`, `created_at`, `updated_at`, `deleted_at` (padrão dos módulos recentes: `company_id` sem prefixo).
+
+**Carga (2026-11-15):** 25 tipos, um por tipo, só para a empresa 1 (DEFAULT) — a coluna `company_id` é obrigatória. Foram incluídos os tipos identificados pelo nome dos PDFs de `doc/pdf` (Ofício a Documento Externo, ordem da seção 12); o `000.073.162.pdf` (NF-e) ficou de fora por não indicar tipo. Os `slug` casam com `catalogs/sgd/arquivo.json` (`document_type`); a ligação entre o tipo lido pelo OCR e esta tabela ainda não existe.
+
+**Tipos comuns acrescentados (2026-11-16):** `nota-fiscal`, `proposta-comercial`, `recibo`, `orcamento`, `ordem-de-servico`, `procuracao`, `decreto`, `notificacao`, `atestado`, `laudo`, `comprovante`, `termo-aditivo` (ordem 26 a 37, empresa 1). Total: 37 tipos.
+
+**Segundo lote de tipos comuns (2026-11-16):** `sentenca`, `fatura`, `extrato`, `carta`, `convocacao`, `autorizacao`, `alvara`, `lei`, `termo-de-responsabilidade`, `termo-de-compromisso`, `boleto`, `contrato-social`, `licenca`, `solicitacao`, `pauta`, `ficha-cadastral`, `curriculo`, `pedido-de-compra` (ordem 38 a 55, empresa 1). Total: 55 tipos.
+
+**Terceiro lote de tipos comuns (2026-11-16):** `peticao`, `certificado`, `holerite`, `balanco`, `nota-de-empenho`, `intimacao`, `escritura`, `boletim`, `termo-de-posse`, `diploma` (ordem 56 a 65, empresa 1). Total: 65 tipos.
+
+**Quarto lote de tipos comuns (2026-11-16):** `contrato-de-trabalho`, `plano-de-trabalho`, `projeto`, `planilha`, `apresentacao`, `termo-de-rescisao`, `regulamento`, `estatuto`, `regimento-interno`, `manual` (ordem 66 a 75, empresa 1). Total: 75 tipos.
+
+**Quinto lote (2026-11-16):** 296 tipos de uma vez, ordem 76 a 371, empresa 1 — administrativo e público (licitação, atos, legislativo), jurídico (peças, contratos, certidões), financeiro e fiscal (notas, guias, faturas, comprovantes), RH, identificação, saúde, educação, comercial, técnico e obras, veículos e comunicação. A lista completa é o próprio conteúdo da tabela. Total: **371 tipos**, slug em minúsculas, sem acento e com `-`.
+
+Sem triggers. API, Processor, rotas, menu e telas (CRUD) ainda **não** foram feitos.
+
+### `sgd_fields` — campos que o OCR identifica
+
+**Uma linha por campo** (`field_key` único) e, no JSON `document_types`, a lista dos `slug` de `sgd_document_types` que podem ter aquele campo (ex.: `document_date` -> 361 tipos). Catálogo global, sem `company_id`, ligado por slug (sem FK).
+
+| Coluna | Tipo | Observação |
+| --- | --- | --- |
+| `id` | bigint, PK | |
+| `field_key` | varchar(100), único | chave do dicionário (`cpf`, `document_date`, `icms_value`...) |
+| `value_type` | varchar(30), nulo | tipo de valor de `catalogs/sgd/tipos.json` (`date`, `money`, `cpf`...) |
+| `identified_by` | JSON | mecanismos do algoritmo que identificam o campo: `label`, `pattern`, `occurrence`, `block`, `title`, `table`, `text` |
+| `document_types` | JSON | lista de slugs de tipos de documento |
+| `status`, `created_at`, `updated_at`, `deleted_at` | | padrão das tabelas do módulo |
+
+**Origem (2026-11-16):** os 155 campos do algoritmo (`catalogs/sgd/*.json` + `estrutura.json`). A lista de tipos de cada campo vem do escopo do campo (grupos de documentos: administrativo, normas, jurídico, fiscal, RH, identificação, saúde, educação, técnico, veículo, comunicação, formulários, contratos), mais a evidência dos PDFs de teste de `doc/pdf`. Campo de nota fiscal só nos tipos fiscais; campo de pessoa nos tipos que identificam pessoa; campos de contato em quase todos, exceto normas e mídias.

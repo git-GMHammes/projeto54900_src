@@ -5,6 +5,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { applyFileHints, matchFileHints } from '@/utils/documentFileHints';
+import type { FileHintDictionary } from '@/utils/documentFileHints';
 import { extractFields } from '@/utils/documentFields';
 import type { FieldDictionary, FieldTypes, FoundField, SectionDictionary } from '@/utils/documentFields';
 import { recognizeDocument } from '@/utils/documentOcr';
@@ -19,11 +21,13 @@ export interface DocumentFieldReaderProps {
   sections?: SectionDictionary;
   /** Dados sem rotulo (por forma ou posicao) e texto corrido; so completa o que o dicionario nao achou. */
   structure?: StructureRules;
+  /** Nome do arquivo -> campo (ex.: tipo do documento); so completa o que o OCR nao identificou. */
+  fileHints?: FileHintDictionary;
 }
 
 type Status = 'idle' | 'reading' | 'done' | 'error';
 
-export default function DocumentFieldReader({ dictionary, types, sections, structure }: DocumentFieldReaderProps) {
+export default function DocumentFieldReader({ dictionary, types, sections, structure, fileHints }: DocumentFieldReaderProps) {
   const anchor = useRef<HTMLDivElement>(null);
   const run = useRef(0);
   const [status, setStatus] = useState<Status>('idle');
@@ -58,10 +62,13 @@ export default function DocumentFieldReader({ dictionary, types, sections, struc
         .then((recognized) => {
           if (run.current !== id) return;
           setText(recognized.text);
+          // O nome do arquivo confirma o dado entre candidatos do OCR (ex.: tipo do documento); o OCR segue mandando.
+          const hintTerms = fileHints ? Object.values(matchFileHints(file.name, fileHints)) : [];
           const labeled = extractFields(recognized.lines, dictionary, types, sections);
           const taken = new Set(labeled.map((f) => f.key));
-          const loose = structure ? extractStructure(recognized.lines, structure, types).filter((f) => !taken.has(f.key)) : [];
-          setFields([...labeled, ...loose]);
+          const loose = structure ? extractStructure(recognized.lines, structure, types, hintTerms).filter((f) => !taken.has(f.key)) : [];
+          const read = [...labeled, ...loose];
+          setFields(fileHints ? applyFileHints(read, file.name, fileHints) : read);
           setStatus('done');
         })
         .catch((err: unknown) => {
@@ -73,7 +80,7 @@ export default function DocumentFieldReader({ dictionary, types, sections, struc
 
     form.addEventListener('change', onChange);
     return () => form.removeEventListener('change', onChange);
-  }, [dictionary, types, sections, structure]);
+  }, [dictionary, types, sections, structure, fileHints]);
 
   return (
     <div ref={anchor} className="mt-3">

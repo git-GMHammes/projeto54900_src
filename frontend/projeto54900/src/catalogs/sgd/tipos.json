@@ -27,6 +27,7 @@
   "parenthetical_note": "parenthesized",
   "amount": "money",
   "total_amount": "money",
+  "fee_amount": "money",
   "global_amount": "money",
   "protocol_date": "date",
   "received_at": "date",

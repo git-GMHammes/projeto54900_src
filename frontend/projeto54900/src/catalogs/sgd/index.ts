@@ -7,6 +7,7 @@
 //   "Nome:", "NOME:", "Nome Completo:" no documento  =>  campo `name`.
 
 import type { FieldDictionary, FieldTypes, SectionDictionary } from '@/utils/documentFields';
+import type { FileHintDictionary } from '@/utils/documentFileHints';
 import type { StructureRules } from '@/utils/documentStructure';
 
 import bancarios from './bancarios.json';
@@ -19,6 +20,7 @@ import identificacao from './identificacao.json';
 import nfe from './nfe.json';
 import predial from './predial.json';
 import processual from './processual.json';
+import arquivo from './arquivo.json';
 import estrutura from './estrutura.json';
 import secoes from './secoes.json';
 import tipos from './tipos.json';
@@ -41,5 +43,8 @@ export const sgdSections: SectionDictionary = secoes;
 
 // Dados sem rotulo (por forma ou posicao) e texto corrido (estrutura.json).
 export const sgdStructure: StructureRules = estrutura;
+
+// Dica do nome do arquivo (arquivo.json): so vale para o campo que o OCR nao achou.
+export const sgdFileHints: FileHintDictionary = arquivo;
 
 export default sgdDictionary;

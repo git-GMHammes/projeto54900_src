@@ -1,7 +1,7 @@
 {
   "patterns": {
     "document_type": [
-      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)\\s*n[º°o]",
+      "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta)(?:\\s+[\\p{L}\\d.-]{2,12})?\\s*n[º°o]",
       "^\\W*(Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Senten[cç]a|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta|Proposta Comercial)\\W*$"
     ],
     "email": [
@@ -130,13 +130,29 @@
       "VALOR\\s+(?:TOTAL|GERAL)(?:\\s+DA\\s+PROPOSTA)?\\s*:?\\s*(?:R\\$\\s*)?(\\d[\\d.]*,\\d{2})"
     ],
     "protocol_number": [
-      "Protocolo\\s*(?:n[º°o.]*)?\\s*[:-]?\\s*(\\d{4,})"
+      "Protocolo\\s*(?:n[º°o.]*)?\\s*[:-]?\\s*(\\d{4,}(?:/\\d{4})?)"
+    ],
+    "property_number": [
+      "\\bim[óo]vel\\s+n[º°o.]*\\s*(\\d[\\d.]*\\d|\\d)"
+    ],
+    "property_inscription": [
+      "inscri[çc][ãa]o\\s+imobili[áa]ria\\s+n[º°o.]*\\s*(\\d[\\d.-]*\\d)"
+    ],
+    "votes_in_favor": [
+      "\\b(\\d+\\s*\\([^)]+\\)\\s*votos?\\s+favor[áa]veis?)"
+    ],
+    "fee_amount": [
+      "\\btaxa\\s+de\\s+R\\$\\s*(\\d[\\d.]*,\\d{2})"
+    ],
+    "response_term": [
+      "prazo\\s+para\\s+resposta\\s*:?\\s*(\\d+\\s*\\([^)]+\\)\\s*dias?(?:\\s+(?:[úu]teis|corridos))?)"
     ],
     "zip_code": [
       "CEP[:\\s]*(\\d{5}-?\\d{3})"
     ],
     "document_number": [
       "\\b(?:Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta|Proposta)\\s*n[º°o.]*\\s*([\\d./-]*\\d(?:/[A-Z][A-Z0-9-]*)*)",
+      "\\b(?:Of[ií]cio|Memorando|Despacho|Parecer|Nota T[eé]cnica|Informa[cç][aã]o|Portaria|Decis[aã]o|Resolu[cç][aã]o|Instru[cç][aã]o Normativa|Circular|Comunicado|Edital|Contrato|Termo de Conv[eê]nio|Conv[eê]nio|Termo de Refer[eê]ncia|Ata|Relat[oó]rio|Requerimento|Declara[cç][aã]o|Certid[aã]o|Minuta|Proposta)\\s+[\\p{L}\\d.-]{2,12}\\s*n[º°o.]+\\s*([\\d./-]*\\d(?:/[A-Z][A-Z0-9-]*)*)",
       "(?:^|\\s)n[º°o]\\.?\\s*(\\d+/\\d{4})"
     ],
     "issue_place": [
@@ -284,6 +300,13 @@
       "key": "body",
       "after": "^(senhor|senhora|senhor\\(a\\)|prezad|ilustrissim|excelentissim)[^.]*,?$",
       "until": "^(atenciosamente|respeitosamente|cordialmente|sem mais)"
+    },
+    {
+      "key": "executive_summary",
+      "after": "^(\\d+\\.?\\s*)?resumo executivo$",
+      "until": "^\\d+\\.\\s+[a-z]",
+      "paragraphs": 1,
+      "gap": 0.3
     }
   ]
 }

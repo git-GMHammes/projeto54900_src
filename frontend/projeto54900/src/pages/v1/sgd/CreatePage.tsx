@@ -4,7 +4,7 @@
 // O botao Enviar ainda nao faz nada: o submit e barrado aqui (nada e enviado) ate existir o backend.
 import DocumentFieldReader from '@/components/global/DocumentFieldReader';
 import RecordFormBuild from '@/components/global/RecordFormBuild';
-import { sgdDictionary, sgdSections, sgdStructure, sgdTypes } from '@/catalogs/sgd';
+import { sgdDictionary, sgdFileHints, sgdSections, sgdStructure, sgdTypes } from '@/catalogs/sgd';
 import { paths } from '@/routes/paths';
 
 export default function CreatePage() {
@@ -20,7 +20,7 @@ export default function CreatePage() {
         backPath={paths.v1.sgd.list}
         successMessage="Documento enviado."
         fallbackTitle="SGD — Novo documento"
-        afterFields={<DocumentFieldReader dictionary={sgdDictionary} types={sgdTypes} sections={sgdSections} structure={sgdStructure} />}
+        afterFields={<DocumentFieldReader dictionary={sgdDictionary} types={sgdTypes} sections={sgdSections} structure={sgdStructure} fileHints={sgdFileHints} />}
       />
     </div>
   );

@@ -1,0 +1,29 @@
+{
+  "document_type": {
+    "Ofício": ["oficio"],
+    "Memorando": ["memorando"],
+    "Despacho": ["despacho"],
+    "Parecer": ["parecer"],
+    "Nota Técnica": ["nota tecnica"],
+    "Informação": ["informacao"],
+    "Portaria": ["portaria"],
+    "Decisão": ["decisao"],
+    "Resolução": ["resolucao"],
+    "Instrução Normativa": ["instrucao normativa"],
+    "Circular": ["circular"],
+    "Comunicado": ["comunicado"],
+    "Edital": ["edital"],
+    "Contrato": ["contrato"],
+    "Convênio": ["convenio", "termo de convenio", "termo convenio"],
+    "Termo de Referência": ["termo de referencia", "termo referencia"],
+    "Ata": ["ata"],
+    "Relatório": ["relatorio"],
+    "Requerimento": ["requerimento"],
+    "Declaração": ["declaracao"],
+    "Certidão": ["certidao"],
+    "Minuta": ["minuta"],
+    "Formulário": ["formulario", "form"],
+    "E-mail": ["email", "e mail"],
+    "Documento Externo": ["documento externo"]
+  }
+}

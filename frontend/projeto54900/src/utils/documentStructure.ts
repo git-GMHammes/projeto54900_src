@@ -35,6 +35,10 @@ export interface TextRule {
   after: string;
   /** Ancora da primeira linha DEPOIS do texto (fecho). */
   until: string;
+  /** Opcional: le so os N primeiros paragrafos (vao maior que o de linha), mesmo antes de achar `until`. */
+  paragraphs?: number;
+  /** Opcional: vao (em alturas de linha) que separa paragrafos nesta regra; sem ele vale o padrao (PARAGRAPH_GAP). */
+  gap?: number;
 }
 
 export interface TableColumn {
@@ -115,10 +119,19 @@ function gapBetween(a: TextLine | undefined, b: TextLine, step: number): number 
   return (lower.y0 - upper.y1) / Math.max(lower.y1 - lower.y0, 1);
 }
 
+// Texto sem acento, minusculo e com simbolos viram espaco, entre espacos: "RESOLUCAO CONSAD N 12" -> " resolucao consad n 12 ".
+const normalizeWords = (text: string): string => ` ${fold(text).replace(/[^a-z0-9]+/g, ' ').trim()} `;
+
+/**
+ * `hints`: termos que confirmam o dado (ex.: o tipo do documento vindo do nome do arquivo). Quando um pattern tem mais
+ * de um candidato no documento, vale o primeiro candidato cujo trecho casado contem uma dica (palavra inteira); sem
+ * dica casando, vale o primeiro, como sempre. A dica so desempata entre candidatos reais: nunca cria valor.
+ */
 export function extractStructure(
   input: readonly TextLine[],
   rules: StructureRules,
   types: FieldTypes = {},
+  hints: readonly string[] = [],
 ): FoundField[] {
   const lines = readingOrder(input);
   const folded = lines.map((l) => foldLine(l.text));
@@ -145,10 +158,15 @@ export function extractStructure(
     if (start < 0) continue;
     let text = '';
     let previous: TextLine | undefined;
+    let count = 1;
     for (let i = start + 1; i < lines.length && samePage(start, i); i += 1) {
       const line = lines[i];
       if (!line || anchor(rule.until).test(folded[i] ?? '')) break;
-      const paragraph = gapBetween(previous, line, 1) > PARAGRAPH_GAP;
+      const paragraph = gapBetween(previous, line, 1) > (rule.gap ?? PARAGRAPH_GAP);
+      if (paragraph) {
+        if (rule.paragraphs !== undefined && count >= rule.paragraphs) break;
+        count += 1;
+      }
       text += (text ? (paragraph ? '\n\n' : ' ') : '') + line.text;
       previous = line;
     }
@@ -310,14 +328,19 @@ export function extractStructure(
   }
   for (const [key, sources] of Object.entries(rules.patterns ?? {})) {
     const regexes = sources.map((source) => ({ source, re: new RegExp(source, 'iu') }));
-    const byLine = regexes.flatMap(({ source, re }) => {
-      const hit = lines.map((l) => re.exec(l.text)).find((m) => m !== null);
-      return hit ? [{ source, hit }] : [];
-    })[0];
-    const byRow = regexes.flatMap(({ source, re }) => {
-      const hit = visualRows.map((t) => re.exec(t)).find((m) => m !== null);
-      return hit ? [{ source, hit }] : [];
-    })[0];
+    const hinted = (m: RegExpExecArray): boolean => hints.some((h) => normalizeWords(m[0]).includes(normalizeWords(h)));
+    // Candidatos em ordem (regex por prioridade, linha por posicao); com dicas, o primeiro que as contem.
+    const pick = (texts: readonly string[]): { source: string; hit: RegExpExecArray } | undefined => {
+      const all = regexes.flatMap(({ source, re }) =>
+        texts.flatMap((t) => {
+          const hit = re.exec(t);
+          return hit ? [{ source, hit }] : [];
+        }),
+      );
+      return all.find(({ hit }) => hinted(hit)) ?? all[0];
+    };
+    const byLine = pick(lines.map((l) => l.text));
+    const byRow = pick(visualRows);
     const hit =
       byLine ??
       byRow ??

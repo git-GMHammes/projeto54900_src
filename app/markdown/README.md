@@ -457,6 +457,15 @@ bloqueia o bind da faixa oculta `52810–56905`. Solução validada: `wsl --shut
 
 [`geral/README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — diagnóstico e solução da porta 54910 bloqueada.
 
+Containers em `ERROR` com `rootlessport ... 54901: bind: address already in use`
+sem nenhum processo na porta: o Windows reservou a faixa (`netsh ... show
+excludedportrange` mostra `54877–54976`). Solução validada: PowerShell como
+administrador, `net stop winnat`, `netsh int ipv4 add excludedportrange
+protocol=tcp startport=54900 numberofports=3`, `net start winnat`, reiniciar a
+VM e subir os containers. Sem rebuild nem reinício do Windows.
+
+[`geral/README_podman_porta_reservada_winnat.md`](geral/README_podman_porta_reservada_winnat.md) — porta reservada pelo Windows (WinNAT) e reserva administrada.
+
 ### `independencia`
 
 Todos os módulos podem se ligar a todos, mas cada um é independente. A ligação é
@@ -505,6 +514,7 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 
 - [`README_atualiza_readme.md`](geral/README_atualiza_readme.md) — como atualizar esta base de conhecimento.
 - [`README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — Vite não sobe na 54910 com Podman ativo (WSL mirrored): causa e ordem de inicialização.
+- [`README_podman_porta_reservada_winnat.md`](geral/README_podman_porta_reservada_winnat.md) — containers com "address already in use" por faixa reservada pelo Windows (WinNAT): causa e reserva administrada das portas.
 - [`README_avaliacao_comercial_saas.md`](geral/README_avaliacao_comercial_saas.md) — avaliação de mercado (teto): venda de código-fonte x SaaS mensal, composição de custo de infra e memória de cálculo.
 - [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
 - [`README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — multiempresa: login por slug, sessão amarrada à empresa, isolamento de dados na API, cadastro e pendências.
