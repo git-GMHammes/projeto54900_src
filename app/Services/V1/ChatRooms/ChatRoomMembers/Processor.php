@@ -87,6 +87,11 @@ class Processor extends BaseTableService
             return $this->forbidden('Somente o dono da sala pode adicionar membros');
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\ChatRooms\ChatRoomMembers\Processor.php
+        BLOCO ALTERADO - 11 linhas (117 a 127 neste arquivo editado):
+        Era :
         if ($this->usersModel->find($userId) === null) {
             return $this->notFound('Usuario nao encontrado');
         }
@@ -95,6 +100,31 @@ class Processor extends BaseTableService
             ->where('chat_rooms_manager_id', $roomId)
             ->where('user_manager_id', $userId)
             ->first();
+        Ficou :
+        if ($userId > 0 && $this->usersModel->find($userId) === null) {
+            return $this->notFound('Usuario nao encontrado');
+        }
+
+        // Usuario opcional: sem usuario nao ha matricula previa para conferir.
+        $existing = $userId > 0
+            ? $this->tableModel->withDeleted()
+                ->where('chat_rooms_manager_id', $roomId)
+                ->where('user_manager_id', $userId)
+                ->first()
+            : null;
+        Motivo: o usuario do membro e opcional: so valida existencia e matricula previa quando informado.
+        */
+        if ($userId > 0 && $this->usersModel->find($userId) === null) {
+            return $this->notFound('Usuario nao encontrado');
+        }
+
+        // Usuario opcional: sem usuario nao ha matricula previa para conferir.
+        $existing = $userId > 0
+            ? $this->tableModel->withDeleted()
+                ->where('chat_rooms_manager_id', $roomId)
+                ->where('user_manager_id', $userId)
+                ->first()
+            : null;
 
         if ($existing !== null) {
             $existing = (array) $existing;

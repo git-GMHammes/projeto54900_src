@@ -1,0 +1,1 @@
+function r(c){const e=c.slice(0,11),i=e.length;return i===0?"":i<=2?`(${e}`:i<=6?`(${e.slice(0,2)}) ${e.slice(2)}`:i<=10?`(${e.slice(0,2)}) ${e.slice(2,6)}-${e.slice(6)}`:`(${e.slice(0,2)}) ${e.slice(2,7)}-${e.slice(7)}`}export{r as a};

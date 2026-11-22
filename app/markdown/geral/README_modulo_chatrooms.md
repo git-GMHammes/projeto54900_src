@@ -1163,6 +1163,18 @@ não conseguir editar favorito de outro) e com admin (ver todos).
 - `form_manager`/`list_manager` para as telas administrativas das 7 tabelas
   (toda tabela do projeto tem lista + form admin, mesmo padrão das demais).
 
+## IDs de vínculo opcionais: usuário
+
+Regra (2026-11-22): o ID de vínculo entre módulos aceita NULL (a coluna, o `Request` e o formulário), e a dependência é validada no código quando o ID vem informado. As FKs ficam. Ver [`README_modulos_independentes.md`](README_modulos_independentes.md), seção 5.
+
+- Passaram a aceitar NULL: `chat_messages.user_manager_id`, `chat_message_edits.edited_by_user_manager_id`, `chat_message_mentions.user_manager_id`,
+  `chat_room_attachment_reports.reporter_user_manager_id`, `chat_room_favorites.user_manager_id`, `chat_room_members.user_manager_id`,
+  `chat_room_warnings.user_manager_id` e `chat_rooms_manager.owner_user_manager_id`.
+- Autor, dono e denunciante continuam vindo da sessão (`CurrentUser::id()`), então o fluxo normal não muda.
+- `ChatRoomMembers` e `ChatRoomWarnings` (Processor e `CreateRequest`): o usuário só é validado quando informado (404 se não existir).
+  Membro sem usuário não passa pela checagem de matrícula duplicada. Os índices únicos `(sala, usuário)` aceitam duplicados com NULL.
+- Formulários `criar-membro-sala` e `criar-advertencia`: usuário opcional.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

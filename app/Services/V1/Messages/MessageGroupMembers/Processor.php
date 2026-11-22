@@ -125,7 +125,33 @@ class Processor extends BaseTableService
     public function create(array $data): array
     {
         $groupId = (int) ($data['message_groups_manager_id'] ?? 0);
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Messages\MessageGroupMembers\Processor.php
+        BLOCO ALTERADO - 9 linhas (148 a 156 neste arquivo editado):
+        Era :
         $userId  = (int) ($data['user_manager_id'] ?? 0);
+
+        $result = $this->sync($groupId, [$userId], []);
+        Ficou :
+        $userId  = (int) ($data['user_manager_id'] ?? 0);
+
+        if ($userId <= 0) { // usuario opcional: vinculo sem usuario (so confere quem escreve no grupo)
+            $guard = $this->assertGroupWriter($groupId, true);
+
+            return $guard['error'] ?? parent::create($data);
+        }
+
+        $result = $this->sync($groupId, [$userId], []);
+        Motivo: vinculo sem usuario: confere o dono ou admin do grupo e grava com NULL, sem passar pelo sync de usuarios.
+        */
+        $userId  = (int) ($data['user_manager_id'] ?? 0);
+
+        if ($userId <= 0) { // usuario opcional: vinculo sem usuario (so confere quem escreve no grupo)
+            $guard = $this->assertGroupWriter($groupId, true);
+
+            return $guard['error'] ?? parent::create($data);
+        }
 
         $result = $this->sync($groupId, [$userId], []);
         if (!($result['success'] ?? false)) {

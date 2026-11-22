@@ -948,6 +948,16 @@ corrigidos no mesmo dia.
   "Ver mais"/"Recolher comentários" continuam funcionando à parte, para ver
   o que já existe.
 
+## IDs de vínculo opcionais: usuário
+
+Regra (2026-11-22): o ID de vínculo entre módulos aceita NULL (a coluna, o `Request` e o formulário), e a dependência é validada no código quando o ID vem informado. As FKs ficam. Ver [`README_modulos_independentes.md`](README_modulos_independentes.md), seção 5.
+
+- Passaram a aceitar NULL: `timeline_manager.user_manager_id`, `timeline_posts.user_manager_id` e `user_manager_id` de `timeline_post_comments`,
+  `timeline_post_ratings`, `timeline_post_reactions` e `timeline_post_reports`.
+- O autor continua vindo da sessão, então o fluxo normal não muda e nenhum Processor ou formulário foi alterado.
+- `view_timeline_posts` passou a usar `LEFT JOIN` com `user_manager`, para o post sem usuário continuar no feed (autor vazio).
+  Os índices únicos `(post, usuário)` e `(usuário, empresa)` aceitam duplicados com NULL.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

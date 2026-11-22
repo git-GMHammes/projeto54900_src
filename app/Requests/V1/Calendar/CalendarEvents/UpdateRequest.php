@@ -31,6 +31,15 @@ class UpdateRequest
             'end_time_zone'               => 'permit_empty|string|max_length[50]',
             'recurrence'                  => 'permit_empty|string',
             'recurring_event_id'         => 'permit_empty|is_natural_no_zero',
+            /*
+            CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+            Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Requests\V1\Calendar\CalendarEvents\UpdateRequest.php
+            LINHA ADICIONADA - linha 42 neste arquivo editado: 'health_exam_id'             => 'permit_empty|is_natural_no_zero|is_not_unique[health_exams.id]',
+            Antes de : 'recurring_event_id'         => 'permit_empty|is_natural_no_zero',
+            Depois de : 'sequence'                    => 'permit_empty|is_natural',
+            Motivo: health_exam_id opcional; quando informado, o exame precisa existir em health_exams.
+            */
+            'health_exam_id'             => 'permit_empty|is_natural_no_zero|is_not_unique[health_exams.id]',
             'sequence'                    => 'permit_empty|is_natural',
             'transparency'                => 'permit_empty|in_list[opaque,transparent]',
             'visibility'                  => 'permit_empty|in_list[default,public,private,confidential]',

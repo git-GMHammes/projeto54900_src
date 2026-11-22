@@ -12,7 +12,15 @@ class CreateRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required|is_natural_no_zero|is_not_unique[product_manager.id]',
+            /*
+            CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:25:13
+            Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Requests\V1\Movement\MovementManager\CreateRequest.php
+            LINHA ALTERADA - linha 23 neste arquivo editado:
+            Era : 'product_id' => 'required|is_natural_no_zero|is_not_unique[product_manager.id]',
+            Ficou : 'product_id' => 'permit_empty|is_natural_no_zero|is_not_unique[product_manager.id]',
+            Motivo: o vinculo product_id passa a ser opcional (pode ser NULL); quando informado continua validado.
+            */
+            'product_id' => 'permit_empty|is_natural_no_zero|is_not_unique[product_manager.id]',
             'type' => 'required|in_list[entry,exit,reservation,waste,order]',
             'quantity' => 'required|numeric|greater_than[0]',
             'status' => 'permit_empty|in_list[open,done,cancelled]',

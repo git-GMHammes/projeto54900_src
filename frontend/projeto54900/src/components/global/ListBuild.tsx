@@ -17,9 +17,28 @@ import { Link } from 'react-router-dom';
 import PageHeader from '@/components/global/PageHeader';
 import EmptyState from '@/components/global/EmptyState';
 import LoadingOverlay from '@/components/global/LoadingOverlay';
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+BLOCO ADICIONADO - 3 linhas (28 a 30 neste arquivo editado): imports do MediaViewerModal, do tipo MediaSource e de toMediaCategory
+Antes de : import LoadingOverlay from '@/components/global/LoadingOverlay';
+Depois de : import { useAuth } from '@/context/AuthContext';
+Motivo: trazer o visualizador de midias e o conversor de categoria usados pela acao media-viewer.
+*/
+import MediaViewerModal from '@/components/global/MediaViewerModal';
+import type { MediaSource } from '@/components/global/MediaViewerModal';
+import { toMediaCategory } from '@/utils/mediaCategory';
 import { useAuth } from '@/context/AuthContext';
 import { http, ApiError } from '@/services/http';
-import { listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+LINHA ALTERADA - linha 41 neste arquivo editado:
+Era : import { listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied } from '@/services/v1';
+Ficou : import { listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied, uploadManagerTable, uploadManagerUpload } from '@/services/v1';
+Motivo: importar uploadManagerTable e uploadManagerUpload para listar e baixar os anexos do visualizador de midias.
+*/
+import { listManagerTable, listColumnsTable, listActionsTable, checkResourceAccess, isDenied, uploadManagerTable, uploadManagerUpload } from '@/services/v1';
 import { normalizeList } from '@/utils/apiResult';
 import { resolveEndpoint } from '@/utils/formSubmit';
 import { usePagination } from '@/hooks/usePagination';
@@ -47,6 +66,15 @@ function ActionButton({
   subject,
   disabled,
   onExecuted,
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+  LINHA ADICIONADA - linha 77 neste arquivo editado: onOpenMedia,
+  Antes de :   onExecuted,
+  Depois de : }: {
+  Motivo: receber do ListBuild a funcao que abre o visualizador de midias da linha.
+  */
+  onOpenMedia,
 }: {
   action: ListActionRow;
   row: Record<string, unknown>;
@@ -54,6 +82,16 @@ function ActionButton({
   subject: string;
   disabled: boolean;
   onExecuted: () => void;
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+  BLOCO ADICIONADO - 2 linhas (93 a 94 neste arquivo editado): comentario e tipo opcional da prop onOpenMedia
+  Antes de :   onExecuted: () => void;
+  Depois de : }) {
+  Motivo: tipar a nova prop opcional do botao de acao.
+  */
+  // Abre o visualizador de midias da linha (data_action 'media-viewer'); sem ele a acao avisa que nao tem tratamento.
+  onOpenMedia?: ((row: Record<string, unknown>) => void) | undefined;
 }) {
   const toast = useToast();
 
@@ -94,11 +132,37 @@ function ActionButton({
         className="btn btn-sm btn-outline-primary"
         aria-label={tip}
         disabled={disabled}
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+        BLOCO ALTERADO - 9 linhas (157 a 165 neste arquivo editado):
+        Era :
         onClick={() =>
           toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
             title: action.label,
           })
         }
+        Ficou :
+        onClick={() => {
+          if (action.dataAction === 'media-viewer' && onOpenMedia) {
+            onOpenMedia(row);
+            return;
+          }
+          toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
+            title: action.label,
+          });
+        }}
+        Motivo: a acao modal media-viewer passa a abrir o visualizador quando a lista informa mediaModule; as demais acoes modal continuam com o aviso.
+        */
+        onClick={() => {
+          if (action.dataAction === 'media-viewer' && onOpenMedia) {
+            onOpenMedia(row);
+            return;
+          }
+          toast.error(`Acao '${action.dataAction || action.label}' sem tratamento nesta lista.`, {
+            title: action.label,
+          });
+        }}
       >
         {content}
       </button>,
@@ -153,6 +217,16 @@ export interface ListBuildProps {
   headerActions?: ReactNode;
   /** Com valor, mostra o botao "Voltar" (ultima tela visitada; este caminho e a reserva se nao houver historico). */
   backFallback?: string;
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+  BLOCO ADICIONADO - 2 linhas (228 a 229 neste arquivo editado): comentario e prop opcional mediaModule em ListBuildProps
+  Antes de :   backFallback?: string;
+  Depois de : }
+  Motivo: cada lista informa o modulo dos anexos sem o componente conhecer nenhum modulo.
+  */
+  // Valor de uploads.module dos anexos da linha (ex.: 'HealthRecords'). Com ele a acao 'media-viewer' abre o visualizador de midias; sem ele avisa que nao tem tratamento.
+  mediaModule?: string;
 }
 
 export default function ListBuild({
@@ -164,6 +238,15 @@ export default function ListBuild({
   emptyDescription = 'Cadastre o primeiro registro.',
   headerActions,
   backFallback,
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+  LINHA ADICIONADA - linha 249 neste arquivo editado: mediaModule,
+  Antes de :   backFallback,
+  Depois de : }: ListBuildProps) {
+  Motivo: receber a prop mediaModule no componente.
+  */
+  mediaModule,
 }: ListBuildProps) {
   const goBack = useGoBack(backFallback ?? '/');
   const { params, setPage, setLimit, toggleSort } = usePagination();
@@ -181,6 +264,30 @@ export default function ListBuild({
     [actionsAll, userRole],
   );
   const [defsError, setDefsError] = useState<string | null>(null);
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+  BLOCO ADICIONADO - 16 linhas (275 a 290 neste arquivo editado): estado mediaRow e funcao loadMedia (lista os anexos da linha em uploads)
+  Antes de :   const [defsError, setDefsError] = useState<string | null>(null);
+  Depois de : (linha em branco, seguida de) "  const [rows, setRows] = useState<Record<string, unknown>[]>([]);"
+  Motivo: guardar a linha cujo visualizador esta aberto e carregar os anexos dela.
+  */
+  const [mediaRow, setMediaRow] = useState<Record<string, unknown> | null>(null);
+
+  // Anexos da linha em uploads (module + reference_id); o binario vem com o token da sessao.
+  const loadMedia = useCallback(async (): Promise<MediaSource[]> => {
+    if (!mediaModule || !mediaRow) return [];
+    const raw = await uploadManagerTable.find(
+      { module: mediaModule, reference_id: str(mediaRow.id) },
+      { sort: 'id', order: 'ASC', limit: 100 },
+    );
+    return normalizeList<Record<string, unknown>>(raw).rows.map((r) => ({
+      id: str(r.id),
+      category: toMediaCategory(r.category),
+      name: str(r.original_name),
+      fetchBlob: (signal: AbortSignal) => uploadManagerUpload.fetchBlob(str(r.id), signal),
+    }));
+  }, [mediaModule, mediaRow]);
 
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
@@ -374,6 +481,15 @@ export default function ListBuild({
                             subject={columns[0] ? cellValue(columns[0], row) : ''}
                             disabled={!evalBusinessRule(a.businessRule, row)}
                             onExecuted={() => void loadData()}
+                            /*
+                            CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+                            Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+                            LINHA ADICIONADA - linha 492 neste arquivo editado: onOpenMedia={mediaModule ? setMediaRow : undefined}
+                            Antes de :                             onExecuted={() => void loadData()}
+                            Depois de :                           />
+                            Motivo: ligar o botao de acao ao visualizador somente quando a lista informa mediaModule.
+                            */
+                            onOpenMedia={mediaModule ? setMediaRow : undefined}
                           />
                         ))}
                       </td>
@@ -441,6 +557,21 @@ export default function ListBuild({
             </nav>
           </div>
         </div>
+      )}
+      {/*
+      CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 14:18:32
+      Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\components\global\ListBuild.tsx
+      BLOCO ADICIONADO - 7 linhas (569 a 575 neste arquivo editado): render condicional do MediaViewerModal da linha selecionada
+      Antes de :       )}
+      Depois de : (linha em branco, seguida de) "    </>"
+      Motivo: exibir o visualizador de midias quando uma acao media-viewer e acionada.
+      */}
+      {mediaRow && mediaModule && (
+        <MediaViewerModal
+          title={`Mídias: ${columns[0] ? cellValue(columns[0], mediaRow) : `#${str(mediaRow.id)}`}`}
+          load={loadMedia}
+          onClose={() => setMediaRow(null)}
+        />
       )}
 
     </>

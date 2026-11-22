@@ -560,6 +560,19 @@ A ação Editar das listas 36 e 39 aparece em **qualquer status** (§0; a regra 
 - `messages_manager.recipient_user_manager_id` aceita NULL **por causa** do grupo; voltar a
   `NOT NULL` só se não houver mensagem de grupo.
 
+## IDs de vínculo opcionais: usuário
+
+Regra (2026-11-22): o ID de vínculo entre módulos aceita NULL (a coluna, o `Request` e o formulário), e a dependência é validada no código quando o ID vem informado. As FKs ficam. Ver [`README_modulos_independentes.md`](README_modulos_independentes.md), seção 5.
+
+- Passaram a aceitar NULL: `messages_manager.sender_user_manager_id`, `message_groups_manager.owner_user_manager_id`,
+  `message_group_members.user_manager_id`, `message_group_reads.user_manager_id`, `message_mentions.user_manager_id` e
+  `message_warnings.user_manager_id`.
+- Remetente, dono e leitor continuam vindo da sessão, então o fluxo normal não muda.
+- `MessageGroupMembers` (create sem usuário confere quem escreve no grupo e grava com NULL, sem o `sync`), `MessageMentions`
+  (marcação sem usuário vale só a permissão sobre a mensagem; no update, sem usuário grava NULL) e `MessageWarnings` (usuário validado só se
+  informado), com os `Request` em `permit_empty`. Os índices únicos por `(grupo ou mensagem, usuário)` aceitam duplicados com NULL.
+- Formulários `criar-grupo-mensagem`, `editar-grupo-mensagem`, `criar-mensagem-direta` e `editar-mensagem-direta`: dono e remetente opcionais.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

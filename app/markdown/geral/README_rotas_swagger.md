@@ -1849,6 +1849,30 @@ Fonte: `Config/Routes/Api/v1/Map/MapGeo/EndpointGeo.php` — proxy dos provedore
 | GET | `/map-geo/cep/{cep}` | `Api\V1\Map\MapGeo\GeoController::cep/$1` |
 | POST | `/map-geo/route` | `Api\V1\Map\MapGeo\GeoController::route` |
 
+## Health — Saúde (médico, paciente, prontuário)
+
+Módulo `Health`: 7 tabelas e 8 views (uma por tabela, mais `view_health_user_identity`),
+18 rotas por tabela e 9 por view — **198 rotas**. Só banco DEV e API; sem tela. Detalhes em
+[`README_modulo_health.md`](README_modulo_health.md).
+
+**Filtros:** `jwtauth` (por wildcard de URI) em todas; `adminonly` rota a rota em
+`delete-hard`, `clear-deleted` e `clear-deleted/{id}` das tabelas. Não há rota pública.
+
+**Contrato:** as rotas de cada tabela e de cada view são idênticas ao contrato canônico do
+[`ROADMAP_padrao_modulo.md`](ROADMAP_padrao_modulo.md) (seções 5.1 e 5.2), trocando o prefixo e o controller.
+Fonte: `Config/Routes/Api/v1/Health/<Submódulo>/EndpointTable.php` (18) e `EndPointView.php` (9).
+
+| Prefixo (tabela, 18 rotas) | Prefixo (view, 9 rotas) | Controller (namespace `Api\V1\Health\...`) |
+| -------------------------- | ----------------------- | ------------------------------------------- |
+| `/health-registrations` | `/health-registrations-view` | `HealthRegistrations\ResourceTableController` / `ResourceViewController` |
+| `/health-patients` | `/health-patients-view` | `HealthPatients\ResourceTableController` / `ResourceViewController` |
+| `/health-records` | `/health-records-view` | `HealthRecords\ResourceTableController` / `ResourceViewController` |
+| `/health-prescriptions` | `/health-prescriptions-view` | `HealthPrescriptions\ResourceTableController` / `ResourceViewController` |
+| `/health-exams` | `/health-exams-view` | `HealthExams\ResourceTableController` / `ResourceViewController` |
+| `/health-vitals` | `/health-vitals-view` | `HealthVitals\ResourceTableController` / `ResourceViewController` |
+| `/health-allergies` | `/health-allergies-view` | `HealthAllergies\ResourceTableController` / `ResourceViewController` |
+| — | `/health-user-identity-view` (9 rotas, só leitura) | `HealthUserIdentity\ResourceViewController` |
+
 ---
 
 ---

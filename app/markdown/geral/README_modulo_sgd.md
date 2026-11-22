@@ -86,11 +86,11 @@ Os rótulos disputam as caixas próximas, do par mais perto para o mais longe, e
 
 **Texto corrido sem rótulo (`texts` em `catalogs/sgd/estrutura.json`, `documentStructure.ts`).** Cada regra lê o trecho entre uma âncora `after` (linha antes) e `until` (linha depois) em um único campo. Opções: `paragraphs` (lê só os N primeiros parágrafos) e `gap` (vão, em alturas de linha, que separa parágrafos; sem ele vale 1,0). Exemplos: `body` (corpo do ofício, da saudação ao fecho) e `executive_summary` (Relatório: `paragraphs: 1`, `gap: 0.3` — o parágrafo do resumo termina a 0,58 altura dos cartões numéricos, abaixo do vão padrão). Âncora sempre sobre a linha sem acento e em minúsculo.
 
-**Dica do nome do arquivo (`catalogs/sgd/arquivo.json`, `utils/documentFileHints.ts`).** O nome do arquivo quase sempre traz o tipo (`Relatório.pdf`, `nota_tecnica.pdf`). Regra: **o que o OCR identificou sempre vale**; só se a chave (hoje `document_type`) não foi achada no documento, vale o nome do arquivo. O campo vindo do nome sai com alias `nome do arquivo`. O nome é comparado sem extensão, sem acento e em minúsculo, símbolos viram espaço, e o termo casa palavra inteira (o mais longo vence). Formato do JSON: `{ chave: { valor: [termos] } }`; tipo novo = linha nova no JSON. Nome sem tipo (ex.: `000.073.162.pdf`) não gera nada. Ligação: prop `fileHints` do `DocumentFieldReader`. **Desempate:** quando o documento tem mais de um candidato (ex.: cabeçalho `Ata nº 07/2026` e título `RESOLUÇÃO CONSAD Nº 12`), o tipo que o nome do arquivo confirma vale (`matchFileHints` → dicas de `extractStructure`: vale o primeiro candidato cujo trecho casado contém a dica, palavra inteira); sem dica casando, vale o primeiro, como antes. A dica só escolhe entre candidatos reais do OCR, nunca cria valor.
+**Dica do nome do arquivo (`catalogs/sgd/arquivo.json`, `utils/documentFileHints.ts`).** O nome do arquivo quase sempre traz o tipo (`relatorio.pdf`, `nota-tecnica.pdf`). Regra: **o que o OCR identificou sempre vale**; só se a chave (hoje `document_type`) não foi achada no documento, vale o nome do arquivo. O campo vindo do nome sai com alias `nome do arquivo`. O nome é comparado sem extensão, sem acento e em minúsculo, símbolos viram espaço, e o termo casa palavra inteira (o mais longo vence). Formato do JSON: `{ chave: { valor: [termos] } }`; tipo novo = linha nova no JSON. Nome sem tipo (ex.: `000.073.162.pdf`) não gera nada. Ligação: prop `fileHints` do `DocumentFieldReader`. **Desempate:** quando o documento tem mais de um candidato (ex.: cabeçalho `Ata nº 07/2026` e título `RESOLUÇÃO CONSAD Nº 12`), o tipo que o nome do arquivo confirma vale (`matchFileHints` → dicas de `extractStructure`: vale o primeiro candidato cujo trecho casado contém a dica, palavra inteira); sem dica casando, vale o primeiro, como antes. A dica só escolhe entre candidatos reais do OCR, nunca cria valor.
 
-**Campos do Requerimento (`patterns` em `estrutura.json`, testado com `doc/pdf/REQUERIMENTO.pdf`).** `protocol_number` lê o número completo (`4587/2026`, antes truncava em `4587`); novos: `property_number` (`imóvel nº 15.882`; não pega "imóvel situado na Rua ..., nº 410"), `property_inscription` (`inscrição imobiliária nº ...`), `fee_amount` (`taxa de R$ 86,40` → tipo `money`, sai `86.40`) e `response_term` (`Prazo para resposta: 15 (quinze) dias úteis`). Num Requerimento o `N° 4587/2026` do cabeçalho vira `document_number` e é o mesmo número do protocolo.
+**Campos do Requerimento (`patterns` em `estrutura.json`, testado com `doc/pdf/requerimento.pdf`).** `protocol_number` lê o número completo (`4587/2026`, antes truncava em `4587`); novos: `property_number` (`imóvel nº 15.882`; não pega "imóvel situado na Rua ..., nº 410"), `property_inscription` (`inscrição imobiliária nº ...`), `fee_amount` (`taxa de R$ 86,40` → tipo `money`, sai `86.40`) e `response_term` (`Prazo para resposta: 15 (quinze) dias úteis`). Num Requerimento o `N° 4587/2026` do cabeçalho vira `document_number` e é o mesmo número do protocolo.
 
-**Resolução (testado com `doc/pdf/RESOLUÇÃO.pdf`).** `document_type`/`document_number` aceitam UMA sigla de órgão entre o tipo e o `nº` (`RESOLUÇÃO CONSAD Nº 12` → `RESOLUÇÃO` e `12`); novo `votes_in_favor` (`Aprovada por 7 (sete) votos favoráveis` → `7 (sete) votos favoráveis`). Sem o nome do arquivo, o tipo desse PDF sai `Ata` (cabeçalho `Ata nº 07/2026` vem primeiro); com `RESOLUÇÃO.pdf`, sai `RESOLUÇÃO`.
+**Resolução (testado com `doc/pdf/resolucao.pdf`).** `document_type`/`document_number` aceitam UMA sigla de órgão entre o tipo e o `nº` (`RESOLUÇÃO CONSAD Nº 12` → `RESOLUÇÃO` e `12`); novo `votes_in_favor` (`Aprovada por 7 (sete) votos favoráveis` → `7 (sete) votos favoráveis`). Sem o nome do arquivo, o tipo desse PDF sai `Ata` (cabeçalho `Ata nº 07/2026` vem primeiro); com `resolucao.pdf`, sai `RESOLUÇÃO`.
 
 ## 8. Tipos de valor (pronto para o banco)
 
@@ -129,7 +129,7 @@ Hoje ligados: `email`, `cpf`, `cnpj`, `zip_code`→`cep`, `phone`, `mobile`→`p
 | Regra rígida de alinhamento do valor | falhou com valor deslocado da coluna; trocada por atribuição global por distância |
 | `UploadPage` / `DocumentFields` / multipart no `FormBuild` | desfeitos: o pedido era só a tela `create` com um campo de upload |
 
-Documentos de teste: `doc/pdf/ocr_form_001.pdf` (valor ao lado do rótulo) e `ocr_form_002.pdf` (valor abaixo, em colunas), com os `.txt` correspondentes em `doc/txt/`. Ambos extraem os mesmos 14 campos.
+Os PDFs de teste `ocr_form_001.pdf` e `ocr_form_002.pdf` foram removidos de `doc/pdf` (2026-11-21); os `.txt` correspondentes continuam em `doc/txt/`.
 
 ### Como testar (sem login)
 
@@ -175,7 +175,7 @@ Dev: `npm run dev` (porta 54910). Teste de fluxo completo em Chrome headless (CD
 
 ## 11. Planos executados (`src/writable/claude/`)
 
-Prefixos `20261102120000` (doc em branco), `130000` (README de dependências), `140000` (UploadPage — **desfeito**), `150000` (telas e menu), `170000` (dicionário e OCR Tesseract), `180000` (e-mail), `190000` (tipos de valor), `200000` (motor PaddleOCR), `210000` (máscara/dinheiro/data), `220000` (leitura por posição), `230000` (telefone e RG), `20261115130000` (resumo executivo do Relatório: opções `paragraphs` e `gap` em `texts`), `20261115150000` (tipo do documento pelo nome do arquivo), `20261115170000` (campos do Requerimento), `20261115190000` (Resolução: tipo confirmado pelo nome do arquivo, número e votos), `20261115210000` (tabela `sgd_document_types`).
+Prefixos `20261102120000` (doc em branco), `130000` (README de dependências), `140000` (UploadPage — **desfeito**), `150000` (telas e menu), `170000` (dicionário e OCR Tesseract), `180000` (e-mail), `190000` (tipos de valor), `200000` (motor PaddleOCR), `210000` (máscara/dinheiro/data), `220000` (leitura por posição), `230000` (telefone e RG), `20261115130000` (resumo executivo do Relatório: opções `paragraphs` e `gap` em `texts`), `20261115150000` (tipo do documento pelo nome do arquivo), `20261115170000` (campos do Requerimento), `20261115190000` (Resolução: tipo confirmado pelo nome do arquivo, número e votos), `20261115210000` (tabela `sgd_document_types`), `20261121230000` (formulário e teste do Memorando), `20261121233000` (formulário do Despacho e campos repetidos), `20261121235000` (formulário do Parecer).
 
 ## 12. Documentos-alvo dos testes (OCR e dicionário)
 
@@ -183,15 +183,15 @@ Decisão de 2026-11-02: o módulo será testado com **todos** os tipos de docume
 
 | # | Tipo | Situação |
 | --- | --- | --- |
-| 1 | Ofício | testado (`doc/pdf/Ofício nº 001_2026.pdf`) |
-| 2 | Memorando | a testar |
-| 3 | Despacho | a testar |
-| 4 | Parecer | a testar |
+| 1 | Ofício | testado (`doc/pdf/oficio.pdf`) |
+| 2 | Memorando | testado (`doc/pdf/memorando.pdf`) |
+| 3 | Despacho | testado (`doc/pdf/despacho.pdf`) |
+| 4 | Parecer | testado (`doc/pdf/parecer.pdf`) |
 | 5 | Nota Técnica | a testar |
 | 6 | Informação | a testar |
 | 7 | Portaria | a testar |
 | 8 | Decisão | a testar |
-| 9 | Resolução | testado (`doc/pdf/RESOLUÇÃO.pdf`) |
+| 9 | Resolução | testado (`doc/pdf/resolucao.pdf`) |
 | 10 | Instrução Normativa | a testar |
 | 11 | Circular | a testar |
 | 12 | Comunicado | a testar |
@@ -200,16 +200,16 @@ Decisão de 2026-11-02: o módulo será testado com **todos** os tipos de docume
 | 15 | Convênio | a testar |
 | 16 | Termo de Referência | a testar |
 | 17 | Ata | a testar |
-| 18 | Relatório | testado (`doc/pdf/Relatório.pdf`; campo `executive_summary` lido em 2026-11-15) |
-| 19 | Requerimento | testado (`doc/pdf/REQUERIMENTO.pdf`) |
-| 20 | Declaração | testado (declaração de dados bancários, `doc/pdf/DECLARACAO_NUBANK.pdf`) |
+| 18 | Relatório | testado (`doc/pdf/relatorio.pdf`; campo `executive_summary` lido em 2026-11-15) |
+| 19 | Requerimento | testado (`doc/pdf/requerimento.pdf`) |
+| 20 | Declaração | testado (declaração de dados bancários, `doc/pdf/declaracao.pdf`) |
 | 21 | Certidão | a testar |
 | 22 | Minuta | a testar |
-| 23 | Formulário | testado (`doc/pdf/ocr_form_001.pdf` e `ocr_form_002.pdf`) |
+| 23 | Formulário | testado (PDFs de teste removidos em 2026-11-21) |
 | 24 | E-mail | a testar |
 | 25 | Documento Externo | a testar |
 
-Fora da lista, já exercitado: **NF-e/DANFE** (`doc/pdf/000.073.162.pdf`).
+Fora da lista, já exercitado: **NF-e/DANFE** (PDF removido de `doc/pdf` em 2026-11-21).
 
 ## 13. Banco de dados — tipos de documento (`sgd_`)
 
@@ -229,7 +229,7 @@ Prefixo das tabelas do módulo: **`sgd_`**. Criada em 2026-11-15, direto no banc
 
 **View `view_sgd_document_types`:** `id`, `company_id`, `sdt_slug`, `sdt_name`, `sdt_sort_order`, `sdt_status`, `created_at`, `updated_at`, `deleted_at` (padrão dos módulos recentes: `company_id` sem prefixo).
 
-**Carga (2026-11-15):** 25 tipos, um por tipo, só para a empresa 1 (DEFAULT) — a coluna `company_id` é obrigatória. Foram incluídos os tipos identificados pelo nome dos PDFs de `doc/pdf` (Ofício a Documento Externo, ordem da seção 12); o `000.073.162.pdf` (NF-e) ficou de fora por não indicar tipo. Os `slug` casam com `catalogs/sgd/arquivo.json` (`document_type`); a ligação entre o tipo lido pelo OCR e esta tabela ainda não existe.
+**Carga (2026-11-15):** 25 tipos, um por tipo, só para a empresa 1 (DEFAULT) — a coluna `company_id` é obrigatória. Foram incluídos os tipos identificados pelo nome dos PDFs de `doc/pdf` (Ofício a Documento Externo, ordem da seção 12); o `000.073.162.pdf` (NF-e, removido depois) ficou de fora por não indicar tipo. Os `slug` casam com `catalogs/sgd/arquivo.json` (`document_type`); a ligação entre o tipo lido pelo OCR e esta tabela ainda não existe.
 
 **Tipos comuns acrescentados (2026-11-16):** `nota-fiscal`, `proposta-comercial`, `recibo`, `orcamento`, `ordem-de-servico`, `procuracao`, `decreto`, `notificacao`, `atestado`, `laudo`, `comprovante`, `termo-aditivo` (ordem 26 a 37, empresa 1). Total: 37 tipos.
 
@@ -257,3 +257,56 @@ Sem triggers. API, Processor, rotas, menu e telas (CRUD) ainda **não** foram fe
 | `status`, `created_at`, `updated_at`, `deleted_at` | | padrão das tabelas do módulo |
 
 **Origem (2026-11-16):** os 155 campos do algoritmo (`catalogs/sgd/*.json` + `estrutura.json`). A lista de tipos de cada campo vem do escopo do campo (grupos de documentos: administrativo, normas, jurídico, fiscal, RH, identificação, saúde, educação, técnico, veículo, comunicação, formulários, contratos), mais a evidência dos PDFs de teste de `doc/pdf`. Campo de nota fiscal só nos tipos fiscais; campo de pessoa nos tipos que identificam pessoa; campos de contato em quase todos, exceto normas e mídias.
+
+### Campo "Tipo do documento" no formulário `criar-sgd` (2026-11-21)
+
+Abaixo do upload, o form `criar-sgd` (`form_manager` 89) tem o campo `document_type` (select, label "Tipo do documento", não obrigatório). Está em `form_fields` (nova linha em `form_rows`, grupo 130), com `select_config_json`: `src` `/api/v1/sgd-document-types/get-no-pagination?sort=id&order=ASC` (sem o `sort`, o endpoint devolve `id` DESC e o select aparece de trás para frente), `valueKey` `slug`, `labelTemplate` `{name}` — grava o **slug** e mostra o **name**.
+
+Para isso existe o endpoint `api/v1/sgd-document-types/*` (endpoint-set padrão, JWT, `companyScope` por coluna): `Config/Routes/Api/v1/Sgd/DocumentTypes/EndpointTable.php`, `Controllers/Api/V1/Sgd/DocumentTypes/ResourceTableController.php`, `Services/V1/Sgd/DocumentTypes/Processor.php`, `Models/V1/Sgd/DocumentTypes/SqlTableModel.php`, `Requests/V1/Sgd/DocumentTypes/{Create,Update}Request.php`. Grupo registrado em `Config/Routes.php` e protegido em `Config/Filters.php`.
+
+O campo foi criado por INSERT no banco local; as migrations (`*_seed_table.sql`) não foram alteradas — entram no snapshot do fim do ciclo. Frontend sem alteração (o `CreatePage` renderiza o formulário do banco).
+
+### Formulário do Ofício e tabela `sgd_documents` (2026-11-21)
+
+**Tabela `sgd_documents`** (criada direto no banco DEV, sem migration — entra no snapshot do fim do ciclo): `id`, `company_id` (FK `fk_sgd_documents_company`), `document_type` (slug, ex.: `oficio`), `document_number`, `document_date` (DATE), `process_number`, `registration_number`, `subject`, `body` (TEXT), `parenthetical_note`, `signature_name`, `signature_position`, `email`, `phone`, `zip_code`, `status`, datas padrão e `deleted_at`. Um registro por documento escaneado; `phone` e `zip_code` guardam só dígitos.
+
+**Formulário `criar-sgd-oficio`** (`form_manager` 91, `table_name` `sgd_documents`, `submit_endpoint` `/api/v1/sgd-documents/create`): 13 campos, todos presentes em `sgd_fields` para o tipo `oficio` e identificados no escaneamento de `doc/pdf/oficio.pdf`. Grupo "Ofício", 7 linhas: tipo + número / data + processo + matrícula / assunto / corpo (textarea) / nota entre parênteses / signatário + cargo / e-mail + telefone + CEP. Tipos: `select` (tipo do documento, slug), `data`, `email`, `phone`, `cep`, `textarea` e `text`. Abre pelo Build: `/v1/form-constructor/sgd_documents/91`. Os forms 89/90 (`criar-sgd`/`editar-sgd`) não foram alterados e seguem sem o endpoint `/api/v1/sgd/*`.
+
+**Backend:** módulo `api/v1/sgd-documents/*` (endpoint-set padrão, JWT, `companyScope` por coluna) em `Sgd/Documents` (rotas, controller, processor, model, requests). Só `document_type` é obrigatório no create.
+
+**Teste (2026-11-21):** registro `id` 1 de `sgd_documents` (empresa 1) com o resultado do escaneamento do `oficio.pdf` (`document_number` `001/2026/DGA`, `document_date` `2026-11-02`, `document_type` `oficio`, etc.). Observação do escaneamento: o `body` saiu com palavras coladas (`cordialmente,solicito aVossaSenhoria`), valor mantido como veio.
+
+**Valores do teste no formulário (2026-11-21):** os 13 campos do form 91 receberam `default_value` com o resultado do escaneamento do `oficio.pdf` (UPDATE em `form_fields`), então `/v1/form-constructor/sgd_documents/91` abre já preenchido. `document_type` usa o slug `oficio`.
+
+
+### Formulário do Memorando e colunas novas de `sgd_documents` (2026-11-21)
+
+**Colunas novas em `sgd_documents`** (ALTER direto no DEV, sem migration — entram no snapshot do fim do ciclo): `sender_name` VARCHAR(255), `recipient_name` VARCHAR(255), `time` TIME, `time_end` TIME, `place` VARCHAR(255) e `agenda` TEXT. Acompanhadas em `SqlTableModel` (`allowedFields` e `sortableFields`), `CreateRequest` e `UpdateRequest` (horários validados por `regex_match` HH:MM ou HH:MM:SS).
+
+**`sgd_fields`:** `agenda` (já existia para ata, pauta etc.) recebeu o tipo `memorando` em `document_types`; `time_end` foi criado (`value_type` `time`, `identified_by` `["label"]`, `document_types` `["memorando"]`). `sgd_document_types` não mudou (`memorando` id 2 já existia). O catálogo do frontend (`catalogs/sgd/*.json`) não foi alterado.
+
+**Formulário `criar-sgd-memorando`** (`form_manager` 92, `table_name` `sgd_documents`): 16 campos, 9 linhas: tipo + número / remetente + destinatário / assunto / processo + data / horário + término + local / pauta (textarea) / corpo (textarea) / signatário + cargo / e-mail + registro. Tipos novos usados: `hora` (com segundos). Abre em `/v1/form-constructor/sgd_documents/92`. Script: `src/writable/claude/20261121_memorando_form.sql`.
+
+**Teste:** registro `id` 2 de `sgd_documents` (empresa 1), valores exatos colados pelo usuário; os mesmos valores são o `default_value` dos campos do form 92. Observações do escaneamento: `document_date` colada (`2026-11-12`) difere da data impressa no PDF (2 de novembro de 2026); `signature_position` veio com o nome (`CARLOS EDUARDO MENEZES`); `body` traz `•pauta` sem espaço. Mantidos como vieram.
+
+
+### Formulário do Despacho e regra de campos repetidos (2026-11-21)
+
+**Regra dos campos repetidos** (também em `doc/pdf/prompt_ocr.json`, bloco `campos_repetidos`, versão 2.2): ocorrências com sufixo (`parenthetical_note_001`, `article_001`, `cnpj_001`...) não viram campos de formulário repetitivos nem colunas. Todas vão para UM campo (chave sem sufixo): coluna TEXT e textarea, uma ocorrência por linha, na ordem recebida, sem remover repetições.
+
+**Colunas novas em `sgd_documents`** (ALTER direto no DEV, sem migration): `cnpj` TEXT, `article` TEXT, `protocol_date` DATE, `contract_number`, `contract_inspector`, `reserve_note`, `law_number`, `decree_number`, `e_signer_name`, `website` (VARCHAR 255), `term_end` DATE, `global_amount` DECIMAL(15,2). A coluna `parenthetical_note` passou de VARCHAR(255) para TEXT (o registro 1, do ofício, permaneceu intacto). Acompanhadas em `SqlTableModel`, `CreateRequest` e `UpdateRequest` (`parenthetical_note` sem `max_length`).
+
+**`sgd_fields`:** `contract_inspector` e `reserve_note` já existiam para outros tipos (grupo B): UPDATE acrescentando `despacho` em `document_types`. Nenhum campo novo; `sgd_document_types` não mudou (`despacho` id 3). Catálogo do frontend não alterado.
+
+**Formulário `criar-sgd-despacho`** (`form_manager` 93): 18 campos, 10 linhas, com `cnpj`, `article` e `parenthetical_note` como textarea. Abre em `/v1/form-constructor/sgd_documents/93`. Script: `src/writable/claude/20261121_despacho_form.sql`.
+
+**Teste:** `sgd_documents` id 3 (empresa 1): `parenthetical_note` com 6 linhas, `article` com 3 (`107`, `107`, `6º, § 1º`) e `cnpj` com 2, valores como vieram.
+
+
+### Formulário do Parecer (2026-11-21)
+
+**Sem colunas novas:** todas as colunas do Parecer já existiam em `sgd_documents` (criadas pelo Memorando e pelo Despacho); `SqlTableModel`, `CreateRequest` e `UpdateRequest` não mudaram. **`sgd_fields`:** `reserve_note` (grupo B) recebeu `parecer` em `document_types`; nenhum campo novo; `sgd_document_types` não mudou (`parecer` id 4). Catálogo do frontend não alterado.
+
+**Formulário `criar-sgd-parecer`** (`form_manager` 94): 14 campos, 8 linhas. `cnpj` e `article` são textarea (campos repetidos: uma ocorrência por linha, regra em `prompt_ocr.json` > `campos_repetidos`). Abre em `/v1/form-constructor/sgd_documents/94`. Script: `src/writable/claude/20261121_parecer_form.sql`.
+
+**Teste:** `sgd_documents` id 4 (empresa 1): `article` = `107`, `107`, `94` (3 linhas) e `cnpj` com 2 linhas, como vieram. `signature_position` e `law_number` (`14.133/2021`) mantidos como vieram.

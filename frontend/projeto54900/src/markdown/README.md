@@ -116,7 +116,7 @@ nomeada pelo que faz — caso de referência: `pages/v1/user/register/RegisterPa
 rota/arquivo/pasta/variável **sempre em inglês**; comentário e texto visível ao
 usuário **continuam em português**.
 
-[`geral/README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação e onde entram fluxos compostos.
+[`geral/README_paginas_modulo.md`](geral/README_paginas_modulo.md) — convenção de páginas por módulo/recurso/ação, onde entram fluxos compostos e a regra de vínculos entre módulos (responsabilidade do código, campo opcional).
 
 ### `alerta`
 
@@ -470,6 +470,16 @@ telas não abertas no navegador, API sem filtro por `roles`, catálogos duplicad
 
 [`geral/modulos/product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — frontend de produto, movimento e serviço: telas, seed, componentes e pendências.
 
+### `saude`
+
+Telas do módulo Saúde: 8 listas (uma por view), 7 pares de formulário (cadastro e edição), detalhe de cada
+registro e o menu Saúde. Páginas finas sobre `ListBuild`, `RecordFormBuild` e `RecordDetail`; forms, listas e menu
+vêm do banco DEV. Prontuário com Assinar e Cancelar e itens (receitas, exames, sinais vitais), anexos com `AttachmentsPanel`
+e Visualizador de Mídias via prop `mediaModule` do `ListBuild`; rotas catalogadas no `route_manager`. Pendências: teste no
+navegador e REMAKE.
+
+[`geral/modulos/health/README_health.md`](geral/modulos/health/README_health.md) — frontend de saúde: telas, rotas, forms, listas, menu e pendências.
+
 ### `sessao`
 
 O login vale para todas as abas e janelas do mesmo navegador. O `access_token` fica em
@@ -581,6 +591,7 @@ inativo e sem empresa: a Menezes usa o Template 2 com o cabeçalho e o rodapé d
 - [`company-manager/README_plano.md`](geral/modulos/company-manager/README_plano.md) — módulo `company_manager`: empresas e acesso individual a form/list, componentes `ListBuild` e `RecordFormBuild`, pendências.
 - [`location/README_plano.md`](geral/modulos/location/README_plano.md) — módulo `location`: árvore recursiva de locais, tipos, componente `TreeBuild`, seed de form/list/menu, pendências.
 - [`messages/README_plano.md`](geral/modulos/messages/README_plano.md) — módulo `messages` (mensagens diretas, nunca chat): listas, formulários e CRUD de tela de mensagens e grupos prontos; tela de conversa, envio para grupo e membros pendentes.
+- [`health/README_health.md`](geral/modulos/health/README_health.md) — módulo `health` (saúde): telas, rotas, forms, listas, menu Saúde e pendências.
 - [`product-movement-service/README_pendencias.md`](geral/modulos/product-movement-service/README_pendencias.md) — módulos `product`, `movement` e `service`: telas, seed, componentes globais e pendências do frontend.
 
 ---

@@ -219,6 +219,16 @@ $routes->group('api/v1', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/AuxCor/EndpointTable.php';
     });
 
+    // /Sgd — tipos de documento (sgd_document_types); alimenta o select do formulario criar-sgd.
+    $routes->group('sgd-document-types', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Sgd/DocumentTypes/EndpointTable.php';
+    });
+
+    // /Sgd — documentos escaneados (sgd_documents); destino do formulario criar-sgd-oficio.
+    $routes->group('sgd-documents', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Sgd/Documents/EndpointTable.php';
+    });
+
     // =========================================================================
     // /Calendar — Modulo de calendario (espelho do Google Calendar): calendar_manager >
     //           calendar_events > {attendees, reminders, attachments,
@@ -826,6 +836,83 @@ $routes->group('api/v1', static function ($routes) {
 
     $routes->group('service-summary-view', static function ($routes) {
         require __DIR__ . '/Routes/Api/v1/Service/ServiceSummary/EndPointView.php';
+    });
+
+    /*
+    CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:21:07
+    Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Config\Routes.php
+    BLOCO ADICIONADO - 68 linhas (849 a 916 neste arquivo editado): da linha de divisao "    // =====" que abre o comentario "// /Health — Modulo Health (Saude)" ate o "    });" do grupo health-user-identity-view
+    Antes de : (linha em branco, precedida por) "    });" do grupo service-summary-view
+    Depois de : (linha em branco, seguida de) "    // ========================================================================="
+    Motivo: registrar os 15 grupos de rota do modulo Health (7 de tabela e 8 de view); sem eles as 198 rotas nao existem.
+    */
+    // =========================================================================
+    // /Health — Modulo Health (Saude): 7 tabelas (health_registrations, health_patients,
+    //        health_records, health_prescriptions, health_exams, health_vitals,
+    //        health_allergies) e 8 views (uma por tabela, mais view_health_user_identity).
+    //        Cruza com company_manager, user_manager, service_manager e service_order.
+    //        jwtauth por wildcard; adminonly na exclusao definitiva.
+    //        Contrato canonico: 18 rotas por tabela e 9 por view = 198 rotas.
+    // =========================================================================
+
+    $routes->group('health-registrations', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthRegistrations/EndpointTable.php';
+    });
+
+    $routes->group('health-registrations-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthRegistrations/EndPointView.php';
+    });
+
+    $routes->group('health-patients', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthPatients/EndpointTable.php';
+    });
+
+    $routes->group('health-patients-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthPatients/EndPointView.php';
+    });
+
+    $routes->group('health-records', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthRecords/EndpointTable.php';
+    });
+
+    $routes->group('health-records-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthRecords/EndPointView.php';
+    });
+
+    $routes->group('health-prescriptions', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthPrescriptions/EndpointTable.php';
+    });
+
+    $routes->group('health-prescriptions-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthPrescriptions/EndPointView.php';
+    });
+
+    $routes->group('health-exams', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthExams/EndpointTable.php';
+    });
+
+    $routes->group('health-exams-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthExams/EndPointView.php';
+    });
+
+    $routes->group('health-vitals', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthVitals/EndpointTable.php';
+    });
+
+    $routes->group('health-vitals-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthVitals/EndPointView.php';
+    });
+
+    $routes->group('health-allergies', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthAllergies/EndpointTable.php';
+    });
+
+    $routes->group('health-allergies-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthAllergies/EndPointView.php';
+    });
+
+    $routes->group('health-user-identity-view', static function ($routes) {
+        require __DIR__ . '/Routes/Api/v1/Health/HealthUserIdentity/EndPointView.php';
     });
 
     // =========================================================================

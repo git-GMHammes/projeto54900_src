@@ -61,6 +61,26 @@ Caso de referência: `pages/v1/user/register/RegisterPage.tsx` — 2 cards
 sequenciais (não abas), um por tabela; o segundo card recebe a chave
 estrangeira pré-preenchida com o `id` criado pelo primeiro. Rota: `/v1/register`.
 
+## Vínculos entre módulos — responsabilidade do código (frontend e backend), não do banco
+
+Regra (2026-11-22, pedido do usuário): a dependência entre módulos é tratada **por código-fonte**, no backend (`Request` e
+`Processor`) e no frontend. O banco não é a barreira de integridade. Detalhe do lado do backend em
+[`README_modulos_independentes.md`](../../../../../app/markdown/geral/README_modulos_independentes.md).
+
+No frontend:
+
+- **Campo de vínculo opcional.** O ID de outro módulo (paciente, profissional, prontuário, usuário etc.) nunca é obrigatório no
+  formulário (`required = 0`; tooltip começa com "Opcional."), e vazio é um valor válido. Só `company_id`, que vem da sessão e não
+  aparece no formulário, é sempre exigido.
+- **Opções por API.** O select do vínculo carrega as opções da view do outro módulo (`select_config_json`); se o outro módulo não
+  tem dados, o formulário continua funcionando sem escolher nada.
+- **Erro vem da API.** Vínculo inexistente, de outra empresa ou com status que não permite aparece como 422/409 com a mensagem do
+  `Processor`; a tela mostra a mensagem em toast, sem assumir uma constraint do banco.
+- **Edição.** Os vínculos podem ser informados ou trocados depois (`toValues` preenche; a API revalida), para um registro criado
+  sem vínculo poder ser ligado mais tarde.
+- **Telas de detalhe e lista** tratam vínculo vazio com fallback (`—`), nunca quebram por ele.
+- Componentes globais recebem o vínculo por props (ex.: `?patient_id=` pré-seleciona o campo); a lógica não fica presa a um módulo.
+
 ## Rotas e nomes — sempre em inglês
 
 Segmento de rota, nome de arquivo, nome de pasta, nome de variável/função:

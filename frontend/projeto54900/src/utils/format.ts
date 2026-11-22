@@ -21,12 +21,66 @@
  * -------------------------------------------------------------------------
  */
 
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:39:09
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\utils\format.ts
+BLOCO ADICIONADO - 2 linhas (34 a 35 neste arquivo editado):
+import { aplicarMascara } from '@/components/ui/FormGrid/phone/mask';
+
+Antes de : (linha em branco)
+Depois de : const dateTimeFmt = new Intl.DateTimeFormat('pt-BR', {
+Motivo: importar a mascara de telefone ja usada no FormGrid.
+*/
+import { aplicarMascara } from '@/components/ui/FormGrid/phone/mask';
+
 const dateTimeFmt = new Intl.DateTimeFormat('pt-BR', {
   dateStyle: 'short',
   timeStyle: 'short',
 });
 const dateFmt = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' });
 const numberFmt = new Intl.NumberFormat('pt-BR');
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:39:09
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\utils\format.ts
+BLOCO ADICIONADO - 17 linhas (67 a 83 neste arquivo editado):
+
+// CPF com 11 digitos -> 000.000.000-00; outro tamanho devolve o texto cru. So exibicao: o banco guarda sem mascara.
+export function formatCpf(value: unknown, fallback = ''): string {
+const text = toText(value, '');
+const d = text.replace(/\D/g, '');
+if (d.length !== 11) return text === '' ? fallback : text;
+return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+// Telefone com 10 ou 11 digitos -> (NN) NNNN-NNNN / (NN) NNNNN-NNNN; outro tamanho devolve o texto cru. So exibicao.
+export function formatPhone(value: unknown, fallback = ''): string {
+const text = toText(value, '');
+const d = text.replace(/\D/g, '');
+if (d.length !== 10 && d.length !== 11) return text === '' ? fallback : text;
+return aplicarMascara(d);
+}
+
+Antes de : const numberFmt = new Intl.NumberFormat('pt-BR');
+Depois de : (linha em branco)
+Motivo: formatadores de exibicao de CPF e telefone (o dado no banco continua sem mascara).
+*/
+
+// CPF com 11 digitos -> 000.000.000-00; outro tamanho devolve o texto cru. So exibicao: o banco guarda sem mascara.
+export function formatCpf(value: unknown, fallback = ''): string {
+  const text = toText(value, '');
+  const d = text.replace(/\D/g, '');
+  if (d.length !== 11) return text === '' ? fallback : text;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+// Telefone com 10 ou 11 digitos -> (NN) NNNN-NNNN / (NN) NNNNN-NNNN; outro tamanho devolve o texto cru. So exibicao.
+export function formatPhone(value: unknown, fallback = ''): string {
+  const text = toText(value, '');
+  const d = text.replace(/\D/g, '');
+  if (d.length !== 10 && d.length !== 11) return text === '' ? fallback : text;
+  return aplicarMascara(d);
+}
+
 
 function parseDate(value: unknown): Date | null {
   if (value === null || value === undefined || value === '') return null;

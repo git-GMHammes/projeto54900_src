@@ -72,6 +72,15 @@ Produto, tipo, usuário, data e origem são imutáveis no `update`. Quantidade d
 - Concorrência: duas saídas simultâneas podem ultrapassar o disponível (a conferência é leitura + gravação, sem trava de linha).
 - Saldo por local não existe ainda: `location_id` é só informativo.
 
+## ID de vínculo opcional: produto
+
+Regra (2026-11-22): o ID de vínculo entre módulos aceita NULL (a coluna, o `Request` e o formulário), e a dependência é validada no código quando o ID vem informado. As FKs ficam. Ver [`README_modulos_independentes.md`](README_modulos_independentes.md), seção 5.
+
+- `movement_manager.product_id` passou a aceitar NULL (era `NOT NULL`: a exceção "movimento sem produto não existe" acabou).
+- `MovementManager/Processor`: produto informado precisa existir (422). Sem produto não há conferência de saldo: entrada, saída, separação,
+  perda e encomenda gravam normalmente, e o movimento não aparece no saldo por produto.
+- `CreateRequest`: `product_id` com `permit_empty`. Formulário `criar-movimento`: Produto opcional.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

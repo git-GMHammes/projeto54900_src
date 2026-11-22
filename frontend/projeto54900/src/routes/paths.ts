@@ -307,6 +307,61 @@ export const paths = {
       list: '/v1/service-summary',
       view: (id: RouteId) => `/v1/service-summary/${id}`,
     },
+    /*
+    CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:55:55
+    Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\routes\paths.ts
+    BLOCO ADICIONADO - 47 linhas (318 a 364 neste arquivo editado): comentario "// Health" e as 8 entradas health* (7 de tabela com list, create, update e view; 1 de view com list e view)
+    Antes de :     },  (fim do bloco serviceSummary)
+    Depois de :     // CompanyManager — cadastro de empresas (modulo Company; so admin)
+    Motivo: definir os caminhos nomeados das telas do modulo Health (regra: path de rota sempre via paths.ts).
+    */
+    // Health — saude: registro profissional (CRM), paciente, prontuario, receita, exame, sinais vitais, alergia e identidade
+    healthRegistrations: {
+      list: '/v1/health-registrations',
+      create: '/v1/health-registrations/create',
+      update: (id: RouteId) => `/v1/health-registrations/update/${id}`,
+      view: (id: RouteId) => `/v1/health-registrations/${id}`,
+    },
+    healthPatients: {
+      list: '/v1/health-patients',
+      create: '/v1/health-patients/create',
+      update: (id: RouteId) => `/v1/health-patients/update/${id}`,
+      view: (id: RouteId) => `/v1/health-patients/${id}`,
+    },
+    healthRecords: {
+      list: '/v1/health-records',
+      create: '/v1/health-records/create',
+      update: (id: RouteId) => `/v1/health-records/update/${id}`,
+      view: (id: RouteId) => `/v1/health-records/${id}`,
+    },
+    healthPrescriptions: {
+      list: '/v1/health-prescriptions',
+      create: '/v1/health-prescriptions/create',
+      update: (id: RouteId) => `/v1/health-prescriptions/update/${id}`,
+      view: (id: RouteId) => `/v1/health-prescriptions/${id}`,
+    },
+    healthExams: {
+      list: '/v1/health-exams',
+      create: '/v1/health-exams/create',
+      update: (id: RouteId) => `/v1/health-exams/update/${id}`,
+      view: (id: RouteId) => `/v1/health-exams/${id}`,
+    },
+    healthVitals: {
+      list: '/v1/health-vitals',
+      create: '/v1/health-vitals/create',
+      update: (id: RouteId) => `/v1/health-vitals/update/${id}`,
+      view: (id: RouteId) => `/v1/health-vitals/${id}`,
+    },
+    healthAllergies: {
+      list: '/v1/health-allergies',
+      create: '/v1/health-allergies/create',
+      update: (id: RouteId) => `/v1/health-allergies/update/${id}`,
+      view: (id: RouteId) => `/v1/health-allergies/${id}`,
+    },
+    healthUserIdentity: {
+      list: '/v1/health-user-identity',
+      view: (id: RouteId) => `/v1/health-user-identity/${id}`,
+    },
     // CompanyManager — cadastro de empresas (modulo Company; so admin)
     companyManager: {
       list: '/v1/company-manager',

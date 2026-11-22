@@ -15,7 +15,15 @@ class CreateRequest
     {
         return [
             'chat_rooms_manager_id' => 'required|is_natural_no_zero',
-            'user_manager_id'       => 'required|is_natural_no_zero',
+            /*
+            CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:25:13
+            Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Requests\V1\ChatRooms\ChatRoomWarnings\CreateRequest.php
+            LINHA ALTERADA - linha 26 neste arquivo editado:
+            Era : 'user_manager_id'       => 'required|is_natural_no_zero',
+            Ficou : 'user_manager_id'       => 'permit_empty|is_natural_no_zero',
+            Motivo: o vinculo user_manager_id passa a ser opcional (pode ser NULL); quando informado continua validado.
+            */
+            'user_manager_id'       => 'permit_empty|is_natural_no_zero',
             'chat_message_id'       => 'required|is_natural_no_zero',
             'flagged_word'          => 'permit_empty|string|max_length[150]',
         ];

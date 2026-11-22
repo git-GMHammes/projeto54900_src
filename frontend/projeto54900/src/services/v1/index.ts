@@ -114,6 +114,30 @@ export { serviceManagerView } from './serviceManager.view';
 export { serviceAttributesView } from './serviceAttributes.view';
 export { serviceOrderView } from './serviceOrder.view';
 export { serviceSummaryView } from './serviceSummary.view';
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:55:55
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\services\v1\index.ts
+BLOCO ADICIONADO - 16 linhas (125 a 140 neste arquivo editado): comentario "// Health" e as 15 exportacoes dos services health*
+Antes de : export { serviceSummaryView } from './serviceSummary.view';
+Depois de : export { sgdTable } from './sgd.table';
+Motivo: exportar no barrel os services do modulo Health, usados pelas paginas por import de @/services/v1.
+*/
+// Health — saude: 7 tabelas (escrita) e 8 views (leitura)
+export { healthRegistrationsTable } from './healthRegistrations.table';
+export { healthPatientsTable } from './healthPatients.table';
+export { healthRecordsTable } from './healthRecords.table';
+export { healthPrescriptionsTable } from './healthPrescriptions.table';
+export { healthExamsTable } from './healthExams.table';
+export { healthVitalsTable } from './healthVitals.table';
+export { healthAllergiesTable } from './healthAllergies.table';
+export { healthRegistrationsView } from './healthRegistrations.view';
+export { healthPatientsView } from './healthPatients.view';
+export { healthRecordsView } from './healthRecords.view';
+export { healthPrescriptionsView } from './healthPrescriptions.view';
+export { healthExamsView } from './healthExams.view';
+export { healthVitalsView } from './healthVitals.view';
+export { healthAllergiesView } from './healthAllergies.view';
+export { healthUserIdentityView } from './healthUserIdentity.view';
 export { sgdTable } from './sgd.table';
 export { sgdView } from './sgd.view';
 export { companyManagerTable } from './companyManager.table';

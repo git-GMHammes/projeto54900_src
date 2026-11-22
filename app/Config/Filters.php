@@ -166,6 +166,8 @@ class Filters extends BaseFilters
                 'api/v1/list-actions/*',
                 'api/v1/bootstrap-icons/*',
                 'api/v1/aux-cor/*',
+                'api/v1/sgd-document-types/*',
+                'api/v1/sgd-documents/*',
                 'api/v1/calendar-manager/*',
                 'api/v1/calendar-manager-view/*',
                 'api/v1/calendar-events/*',
@@ -225,6 +227,21 @@ class Filters extends BaseFilters
                 'api/v1/service-order/*',
                 'api/v1/service-order-view/*',
                 'api/v1/service-summary-view/*',
+                'api/v1/health-registrations/*',
+                'api/v1/health-registrations-view/*',
+                'api/v1/health-patients/*',
+                'api/v1/health-patients-view/*',
+                'api/v1/health-records/*',
+                'api/v1/health-records-view/*',
+                'api/v1/health-prescriptions/*',
+                'api/v1/health-prescriptions-view/*',
+                'api/v1/health-exams/*',
+                'api/v1/health-exams-view/*',
+                'api/v1/health-vitals/*',
+                'api/v1/health-vitals-view/*',
+                'api/v1/health-allergies/*',
+                'api/v1/health-allergies-view/*',
+                'api/v1/health-user-identity-view/*',
                 'api/v1/chat-rooms-manager/*',
                 'api/v1/chat-rooms-manager-view/*',
                 'api/v1/chat-messages/*',
@@ -289,6 +306,15 @@ class Filters extends BaseFilters
                 'api/v1/company-members-view/*',
                 'api/v1/company-memberships-view/*',
                 'api/v1/company-users-companies-view/*',
+                /*
+                CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:53:22
+                Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Config\Filters.php
+                LINHA ADICIONADA - linha 317 neste arquivo editado: 'api/v1/health-user-identity-view/*',
+                Antes de : 'api/v1/company-users-companies-view/*',
+                Depois de : ],
+                Motivo: Identidade de saude so para superuser: a rota passa pelo filtro superuseronly (nem admin acessa).
+                */
+                'api/v1/health-user-identity-view/*',
             ],
         ],
         'adminonly' => [

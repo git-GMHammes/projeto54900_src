@@ -52,6 +52,15 @@ class SqlTableModel extends BaseTableModel
     protected $allowedFields = [
         'calendar_id',
         'user_manager_id',
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Models\V1\Calendar\CalendarEvents\SqlTableModel.php
+        LINHA ADICIONADA - linha 63 neste arquivo editado: 'health_exam_id',
+        Antes de : 'user_manager_id',
+        Depois de : 'google_event_id',
+        Motivo: permitir gravar o exame ligado ao evento (opcional, NULL).
+        */
+        'health_exam_id',
         'google_event_id',
         'ical_uid',
         'status',
@@ -89,6 +98,15 @@ class SqlTableModel extends BaseTableModel
         'id',
         'calendar_id',
         'user_manager_id',
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Models\V1\Calendar\CalendarEvents\SqlTableModel.php
+        LINHA ADICIONADA - linha 109 neste arquivo editado: 'health_exam_id',
+        Antes de : 'user_manager_id',
+        Depois de : 'status',
+        Motivo: permitir gravar o exame ligado ao evento (opcional, NULL).
+        */
+        'health_exam_id',
         'status',
         'summary',
         'start_date',

@@ -134,6 +134,30 @@ export const API_GROUPS = {
   serviceOrder: 'service-order',
   serviceOrderView: 'service-order-view',
   serviceSummaryView: 'service-summary-view',
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:55:55
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\constants\api.ts
+  BLOCO ADICIONADO - 16 linhas (145 a 160 neste arquivo editado): comentario "// Health" e as 15 chaves de grupo health* e health*View de API_GROUPS
+  Antes de :   serviceSummaryView: 'service-summary-view',
+  Depois de :   sgd: 'sgd',
+  Motivo: registrar os 15 grupos da API do modulo Health para os services; sem eles API_GROUPS.health* nao existe.
+  */
+  // Health — saude: registro profissional, paciente, prontuario, receita, exame, sinais vitais, alergia e identidade (api/v1/health-*)
+  healthRegistrations: 'health-registrations',
+  healthRegistrationsView: 'health-registrations-view',
+  healthPatients: 'health-patients',
+  healthPatientsView: 'health-patients-view',
+  healthRecords: 'health-records',
+  healthRecordsView: 'health-records-view',
+  healthPrescriptions: 'health-prescriptions',
+  healthPrescriptionsView: 'health-prescriptions-view',
+  healthExams: 'health-exams',
+  healthExamsView: 'health-exams-view',
+  healthVitals: 'health-vitals',
+  healthVitalsView: 'health-vitals-view',
+  healthAllergies: 'health-allergies',
+  healthAllergiesView: 'health-allergies-view',
+  healthUserIdentityView: 'health-user-identity-view',
   sgd: 'sgd',
   sgdView: 'sgd-view',
   companyManager: 'company-manager',

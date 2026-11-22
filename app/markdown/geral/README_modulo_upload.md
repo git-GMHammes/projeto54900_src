@@ -183,6 +183,8 @@ POST /api/v1/upload-manager/get-grouped
 | --- | --- | --- | --- |
 | Foto de um usuário | `UserManager` | id do usuário | `avatar` |
 | Documento de uma reunião | `CalendarEvent` | id do evento | `attachment` |
+| Anexo de um prontuário (Saúde) | `HealthRecords` | id do prontuário | `attachment` (opcional) |
+| Resultado ou laudo de um exame (Saúde) | `HealthExams` | id do exame | `attachment` (opcional) |
 
 ## 8. Camadas / arquivos
 

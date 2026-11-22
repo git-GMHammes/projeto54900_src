@@ -119,7 +119,29 @@ class Processor extends BaseTableService
     public function create(array $data): array
     {
         $companyId = (int) ($data['company_id'] ?? 0);
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Company\CompanyMembers\Processor.php
+        BLOCO ALTERADO - 7 linhas (140 a 146 neste arquivo editado):
+        Era :
         $userId    = (int) ($data['user_manager_id'] ?? 0);
+
+        $result = $this->sync($companyId, [$userId], []);
+        Ficou :
+        $userId    = (int) ($data['user_manager_id'] ?? 0);
+
+        if ($userId <= 0) { // usuario opcional: vinculo sem usuario (so confere quem escreve na empresa)
+            return $this->assertWriter($companyId) ?? parent::create($data);
+        }
+
+        $result = $this->sync($companyId, [$userId], []);
+        Motivo: vinculo sem usuario: confere quem escreve na empresa e grava com NULL, sem passar pelo sync de usuarios.
+        */
+        $userId    = (int) ($data['user_manager_id'] ?? 0);
+
+        if ($userId <= 0) { // usuario opcional: vinculo sem usuario (so confere quem escreve na empresa)
+            return $this->assertWriter($companyId) ?? parent::create($data);
+        }
 
         $result = $this->sync($companyId, [$userId], []);
         if (!($result['success'] ?? false)) {

@@ -288,6 +288,10 @@ id 35 — insere `<wbr>` antes do último `@`, então a coluna encolhe para
 `max(parte local, @domínio)` sem scroll horizontal; o texto copiado continua
 íntegro e valor sem `@` (fallback `—`) sai como texto puro).
 
+**Formato `cpf` (2026-11-22):** o renderer `cpf` mostra 11 dígitos como `000.000.000-00` (outro tamanho aparece cru). É só exibição:
+O banco guarda o CPF sem máscara. Usa `formatCpf` de `utils/format.ts`; o telefone usa `formatPhone` (mesma máscara do `FormGrid/phone`).
+Na lista de pacientes (`health-patients`) as colunas CPF e Telefone usam `cpf` e `phone`.
+
 **Formato `phone` + detecção automática por `field_key`**: o renderer `phone`
 reaproveita `aplicarMascara` de `components/ui/FormGrid/phone/mask.ts` (mesma máscara
 do formulário: 10 dígitos → `(NN) NNNN-NNNN`, 11 → `(NN) NNNNN-NNNN`; fora

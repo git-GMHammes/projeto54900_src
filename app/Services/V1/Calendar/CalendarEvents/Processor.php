@@ -6,6 +6,15 @@ use App\Libraries\Auth\CurrentUser;
 use App\Models\V1\Calendar\CalendarEventAttendees\SqlTableModel as CalendarEventAttendeesModel;
 use App\Models\V1\Calendar\CalendarManager\SqlTableModel as CalendarManagerModel;
 use App\Models\V1\Calendar\CalendarEvents\SqlTableModel;
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+LINHA ADICIONADA - linha 17 neste arquivo editado: use App\Models\V1\Health\HealthExams\SqlTableModel as HealthExamsModel;
+Antes de : use App\Models\V1\Calendar\CalendarEvents\SqlTableModel;
+Depois de : use App\Services\V1\BaseTableService;
+Motivo: importar o model de exames para validar health_exam_id.
+*/
+use App\Models\V1\Health\HealthExams\SqlTableModel as HealthExamsModel;
 use App\Services\V1\BaseTableService;
 
 /**
@@ -36,6 +45,15 @@ class Processor extends BaseTableService
     protected SqlTableModel $tableModel;
     private CalendarManagerModel $calendarManagerModel;
     private CalendarEventAttendeesModel $attendeesModel;
+    /*
+    CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+    Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+    LINHA ADICIONADA - linha 56 neste arquivo editado: private HealthExamsModel $healthExamsModel;
+    Antes de : private CalendarEventAttendeesModel $attendeesModel;
+    Depois de : (linha em branco)
+    Motivo: guardar o model de exames usado na validacao.
+    */
+    private HealthExamsModel $healthExamsModel;
 
     /** @var list<string> Colunas DATE normalizadas para Y-m-d. */
     private const DATE_FIELDS = ['start_date', 'end_date'];
@@ -48,6 +66,15 @@ class Processor extends BaseTableService
         $this->tableModel            = new SqlTableModel();
         $this->calendarManagerModel  = new CalendarManagerModel();
         $this->attendeesModel        = new CalendarEventAttendeesModel();
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+        LINHA ADICIONADA - linha 77 neste arquivo editado: $this->healthExamsModel      = new HealthExamsModel();
+        Antes de : $this->attendeesModel        = new CalendarEventAttendeesModel();
+        Depois de : }
+        Motivo: instanciar o model de exames.
+        */
+        $this->healthExamsModel      = new HealthExamsModel();
     }
 
     // -------------------------------------------------------------------------
@@ -372,6 +399,22 @@ class Processor extends BaseTableService
             return ['success' => false, 'message' => 'calendar_id nao pertence ao usuario', 'code' => 403];
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+        BLOCO ADICIONADO - 4 linhas (414 a 417 neste arquivo editado):
+        if ($this->healthExamInformado($data) && !$this->healthExamsModel->find((int) $data['health_exam_id'])) {
+        return ['success' => false, 'message' => 'health_exam_id nao encontrado em health_exams', 'code' => 422];
+        }
+
+        Antes de : (linha em branco)
+        Depois de : if ($this->recurringInformado($data) && !$this->tableModel->find((int) $data['recurring_event_id'])) {
+        Motivo: no create, validar que o exame informado existe na empresa da sessao (422).
+        */
+        if ($this->healthExamInformado($data) && !$this->healthExamsModel->find((int) $data['health_exam_id'])) {
+            return ['success' => false, 'message' => 'health_exam_id nao encontrado em health_exams', 'code' => 422];
+        }
+
         if ($this->recurringInformado($data) && !$this->tableModel->find((int) $data['recurring_event_id'])) {
             return ['success' => false, 'message' => 'recurring_event_id nao encontrado em calendar_events', 'code' => 422];
         }
@@ -399,6 +442,22 @@ class Processor extends BaseTableService
             if (!CurrentUser::isAdmin() && (int) ($calendar['user_manager_id'] ?? 0) !== (int) CurrentUser::id()) {
                 return ['success' => false, 'message' => 'calendar_id nao pertence ao usuario', 'code' => 403];
             }
+        }
+
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+        BLOCO ADICIONADO - 4 linhas (459 a 462 neste arquivo editado):
+        if ($this->healthExamInformado($data) && !$this->healthExamsModel->find((int) $data['health_exam_id'])) {
+        return ['success' => false, 'message' => 'health_exam_id nao encontrado em health_exams', 'code' => 422];
+        }
+
+        Antes de : (linha em branco)
+        Depois de : if ($this->recurringInformado($data)) {
+        Motivo: no update, validar que o exame informado existe na empresa da sessao (422).
+        */
+        if ($this->healthExamInformado($data) && !$this->healthExamsModel->find((int) $data['health_exam_id'])) {
+            return ['success' => false, 'message' => 'health_exam_id nao encontrado em health_exams', 'code' => 422];
         }
 
         if ($this->recurringInformado($data)) {
@@ -431,12 +490,28 @@ class Processor extends BaseTableService
         // ('confirmed') decide o status de todo novo evento.
         unset($data['status']);
 
-        return $this->normalizeRecurring($this->normalizeDates($data));
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+        LINHA ALTERADA - linha 501 neste arquivo editado:
+        Era : return $this->normalizeRecurring($this->normalizeDates($data));
+        Ficou : return $this->normalizeHealthExam($this->normalizeRecurring($this->normalizeDates($data)));
+        Motivo: normalizar health_exam_id vazio para NULL tambem na gravacao.
+        */
+        return $this->normalizeHealthExam($this->normalizeRecurring($this->normalizeDates($data)));
     }
 
     protected function prepareUpdateData(int $id, array $data): array
     {
-        return $this->normalizeRecurring($this->normalizeDates($data));
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+        LINHA ALTERADA - linha 514 neste arquivo editado:
+        Era : return $this->normalizeRecurring($this->normalizeDates($data));
+        Ficou : return $this->normalizeHealthExam($this->normalizeRecurring($this->normalizeDates($data)));
+        Motivo: normalizar health_exam_id vazio para NULL tambem na gravacao.
+        */
+        return $this->normalizeHealthExam($this->normalizeRecurring($this->normalizeDates($data)));
     }
 
     // -------------------------------------------------------------------------
@@ -484,5 +559,59 @@ class Processor extends BaseTableService
             && $data['recurring_event_id'] !== null
             && $data['recurring_event_id'] !== ''
             && (int) $data['recurring_event_id'] > 0;
+    }
+    /*
+    CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:12:40
+    Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEvents\Processor.php
+    BLOCO ADICIONADO - 23 linhas (594 a 616 neste arquivo editado):
+    // health_exam_id vazio ('' ou < 1) vira NULL.
+    private function normalizeHealthExam(array $data): array
+    {
+    if (!array_key_exists('health_exam_id', $data)) {
+    return $data;
+    }
+
+    $valor = $data['health_exam_id'];
+    $data['health_exam_id'] = ($valor === null || $valor === '' || (int) $valor < 1)
+    ? null
+    : (int) $valor;
+
+    return $data;
+    }
+
+    // true quando health_exam_id veio no payload com um id > 0.
+    private function healthExamInformado(array $data): bool
+    {
+    return array_key_exists('health_exam_id', $data)
+    && $data['health_exam_id'] !== null
+    && $data['health_exam_id'] !== ''
+    && (int) $data['health_exam_id'] > 0;
+    }
+    Antes de : }
+    Depois de : }
+    Motivo: metodos auxiliares: normalizar e detectar health_exam_id informado.
+    */
+    // health_exam_id vazio ('' ou < 1) vira NULL.
+    private function normalizeHealthExam(array $data): array
+    {
+        if (!array_key_exists('health_exam_id', $data)) {
+            return $data;
+        }
+
+        $valor = $data['health_exam_id'];
+        $data['health_exam_id'] = ($valor === null || $valor === '' || (int) $valor < 1)
+            ? null
+            : (int) $valor;
+
+        return $data;
+    }
+
+    // true quando health_exam_id veio no payload com um id > 0.
+    private function healthExamInformado(array $data): bool
+    {
+        return array_key_exists('health_exam_id', $data)
+            && $data['health_exam_id'] !== null
+            && $data['health_exam_id'] !== ''
+            && (int) $data['health_exam_id'] > 0;
     }
 }

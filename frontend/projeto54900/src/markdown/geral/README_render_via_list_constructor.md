@@ -195,6 +195,14 @@ cálculo da janela é compartilhado) — mesma decisão de não tocar no stub
 Toda listagem nova que consome o motor deve copiar este footer, não o
 padrão antigo `Anterior`/`pagina X`/`Proxima`.
 
+## `ListBuild` — ação `media-viewer` (prop `mediaModule`)
+
+`components/global/ListBuild.tsx` trata a ação `action_type` `modal` com `data_action` `media-viewer` **quando a página informa
+`mediaModule`** (valor de `uploads.module` dos anexos, ex.: `<ListBuild slug="health-records" mediaModule="HealthRecords" />`).
+O botão abre o `MediaViewerModal` com os anexos da linha (`uploads` filtrado por `module` + `reference_id` = `row.id`; o
+binário vem com o token da sessão). Sem a prop, a ação mostra o aviso "sem tratamento nesta lista" (comportamento anterior).
+Caso de referência: Prontuários e Exames do módulo Saúde.
+
 ## Estado atual — quem já consome
 
 | Página                        | Rota                   | Modo                                                    |

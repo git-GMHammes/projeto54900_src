@@ -31,7 +31,15 @@ class CreateRequest
     {
         return [
             'calendar_event_id' => 'required|is_natural_no_zero',
-            'user_manager_id'   => 'required|is_natural_no_zero',
+            /*
+            CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:25:13
+            Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Requests\V1\Calendar\CalendarEventAttendees\CreateRequest.php
+            LINHA ALTERADA - linha 42 neste arquivo editado:
+            Era : 'user_manager_id'   => 'required|is_natural_no_zero',
+            Ficou : 'user_manager_id'   => 'permit_empty|is_natural_no_zero',
+            Motivo: o vinculo user_manager_id passa a ser opcional (pode ser NULL); quando informado continua validado.
+            */
+            'user_manager_id'   => 'permit_empty|is_natural_no_zero',
             'email'             => 'permit_empty|valid_email|max_length[255]',
             'display_name'      => 'permit_empty|string|max_length[255]',
             'is_organizer'      => 'permit_empty|in_list[0,1]',

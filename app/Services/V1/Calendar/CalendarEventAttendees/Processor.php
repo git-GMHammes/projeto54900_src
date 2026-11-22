@@ -49,7 +49,37 @@ class Processor extends BaseTableService
     {
         $userId = (int) ($data['user_manager_id'] ?? 0);
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Calendar\CalendarEventAttendees\Processor.php
+        BLOCO ALTERADO - 11 linhas (76 a 86 neste arquivo editado):
+        Era :
         if ($userId < 1 || !$this->usersModel->find($userId)) {
+            return ['success' => false, 'message' => 'user_manager_id nao encontrado', 'code' => 422];
+        }
+
+        $profile = $this->profilesModel->where('user_manager_id', $userId)->first();
+        Ficou :
+        if ($userId < 1) { // usuario opcional: convidado externo informa o e-mail (coluna email e NOT NULL)
+            return empty($data['email'])
+                ? ['success' => false, 'message' => 'Informe user_manager_id ou email do convidado', 'code' => 422]
+                : parent::create($data);
+        }
+
+        if (!$this->usersModel->find($userId)) {
+            return ['success' => false, 'message' => 'user_manager_id nao encontrado', 'code' => 422];
+        }
+
+        $profile = $this->profilesModel->where('user_manager_id', $userId)->first();
+        Motivo: convidado sem usuario: exige o e-mail e grava com NULL; com usuario o fluxo pelo perfil continua igual.
+        */
+        if ($userId < 1) { // usuario opcional: convidado externo informa o e-mail (coluna email e NOT NULL)
+            return empty($data['email'])
+                ? ['success' => false, 'message' => 'Informe user_manager_id ou email do convidado', 'code' => 422]
+                : parent::create($data);
+        }
+
+        if (!$this->usersModel->find($userId)) {
             return ['success' => false, 'message' => 'user_manager_id nao encontrado', 'code' => 422];
         }
 

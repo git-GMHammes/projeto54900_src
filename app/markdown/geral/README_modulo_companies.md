@@ -195,6 +195,15 @@ Criada direto no DEV, como `isquierdo22077`: `company_manager` id 8 ("João Clau
 
 [◄ Índice da base de conhecimento](../README.md)
 
+## ID de vínculo opcional: usuário do membro
+
+Regra (2026-11-22): o ID de vínculo entre módulos aceita NULL (a coluna, o `Request` e o formulário), e a dependência é validada no código quando o ID vem informado. As FKs ficam. Ver [`README_modulos_independentes.md`](README_modulos_independentes.md), seção 5.
+
+- `company_members.user_manager_id` passou a aceitar NULL. `CompanyMembers/Processor::create` sem usuário só confere quem escreve na
+  empresa e grava o vínculo sem passar pelo `sync` de usuários; usuário informado inexistente continua dando 404.
+- `CreateRequest`: `user_manager_id` com `permit_empty`. O índice único `(company_id, user_manager_id)` aceita vários vínculos sem usuário.
+- `view_company_users_companies` e a sessão por empresa só enxergam vínculos com usuário.
+
 ---
 
 [◄ Índice da base de conhecimento](../README.md)

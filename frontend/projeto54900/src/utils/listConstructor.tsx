@@ -38,7 +38,15 @@ import type { ReactNode } from 'react';
 import { aplicarMascara } from '@/components/ui/FormGrid/phone/mask';
 
 import { parseStringList } from './jsonList';
-import { formatBytes } from './format';
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:39:09
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\utils\listConstructor.tsx
+LINHA ALTERADA - linha 49 neste arquivo editado:
+Era : import { formatBytes } from './format';
+Ficou : import { formatBytes, formatCpf } from './format';
+Motivo: importar formatCpf para o renderer cpf.
+*/
+import { formatBytes, formatCpf } from './format';
 
 // -----------------------------------------------------------------------------
 // Tipos + normalizacao das linhas cruas da API
@@ -290,6 +298,18 @@ const CUSTOM_CELL_RENDERERS: Record<
   bytes: (value) => (value.trim() === '' || Number.isNaN(Number(value)) ? value : formatBytes(value)),
   // Mesma mascara do campo de formulario (FormGrid/phone). So formata 10/11
   // digitos (DDD + numero); fora disso (DDI, fallback) devolve o valor cru.
+  /*
+  CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 17:39:09
+  Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\utils\listConstructor.tsx
+  BLOCO ADICIONADO - 2 linhas (311 a 312 neste arquivo editado):
+  // CPF com 11 digitos -> 000.000.000-00 (so exibicao; o banco guarda sem mascara).
+  cpf: (value) => <span className="text-nowrap">{formatCpf(value)}</span>,
+  Antes de : // digitos (DDD + numero); fora disso (DDI, fallback) devolve o valor cru.
+  Depois de : phone: (value) => {
+  Motivo: novo format cpf para list_columns.format, ao lado do phone.
+  */
+  // CPF com 11 digitos -> 000.000.000-00 (so exibicao; o banco guarda sem mascara).
+  cpf: (value) => <span className="text-nowrap">{formatCpf(value)}</span>,
   phone: (value) => {
     const digits = value.replace(/\D/g, '');
     if (digits.length !== 10 && digits.length !== 11) return value;

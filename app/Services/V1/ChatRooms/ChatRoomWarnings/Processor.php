@@ -62,7 +62,21 @@ class Processor extends BaseTableService
 
         $userId = (int) ($data['user_manager_id'] ?? 0);
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\ChatRooms\ChatRoomWarnings\Processor.php
+        BLOCO ALTERADO - 3 linhas (79 a 81 neste arquivo editado):
+        Era :
         if ($this->usersModel->find($userId) === null) {
+            return $this->notFound('Usuario advertido nao encontrado');
+        }
+        Ficou :
+        if ($userId > 0 && $this->usersModel->find($userId) === null) {
+            return $this->notFound('Usuario advertido nao encontrado');
+        }
+        Motivo: o usuario advertido e opcional: so valida existencia quando informado.
+        */
+        if ($userId > 0 && $this->usersModel->find($userId) === null) {
             return $this->notFound('Usuario advertido nao encontrado');
         }
 

@@ -473,7 +473,7 @@ uma chave opcional (`NULL` por padrão); desligar é a ausência da chave. Liga�
 só são criadas mediante pedido. SaaS: toda tabela tem `company_id` e um registro
 nunca interfere no de outra empresa, inclusive pela chave de ligação.
 
-[`geral/README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral de independência, ligação opcional e isolamento por empresa.
+[`geral/README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral de independência, ligação opcional, isolamento por empresa e dependência como responsabilidade do código (não do banco).
 
 ### `product`
 
@@ -525,10 +525,11 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_modulo_map.md`](geral/README_modulo_map.md) — módulo Map: 10 tabelas, 10 views, 275 rotas, vínculo universal `map_links` para qualquer um dos 21 módulos registrados, proxy `map-geo` (Nominatim/CEP/ORS), backend PHP completo e frontend pronto.
 - [`README_modulo_location.md`](geral/README_modulo_location.md) — módulo Location: 2 tabelas, 1 view, 45 rotas, árvore recursiva por `parent_id` montável de baixo para cima.
 - [`README_modulo_eleicoes2026.md`](geral/README_modulo_eleicoes2026.md) — domínio Eleicoes2026: 3 tabelas e 1 view (eleitorado e votos RJ 2026), só leitura, admin, candidato 22001 em subpasta. Inclui as 12 views `view_dash_*` (dashboard da Home).
-- [`README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral: módulos independentes, ligação opcional (chave nula) só sob pedido, isolamento por empresa.
+- [`README_modulos_independentes.md`](geral/README_modulos_independentes.md) — regra geral: módulos independentes, ligação opcional (chave nula) só sob pedido, isolamento por empresa, dependência no código e não no banco.
 - [`README_modulo_product.md`](geral/README_modulo_product.md) — módulo Product: 2 tabelas (produto e atributos), 2 views, 54 rotas, `location_id` opcional.
 - [`README_modulo_movement.md`](geral/README_modulo_movement.md) — módulo Movement: `movement_manager`, view de saldo, 36 rotas, separação e encomenda geram saída/entrada.
 - [`README_modulo_service.md`](geral/README_modulo_service.md) — módulo Service: 3 tabelas, 4 views, 90 rotas, fluxo requested -> done, prestador biscate/mei/company.
+- [`README_modulo_health.md`](geral/README_modulo_health.md) — módulo Health (Saúde): 7 tabelas, 8 views, 198 rotas (API V1) e telas (listas, formulários e menu Saúde), registro em conselho (CRM) de usuário ou empresa, paciente, prontuário ligado a `service_order` e regras de negócio dos Processors.
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
 - [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.

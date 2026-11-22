@@ -44,7 +44,21 @@ class Processor extends BaseTableService
             return $this->notFound('Mensagem nao encontrada');
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Messages\MessageWarnings\Processor.php
+        BLOCO ALTERADO - 3 linhas (61 a 63 neste arquivo editado):
+        Era :
         if (!$this->tableModel->userExists($userId)) {
+            return $this->notFound('Usuario nao encontrado');
+        }
+        Ficou :
+        if ($userId > 0 && !$this->tableModel->userExists($userId)) {
+            return $this->notFound('Usuario nao encontrado');
+        }
+        Motivo: o usuario da advertencia e opcional: so valida existencia quando informado.
+        */
+        if ($userId > 0 && !$this->tableModel->userExists($userId)) {
             return $this->notFound('Usuario nao encontrado');
         }
 

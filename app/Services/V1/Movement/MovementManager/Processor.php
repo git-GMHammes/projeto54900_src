@@ -60,7 +60,21 @@ class Processor extends BaseTableService
         $type      = (string) ($data['type'] ?? '');
         $quantity  = (float) ($data['quantity'] ?? 0);
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Movement\MovementManager\Processor.php
+        BLOCO ALTERADO - 3 linhas (77 a 79 neste arquivo editado):
+        Era :
         if (!$this->productModel->find($productId)) {
+            return $this->fail('Produto nao encontrado', 422);
+        }
+        Ficou :
+        if ($productId > 0 && !$this->productModel->find($productId)) {
+            return $this->fail('Produto nao encontrado', 422);
+        }
+        Motivo: o produto do movimento e opcional: so valida existencia quando informado.
+        */
+        if ($productId > 0 && !$this->productModel->find($productId)) {
             return $this->fail('Produto nao encontrado', 422);
         }
 
@@ -68,6 +82,18 @@ class Processor extends BaseTableService
             return $this->fail('Informe expected_at para encomenda', 422);
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Movement\MovementManager\Processor.php
+        BLOCO ADICIONADO - 3 linhas (94 a 96 neste arquivo editado): retorno antecipado quando o movimento nao tem produto
+        Antes de :             return $this->fail('Informe expected_at para encomenda', 422);
+        }  (e linha em branco)
+        Depois de :         $stock = $this->stock($productId);
+        Motivo: sem produto nao existe saldo de estoque; a conferencia de quantidade so vale com produto.
+        */
+        if ($productId <= 0) { // produto opcional: sem produto nao ha saldo de estoque para conferir
+            return null;
+        }
         $stock = $this->stock($productId);
 
         if (in_array($type, ['exit', 'reservation'], true) && $quantity > $stock['available']) {
@@ -111,6 +137,17 @@ class Processor extends BaseTableService
             return null;
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Movement\MovementManager\Processor.php
+        BLOCO ADICIONADO - 3 linhas (148 a 150 neste arquivo editado): retorno antecipado na edicao quando o movimento nao tem produto
+        Antes de :         }  (fim do if (!$existing))
+        Depois de :         $newQuantity = array_key_exists('quantity', $data) ...
+        Motivo: sem produto nao existe saldo de estoque; a conferencia de quantidade so vale com produto.
+        */
+        if (empty($existing['product_id'])) { // produto opcional: sem produto nao ha saldo de estoque para conferir
+            return null;
+        }
         $newQuantity = array_key_exists('quantity', $data) ? (float) $data['quantity'] : (float) $existing['quantity'];
         $stock       = $this->stock((int) $existing['product_id']);
 

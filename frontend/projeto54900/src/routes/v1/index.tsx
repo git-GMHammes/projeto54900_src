@@ -87,6 +87,15 @@ import { locationRoutes } from './location.routes';
 import { movementRoutes } from './movement.routes';
 import { productRoutes } from './product.routes';
 import { serviceRoutes } from './service.routes';
+/*
+CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:55:55
+Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\routes\v1\index.tsx
+LINHA ADICIONADA - linha 98 neste arquivo editado: import { healthRoutes } from './health.routes';
+Antes de : import { serviceRoutes } from './service.routes';
+Depois de : import { auditRoutes } from './audit.routes';
+Motivo: importar as rotas do modulo Health para registra-las entre as filhas do layout protegido.
+*/
+import { healthRoutes } from './health.routes';
 import { auditRoutes } from './audit.routes';
 
 /**
@@ -149,6 +158,15 @@ export const v1Routes: RouteObject = {
         ...productRoutes,
         ...movementRoutes,
         ...serviceRoutes,
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 13:55:55
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\frontend\projeto54900\src\routes\v1\index.tsx
+        LINHA ADICIONADA - linha 169 neste arquivo editado: ...healthRoutes,
+        Antes de :         ...serviceRoutes,
+        Depois de :         ...auditRoutes,
+        Motivo: registrar as rotas do modulo Health em /v1; sem isso as telas health-* nao abrem.
+        */
+        ...healthRoutes,
         ...auditRoutes,
       ],
     },

@@ -68,6 +68,24 @@ class Processor extends BaseTableService
             return $this->invalid('No maximo ' . self::MAX_PER_MESSAGE . ' marcacoes por mensagem');
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Messages\MessageMentions\Processor.php
+        BLOCO ALTERADO - 5 linhas (85 a 89 neste arquivo editado):
+        Era :
+        $id = $this->tableModel->insertMention($messageId, $userId);
+        Ficou :
+        if ($userId <= 0) { // usuario opcional: marcacao sem usuario
+            return parent::create(['messages_manager_id' => $messageId]);
+        }
+
+        $id = $this->tableModel->insertMention($messageId, $userId);
+        Motivo: marcacao sem usuario e gravada com NULL em vez de tentar inserir o ID 0.
+        */
+        if ($userId <= 0) { // usuario opcional: marcacao sem usuario
+            return parent::create(['messages_manager_id' => $messageId]);
+        }
+
         $id = $this->tableModel->insertMention($messageId, $userId);
         if ($id === 0) {
             return ['success' => false, 'message' => 'Erro ao registrar a marcacao', 'code' => 500];
@@ -99,7 +117,15 @@ class Processor extends BaseTableService
             return ['success' => false, 'message' => 'Este usuario ja esta marcado na mensagem', 'code' => 409];
         }
 
-        return parent::update($id, ['user_manager_id' => $userId]);
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Messages\MessageMentions\Processor.php
+        LINHA ALTERADA - linha 128 neste arquivo editado:
+        Era : return parent::update($id, ['user_manager_id' => $userId]);
+        Ficou : return parent::update($id, ['user_manager_id' => $userId > 0 ? $userId : null]);
+        Motivo: trocar a marcacao para sem usuario grava NULL em vez do ID 0.
+        */
+        return parent::update($id, ['user_manager_id' => $userId > 0 ? $userId : null]);
     }
 
     public function deleteSoft(int $id): array
@@ -141,7 +167,29 @@ class Processor extends BaseTableService
             return ['error' => $sees ? $this->forbidden('Somente o remetente da mensagem marca usuarios') : $this->notFound('Mensagem de grupo nao encontrada'), 'message' => null];
         }
 
+        /*
+        CODE/REVIEW - Gustavo Hammes - 22-11-2026 - 15:27:12
+        Arquivo: C:\laragon\www\php\habilidade\projeto54900\src\app\Services\V1\Messages\MessageMentions\Processor.php
+        BLOCO ALTERADO - 7 linhas (188 a 194 neste arquivo editado):
+        Era :
         if ($userId <= 0 || !$this->tableModel->isActiveUser($userId)) {
+            return ['error' => $this->notFound('Usuario nao encontrado'), 'message' => null];
+        }
+        Ficou :
+        if ($userId <= 0) { // usuario opcional: sem usuario vale so a permissao sobre a mensagem
+            return ['error' => null, 'message' => $message];
+        }
+
+        if (!$this->tableModel->isActiveUser($userId)) {
+            return ['error' => $this->notFound('Usuario nao encontrado'), 'message' => null];
+        }
+        Motivo: o usuario marcado e opcional: as conferencias de usuario so rodam quando informado.
+        */
+        if ($userId <= 0) { // usuario opcional: sem usuario vale so a permissao sobre a mensagem
+            return ['error' => null, 'message' => $message];
+        }
+
+        if (!$this->tableModel->isActiveUser($userId)) {
             return ['error' => $this->notFound('Usuario nao encontrado'), 'message' => null];
         }
 
