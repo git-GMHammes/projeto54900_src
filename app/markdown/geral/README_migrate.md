@@ -2,6 +2,30 @@
 
 ---
 
+## ⛔ BUILD do frontend — SEMPRE ELIMINAR O ANTERIOR E REFAZER DO ZERO
+
+> **REGRA DO USUÁRIO (2026-11-22):** a cada ciclo de REMAKE do MIGRATE, o BUILD
+> anterior é **ELIMINADO COMPLETAMENTE** e um **BUILD NOVO é feito do zero**.
+> Nunca reaproveitar nem manter arquivos do build anterior.
+
+- Pasta do build: `src/public/app/` (inclui `assets/`). É saída gerada pelo Vite
+  (código dividido por tela, com hash no nome), versionada e publicada na KingHost.
+- **Ordem obrigatória:** (1) apagar `src/public/app/assets/`; (2) rodar o build do zero;
+  (3) conferir o `index.html` e a contagem de arquivos; (4) só então commit.
+- Build (Git Bash, a partir de `src/frontend/projeto54900`):
+  `MSYS_NO_PATHCONV=1 VITE_BASE_PATH=/projeto54900/public/app/ npm run build`
+  (sem `MSYS_NO_PATHCONV=1` os caminhos do `index.html` quebram).
+- Conferir: no `src/public/app/index.html`, `src`/`href` começam com
+  `/projeto54900/public/app/assets/`; nenhum arquivo órfão em `assets/` (todo arquivo
+  alcançável a partir do `index.html`).
+- O `vite.config` já usa `emptyOutDir: true` (o build limpa a pasta), mas a exclusão
+  manual da pasta antes do build é o passo explícito deste ciclo.
+- Os muitos `CreatePage-*.js`, `GetAllPage-*.js`, `UpdatePage-*.js` e `README_*.js` em
+  `assets/` são normais: uma tela por arquivo e a base de conhecimento empacotada.
+  Sem build anterior misturado, a contagem é a do código atual.
+
+---
+
 ## Prompt padrão — pedir um REMAKE novo à IA
 
 > NÃO EXISTE ALTERAÇÃO de MIGRATE: apenas no fim de cada ciclo um novo, para a renovação de todo o sistema.
