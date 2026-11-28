@@ -115,27 +115,25 @@ checklist para criar um módulo do zero e as pendências em aberto (ex.:
 
 [`geral/ROADMAP_padrao_modulo.md`](geral/ROADMAP_padrao_modulo.md) — padrão obrigatório de módulo da API V1.
 
-### `compose`
+### `pod`
 
-Como levantar o ambiente Docker/Podman do zero: serviços (`mysql`, `adminer`,
-`php`, `node` WebSocket, `nginx`), pastas exigidas pelo build (`docker/php`,
-`docker/mysql`, `docker/node`, `docker/nginx`) e portas expostas no host
-(`54900` app, `54901` mysql, `54902` adminer). `docker-compose.yml` real
-contém credenciais e não deve ser exposto publicamente; usar
-`docker-compose-example.yml` (versionado, só placeholders) como base,
-renomeando e preenchendo credenciais próprias antes de subir a stack.
+Como levantar o ambiente Podman do zero (pod `projeto54900.yaml`): serviços
+(`mysql`, `adminer`, `php`, `node` WebSocket, `nginx`), Dockerfiles em
+`podman/php` e `podman/node` e portas no host (`54900` app, `54901` mysql,
+`54902` adminer). Credenciais geradas no pod, sem `.env`.
 
-[`geral/README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman e uso do compose de exemplo.
+
+[`geral/README_podman_pod.md`](geral/README_podman_pod.md) — pod Podman (`projeto54900.yaml`): portas 54900-54902, credenciais sem `.env`, build das imagens e subida.
 
 ### `conexao`
 
-Como o sistema conecta aos bancos usando podman e o `docker-compose.yml`. Há a
+Como o sistema conecta aos bancos usando podman e o pod (`projeto54900.yaml`). Há a
 conexão `default` (banco `codeigniter54900_db`, credenciais `DB_*` via `env()`)
 e um grupo nomeado por módulo (`mapa`, `agenda`, `chat`, constantes `DB_*` da
 classe). Sem arquivo `.env`. Inclui como subir os containers e como adicionar um
 novo módulo/banco.
 
-[`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`.
+[`geral/README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e o pod (`projeto54900.yaml`).
 
 ### `migracao`
 
@@ -516,7 +514,7 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_podman_vite_porta_bloqueada.md`](geral/README_podman_vite_porta_bloqueada.md) — Vite não sobe na 54910 com Podman ativo (WSL mirrored): causa e ordem de inicialização.
 - [`README_podman_porta_reservada_winnat.md`](geral/README_podman_porta_reservada_winnat.md) — containers com "address already in use" por faixa reservada pelo Windows (WinNAT): causa e reserva administrada das portas.
 - [`README_avaliacao_comercial_saas.md`](geral/README_avaliacao_comercial_saas.md) — avaliação de mercado (teto): venda de código-fonte x SaaS mensal, composição de custo de infra e memória de cálculo.
-- [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e `docker-compose.yml`, grupos por módulo.
+- [`README_conecta_banco_enviroments.md`](geral/README_conecta_banco_enviroments.md) — conexão de bancos com podman e o pod (`projeto54900.yaml`), grupos por módulo.
 - [`README_multiempresa_isolamento.md`](geral/README_multiempresa_isolamento.md) — multiempresa: login por slug, sessão amarrada à empresa, isolamento de dados na API, cadastro e pendências.
 - [`README_multiempresa_guia_modulos.md`](geral/README_multiempresa_guia_modulos.md) — multiempresa: fluxo completo, escopo por módulo e como incluir módulo novo.
 - [`README_modulo_companies.md`](geral/README_modulo_companies.md) — módulo Company/UserResourceAccess: empresas, `company_ids` do usuário e permissão individual a form/list.
@@ -532,8 +530,8 @@ por registro, sem triggers. Independente de Produto, Location e Movement.
 - [`README_modulo_health.md`](geral/README_modulo_health.md) — módulo Health (Saúde): 7 tabelas, 8 views, 198 rotas (API V1) e telas (listas, formulários e menu Saúde), registro em conselho (CRM) de usuário ou empresa, paciente, prontuário ligado a `service_order` e regras de negócio dos Processors.
 - [`README_modulo_messages.md`](geral/README_modulo_messages.md) — módulo Message: 4 tabelas, 5 views, 65 rotas, regras de negócio, estado (pronto e pendente) e pendências.
 - [`README_DeepSeek.md`](geral/README_DeepSeek.md) — análise de entendimento antes do novo módulo: desenvolvimento, BUILD e migrate REMAKE.
-- [`README_docker-compose.md`](geral/README_docker-compose.md) — setup do ambiente Docker/Podman, serviços e uso do compose de exemplo.
 - [`README_git_kinghost.md`](geral/README_git_kinghost.md) — deploy via git na hospedagem KingHost: SSH, deploy key, build do frontend em `public/app/`.
+- [`README_podman_pod.md`](geral/README_podman_pod.md) — pod Podman (Cube Play) no lugar do compose: portas, credenciais por volume, build e subida.
 - [`README_migrate.md`](geral/README_migrate.md) — comandos diretos de migration do CodeIgniter (criar, aplicar, reverter, por módulo).
 - [`README_modulo_calendar_event_invites.md`](geral/README_modulo_calendar_event_invites.md) — módulo Calendar/CalendarEventInvites: convite de evento por e-mail com token temporário.
 - [`README_modulo_db_schema.md`](geral/README_modulo_db_schema.md) — módulo `db-schema`: introspecção read-only do banco pela API.
